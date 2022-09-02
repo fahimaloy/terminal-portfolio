@@ -1,4 +1,4 @@
-# [💻 LiveTerm - build terminal styled websites in minutes!](https://liveterm.vercel.app)
+<!-- # [💻 LiveTerm - build terminal styled websites in minutes!](https://liveterm.vercel.app)
 
 Highly customizable, easy-to-use, and minimal terminal styled website template, powered by Next.js.
 
@@ -18,11 +18,6 @@ Feel free to play with the web demo above!
 <p align="center">
 <img src="./demo/demo.gif" width="600"><br>
 <strong>LiveTerm with different themes</strong>
-</p>
-
-<p align="center">
-<img src="./demo/cveinnt.png" width="600"><br>
-<strong><a href="https://cveinnt.com" target=_blank>my personal website</a></strong>
 </p>
 
 ## 🚀 Ship your LiveTerm site in less than 5 minutes
@@ -129,3 +124,4 @@ You can also connect your github account to vercel and have vercel automatically
 ## Credit
 
 Based on M4TT72's awesome [Terminal](https://github.com/m4tt72/terminal).
+-->
