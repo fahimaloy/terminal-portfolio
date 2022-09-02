@@ -39,3 +39,25 @@ div#__next > div {
 ::-webkit-scrollbar-thumb:hover {
   background: #ff8037;
 }
+
+.flexClass{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+.ascii_text{
+  font-size: 6px;
+  
+}
+@media screen and (min-width: 830px) {
+  .flexClass{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+  .ascii_text{
+  font-size: 10px;
+  
+}
+}
