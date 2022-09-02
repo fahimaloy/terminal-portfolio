@@ -155,16 +155,16 @@ export const sudo = async (args?: string[]): Promise<string> => {
 // Banner
 export const banner = (args?: string[]): string => {
   return `
-  <div style="display: inline-flex; align-items:center;">
+  <div class="flexClass">
   <img src="${Photo.src}" height="200px" width="200px"/>
-  <h5>
+  <div class="ascii_text">
   ███████╗ █████╗ ██╗  ██╗██╗███╗   ███╗ █████╗ ██╗      ██████╗ ██╗   ██╗
   ██╔════╝██╔══██╗██║  ██║██║████╗ ████║██╔══██╗██║     ██╔═══██╗╚██╗ ██╔╝
   █████╗  ███████║███████║██║██╔████╔██║███████║██║     ██║   ██║ ╚████╔╝ 
   ██╔══╝  ██╔══██║██╔══██║██║██║╚██╔╝██║██╔══██║██║     ██║   ██║  ╚██╔╝  
   ██║     ██║  ██║██║  ██║██║██║ ╚═╝ ██║██║  ██║███████╗╚██████╔╝   ██║   
   ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝    ╚═╝   
-  </h5>
+  </div>
   </div>                                                                   
 Type 'help' to see the list of available commands.
 Type 'fahim' to display summary about me.

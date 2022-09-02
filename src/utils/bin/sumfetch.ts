@@ -23,7 +23,7 @@ const fahim = async (args: string[]): Promise<string> => {
 `;
   } else {
     return `
-<div style="display: flex; align-items:center; justify-content:space-around">
+<div class="flexClass">
 <img style="margin-right:15px;" src="${Photo.src}" height="300px" width="300px"/>
 <div>
  fahim
