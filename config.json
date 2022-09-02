@@ -1,0 +1,66 @@
+{
+  "readmeUrl": "https://raw.githubusercontent.com/fahimaloy/fahimaloy/master/README.md",
+  "title": "Fahimaloy",
+  "name": "Fahim Ahmed",
+  "ascii": "liveterm",
+  "social": {
+    "github": "fahimaloy",
+    "linkedin": "fahimaloy"
+  },
+  "projects":[
+    {
+      "name":"School Management System Project",
+      "desc":"A Python based management system website for managing a school's academic and financial terms",
+      "link":"https://www.alimsacademy.com/"
+    },
+   {
+      "name":"Online Examination Website",
+      "desc":"A Python based Websites to take Online Examinations and track on students' progress",
+      "link":"#"
+    },
+    {
+      "name":"GO Authentication Boilerplate",
+      "desc":"Boilerplate for Go Based Authentication System",
+      "link":"https://github.com/fahimaloy/goFiberAuth"
+    },
+    {
+      "name":"MyVEN Authentication Boilerplate",
+      "desc":"Boilerplate for Mysql,Vue Js,Express Js and Node Js Based Authentication System",
+      "link":"https://github.com/fahimaloy/vue-express-django-starter-template"
+    },
+    {
+      "name":"Delivery Company Website",
+      "desc":"A Python Based Order taking & tracking Website For a Delivery Copmany",
+      "link":"#"
+    }
+  ],
+  "skills":["Django -> Expert","Vue JS -> Expert","MEVN/MERN -> Intermediate","HTML,CSS,JS,Jquery -> Expert","React -> Beginner","GO -> Beginner","Mysql -> Intermediate"],  "email": "fahimaloy@gmail.com",
+  "ps1_hostname": "fahimaloy",
+  "ps1_username": "visitor",
+  "repo": "https://github.com/fahimaloy",
+  "resume_url": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Resume.pdf",
+  "donate_urls": {
+    "paypal": "#",
+    "patreon": "#"
+  },
+  "colors": {
+    "light": {
+      "background": "#FBF1C9",
+      "foreground": "#3C3836",
+      "yellow": "#D79921",
+      "green": "#98971A",
+      "gray": "#7C6F64",
+      "blue": "#458588",
+      "red": "#CA2124"
+    },
+    "dark": {
+      "background": "#2E3440",
+      "foreground": "#E5E9F0",
+      "yellow": "#5E81AC",
+      "green": "#A3BE8C",
+      "gray": "#88C0D0",
+      "blue": "#EBCB8B",
+      "red": "#BF616A"
+    }
+  }
+}
