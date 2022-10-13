@@ -41,7 +41,7 @@ export const repo = async (args: string[]): Promise<string> => {
   window.open(`${config.repo}`);
   return 'Opening Github repository...';
 };
-import { getReadme } from '../api';
+import { getProjects, getReadme, getSkills } from '../api';
 
 // About
 export const about = async (args: string[]): Promise<string> => {
@@ -62,8 +62,7 @@ export const resume = async (args: string[]): Promise<string> => {
 // Donate
 export const donate = async (args: string[]): Promise<string> => {
   return `thank you for your interest. 
-  Yout can contact me on my Email (Type: 'email') or my LinkedIn (Type: 'likedin') Proe_
-`;
+  You can contact me on my Email (Type: 'email') or my LinkedIn (Type: 'likedin') Profile`;
 };
 
 // Contact
@@ -169,34 +168,40 @@ export const banner = (args?: string[]): string => {
 Type 'help' to see the list of available commands.
 Type 'fahim' to display summary about me.
 Type 'resume' to download my resume.
+Type 'projects' to View All The projects I've Done.
+
 `; 
 };
 
-export const projects = (args: string[]) => {
+// export const projects = (args: string[]) => {
 
-  let data = `<ul>`
-  config.projects.map((project:Project,index:number)=>{
-     data+=`
-    <li>${index+1}) ${project.name}<br/>
-    Description: ${project.desc}.<br/>
-    Link: <a class="text-dark-blue underline" href="${project.link}" target="_blank">${project.link}</a>
-    </li>
-    `
-  })
-  data += "</ul>"
-  return data
-  
+  // let data = `<ul>`
+  // config.projects.map((project:Project,index:number)=>{
+  //    data+=`
+  //   <li>${index+1}) ${project.name}<br/>
+  //   Description: ${project.desc}.<br/>
+  //   Link: <a class="text-dark-blue underline" href="${project.link}" target="_blank">${project.link}</a>
+  //   </li>
+  //   `
+  // })
+  // data += "</ul>"
+  // return data
+export const projects = async (args: string[]): Promise<string> => {
+    return await getProjects()
+};
+export const skills = async (args: string[]): Promise<string> => {
+  return await getSkills()
 };
 
 
-export const skills = (args?: string[]): string => {
-  let data = `<ul>`
-  config.skills.map((skill:string,index:number)=>{
-     data+=`
-    <li>${index+1}) ${skill}</li>
-    `
-  })
-  data += "</ul>"
-  return data
-};
+// export const skills = (args?: string[]): string => {
+//   let data = `<ul>`
+//   config.skills.map((skill:string,index:number)=>{
+//      data+=`
+//     <li>${index+1}) ${skill}</li>
+//     `
+//   })
+//   data += "</ul>"
+//   return data
+// };
 
