@@ -3,8 +3,16 @@ import config from '../../config.json';
 
 export const getProjects = async () => {
   const { data } = await axios.get(
-    `https://api.github.com/users/${config.social.github}/repos`,
+    `https://raw.githubusercontent.com/fahimaloy/fahimaloy/main/Projects.md`,
   );
+  
+  return data;
+};
+export const getSkills = async () => {
+  const { data } = await axios.get(
+    `https://raw.githubusercontent.com/fahimaloy/fahimaloy/main/Skills.md`,
+  );
+  
   return data;
 };
 
