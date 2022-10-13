@@ -7,38 +7,11 @@
     "github": "fahimaloy",
     "linkedin": "fahimaloy"
   },
-  "projects":[
-    {
-      "name":"School Management System Project",
-      "desc":"A Python based management system website for managing a school's academic and financial terms",
-      "link":"https://fahimaloy-smsp.herokuapp.com/"
-    },
-   {
-      "name":"Online Examination Website",
-      "desc":"A Python based Websites to take Online Examinations and track on students' progress",
-      "link":"#"
-    },
-    {
-      "name":"GO Authentication Boilerplate",
-      "desc":"Boilerplate for Go Based Authentication System",
-      "link":"https://github.com/fahimaloy/goFiberAuth"
-    },
-    {
-      "name":"MyVEN Authentication Boilerplate",
-      "desc":"Boilerplate for Mysql,Vue Js,Express Js and Node Js Based Authentication System",
-      "link":"https://github.com/fahimaloy/vue-express-django-starter-template"
-    },
-    {
-      "name":"Delivery Company Website",
-      "desc":"A Python Based Order taking & tracking Website For a Delivery Copmany",
-      "link":"#"
-    }
-  ],
-  "skills":["Django -> Expert","Vue JS -> Expert","MEVN/MERN -> Intermediate","HTML,CSS,JS,Jquery -> Expert","React -> Beginner","GO -> Beginner","Mysql -> Intermediate"],  "email": "fahimaloy@gmail.com",
+  
   "ps1_hostname": "fahimaloy",
   "ps1_username": "visitor",
   "repo": "https://github.com/fahimaloy",
-  "resume_url": "https://docs.google.com/document/d/189Q3DKRvrx6Q-t5vn0lfrFM_Bt_w_7LK20vBdiPW6SU/edit?usp=sharing",
+  "resume_url": "https://github.com/fahimaloy/fahimaloy/raw/main/Degp_aApplicationForm_2021_2022_DEGP_4235945.pdf",
   "donate_urls": {
     "paypal": "#",
     "patreon": "#"
