@@ -1,9 +1,9 @@
 // List of commands that do not require API calls
-import {Conf, Project} from "./Conf.interface"
+import { Conf, Project } from './Conf.interface';
 import * as bin from './index';
-const config:Conf = require('../../../config.json');
+const config: Conf = require('../../../config.json');
 
-import  Photo from "../../assets/ascii_photo.png"
+import Photo from '../../assets/ascii_photo.png';
 // Help
 export const help = async (args: string[]): Promise<string> => {
   const commands = Object.keys(bin).sort().join(', ');
@@ -78,9 +78,9 @@ export const github = async (args: string[]): Promise<string> => {
 };
 
 export const linkedin = async (args: string[]): Promise<string> => {
-  window.open(`https://www.linkedin.com/in/${config.social.linkedin}/`);
+  // window.open(`https://www.linkedin.com/in/${config.social.linkedin}/`);
 
-  return 'Opening linkedin...';
+  return 'Sorry, Soon will update LinkedIn! Try typing github';
 };
 
 // Search
@@ -146,6 +146,14 @@ export const emacs = async (args?: string[]): Promise<string> => {
   return `you know what? just use vscode.`;
 };
 
+export const exit = async (args?: string[]): Promise<string> => {
+  window.close();
+  return `Exiting!!! Good bye!`;
+};
+export const shutdown = async (args?: string[]): Promise<string> => {
+  window.close();
+  return `Shutting Down!!! Good bye!`;
+};
 export const sudo = async (args?: string[]): Promise<string> => {
   window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank'); // ...I'm sorry
   return `Permission denied: with little power comes... no responsibility? `;
@@ -170,29 +178,28 @@ Type 'fahim' to display summary about me.
 Type 'resume' to download my resume.
 Type 'projects' to View All The projects I've Done.
 
-`; 
+`;
 };
 
 // export const projects = (args: string[]) => {
 
-  // let data = `<ul>`
-  // config.projects.map((project:Project,index:number)=>{
-  //    data+=`
-  //   <li>${index+1}) ${project.name}<br/>
-  //   Description: ${project.desc}.<br/>
-  //   Link: <a class="text-dark-blue underline" href="${project.link}" target="_blank">${project.link}</a>
-  //   </li>
-  //   `
-  // })
-  // data += "</ul>"
-  // return data
+// let data = `<ul>`
+// config.projects.map((project:Project,index:number)=>{
+//    data+=`
+//   <li>${index+1}) ${project.name}<br/>
+//   Description: ${project.desc}.<br/>
+//   Link: <a class="text-dark-blue underline" href="${project.link}" target="_blank">${project.link}</a>
+//   </li>
+//   `
+// })
+// data += "</ul>"
+// return data
 export const projects = async (args: string[]): Promise<string> => {
-    return await getProjects()
+  return await getProjects();
 };
 export const skills = async (args: string[]): Promise<string> => {
-  return await getSkills()
+  return await getSkills();
 };
-
 
 // export const skills = (args?: string[]): string => {
 //   let data = `<ul>`
@@ -204,4 +211,3 @@ export const skills = async (args: string[]): Promise<string> => {
 //   data += "</ul>"
 //   return data
 // };
-
