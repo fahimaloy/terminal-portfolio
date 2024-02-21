@@ -180,25 +180,53 @@ Type 'projects' to View All The projects I've Done.
 
 `;
 };
-
-// export const projects = (args: string[]) => {
-
-// let data = `<ul>`
-// config.projects.map((project:Project,index:number)=>{
-//    data+=`
-//   <li>${index+1}) ${project.name}<br/>
-//   Description: ${project.desc}.<br/>
-//   Link: <a class="text-dark-blue underline" href="${project.link}" target="_blank">${project.link}</a>
-//   </li>
-//   `
-// })
-// data += "</ul>"
-// return data
 export const projects = async (args: string[]): Promise<string> => {
-  return await getProjects();
+  const data = await getProjects();
+ let html =  `
+  <table style="text-align:center; width:100%">
+  <tr>
+    <th>#</th>
+    <th>Stack</th>
+    <th>Projects</th>
+  </tr>
+  `
+  for (let i=0; i<data.length;i++){
+    let listHtml = '<ol style="display:flex; flex-wrap:wrap; justify-content: space-eavenly align-items:center">'
+    for(let j=0;j<data[i].portfolio.length;j++){
+      let url = `${data[i].portfolio[j].thumbnail}`
+      listHtml += `<li style="font-size:14px">${data[i].portfolio[j].title} <img height="60" width="80" src="${url}" /></li>`
+    }
+    listHtml += '</ol>'
+    html+=`
+    <tr>
+    <td>${i+1}</td>
+    <td> ${data[i].title}</td>
+    <td> ${listHtml} </td>
+    </tr>
+    `
+  }
+  html+='</table>'
+  return html
 };
-export const skills = async (args: string[]): Promise<string> => {
-  return await getSkills();
+export const skills =  (args: string[]): string => {
+  // return await getSkills();
+  return ` <ul type="1">
+  <li>1. <i class="fab fa-react"></i> React/Next JS</li>
+  <li>2. <i class="fab fa-vuejs"></i> Vue/Nuxt JS</li>
+  <li>3. <i class="fab fa-python"></i> Python</li>
+  <li>4. <i class="fab fa-python"></i> Django</li>
+  <li>5. <i class="fab fa-node"></i> Express</li>
+  <li>6. <i class="fab fa-js"></i> Typescript</li>
+  <li>7. <i class="fas fa-database"></i> MongoDB</li>
+  <li>8. <i class="fas fa-database"></i> MySQL/PostgreSQL</li>
+  <li>9. <i class="fab fa-cuttlefish"></i> C++</li>
+  <li>10. <i class="fas fa-code"></i> Golang</li>
+  <li>11. <i class="fas fa-wine-glass"></i> GIN</li>
+  <li>12. <i class="fab fa-linux"></i> Nginx</li>
+  <li>13. <i class="fas fa-server"></i> VPS Management</li>
+  <li>14. <i class="fas fa-cogs"></i> CI/CD Pipeline</li>
+  <li>15. <i class="fas fa-database"></i> Redis</li>
+</ul>`
 };
 
 // export const skills = (args?: string[]): string => {

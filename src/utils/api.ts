@@ -2,10 +2,11 @@ import axios from 'axios';
 import config from '../../config.json';
 
 export const getProjects = async () => {
-  const { data } = await axios.get(
-    `https://raw.githubusercontent.com/fahimaloy/fahimaloy/main/Projects.md`,
-  );
-  
+  // const { data } = await axios.get(
+  //   `https://raw.githubusercontent.com/fahimaloy/fahimaloy/main/Projects.md`,
+  // );
+  const {data} = await axios.get(process.env.NEXT_PUBLIC_API+'/api/allprojects')
+  // alert(JSON.stringify(data))
   return data;
 };
 export const getSkills = async () => {
