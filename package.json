@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --port=3777",
     "lint": "next lint",
     "prepare": "husky install",
     "heroku-postbuild": "npm run build"
