@@ -18,7 +18,10 @@ const App = ({ Component, pageProps }) => {
           key="viewport"
           maximum-scale="1"
         />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        />
       </Head>
 
       <div
