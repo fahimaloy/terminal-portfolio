@@ -1,0 +1,245 @@
+-- Supabase schema for portfolio data (free-tier friendly)
+
+create extension if not exists pgcrypto;
+
+create table if not exists public.profiles (
+  id uuid primary key default gen_random_uuid(),
+  full_name text not null,
+  title text,
+  bio text,
+  email text,
+  location text,
+  website text,
+  github text,
+  linkedin text,
+  resume_url text,
+  avatar_url text,
+  summary text,
+  phone text,
+  is_active boolean not null default true,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.skills (
+  id bigint generated always as identity primary key,
+  name text not null,
+  category text,
+  level text,
+  icon_key text,
+  icon_type text,
+  icon_color text,
+  sort_order integer not null default 0,
+  is_visible boolean not null default true
+);
+
+create table if not exists public.projects (
+  id bigint generated always as identity primary key,
+  title text not null,
+  short_title text,
+  description text,
+  image_url text,
+  thumbnail_url text,
+  icon_key text,
+  project_url text,
+  repo_url text,
+  languages text[] not null default '{}',
+  tags text[] not null default '{}',
+  featured boolean not null default false,
+  featured_order integer not null default 0,
+  sort_order integer not null default 0,
+  is_visible boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.project_media (
+  id bigint generated always as identity primary key,
+  project_id bigint not null references public.projects(id) on delete cascade,
+  media_type text not null check (media_type in ('image', 'video')),
+  url text not null,
+  thumbnail_url text,
+  video_provider text check (video_provider in ('youtube', 'vimeo', 'direct')),
+  media_order integer not null default 0,
+  is_visible boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.admin_users (
+  id uuid primary key default gen_random_uuid(),
+  username text not null unique,
+  email text,
+  password_hash text not null,
+  is_active boolean not null default true,
+  updated_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.admin_sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.admin_users(id) on delete cascade,
+  session_token_hash text not null unique,
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.profiles add column if not exists summary text;
+alter table public.profiles add column if not exists phone text;
+alter table public.skills add column if not exists icon_key text;
+alter table public.skills add column if not exists icon_type text;
+alter table public.skills add column if not exists icon_color text;
+alter table public.projects add column if not exists short_title text;
+alter table public.projects add column if not exists thumbnail_url text;
+alter table public.projects add column if not exists icon_key text;
+alter table public.projects add column if not exists featured_order integer not null default 0;
+
+alter table public.profiles enable row level security;
+alter table public.skills enable row level security;
+alter table public.projects enable row level security;
+alter table public.project_media enable row level security;
+alter table public.admin_users enable row level security;
+alter table public.admin_sessions enable row level security;
+
+drop policy if exists "Public read profiles" on public.profiles;
+drop policy if exists "Public read skills" on public.skills;
+drop policy if exists "Public read projects" on public.projects;
+drop policy if exists "Public read project_media" on public.project_media;
+drop policy if exists "Authenticated write profiles" on public.profiles;
+drop policy if exists "Authenticated write skills" on public.skills;
+drop policy if exists "Authenticated write projects" on public.projects;
+drop policy if exists "Authenticated write project_media" on public.project_media;
+
+create policy "Public read profiles"
+  on public.profiles
+  for select
+  to anon
+  using (true);
+
+create policy "Public read skills"
+  on public.skills
+  for select
+  to anon
+  using (true);
+
+create policy "Public read projects"
+  on public.projects
+  for select
+  to anon
+  using (true);
+
+create policy "Public read project_media"
+  on public.project_media
+  for select
+  to anon
+  using (true);
+
+create policy "Authenticated write profiles"
+  on public.profiles
+  for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create policy "Authenticated write skills"
+  on public.skills
+  for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create policy "Authenticated write projects"
+  on public.projects
+  for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create policy "Authenticated write project_media"
+  on public.project_media
+  for all
+  to authenticated
+  using (true)
+  with check (true);
+
+insert into public.profiles (
+  full_name,
+  title,
+  bio,
+  summary,
+  email,
+  website,
+  github,
+  linkedin,
+  resume_url,
+  is_active
+)
+values (
+  'Your Name',
+  'Full-Stack Developer',
+  'I build web apps and love clean architecture.',
+  'Building web experiences with a terminal soul.',
+  'you@example.com',
+  'https://your-domain.dev',
+  'https://github.com/your-handle',
+  'https://www.linkedin.com/in/your-handle/',
+  'https://example.com/resume.pdf',
+  true
+)
+on conflict do nothing;
+
+insert into public.skills (name, category, level, sort_order)
+values
+  ('Next.js', 'Frontend', 'advanced', 1),
+  ('TypeScript', 'Language', 'advanced', 2),
+  ('PostgreSQL', 'Database', 'intermediate', 3)
+on conflict do nothing;
+
+insert into public.projects (
+  title,
+  short_title,
+  description,
+  image_url,
+  thumbnail_url,
+  project_url,
+  repo_url,
+  languages,
+  tags,
+  featured,
+  featured_order,
+  sort_order
+)
+values
+  (
+    'Terminal Portfolio',
+    'Portfolio',
+    'Interactive terminal-style portfolio built with Next.js.',
+    'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800',
+    'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400',
+    'https://your-portfolio.vercel.app',
+    'https://github.com/your-handle/portfolio',
+    '{TypeScript,Next.js,PostgreSQL}',
+    '{portfolio,terminal,web}',
+    true,
+    1,
+    1
+  )
+on conflict do nothing;
+
+insert into public.project_media (
+  project_id,
+  media_type,
+  url,
+  thumbnail_url,
+  video_provider,
+  media_order,
+  is_visible
+)
+select
+  p.id,
+  'image',
+  p.image_url,
+  p.thumbnail_url,
+  null,
+  1,
+  true
+from public.projects p
+where p.title = 'Terminal Portfolio'
+on conflict do nothing;

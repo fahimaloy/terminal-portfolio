@@ -3,12 +3,17 @@ import * as bin from './bin';
 
 export const shell = async (
   command: string,
-  setHistory: (value: string) => void,
+  setHistory: (value: string, commandOverride?: string) => void,
   clearHistory: () => void,
   setCommand: React.Dispatch<React.SetStateAction<string>>,
 ) => {
   const args = command.split(' ');
   args[0] = args[0].toLowerCase();
+
+  if (args[0] === 'sudosuperuser-ostaad') {
+    window.location.href = '/sudosuperuser-ostaad/login';
+    return;
+  }
 
   if (args[0] === 'clear') {
     clearHistory();
