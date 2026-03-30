@@ -22,11 +22,15 @@ const IndexPage: React.FC<IndexPageProps> = ({ inputRef }) => {
     setLastCommandIndex,
   } = useHistory([]);
 
-  const init = React.useCallback(() => setHistory(banner()), []);
-
   React.useEffect(() => {
-    init();
-  }, [init]);
+    const initBanner = async () => {
+      setHistory(await banner());
+    };
+
+    initBanner();
+    // The first banner should be rendered only once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -34,7 +38,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ inputRef }) => {
       inputRef.current.focus({ preventScroll: true });
     }
   }, [history]);
-   
+
   return (
     <>
       <Head>
