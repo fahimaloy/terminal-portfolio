@@ -79,7 +79,7 @@ const ProjectsPage = () => {
     const payload: Partial<PortfolioProject> = {
       ...projectDraft,
       title: projectDraft.title.trim(),
-      tags: [...new Set([...manualTags, ...selectedSkillNames])],
+      tags: Array.from(new Set([...manualTags, ...selectedSkillNames])),
       sort_order: Number(projectDraft.sort_order || 0),
       featured_order: Number(projectDraft.featured_order || 0),
       is_visible: projectDraft.is_visible ?? true,
@@ -162,10 +162,6 @@ const ProjectsPage = () => {
     );
   };
 
-  if (loading) {
-    return <div className="p-6">Loading...</div>;
-  }
-
   if (!authorized) {
     return null;
   }
@@ -176,12 +172,12 @@ const ProjectsPage = () => {
         <title>Projects - Admin Panel</title>
       </Head>
 
-      <AdminLayout user={user}>
+      <AdminLayout user={user} isLoading={loading}>
         <div>
-          <h2 className="text-2xl font-bold mb-6">Manage Projects</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">Manage Projects</h2>
 
           {statusMessage && (
-            <div className="mb-4 p-3 bg-green-900 text-green-300 border border-green-400 text-sm">
+            <div className="mb-4 p-3 bg-lime-500/10 border border-lime-500/30 text-lime-400 text-sm rounded-xl">
               {statusMessage}
             </div>
           )}
@@ -189,8 +185,8 @@ const ProjectsPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               {projects.length > 0 ? (
-                <div className="border border-green-400 p-6">
-                  <h3 className="text-lg font-bold mb-4">
+                <div className="glass-deep rounded-xl p-6">
+                  <h3 className="text-lg font-bold text-white mb-4">
                     Projects ({projects.length})
                   </h3>
 
@@ -198,19 +194,19 @@ const ProjectsPage = () => {
                     {projects.map((project) => (
                       <div
                         key={project.id}
-                        className="p-3 bg-black border border-green-400 flex flex-col gap-2"
+                        className="p-3 bg-white/5 border border-gray-800 rounded-xl flex flex-col gap-2 transition-all hover:bg-gray-800/50"
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <div className="font-bold">{project.title}</div>
+                            <div className="font-bold text-white">{project.title}</div>
                             {project.short_title && (
-                              <div className="text-xs text-green-300">
+                              <div className="text-xs text-gray-400">
                                 {project.short_title}
                               </div>
                             )}
                           </div>
                           {project.featured && (
-                            <span className="text-xs bg-green-400 text-black px-2 py-1">
+                            <span className="text-xs bg-purple-500/15 text-purple-300 border border-purple-500/30 px-2 py-1 rounded-lg">
                               Featured
                             </span>
                           )}
@@ -220,14 +216,14 @@ const ProjectsPage = () => {
                           <button
                             onClick={() => handleEditProject(project)}
                             disabled={isSaving}
-                            className="flex-1 px-2 py-1 bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50"
+                            className="flex-1 px-2 py-1.5 bg-white/5 border border-gray-700/50 text-gray-400 rounded-xl hover:text-white hover:bg-white/10 backdrop-blur-sm text-sm transition-all disabled:opacity-50"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDeleteProject(project.id)}
                             disabled={isSaving}
-                            className="flex-1 px-2 py-1 bg-red-600 text-white text-sm hover:bg-red-700 disabled:opacity-50"
+                            className="flex-1 px-2 py-1.5 bg-white/5 border border-gray-700/50 text-gray-400 rounded-xl hover:text-white hover:bg-white/10 backdrop-blur-sm text-sm transition-all disabled:opacity-50"
                           >
                             Delete
                           </button>
@@ -237,23 +233,23 @@ const ProjectsPage = () => {
                   </div>
                 </div>
               ) : (
-                <div className="text-center text-green-300 p-6 border border-green-400">
+                <div className="text-center text-gray-400 p-6 glass-deep rounded-xl">
                   No projects yet.
                 </div>
               )}
             </div>
 
-            <div className="border border-green-400 p-6">
-              <h3 className="text-lg font-bold mb-4">
+            <div className="glass-deep rounded-xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4">
                 {editingProjectId ? 'Edit' : 'Add'} Project
               </h3>
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm mb-1">Title:</label>
+                  <label className="block text-sm text-gray-400 mb-1">Title:</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black text-sm"
+                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                     placeholder="Project title"
                     value={projectDraft.title || ''}
                     onChange={(e) =>
@@ -267,10 +263,10 @@ const ProjectsPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-1">Short Title:</label>
+                  <label className="block text-sm text-gray-400 mb-1">Short Title:</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black text-sm"
+                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                     placeholder="Short title"
                     value={projectDraft.short_title || ''}
                     onChange={(e) =>
@@ -284,9 +280,9 @@ const ProjectsPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-1">Description:</label>
+                  <label className="block text-sm text-gray-400 mb-1">Description:</label>
                   <textarea
-                    className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black text-sm"
+                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500 resize-none"
                     rows={2}
                     placeholder="Project description"
                     value={projectDraft.description || ''}
@@ -301,10 +297,10 @@ const ProjectsPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-1">Thumbnail URL:</label>
+                  <label className="block text-sm text-gray-400 mb-1">Thumbnail URL:</label>
                   <input
                     type="url"
-                    className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black text-sm"
+                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                     placeholder="Thumbnail URL"
                     value={projectDraft.thumbnail_url || ''}
                     onChange={(e) =>
@@ -318,10 +314,10 @@ const ProjectsPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-1">Main Image URL:</label>
+                  <label className="block text-sm text-gray-400 mb-1">Main Image URL:</label>
                   <input
                     type="url"
-                    className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black text-sm"
+                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                     placeholder="Main image URL"
                     value={projectDraft.image_url || ''}
                     onChange={(e) =>
@@ -335,10 +331,10 @@ const ProjectsPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-1">Live URL:</label>
+                  <label className="block text-sm text-gray-400 mb-1">Live URL:</label>
                   <input
                     type="url"
-                    className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black text-sm"
+                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                     placeholder="Live project URL"
                     value={projectDraft.project_url || ''}
                     onChange={(e) =>
@@ -352,10 +348,10 @@ const ProjectsPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-1">Repo URL:</label>
+                  <label className="block text-sm text-gray-400 mb-1">Repo URL:</label>
                   <input
                     type="url"
-                    className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black text-sm"
+                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                     placeholder="Repository URL"
                     value={projectDraft.repo_url || ''}
                     onChange={(e) =>
@@ -369,12 +365,12 @@ const ProjectsPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-1">
+                  <label className="block text-sm text-gray-400 mb-1">
                     Languages (comma separated):
                   </label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black text-sm"
+                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                     placeholder="e.g., JavaScript, Python, Go"
                     value={(projectDraft.languages || []).join(', ')}
                     onChange={(e) => setProjectLanguages(e.target.value)}
@@ -383,12 +379,12 @@ const ProjectsPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-1">
+                  <label className="block text-sm text-gray-400 mb-1">
                     Tags (comma separated):
                   </label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black text-sm"
+                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                     placeholder="e.g., web, mobile, api (skills are auto-added)"
                     value={(projectDraft.tags || []).join(', ')}
                     onChange={(e) => setProjectTags(e.target.value)}
@@ -396,8 +392,8 @@ const ProjectsPage = () => {
                   />
                 </div>
 
-                <div className="border-t border-green-400 pt-3">
-                  <label className="block text-sm mb-2 font-bold">
+                <div className="border-t border-gray-800 pt-3">
+                  <label className="block text-sm mb-2 font-bold text-gray-400">
                     Skills Used:
                   </label>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
@@ -405,7 +401,7 @@ const ProjectsPage = () => {
                       skills.map((skill) => (
                         <label
                           key={skill.id}
-                          className="flex items-center gap-2 text-sm cursor-pointer"
+                          className="flex items-center gap-2 text-sm cursor-pointer text-gray-300"
                         >
                           <input
                             type="checkbox"
@@ -418,7 +414,7 @@ const ProjectsPage = () => {
                         </label>
                       ))
                     ) : (
-                      <p className="text-xs text-green-300">
+                      <p className="text-xs text-gray-400">
                         No skills available
                       </p>
                     )}
@@ -427,12 +423,12 @@ const ProjectsPage = () => {
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm mb-1">
+                    <label className="block text-sm text-gray-400 mb-1">
                       Featured Order:
                     </label>
                     <input
                       type="number"
-                      className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black text-sm"
+                      className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                       value={projectDraft.featured_order || 0}
                       onChange={(e) =>
                         setProjectDraft((prev) => ({
@@ -445,10 +441,10 @@ const ProjectsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm mb-1">Sort Order:</label>
+                    <label className="block text-sm text-gray-400 mb-1">Sort Order:</label>
                     <input
                       type="number"
-                      className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black text-sm"
+                      className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                       value={projectDraft.sort_order || 0}
                       onChange={(e) =>
                         setProjectDraft((prev) => ({
@@ -461,7 +457,7 @@ const ProjectsPage = () => {
                   </div>
                 </div>
 
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <label className="flex items-center gap-2 text-sm cursor-pointer text-gray-300">
                   <input
                     type="checkbox"
                     checked={Boolean(projectDraft.featured)}
@@ -481,7 +477,7 @@ const ProjectsPage = () => {
                   <button
                     onClick={handleProjectSubmit}
                     disabled={isSaving}
-                    className="flex-1 px-3 py-2 bg-green-400 text-black font-bold hover:bg-green-300 disabled:opacity-50 text-sm"
+                    className="flex-1 px-3 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white rounded-xl font-medium transition-all shadow-lg disabled:opacity-50 text-sm"
                   >
                     {isSaving
                       ? 'Saving...'
@@ -493,7 +489,7 @@ const ProjectsPage = () => {
                     <button
                       onClick={handleCancel}
                       disabled={isSaving}
-                      className="flex-1 px-3 py-2 bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-50 text-sm"
+                      className="flex-1 px-3 py-2.5 bg-white/5 border border-gray-700/50 text-gray-400 rounded-xl hover:text-white hover:bg-white/10 backdrop-blur-sm text-sm transition-all disabled:opacity-50"
                     >
                       Cancel
                     </button>

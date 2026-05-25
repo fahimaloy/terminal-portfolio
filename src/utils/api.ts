@@ -158,11 +158,31 @@ export interface PortfolioProjectMedia {
   is_visible: boolean;
 }
 
+export interface PortfolioKnowledgeBase {
+  id: number;
+  category: string;
+  content: string;
+  is_visible: boolean;
+  created_at?: string;
+}
+
+export interface PortfolioMeeting {
+  id: number;
+  name: string;
+  email: string;
+  date: string;
+  time: string;
+  reason: string | null;
+  status: string;
+  created_at?: string;
+}
+
 export interface PortfolioProfile {
   id: string;
   full_name: string;
   title: string | null;
   bio: string | null;
+  welcome_message: string | null;
   summary: string | null;
   phone: string | null;
   email: string | null;
@@ -216,6 +236,44 @@ export const getPortfolioSkills = async (): Promise<PortfolioSkill[]> => {
     }
 
     return data as PortfolioSkill[];
+  });
+};
+
+export const getKnowledgeBases = async (): Promise<PortfolioKnowledgeBase[]> => {
+  if (!hasSupabaseConfig() || !supabase) {
+    return [];
+  }
+
+  return getCachedOrFetch('knowledge_bases', async () => {
+    const { data, error } = await supabase
+      .from('knowledge_bases')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data as PortfolioKnowledgeBase[];
+  });
+};
+
+export const getMeetings = async (): Promise<PortfolioMeeting[]> => {
+  if (!hasSupabaseConfig() || !supabase) {
+    return [];
+  }
+
+  return getCachedOrFetch('meetings', async () => {
+    const { data, error } = await supabase
+      .from('meetings')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data as PortfolioMeeting[];
   });
 };
 
@@ -470,6 +528,81 @@ export const deleteProjectMedia = async (id: number): Promise<boolean> => {
     clearPortfolioCache();
   }
 
+  return ok;
+};
+
+export const createKnowledgeBase = async (
+  payload: Partial<PortfolioKnowledgeBase>,
+): Promise<boolean> => {
+  if (!hasSupabaseConfig()) {
+    return false;
+  }
+  const ok = await adminContentAction(
+    'createKnowledgeBase',
+    payload as unknown as Record<string, unknown>,
+  );
+  if (ok) clearPortfolioCache();
+  return ok;
+};
+
+export const updateKnowledgeBase = async (
+  id: number,
+  payload: Partial<PortfolioKnowledgeBase>,
+): Promise<boolean> => {
+  if (!hasSupabaseConfig()) {
+    return false;
+  }
+  const ok = await adminContentAction(
+    'updateKnowledgeBase',
+    payload as unknown as Record<string, unknown>,
+    id,
+  );
+  if (ok) clearPortfolioCache();
+  return ok;
+};
+
+export const deleteKnowledgeBase = async (id: number): Promise<boolean> => {
+  if (!hasSupabaseConfig()) {
+    return false;
+  }
+  const ok = await adminContentAction('deleteKnowledgeBase', undefined, id);
+  if (ok) clearPortfolioCache();
+  return ok;
+};
+
+export const createMeeting = async (
+  payload: Partial<PortfolioMeeting>,
+): Promise<boolean> => {
+  // We can let the user book a meeting without being admin, so this shouldn't use adminContentAction if booked from frontend.
+  // Actually, we'll implement a separate API endpoint for creating meetings from chat/frontend, 
+  // but for admin manual creation/updates we use these.
+  if (!hasSupabaseConfig()) return false;
+  const ok = await adminContentAction(
+    'createMeeting',
+    payload as unknown as Record<string, unknown>,
+  );
+  if (ok) clearPortfolioCache();
+  return ok;
+};
+
+export const updateMeeting = async (
+  id: number,
+  payload: Partial<PortfolioMeeting>,
+): Promise<boolean> => {
+  if (!hasSupabaseConfig()) return false;
+  const ok = await adminContentAction(
+    'updateMeeting',
+    payload as unknown as Record<string, unknown>,
+    id,
+  );
+  if (ok) clearPortfolioCache();
+  return ok;
+};
+
+export const deleteMeeting = async (id: number): Promise<boolean> => {
+  if (!hasSupabaseConfig()) return false;
+  const ok = await adminContentAction('deleteMeeting', undefined, id);
+  if (ok) clearPortfolioCache();
   return ok;
 };
 
