@@ -11,7 +11,13 @@ type Action =
   | 'updateProject'
   | 'deleteProject'
   | 'addProjectMedia'
-  | 'deleteProjectMedia';
+  | 'deleteProjectMedia'
+  | 'createKnowledgeBase'
+  | 'updateKnowledgeBase'
+  | 'deleteKnowledgeBase'
+  | 'createMeeting'
+  | 'updateMeeting'
+  | 'deleteMeeting';
 
 type Body = {
   action?: Action;
@@ -138,6 +144,76 @@ export default async function handler(
     if (action === 'deleteProjectMedia') {
       const { error } = await supabaseAdmin
         .from('project_media')
+        .delete()
+        .eq('id', body.id || 0);
+      if (error) {
+        throw error;
+      }
+      res.status(200).json({ ok: true });
+      return;
+    }
+
+    if (action === 'createKnowledgeBase') {
+      const { error } = await supabaseAdmin
+        .from('knowledge_bases')
+        .insert(body.payload || {});
+      if (error) {
+        throw error;
+      }
+      res.status(200).json({ ok: true });
+      return;
+    }
+
+    if (action === 'updateKnowledgeBase') {
+      const { error } = await supabaseAdmin
+        .from('knowledge_bases')
+        .update(body.payload || {})
+        .eq('id', body.id || 0);
+      if (error) {
+        throw error;
+      }
+      res.status(200).json({ ok: true });
+      return;
+    }
+
+    if (action === 'deleteKnowledgeBase') {
+      const { error } = await supabaseAdmin
+        .from('knowledge_bases')
+        .delete()
+        .eq('id', body.id || 0);
+      if (error) {
+        throw error;
+      }
+      res.status(200).json({ ok: true });
+      return;
+    }
+
+    if (action === 'createMeeting') {
+      const { error } = await supabaseAdmin
+        .from('meetings')
+        .insert(body.payload || {});
+      if (error) {
+        throw error;
+      }
+      res.status(200).json({ ok: true });
+      return;
+    }
+
+    if (action === 'updateMeeting') {
+      const { error } = await supabaseAdmin
+        .from('meetings')
+        .update(body.payload || {})
+        .eq('id', body.id || 0);
+      if (error) {
+        throw error;
+      }
+      res.status(200).json({ ok: true });
+      return;
+    }
+
+    if (action === 'deleteMeeting') {
+      const { error } = await supabaseAdmin
+        .from('meetings')
         .delete()
         .eq('id', body.id || 0);
       if (error) {

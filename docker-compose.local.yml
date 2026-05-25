@@ -1,0 +1,36 @@
+# Minimal Supabase stack: Kong + PostgREST only
+# PostgREST uses host networking to reach local PostgreSQL
+# Usage: docker-compose -f docker-compose.local.yml up -d
+
+version: "3.8"
+
+services:
+  supabase-kong:
+    image: kong:3.8.0
+    container_name: portfolio-supabase-kong
+    restart: unless-stopped
+    ports:
+      - "5353:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /etc/kong/kong.yml
+      KONG_DNS_ORDER: LAST, A, AAAA, CNAME
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl
+      KONG_NGINX_DAEMON: "off"
+    volumes:
+      - ./docker/kong.yml:/etc/kong/kong.yml:ro
+
+  supabase-rest:
+    image: postgrest/postgrest:v12.2.3
+    container_name: portfolio-supabase-rest
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      PGRST_DB_URI: postgres://fahimaloy:dibona@localhost:5432/portfolio
+      PGRST_DB_SCHEMA: public,storage
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: super-secret-jwt-token-with-at-least-32-characters-long
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_OPENAPI_SERVER_PROXY_URI: http://localhost:5353

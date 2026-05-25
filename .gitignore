@@ -24,12 +24,20 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # local env files
+.env
 .env*.local
+
+# docker volumes (created by self-hosted supabase)
+docker-data/
 
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
+
+# opencode
+.opencode/
+.tmp/
 
 .gitattributes

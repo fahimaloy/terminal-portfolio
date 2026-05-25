@@ -1,0 +1,183 @@
+# Self-hosted Supabase for portfolio project
+# Supports both internal Docker PostgreSQL and external PostgreSQL
+# 
+# To use external PostgreSQL:
+#   Set USE_EXTERNAL_PG=true in .env
+#   Configure POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
+#
+# To use internal PostgreSQL (default):
+#   Just run docker-compose up -d (no external config needed)
+
+version: "3.8"
+
+services:
+  # ─── Database ───────────────────────────────────────────────
+  supabase-db:
+    image: supabase/postgres:15.6.1.021
+    container_name: portfolio-supabase-db
+    restart: unless-stopped
+    profiles:
+      - internal-db
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-supabase_db_password}
+      POSTGRES_DB: ${POSTGRES_DB:-supabase}
+    volumes:
+      - portfolio-db-data:/var/lib/postgresql/data
+      - ./install/supabase/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── API Gateway (Kong) ─────────────────────────────────────
+  supabase-kong:
+    image: kong:3.8.0
+    container_name: portfolio-supabase-kong
+    restart: unless-stopped
+    ports:
+      - "${KONG_HTTP_PORT:-8000}:8000"
+      - "${KONG_HTTPS_PORT:-8443}:8443"
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /etc/kong/kong.yml
+      KONG_DNS_ORDER: LAST, A, AAAA, CNAME
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl
+      KONG_NGINX_DAEMON: "off"
+    volumes:
+      - ./docker/kong.yml:/etc/kong/kong.yml:ro
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+      supabase-rest:
+        condition: service_started
+      supabase-auth:
+        condition: service_started
+      supabase-storage:
+        condition: service_started
+      supabase-realtime:
+        condition: service_started
+
+  # ─── PostgREST (RESTful PostgreSQL API) ─────────────────────
+  supabase-rest:
+    image: postgrest/postgrest:v12.2.3
+    container_name: portfolio-supabase-rest
+    restart: unless-stopped
+    environment:
+      PGRST_DB_URI: ${PGRST_DB_URI:-postgres://authenticator:${POSTGRES_PASSWORD:-supabase_db_password}@${DB_HOST:-supabase-db}:5432/${POSTGRES_DB:-supabase}}
+      PGRST_DB_SCHEMA: public,storage
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_OPENAPI_SERVER_PROXY_URI: ${PUBLIC_REST_URL:-http://localhost:8000}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/status"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── GoTrue (Authentication) ────────────────────────────────
+  supabase-auth:
+    image: supabase/gotrue:v2.167.0
+    container_name: portfolio-supabase-auth
+    restart: unless-stopped
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      GOTRUE_SITE_URL: ${SITE_URL:-http://localhost:3000}
+      GOTRUE_DB_DRIVER: postgres
+      API_EXTERNAL_URL: ${PUBLIC_AUTH_URL:-http://localhost:8000/auth/v1}
+      GOTRUE_DB_DATABASE_URL: ${GOTRUE_DB_URL:-postgres://authenticator:${POSTGRES_PASSWORD:-supabase_db_password}@${DB_HOST:-supabase-db}:5432/${POSTGRES_DB:-supabase}}
+      GOTRUE_JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      GOTRUE_JWT_EXP: 86400
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_DISABLE_SIGNUP: "true"
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_SMTP_HOST: ${SMTP_HOST:-mailhog}
+      GOTRUE_SMTP_PORT: ${SMTP_PORT:-1025}
+      GOTRUE_SMTP_USER: ${SMTP_USER:-}
+      GOTRUE_SMTP_PASS: ${SMTP_PASS:-}
+      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL:-admin@localhost}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9999/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── Storage API (File uploads) ─────────────────────────────
+  supabase-storage:
+    image: supabase/storage-api:v1.11.13
+    container_name: portfolio-supabase-storage
+    restart: unless-stopped
+    environment:
+      ANON_KEY: ${ANON_KEY:-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTYwMzk5ODA5MiwiZXhwIjoyNzUyMTQ0NDkyLCJyb2xlIjoiYW5vbiJ9.3VZgKmfOqXHE7wJpJLNl5K2XxGeDnR_U5GhHjlGneVk}
+      SERVICE_KEY: ${SERVICE_ROLE_KEY:-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTYwMzk5ODA5MiwiZXhwIjoyNzUyMTQ0NDkyLCJyb2xlIjoic2VydmljZV9yb2xlIn0.ZBm1V6gW6pLPYHKJhSFMfcsGg_XM5m3HzBJSKpVqG8A}
+      POSTGREST_URL: http://supabase-rest:3000
+      PGRST_JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      FILE_SIZE_LIMIT: 52428800
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+      TENANT_ID: default
+      REGION: auto
+      GLOBAL_S3_BUCKET: portfolio-media
+    volumes:
+      - portfolio-storage-data:/var/lib/storage
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/status"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── Realtime (WebSocket) ───────────────────────────────────
+  supabase-realtime:
+    image: supabase/realtime:v2.33.51
+    container_name: portfolio-supabase-realtime
+    restart: unless-stopped
+    environment:
+      DB_HOST: ${DB_HOST:-supabase-db}
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-supabase}
+      DB_USER: ${REALTIME_DB_USER:-authenticator}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-supabase_db_password}
+      DB_SSL: "false"
+      PORT: 4000
+      JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      REPLICATION_MODE: "stream"
+      REPLICATION_SLOT: "realtime_replication_slot"
+      REPLICATION_PLUGIN: "pgoutput"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── MailHog (Dev email catcher) ────────────────────────────
+  supabase-mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: portfolio-supabase-mailhog
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+
+  # ─── PostgreSQL Authenticator setup ─────────────────────────
+  supabase-meta:
+    image: supabase/postgres-meta:v0.84.2
+    container_name: portfolio-supabase-meta
+    restart: unless-stopped
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: ${DB_HOST:-supabase-db}
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: ${POSTGRES_DB:-supabase}
+      PG_META_DB_USER: postgres
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD:-supabase_db_password}
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+
+volumes:
+  portfolio-db-data:
+  portfolio-storage-data:

@@ -81,6 +81,27 @@ create table if not exists public.admin_sessions (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.meetings (
+  id bigint generated always as identity primary key,
+  name text not null,
+  email text not null,
+  date date not null,
+  time time not null,
+  reason text,
+  status text not null default 'pending',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.contact_messages (
+  id bigint generated always as identity primary key,
+  name text not null,
+  email text not null,
+  subject text,
+  message text not null,
+  status text not null default 'unread',
+  created_at timestamptz not null default now()
+);
+
 alter table public.profiles add column if not exists summary text;
 alter table public.profiles add column if not exists phone text;
 alter table public.skills add column if not exists icon_key text;
@@ -97,6 +118,8 @@ alter table public.projects enable row level security;
 alter table public.project_media enable row level security;
 alter table public.admin_users enable row level security;
 alter table public.admin_sessions enable row level security;
+alter table public.meetings enable row level security;
+alter table public.contact_messages enable row level security;
 
 drop policy if exists "Public read profiles" on public.profiles;
 drop policy if exists "Public read skills" on public.skills;
@@ -106,6 +129,12 @@ drop policy if exists "Authenticated write profiles" on public.profiles;
 drop policy if exists "Authenticated write skills" on public.skills;
 drop policy if exists "Authenticated write projects" on public.projects;
 drop policy if exists "Authenticated write project_media" on public.project_media;
+drop policy if exists "Service role admin_users" on public.admin_users;
+drop policy if exists "Service role admin_sessions" on public.admin_sessions;
+drop policy if exists "Service role meetings" on public.meetings;
+drop policy if exists "Service role contact_messages" on public.contact_messages;
+drop policy if exists "Public insert meetings" on public.meetings;
+drop policy if exists "Public insert contact_messages" on public.contact_messages;
 
 create policy "Public read profiles"
   on public.profiles
@@ -156,6 +185,49 @@ create policy "Authenticated write project_media"
   on public.project_media
   for all
   to authenticated
+  using (true)
+  with check (true);
+
+-- Service role bypass policies for admin tables
+create policy "Service role admin_users"
+  on public.admin_users
+  for all
+  to service_role
+  using (true)
+  with check (true);
+
+create policy "Service role admin_sessions"
+  on public.admin_sessions
+  for all
+  to service_role
+  using (true)
+  with check (true);
+
+-- Public insert policies for meetings and contact_messages (allow anonymous submissions)
+create policy "Public insert meetings"
+  on public.meetings
+  for insert
+  to anon
+  with check (true);
+
+create policy "Public insert contact_messages"
+  on public.contact_messages
+  for insert
+  to anon
+  with check (true);
+
+-- Service role bypass for meetings and contact_messages
+create policy "Service role meetings"
+  on public.meetings
+  for all
+  to service_role
+  using (true)
+  with check (true);
+
+create policy "Service role contact_messages"
+  on public.contact_messages
+  for all
+  to service_role
   using (true)
   with check (true);
 

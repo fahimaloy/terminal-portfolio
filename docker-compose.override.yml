@@ -1,0 +1,54 @@
+# Override to use external PostgreSQL instead of the built-in container
+# This file extends docker-compose.supabase.yml
+
+version: "3.8"
+
+services:
+  # Remove the supabase-db service - we'll use external PostgreSQL
+  supabase-db:
+    profiles:
+      - disabled
+
+  # Configure all services to use external PostgreSQL
+  supabase-rest:
+    environment:
+      PGRST_DB_URI: postgres://fahimaloy:dibona@host.docker.internal:5432/portfolio
+      PGRST_DB_SCHEMA: public,storage
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_OPENAPI_SERVER_PROXY_URI: http://localhost:8000
+    depends_on:
+      supabase-meta:
+        condition: service_started
+
+  supabase-auth:
+    environment:
+      GOTRUE_DB_DATABASE_URL: postgres://fahimaloy:dibona@host.docker.internal:5432/portfolio
+      API_EXTERNAL_URL: ${PUBLIC_AUTH_URL:-http://localhost:8000/auth/v1}
+
+  supabase-storage:
+    environment:
+      PGRST_JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+
+  supabase-realtime:
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_NAME: portfolio
+      DB_USER: fahimaloy
+      DB_PASSWORD: dibona
+      DB_SSL: "false"
+
+  supabase-meta:
+    environment:
+      PG_META_DB_HOST: host.docker.internal
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: portfolio
+      PG_META_DB_USER: fahimaloy
+      PG_META_DB_PASSWORD: dibona
+
+  supabase-kong:
+    depends_on:
+      supabase-meta:
+        condition: service_started
