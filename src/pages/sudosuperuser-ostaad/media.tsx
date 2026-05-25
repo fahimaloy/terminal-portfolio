@@ -149,10 +149,6 @@ const MediaPage = () => {
     ? projectMedia.filter((item) => item.project_id === selectedProjectId)
     : [];
 
-  if (loading) {
-    return <div className="p-6">Loading...</div>;
-  }
-
   if (!authorized) {
     return null;
   }
@@ -163,25 +159,25 @@ const MediaPage = () => {
         <title>Media - Admin Panel</title>
       </Head>
 
-      <AdminLayout user={user}>
+      <AdminLayout user={user} isLoading={loading}>
         <div>
           <h2 className="text-2xl font-bold mb-6">Manage Project Media</h2>
 
           {statusMessage && (
-            <div className="mb-4 p-3 bg-green-900 text-green-300 border border-green-400 text-sm">
+            <div className="mb-4 p-3 bg-lime-500/10 border border-lime-500/30 text-lime-400 text-sm rounded-xl">
               {statusMessage}
             </div>
           )}
 
-          <div className="border border-green-400 p-6 mb-8">
-            <h3 className="text-lg font-bold mb-4">Select Project</h3>
+          <div className="glass-deep rounded-xl p-6 mb-8">
+            <h3 className="text-lg font-bold text-white mb-4">Select Project</h3>
 
             {projects.length > 0 ? (
               <select
                 value={selectedProjectId || ''}
                 onChange={(e) => setSelectedProjectId(Number(e.target.value))}
                 disabled={isSaving}
-                className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black"
+                className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none"
               >
                 {projects.map((project) => (
                   <option key={project.id} value={project.id}>
@@ -190,25 +186,25 @@ const MediaPage = () => {
                 ))}
               </select>
             ) : (
-              <p className="text-green-300">No projects available</p>
+              <p className="text-gray-400">No projects available</p>
             )}
           </div>
 
           {selectedProjectId && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="border border-green-400 p-6">
-                <h3 className="text-lg font-bold mb-4">Add Media</h3>
+              <div className="glass-deep rounded-xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4">Add Media</h3>
 
                 <div className="space-y-3 mb-4">
                   <div>
-                    <label className="block text-sm mb-1">Media Type:</label>
+                    <label className="block text-sm text-gray-400 mb-1">Media Type:</label>
                     <select
                       value={mediaType}
                       onChange={(e) =>
                         setMediaType(e.target.value as 'image' | 'video')
                       }
                       disabled={isSaving}
-                      className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black"
+                      className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none"
                     >
                       <option value="image">Image</option>
                       <option value="video">Video</option>
@@ -217,7 +213,7 @@ const MediaPage = () => {
 
                   {mediaType === 'video' && (
                     <div>
-                      <label className="block text-sm mb-1">
+                      <label className="block text-sm text-gray-400 mb-1">
                         Video Provider:
                       </label>
                       <select
@@ -228,7 +224,7 @@ const MediaPage = () => {
                           )
                         }
                         disabled={isSaving}
-                        className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black"
+                        className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none"
                       >
                         <option value="direct">Direct Upload</option>
                         <option value="youtube">YouTube</option>
@@ -238,13 +234,13 @@ const MediaPage = () => {
                   )}
 
                   <div>
-                    <label className="block text-sm mb-1">Media URL:</label>
+                    <label className="block text-sm text-gray-400 mb-1">Media URL:</label>
                     <input
                       type="url"
                       value={mediaUrl}
                       onChange={(e) => setMediaUrl(e.target.value)}
                       disabled={isSaving}
-                      className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black"
+                      className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                       placeholder="Enter media URL"
                     />
                   </div>
@@ -252,29 +248,29 @@ const MediaPage = () => {
                   <button
                     onClick={handleAddMediaByUrl}
                     disabled={isSaving}
-                    className="w-full px-4 py-2 bg-green-400 text-black font-bold hover:bg-green-300 disabled:opacity-50"
+                    className="w-full px-4 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white rounded-xl font-medium transition-all shadow-lg disabled:opacity-50"
                   >
                     {isSaving ? 'Adding...' : 'Add by URL'}
                   </button>
                 </div>
 
-                <div className="border-t border-green-400 pt-4">
-                  <h4 className="text-sm font-bold mb-2">Or Upload File</h4>
+                <div className="border-t border-gray-700 pt-4">
+                  <h4 className="text-sm font-bold text-gray-400 mb-2">Or Upload File</h4>
                   <input
                     type="file"
                     onChange={handleMediaUpload}
                     disabled={isSaving}
                     accept="image/*,video/*"
-                    className="w-full"
+                    className="w-full text-gray-300"
                   />
-                  <p className="text-xs text-green-300 mt-2">
+                  <p className="text-xs text-gray-500 mt-2">
                     Accepts images and videos
                   </p>
                 </div>
               </div>
 
-              <div className="border border-green-400 p-6">
-                <h3 className="text-lg font-bold mb-4">
+              <div className="glass-deep rounded-xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4">
                   Media ({filteredMedia.length})
                 </h3>
 
@@ -283,9 +279,9 @@ const MediaPage = () => {
                     {filteredMedia.map((media) => (
                       <div
                         key={media.id}
-                        className="p-3 bg-black border border-green-400"
+                        className="p-3 bg-white/5 border border-gray-800 rounded-xl"
                       >
-                        <div className="text-xs text-green-300 mb-2">
+                        <div className="text-xs text-gray-400 mb-2">
                           {media.media_type.toUpperCase()}
                           {media.video_provider && ` (${media.video_provider})`}
                         </div>
@@ -293,14 +289,14 @@ const MediaPage = () => {
                           href={media.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-green-400 underline break-all hover:text-green-300 mb-2 block"
+                          className="text-xs text-purple-400 underline break-all hover:text-cyan-400 mb-2 block"
                         >
                           {media.url.substring(0, 50)}...
                         </a>
                         <button
                           onClick={() => handleDeleteMedia(media.id)}
                           disabled={isSaving}
-                          className="w-full px-2 py-1 bg-red-600 text-white text-xs hover:bg-red-700 disabled:opacity-50"
+                          className="w-full px-2 py-1.5 bg-white/5 border border-gray-700/50 text-gray-400 rounded-xl hover:text-white hover:bg-white/10 backdrop-blur-sm text-xs transition-all disabled:opacity-50"
                         >
                           Delete
                         </button>
@@ -308,7 +304,7 @@ const MediaPage = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center text-green-300">
+                  <div className="text-center text-gray-400">
                     No media for this project yet
                   </div>
                 )}

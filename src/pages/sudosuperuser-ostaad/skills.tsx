@@ -138,10 +138,6 @@ const SkillsPage = () => {
     setIsSaving(false);
   };
 
-  if (loading) {
-    return <div className="p-6">Loading...</div>;
-  }
-
   if (!authorized) {
     return null;
   }
@@ -152,25 +148,25 @@ const SkillsPage = () => {
         <title>Skills - Admin Panel</title>
       </Head>
 
-      <AdminLayout user={user}>
+      <AdminLayout user={user} isLoading={loading}>
         <div className="max-w-2xl">
-          <h2 className="text-2xl font-bold mb-6">Manage Skills</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">Manage Skills</h2>
 
           {statusMessage && (
-            <div className="mb-4 p-3 bg-green-900 text-green-300 border border-green-400 text-sm">
+            <div className="mb-4 p-3 bg-lime-500/10 border border-lime-500/30 text-lime-400 text-sm rounded-xl">
               {statusMessage}
             </div>
           )}
 
-          <div className="border border-green-400 p-6 mb-8">
-            <h3 className="text-lg font-bold mb-4">Add New Skill</h3>
+          <div className="glass-deep rounded-xl p-6 mb-8">
+            <h3 className="text-lg font-bold text-white mb-4">Add New Skill</h3>
 
             <div className="grid gap-3 mb-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm mb-1">Skill Name:</label>
+                <label className="block text-sm text-gray-400 mb-1">Skill Name:</label>
                 <input
                   type="text"
-                  className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black"
+                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                   placeholder="e.g., React, Python, TypeScript"
                   value={newSkill}
                   onChange={(e) => setNewSkill(e.target.value)}
@@ -179,9 +175,9 @@ const SkillsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm mb-1">Icon Key:</label>
+                <label className="block text-sm text-gray-400 mb-1">Icon Key:</label>
                 <select
-                  className="w-full px-3 py-2 bg-black border border-green-400 text-green-400 focus:outline-none focus:bg-green-400 focus:text-black"
+                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none"
                   value={newSkillIconKey}
                   onChange={(e) => setNewSkillIconKey(e.target.value)}
                   disabled={isSaving}
@@ -199,19 +195,19 @@ const SkillsPage = () => {
             <button
               onClick={handleAddSkill}
               disabled={isSaving}
-              className="px-4 py-2 bg-green-400 text-black font-bold hover:bg-green-300 disabled:opacity-50"
+              className="bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white rounded-xl px-5 py-2.5 font-medium transition-all shadow-lg disabled:opacity-50"
             >
               {isSaving ? 'Adding...' : 'Add Skill'}
             </button>
           </div>
 
           {skills.length > 0 ? (
-            <div className="border border-green-400 p-6">
-              <h3 className="text-lg font-bold mb-4">
+            <div className="glass-deep rounded-xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4">
                 Skills ({skills.length})
               </h3>
 
-              <p className="text-sm text-green-300 mb-4">
+              <p className="text-sm text-gray-400 mb-4">
                 Drag to reorder skills
               </p>
 
@@ -223,23 +219,23 @@ const SkillsPage = () => {
                     onDragStart={() => setDragSkillId(skill.id)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleSkillDrop(skill.id)}
-                    className="p-3 bg-black border border-green-400 flex justify-between items-center cursor-move hover:bg-green-900 hover:bg-opacity-20"
+                    className="p-3 bg-white/5 border border-gray-800 rounded-xl flex justify-between items-center cursor-move hover:bg-gray-800 transition-all"
                   >
                     <div className="flex-1">
-                      <div className="font-bold">{skill.name}</div>
+                      <div className="font-bold text-white">{skill.name}</div>
                       {skill.icon_key && (
-                        <div className="text-xs text-green-300">
+                        <div className="text-xs text-gray-400">
                           Icon: {skill.icon_key}
                         </div>
                       )}
-                      <div className="text-xs text-green-300">
+                      <div className="text-xs text-gray-400">
                         Order: {skill.sort_order}
                       </div>
                     </div>
                     <button
                       onClick={() => handleDeleteSkill(skill.id)}
                       disabled={isSaving}
-                      className="ml-3 px-3 py-1 bg-red-600 text-white text-sm hover:bg-red-700 disabled:opacity-50"
+                      className="bg-white/5 border border-gray-700/50 text-gray-400 rounded-xl hover:text-white hover:bg-white/10 backdrop-blur-sm px-4 py-2.5 text-sm transition-all disabled:opacity-50"
                     >
                       Delete
                     </button>
@@ -248,7 +244,7 @@ const SkillsPage = () => {
               </div>
             </div>
           ) : (
-            <div className="text-center text-green-300 p-6 border border-green-400">
+            <div className="text-center text-gray-400 p-6 glass-deep rounded-xl">
               No skills yet. Add one to get started.
             </div>
           )}

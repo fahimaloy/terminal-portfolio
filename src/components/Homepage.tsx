@@ -260,7 +260,7 @@ export default function Homepage() {
             )}
 
             <p className="text-base md:text-lg text-gray-400 text-center mb-10 max-w-lg">
-              {profile?.bio || ''}
+               {profile?.welcome_message || profile?.bio || ''}
             </p>
 
             <div className="flex flex-wrap justify-center gap-3 mb-8 w-full max-w-3xl">
