@@ -1,0 +1,119 @@
+# Kong gateway configuration for self-hosted Supabase
+# Routes incoming API requests to the correct internal services
+_format_version: "3.0"
+_transform: true
+
+services:
+  # ─── PostgREST (Database REST API) ─────────────────────────
+  - name: rest
+    url: http://host.docker.internal:3000
+    routes:
+      - name: rest-all
+        paths:
+          - /rest/v1/
+        strip_path: true
+        preserve_host: false
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+          headers:
+            - apikey
+            - authorization
+            - content-type
+            - prefer
+            - accept
+            - x-client-info
+          exposed_headers:
+            - content-range
+            - x-total-count
+          credentials: true
+          max_age: 3600
+
+  # ─── GoTrue (Authentication) ───────────────────────────────
+  - name: auth
+    url: http://supabase-auth:9999
+    routes:
+      - name: auth-all
+        paths:
+          - /auth/v1/
+        strip_path: true
+        preserve_host: false
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+            - OPTIONS
+          headers:
+            - apikey
+            - authorization
+            - content-type
+          credentials: true
+          max_age: 3600
+
+  # ─── Storage API ────────────────────────────────────────────
+  - name: storage
+    url: http://supabase-storage:5000
+    routes:
+      - name: storage-all
+        paths:
+          - /storage/v1/
+        strip_path: true
+        preserve_host: false
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+            - OPTIONS
+          headers:
+            - apikey
+            - authorization
+            - content-type
+            - x-upsert
+          credentials: true
+          max_age: 3600
+
+  # ─── Realtime (WebSocket) ────────────────────────────────────
+  - name: realtime
+    url: http://supabase-realtime:4000
+    routes:
+      - name: realtime-all
+        paths:
+          - /realtime/v1/
+        strip_path: true
+        preserve_host: false
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - OPTIONS
+          headers:
+            - apikey
+            - authorization
+            - content-type
+          credentials: true
+          max_age: 3600
