@@ -23,76 +23,31 @@
   --radius-2xl: 24px;
 }
 
-/* ── ANIMATED BACKGROUND MESH ── */
+/* ── ANIMATED BACKGROUND ── */
 .animated-bg-mesh {
   position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
 }
 .animated-bg-mesh::before {
-  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  content: ''; position: absolute; top: -30%; left: -30%; width: 160%; height: 160%;
   background:
-    radial-gradient(ellipse 80% 60% at 15% 20%, rgba(139,92,246,0.2) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 50% at 75% 15%, rgba(6,182,212,0.18) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 70% at 85% 75%, rgba(236,72,153,0.15) 0%, transparent 50%),
-    radial-gradient(ellipse 70% 40% at 10% 85%, rgba(16,185,129,0.12) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 60% at 50% 50%, rgba(139,92,246,0.08) 0%, transparent 50%);
-  animation: meshShift 25s ease-in-out infinite alternate; will-change: transform;
+    radial-gradient(ellipse 60% 50% at 30% 30%, rgba(255,255,255,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 70% 60%, rgba(200,180,255,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(180,200,255,0.05) 0%, transparent 50%);
+  animation: meshShift 20s ease-in-out infinite alternate;
 }
 .animated-bg-mesh::after {
-  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  content: ''; position: absolute; top: -20%; left: -20%; width: 140%; height: 140%;
   background:
-    radial-gradient(ellipse 60% 50% at 65% 40%, rgba(249,115,22,0.1) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 70% at 30% 60%, rgba(139,92,246,0.1) 0%, transparent 50%),
-    radial-gradient(ellipse 70% 50% at 55% 80%, rgba(6,182,212,0.08) 0%, transparent 50%);
-  animation: meshShift 30s ease-in-out infinite alternate-reverse; will-change: transform;
+    radial-gradient(ellipse 50% 50% at 60% 40%, rgba(255,255,255,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 40% 70%, rgba(220,210,255,0.05) 0%, transparent 50%);
+  animation: meshShift 25s ease-in-out infinite alternate-reverse;
 }
 
 @keyframes meshShift {
-  0% { transform: translate(0,0) rotate(0deg) scale(1); }
-  25% { transform: translate(3%,-4%) rotate(1deg) scale(1.03); }
-  50% { transform: translate(-4%,3%) rotate(-1.5deg) scale(0.97); }
-  75% { transform: translate(2%,4%) rotate(0.5deg) scale(1.02); }
-  100% { transform: translate(-3%,-2%) rotate(-0.5deg) scale(1); }
+  0% { transform: translate(0,0) scale(1); }
+  50% { transform: translate(2%,-3%) scale(1.02); }
+  100% { transform: translate(-2%,2%) scale(0.98); }
 }
-
-/* ── FLOATING GRADIENT ORBS ── */
-.gradient-orb {
-  position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; pointer-events: none; will-change: transform;
-}
-.gradient-orb-1 { width: 500px; height:500px; top: -10%; left: -5%; background: radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 70%); animation: orbFloat1 18s ease-in-out infinite; }
-.gradient-orb-2 { width: 400px; height:400px; top: 60%; right: -8%; background: radial-gradient(circle, rgba(6,182,212,0.3) 0%, transparent 70%); animation: orbFloat2 22s ease-in-out infinite; }
-.gradient-orb-3 { width: 350px; height:350px; bottom: -5%; left: 30%; background: radial-gradient(circle, rgba(236,72,153,0.25) 0%, transparent 70%); animation: orbFloat3 20s ease-in-out infinite; }
-.gradient-orb-4 { width: 300px; height:300px; top: 30%; left: 55%; background: radial-gradient(circle, rgba(16,185,129,0.2) 0%, transparent 70%); animation: orbFloat4 25s ease-in-out infinite; }
-
-@keyframes orbFloat1 { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(80px,50px) scale(1.15); } 66% { transform: translate(-30px,-70px) scale(0.85); } }
-@keyframes orbFloat2 { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(-60px,-40px) scale(1.1); } 66% { transform: translate(40px,60px) scale(0.9); } }
-@keyframes orbFloat3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-50px,-50px) scale(1.1); } }
-@keyframes orbFloat4 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(60px,-40px) scale(0.9); } }
-
-/* ── PARTICLE SYSTEM ── */
-.particle-container { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
-.particle { position: absolute; border-radius: 50%; pointer-events: none; }
-.particle-1 { width: 3px; height: 3px; background: rgba(255,255,255,0.7); box-shadow: 0 0 8px rgba(139,92,246,0.6), 0 0 16px rgba(139,92,246,0.3); top: 20%; left: 15%; animation: particleDrift1 16s linear infinite; }
-.particle-2 { width: 4px; height: 4px; background: rgba(6,182,212,0.8); box-shadow: 0 0 10px rgba(6,182,212,0.5), 0 0 20px rgba(6,182,212,0.2); top: 60%; left: 80%; animation: particleDrift2 22s linear infinite; }
-.particle-3 { width: 2px; height: 2px; background: rgba(236,72,153,0.7); box-shadow: 0 0 6px rgba(236,72,153,0.5), 0 0 12px rgba(236,72,153,0.25); top: 80%; left: 5%; animation: particleDrift3 20s linear infinite; }
-.particle-4 { width: 3px; height: 3px; background: rgba(16,185,129,0.7); box-shadow: 0 0 8px rgba(16,185,129,0.5), 0 0 16px rgba(16,185,129,0.2); top: 10%; left: 70%; animation: particleDrift4 19s linear infinite; }
-.particle-5 { width: 2px; height: 2px; background: rgba(249,115,22,0.8); box-shadow: 0 0 6px rgba(249,115,22,0.5), 0 0 12px rgba(249,115,22,0.2); top: 45%; left: 40%; animation: particleDrift5 24s linear infinite; }
-
-@keyframes particleDrift1 { 0% { transform: translate(0,0); } 25% { transform: translate(80vw,30vh); } 50% { transform: translate(60vw,80vh); } 75% { transform: translate(20vw,50vh); } 100% { transform: translate(0,0); } }
-@keyframes particleDrift2 { 0% { transform: translate(0,0); } 25% { transform: translate(-60vw,20vh); } 50% { transform: translate(-40vw,-60vh); } 75% { transform: translate(10vw,-30vh); } 100% { transform: translate(0,0); } }
-@keyframes particleDrift3 { 0% { transform: translate(0,0); } 33% { transform: translate(50vw,-40vh); } 66% { transform: translate(30vw,20vh); } 100% { transform: translate(0,0); } }
-@keyframes particleDrift4 { 0% { transform: translate(0,0); } 33% { transform: translate(-30vw,40vh); } 66% { transform: translate(20vw,-20vh); } 100% { transform: translate(0,0); } }
-@keyframes particleDrift5 { 0% { transform: translate(0,0); } 50% { transform: translate(-50vw,-30vh); } 100% { transform: translate(0,0); } }
-
-/* ── GRID ── */
-.animated-grid {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.03;
-  background-image: linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
-  background-size: 60px 60px; animation: gridScroll 30s linear infinite;
-}
-@keyframes gridScroll { 0% { transform: translate(0,0); } 100% { transform: translate(60px,60px); } }
-.noise-overlay { position: fixed; inset:0; z-index:1; pointer-events:none; opacity:0.025;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat; background-size: 256px 256px; }
 
 /* ── GLASS ── */
 .glass-panel { background: rgba(15,23,42,0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(71,85,105,0.3); }
@@ -164,3 +119,7 @@
 ::-webkit-scrollbar-thumb:hover { background: #8B5CF6; }
 
 html, body, body > div:first-child, div#__next, div#__next > div { height: 100%; overflow: auto; }
+
+/* ── SCROLLBAR NONE ── */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }

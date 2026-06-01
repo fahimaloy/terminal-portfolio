@@ -35,12 +35,12 @@ const SUGGESTIONS = [
 ];
 
 const premiumCardColors = [
-  { gradient: 'from-purple-600/20 to-violet-800/20', border: 'border-purple-500/30', text: 'text-purple-200', icon: 'text-purple-400', glow: 'hover:shadow-purple-500/20' },
-  { gradient: 'from-cyan-600/20 to-blue-800/20', border: 'border-cyan-500/30', text: 'text-cyan-200', icon: 'text-cyan-400', glow: 'hover:shadow-cyan-500/20' },
-  { gradient: 'from-pink-600/20 to-rose-800/20', border: 'border-pink-500/30', text: 'text-pink-200', icon: 'text-pink-400', glow: 'hover:shadow-pink-500/20' },
-  { gradient: 'from-lime-600/20 to-emerald-800/20', border: 'border-lime-500/30', text: 'text-lime-200', icon: 'text-lime-400', glow: 'hover:shadow-lime-500/20' },
-  { gradient: 'from-orange-600/20 to-amber-800/20', border: 'border-orange-500/30', text: 'text-orange-200', icon: 'text-orange-400', glow: 'hover:shadow-orange-500/20' },
-  { gradient: 'from-yellow-600/20 to-amber-800/20', border: 'border-yellow-500/30', text: 'text-yellow-200', icon: 'text-yellow-400', glow: 'hover:shadow-yellow-500/20' },
+  { bg: 'bg-purple-500/15', border: 'border-purple-400/25', hoverBorder: 'hover:border-purple-400/50', glow: 'hover:shadow-purple-500/20' },
+  { bg: 'bg-cyan-500/15', border: 'border-cyan-400/25', hoverBorder: 'hover:border-cyan-400/50', glow: 'hover:shadow-cyan-500/20' },
+  { bg: 'bg-pink-500/15', border: 'border-pink-400/25', hoverBorder: 'hover:border-pink-400/50', glow: 'hover:shadow-pink-500/20' },
+  { bg: 'bg-emerald-500/15', border: 'border-emerald-400/25', hoverBorder: 'hover:border-emerald-400/50', glow: 'hover:shadow-emerald-500/20' },
+  { bg: 'bg-orange-500/15', border: 'border-orange-400/25', hoverBorder: 'hover:border-orange-400/50', glow: 'hover:shadow-orange-500/20' },
+  { bg: 'bg-yellow-500/15', border: 'border-yellow-400/25', hoverBorder: 'hover:border-yellow-400/50', glow: 'hover:shadow-yellow-500/20' },
 ];
 
 const getColor = (index: number) => premiumCardColors[index % premiumCardColors.length];
@@ -177,21 +177,6 @@ export default function Homepage() {
 
       {/* Premium Animated Background */}
       <div className="animated-bg-mesh" aria-hidden="true" />
-      <div className="noise-overlay" aria-hidden="true" />
-      <div className="animated-grid" aria-hidden="true" />
-      <div className="gradient-orb gradient-orb-1" aria-hidden="true" />
-      <div className="gradient-orb gradient-orb-2" aria-hidden="true" />
-      <div className="gradient-orb gradient-orb-3" aria-hidden="true" />
-      <div className="gradient-orb gradient-orb-4" aria-hidden="true" />
-
-      {/* Particle Layer */}
-      <div className="particle-container" aria-hidden="true">
-        <div className="particle particle-1" />
-        <div className="particle particle-2" />
-        <div className="particle particle-3" />
-        <div className="particle particle-4" />
-        <div className="particle particle-5" />
-      </div>
 
       {/* Top Bar */}
       <nav
@@ -200,7 +185,7 @@ export default function Homepage() {
       >
         <div className="flex items-center gap-3">
           <div className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-cyan-400 to-pink-400">
-            {profile?.full_name ? `${profile.full_name.split(' ')[0]}'s Portfolio` : 'AI Assistant'}
+            {profile?.full_name ? `${profile.full_name.split(' ')[0]}'s Portfolio` : ''}
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -270,9 +255,9 @@ export default function Homepage() {
                   <button
                     key={idx}
                     onClick={() => handleSend(suggestion.label)}
-                    className={`premium-card flex items-center gap-3 px-5 py-3.5 bg-gradient-to-br ${colors.gradient} border ${colors.border} ${colors.text} rounded-xl text-sm font-medium backdrop-blur-sm hover:border-opacity-60 ${colors.glow} group`}
+                    className={`premium-card flex items-center gap-3 px-5 py-3.5 ${colors.bg} border ${colors.border} ${colors.hoverBorder} text-white rounded-xl text-sm font-medium font-sans backdrop-blur-sm ${colors.glow} group`}
                   >
-                    <span className={`${colors.icon} group-hover:scale-110 transition-transform`}>{suggestion.icon}</span>
+                    <span className="text-white/80 group-hover:scale-110 transition-transform">{suggestion.icon}</span>
                     {suggestion.label}
                   </button>
                 );
@@ -333,21 +318,21 @@ export default function Homepage() {
                   <button
                     key={project.id}
                     onClick={() => { setDetailProject(project); setShowProjectDetail(true); }}
-                    className={`premium-card flex flex-col items-center p-3 rounded-xl border ${colors.border} bg-gradient-to-br ${colors.gradient} w-[140px]`}
+                    className={`premium-card flex flex-col items-center p-3 rounded-xl border ${colors.border} ${colors.bg} w-[140px]`}
                   >
                     <div className="w-full h-16 rounded-lg overflow-hidden mb-2 bg-black/30">
                       {project.thumbnail_url ? (
                         <img src={project.thumbnail_url} alt={project.title} className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <FiStar className={`w-5 h-5 ${colors.icon}`} />
+                          <FiStar className="w-5 h-5 text-white/80" />
                         </div>
                       )}
                     </div>
-                    <span className={`text-[11px] font-semibold text-center leading-tight ${colors.text}`}>{project.short_title || project.title}</span>
+                    <span className="text-[11px] font-semibold text-center leading-tight text-white">{project.short_title || project.title}</span>
                     <div className="flex flex-wrap gap-0.5 mt-1.5 justify-center">
                       {project.languages?.slice(0, 2).map((lang, li) => (
-                        <span key={li} className={`text-[7px] px-1.5 py-0.5 rounded-full bg-white/5 border ${colors.border} ${colors.text}`}>{lang}</span>
+                        <span key={li} className="text-[7px] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/80">{lang}</span>
                       ))}
                     </div>
                   </button>
@@ -385,7 +370,7 @@ export default function Homepage() {
                       return (
                         <span
                           key={li}
-                          className={`text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-br ${lc.gradient} ${lc.text} border ${lc.border}`}
+                          className={`text-[10px] px-2 py-0.5 rounded-full ${lc.bg} text-white/90 border ${lc.border}`}
                         >
                           {lang}
                         </span>

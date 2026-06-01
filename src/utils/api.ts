@@ -214,6 +214,16 @@ const adminContentAction = async (
     });
     return Boolean(data?.ok);
   } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const respData = error.response?.data as Record<string, unknown> | undefined;
+      console.error(
+        `[adminContentAction] "${action}" failed (${error.response?.status}):`,
+        (respData && respData.message) || error.message,
+        respData,
+      );
+    } else {
+      console.error(`[adminContentAction] "${action}" failed:`, error);
+    }
     return false;
   }
 };

@@ -7,9 +7,9 @@
     "email": "fahimaloy@gmail.com"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "dotenv -- next dev",
     "build": "next build",
-    "start": "next start --port=3777",
+    "start": "dotenv -- next start",
     "lint": "next lint",
     "prepare": "husky install",
     "heroku-postbuild": "npm run build"
@@ -31,6 +31,7 @@
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
     "autoprefixer": "^10.4.7",
+    "dotenv-cli": "^11.0.0",
     "eslint": "8.15.0",
     "eslint-config-next": "^12.1.6",
     "eslint-plugin-next": "^0.0.0",

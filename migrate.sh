@@ -57,11 +57,11 @@ if [ -f "$SCRIPT_DIR/.env" ]; then
   set +a
 fi
 
-DB_HOST="${CUSTOM_HOST:-localhost}"
+DB_HOST="${CUSTOM_HOST:-${POSTGRES_HOST:-localhost}}"
 DB_PORT="${CUSTOM_PORT:-${POSTGRES_PORT:-5432}}"
-DB_NAME="${CUSTOM_DB:-${POSTGRES_DB:-supabase}}"
-DB_USER="${CUSTOM_USER:-postgres}"
-DB_PASS="${CUSTOM_PASS:-${POSTGRES_PASSWORD:-supabase_db_password}}"
+DB_NAME="${CUSTOM_DB:-${POSTGRES_DB:-portfolio}}"
+DB_USER="${CUSTOM_USER:-${POSTGRES_USER:-fahimaloy}}"
+DB_PASS="${CUSTOM_PASS:-${POSTGRES_PASSWORD:-dibona}}"
 
 SCHEMA_FILE="$SCRIPT_DIR/install/supabase/schema.sql"
 

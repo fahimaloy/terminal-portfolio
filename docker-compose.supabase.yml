@@ -1,37 +1,12 @@
-# Self-hosted Supabase for portfolio project
-# Supports both internal Docker PostgreSQL and external PostgreSQL
-# 
-# To use external PostgreSQL:
-#   Set USE_EXTERNAL_PG=true in .env
-#   Configure POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
+# Self-hosted Supabase stack (external PostgreSQL required)
 #
-# To use internal PostgreSQL (default):
-#   Just run docker-compose up -d (no external config needed)
-
-version: "3.8"
+# Prerequisites:
+#   - PostgreSQL running on the host with schema applied (run ./setup-db.sh)
+#   - Credentials configured in .env
+#
+# Usage: docker-compose -f docker-compose.supabase.yml up -d
 
 services:
-  # ─── Database ───────────────────────────────────────────────
-  supabase-db:
-    image: supabase/postgres:15.6.1.021
-    container_name: portfolio-supabase-db
-    restart: unless-stopped
-    profiles:
-      - internal-db
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-supabase_db_password}
-      POSTGRES_DB: ${POSTGRES_DB:-supabase}
-    volumes:
-      - portfolio-db-data:/var/lib/postgresql/data
-      - ./install/supabase/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # ─── API Gateway (Kong) ─────────────────────────────────────
   supabase-kong:
     image: kong:3.8.0
@@ -49,8 +24,6 @@ services:
     volumes:
       - ./docker/kong.yml:/etc/kong/kong.yml:ro
     depends_on:
-      supabase-db:
-        condition: service_healthy
       supabase-rest:
         condition: service_started
       supabase-auth:
@@ -65,13 +38,15 @@ services:
     image: postgrest/postgrest:v12.2.3
     container_name: portfolio-supabase-rest
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      PGRST_DB_URI: ${PGRST_DB_URI:-postgres://authenticator:${POSTGRES_PASSWORD:-supabase_db_password}@${DB_HOST:-supabase-db}:5432/${POSTGRES_DB:-supabase}}
+      PGRST_DB_URI: postgres://${POSTGRES_USER:-fahimaloy}:${POSTGRES_PASSWORD:-dibona}@host.docker.internal:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-portfolio}
       PGRST_DB_SCHEMA: public,storage
       PGRST_DB_ANON_ROLE: anon
       PGRST_JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
       PGRST_DB_USE_LEGACY_GUCS: "false"
-      PGRST_OPENAPI_SERVER_PROXY_URI: ${PUBLIC_REST_URL:-http://localhost:8000}
+      PGRST_OPENAPI_SERVER_PROXY_URI: ${PUBLIC_REST_URL:-http://localhost:${KONG_HTTP_PORT:-3838}}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/status"]
       interval: 15s
@@ -83,13 +58,15 @@ services:
     image: supabase/gotrue:v2.167.0
     container_name: portfolio-supabase-auth
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
-      GOTRUE_SITE_URL: ${SITE_URL:-http://localhost:3000}
+      GOTRUE_SITE_URL: ${SITE_URL:-http://localhost:${FRONTEND_PORT:-3355}}
       GOTRUE_DB_DRIVER: postgres
-      API_EXTERNAL_URL: ${PUBLIC_AUTH_URL:-http://localhost:8000/auth/v1}
-      GOTRUE_DB_DATABASE_URL: ${GOTRUE_DB_URL:-postgres://authenticator:${POSTGRES_PASSWORD:-supabase_db_password}@${DB_HOST:-supabase-db}:5432/${POSTGRES_DB:-supabase}}
+      API_EXTERNAL_URL: ${PUBLIC_AUTH_URL:-http://localhost:${KONG_HTTP_PORT:-3838}/auth/v1}
+      GOTRUE_DB_DATABASE_URL: postgres://${POSTGRES_USER:-fahimaloy}:${POSTGRES_PASSWORD:-dibona}@host.docker.internal:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-portfolio}
       GOTRUE_JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
       GOTRUE_JWT_EXP: 86400
       GOTRUE_JWT_AUD: authenticated
@@ -136,12 +113,14 @@ services:
     image: supabase/realtime:v2.33.51
     container_name: portfolio-supabase-realtime
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      DB_HOST: ${DB_HOST:-supabase-db}
-      DB_PORT: 5432
-      DB_NAME: ${POSTGRES_DB:-supabase}
-      DB_USER: ${REALTIME_DB_USER:-authenticator}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-supabase_db_password}
+      DB_HOST: host.docker.internal
+      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_NAME: ${POSTGRES_DB:-portfolio}
+      DB_USER: ${POSTGRES_USER:-fahimaloy}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-dibona}
       DB_SSL: "false"
       PORT: 4000
       JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
@@ -162,22 +141,20 @@ services:
     ports:
       - "8025:8025"
 
-  # ─── PostgreSQL Authenticator setup ─────────────────────────
+  # ─── PostgreSQL Meta ────────────────────────────────────────
   supabase-meta:
     image: supabase/postgres-meta:v0.84.2
     container_name: portfolio-supabase-meta
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       PG_META_PORT: 8080
-      PG_META_DB_HOST: ${DB_HOST:-supabase-db}
-      PG_META_DB_PORT: 5432
-      PG_META_DB_NAME: ${POSTGRES_DB:-supabase}
-      PG_META_DB_USER: postgres
-      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD:-supabase_db_password}
-    depends_on:
-      supabase-db:
-        condition: service_healthy
+      PG_META_DB_HOST: host.docker.internal
+      PG_META_DB_PORT: ${POSTGRES_PORT:-5432}
+      PG_META_DB_NAME: ${POSTGRES_DB:-portfolio}
+      PG_META_DB_USER: ${POSTGRES_USER:-fahimaloy}
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD:-dibona}
 
 volumes:
-  portfolio-db-data:
   portfolio-storage-data:

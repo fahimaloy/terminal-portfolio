@@ -48,6 +48,14 @@ export default async function handler(
   const body = (req.body || {}) as Body;
   const action = body.action;
 
+  if (!action) {
+    console.error('[admin/content] Missing action in request body:', body);
+    res.status(400).json({ ok: false, message: 'Missing "action" field in request body' });
+    return;
+  }
+
+  console.log('[admin/content] action:', action, 'id:', body.id);
+
   try {
     if (action === 'upsertProfile') {
       const { error } = await supabaseAdmin
@@ -223,10 +231,22 @@ export default async function handler(
       return;
     }
 
-    res.status(400).json({ ok: false, message: 'Unknown action' });
+    res.status(400).json({ ok: false, message: `Unknown action: "${action}"` });
   } catch (error) {
+    console.error(`[admin/content] "${action}" failed:`, error);
+    // Extract message from Error, Supabase PostgrestError, or plain object
+    const errObj = error as Record<string, unknown>;
     const message =
-      error instanceof Error ? error.message : 'Failed to update admin content';
-    res.status(400).json({ ok: false, message });
+      error instanceof Error
+        ? error.message
+        : (errObj && typeof errObj.message === 'string' ? errObj.message : 'Unknown error');
+    const code = errObj && typeof errObj.code === 'string' ? errObj.code : undefined;
+    const details = errObj && typeof errObj.details === 'string' ? errObj.details : undefined;
+    res.status(500).json({
+      ok: false,
+      message: `Action "${action}" failed: ${message}`,
+      ...(code && { code }),
+      ...(details && { details }),
+    });
   }
 }
