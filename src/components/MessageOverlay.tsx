@@ -7,12 +7,12 @@ import ProjectMatchForm from './ProjectMatchForm';
 import { PortfolioProject } from '../utils/api';
 
 const premiumCardColors = [
-  { gradient: 'from-purple-600/20 to-violet-800/20', border: 'border-purple-500/30', text: 'text-purple-200', icon: 'text-purple-400', glow: 'hover:shadow-purple-500/20' },
-  { gradient: 'from-cyan-600/20 to-blue-800/20', border: 'border-cyan-500/30', text: 'text-cyan-200', icon: 'text-cyan-400', glow: 'hover:shadow-cyan-500/20' },
-  { gradient: 'from-pink-600/20 to-rose-800/20', border: 'border-pink-500/30', text: 'text-pink-200', icon: 'text-pink-400', glow: 'hover:shadow-pink-500/20' },
-  { gradient: 'from-lime-600/20 to-emerald-800/20', border: 'border-lime-500/30', text: 'text-lime-200', icon: 'text-lime-400', glow: 'hover:shadow-lime-500/20' },
-  { gradient: 'from-orange-600/20 to-amber-800/20', border: 'border-orange-500/30', text: 'text-orange-200', icon: 'text-orange-400', glow: 'hover:shadow-orange-500/20' },
-  { gradient: 'from-yellow-600/20 to-amber-800/20', border: 'border-yellow-500/30', text: 'text-yellow-200', icon: 'text-yellow-400', glow: 'hover:shadow-yellow-500/20' },
+  { bg: 'bg-purple-500/15', border: 'border-purple-400/25', hoverBorder: 'hover:border-purple-400/50', glow: 'hover:shadow-purple-500/20' },
+  { bg: 'bg-cyan-500/15', border: 'border-cyan-400/25', hoverBorder: 'hover:border-cyan-400/50', glow: 'hover:shadow-cyan-500/20' },
+  { bg: 'bg-pink-500/15', border: 'border-pink-400/25', hoverBorder: 'hover:border-pink-400/50', glow: 'hover:shadow-pink-500/20' },
+  { bg: 'bg-emerald-500/15', border: 'border-emerald-400/25', hoverBorder: 'hover:border-emerald-400/50', glow: 'hover:shadow-emerald-500/20' },
+  { bg: 'bg-orange-500/15', border: 'border-orange-400/25', hoverBorder: 'hover:border-orange-400/50', glow: 'hover:shadow-orange-500/20' },
+  { bg: 'bg-yellow-500/15', border: 'border-yellow-400/25', hoverBorder: 'hover:border-yellow-400/50', glow: 'hover:shadow-yellow-500/20' },
 ];
 
 const getColor = (idx: number) => premiumCardColors[idx % premiumCardColors.length];
@@ -148,18 +148,18 @@ export default function MessageOverlay({
                 {/* Feature bar INSIDE input area */}
                 <AdvancedFeaturesBar activeMode={mode} onModeChange={handleModeChange} />
 
-                {/* Suggestions INSIDE input area */}
-                {!inputValue.trim() && suggestions && suggestions.length > 0 && (
-                  <div className="flex flex-wrap gap-2 px-4 pb-2">
+                {/* Suggestions row - always visible */}
+                {suggestions && suggestions.length > 0 && (
+                  <div className="flex gap-2 px-4 py-2 overflow-x-auto scrollbar-none">
                     {suggestions.map((suggestion, idx) => {
                       const colors = getColor(idx);
                       return (
                         <button
                           key={idx}
                           onClick={() => { onSuggestionClick?.(suggestion.label); onClose(); }}
-                          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border ${colors.border} bg-gradient-to-br ${colors.gradient} ${colors.text} text-xs font-medium transition-all duration-300 hover:scale-[1.03] hover:border-opacity-60 ${colors.glow}`}
+                          className={`flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${colors.border} ${colors.bg} ${colors.hoverBorder} text-white text-[11px] font-medium font-sans transition-all duration-300 hover:scale-[1.03] ${colors.glow}`}
                         >
-                          <span className={colors.icon}>{suggestion.icon}</span>
+                          <span className="text-white/70 text-xs">{suggestion.icon}</span>
                           {suggestion.label}
                         </button>
                       );

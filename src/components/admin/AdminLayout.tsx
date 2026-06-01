@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { logout, clearAdminSession } from '../../utils/adminPageGuard';
+import { getMeetings } from '../../utils/api';
 
 type AdminLayoutProps = {
   children: React.ReactNode;
@@ -147,15 +148,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     // Fetch unread meetings count
     const fetchMeetings = async () => {
       try {
-        const response = await fetch('/api/admin/content?type=meetings');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.data) {
-            const pending = data.data.filter(
-              (m: any) => m.status === 'pending',
-            ).length;
-            setUnreadMeetings(pending);
-          }
+        const data = await getMeetings();
+        if (data) {
+          const pending = data.filter(
+            (m: any) => m.status === 'pending',
+          ).length;
+          setUnreadMeetings(pending);
         }
       } catch {
         // Ignore errors

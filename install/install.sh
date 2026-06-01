@@ -49,7 +49,7 @@ You can start developing it with:
 
 cd LiveTerm && yarn dev
 
-This will open a local port at http://localhost:3000, 
+This will open a local port at http://localhost:${FRONTEND_PORT:-3355}, 
 where you can preview your website. To apply changes, edit:
 
 config.json
