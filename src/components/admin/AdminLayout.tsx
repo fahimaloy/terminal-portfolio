@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { motion, AnimatePresence } from 'framer-motion';
 import { logout, clearAdminSession } from '../../utils/adminPageGuard';
 import { getMeetings } from '../../utils/api';
+import { GlitchText, HudPanel, NeonButton } from '../ui';
+import { motionTokens } from '../ui/motionConfig';
 
 type AdminLayoutProps = {
   children: React.ReactNode;
@@ -39,77 +42,61 @@ const LogoutConfirmation: React.FC<{
       aria-modal="true"
       aria-labelledby="logout-title"
     >
-      {/* Backdrop */}
-      <div
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: motionTokens.dur.tap, ease: motionTokens.ease }}
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={!isLoggingOut ? onClose : undefined}
       />
 
-      {/* Modal */}
-      <div className="relative bg-[#0F172A] border border-gray-700 rounded-xl p-6 max-w-sm w-full shadow-2xl animate-fade-in">
-        <div className="text-center">
-          {/* Icon */}
-          <div className="text-5xl mb-4">🚪</div>
-
-          {/* Title */}
-          <h2
-            id="logout-title"
-            className="text-xl font-bold text-purple-400 mb-2"
-          >
-            Confirm Logout
-          </h2>
-
-          {/* Message */}
-          <p className="text-gray-400 text-sm mb-6">
-            Are you sure you want to log out,{' '}
-            <span className="text-purple-400 font-bold">{username}</span>?
-          </p>
-
-          {/* Actions */}
-          <div className="flex gap-3 justify-center">
-            <button
-              onClick={onClose}
-              disabled={isLoggingOut}
-              className="px-4 py-2 border border-gray-600 text-gray-400 hover:bg-white/10 rounded-xl disabled:opacity-50 transition-colors"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: motionTokens.dur.enter, ease: motionTokens.ease }}
+        className="relative max-w-sm w-full"
+      >
+        <HudPanel
+          accent="red"
+          notch="md"
+          title="// CONFIRM_LOGOUT"
+          className="p-6"
+        >
+          <div className="text-center space-y-4">
+            <div className="text-5xl">🚪</div>
+            <h2
+              id="logout-title"
+              className="font-display tracking-[2px] text-xl text-neon-magenta text-shadow-neon-magenta"
             >
-              Cancel
-            </button>
-            <button
-              onClick={onConfirm}
-              disabled={isLoggingOut}
-              className="px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white rounded-xl disabled:opacity-50 transition-all flex items-center gap-2"
-            >
-              {isLoggingOut ? (
-                <>
-                  <span className="animate-spin">⟳</span>
-                  <span>Logging out...</span>
-                </>
-              ) : (
-                <>
-                  <span>🚪</span>
-                  <span>Logout</span>
-                </>
-              )}
-            </button>
+              CONFIRM LOGOUT
+            </h2>
+            <p className="text-text-muted text-sm font-body">
+              Are you sure you want to log out,{' '}
+              <span className="text-neon-yellow font-display">{username}</span>?
+            </p>
+            <div className="flex gap-3 justify-center pt-2">
+              <NeonButton
+                variant="ghost"
+                accent="cyan"
+                onClick={onClose}
+                disabled={isLoggingOut}
+              >
+                CANCEL
+              </NeonButton>
+              <NeonButton
+                accent="red"
+                onClick={onConfirm}
+                disabled={isLoggingOut}
+                loading={isLoggingOut}
+              >
+                {isLoggingOut ? 'LOGGING OUT…' : 'LOGOUT'}
+              </NeonButton>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <style jsx>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.2s ease-out forwards;
-        }
-      `}</style>
+        </HudPanel>
+      </motion.div>
     </div>
   );
 };
@@ -125,7 +112,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [unreadMeetings, setUnreadMeetings] = useState(0);
 
-  // Keyboard shortcut for logout (Ctrl+Shift+L)
   useEffect(() => {
     const handleKeyboard = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.key === 'L') {
@@ -134,7 +120,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           setShowLogoutConfirm(true);
         }
       }
-      // Escape to close modal
       if (e.key === 'Escape' && showLogoutConfirm) {
         setShowLogoutConfirm(false);
       }
@@ -145,7 +130,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   }, [isLoggingOut, showLogoutConfirm]);
 
   useEffect(() => {
-    // Fetch unread meetings count
     const fetchMeetings = async () => {
       try {
         const data = await getMeetings();
@@ -191,50 +175,60 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white font-mono">
+    <div className="min-h-screen bg-bg-void text-text-primary font-body">
       {/* Header */}
-      <header className="border-b border-gray-800 sticky top-0 bg-[#0a0a0f]/95 backdrop-blur-lg z-40">
+      <header
+        className="sticky top-0 z-40 bg-bg-void/95 backdrop-blur-md"
+        style={{ borderBottom: '1px solid rgba(0,240,255,0.2)' }}
+      >
+        <div
+          aria-hidden="true"
+          className="absolute left-0 top-0 bottom-0 w-[2px] bg-neon-cyan shadow-[0_0_12px_var(--glow-cyan)]"
+        />
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">⚡</span>
-              <h1 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-cyan-400">Admin Dashboard</h1>
+              <GlitchText
+                as="h1"
+                accent="cyan"
+                className="text-lg md:text-xl"
+              >
+                {'// ADMIN_PANEL'}
+              </GlitchText>
             </div>
 
-            <div className="flex items-center gap-4">
-              {/* User info */}
+            <div className="flex items-center gap-3">
               <div className="hidden md:flex items-center gap-2">
-                <span className="text-sm text-gray-400">@</span>
-                <span className="text-sm font-bold text-white">
-                  {user?.username}
+                <span className="text-[10px] font-display tracking-[2px] text-text-muted">
+                  @ {user?.username || 'GUEST'}
+                </span>
+                <span
+                  className="inline-flex items-center px-2 py-0.5 text-[10px] font-display tracking-[2px] uppercase bg-neon-yellow/10 border border-neon-yellow/40 text-neon-yellow"
+                  style={{
+                    clipPath:
+                      'polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px)',
+                  }}
+                >
+                  ADMIN
                 </span>
               </div>
 
-              {/* Logout button */}
-              <button
+              <NeonButton
+                variant="ghost"
+                accent="magenta"
                 onClick={handleLogoutClick}
                 disabled={isLoggingOut}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white text-sm font-medium rounded-xl transition-all shadow-lg disabled:opacity-50"
+                loading={isLoggingOut}
                 aria-label="Logout"
                 title="Logout (Ctrl+Shift+L)"
               >
-                {isLoggingOut ? (
-                  <>
-                    <span className="animate-spin mr-1">⟳</span>
-                    <span className="hidden sm:inline">Logging out...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>🚪</span>
-                    <span className="hidden sm:inline">Logout</span>
-                  </>
-                )}
-              </button>
+                {isLoggingOut ? 'LOGGING OUT…' : 'LOGOUT'}
+              </NeonButton>
 
-              {/* Mobile menu button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 border border-gray-600 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl transition-all"
+                className="md:hidden p-2 bg-bg-smoke text-neon-cyan transition-all"
+                style={{ clipPath: 'var(--clip-notch-sm)' }}
                 aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={mobileMenuOpen}
               >
@@ -252,17 +246,21 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               <Link key={item.path} href={item.path}>
                 <a
                   onClick={handleNavClick}
-                  className={`px-4 py-2 rounded-xl transition-all duration-200 flex items-center gap-2 backdrop-blur-sm ${
+                  className={`px-3 py-2 font-display tracking-[1.5px] uppercase text-[10px] transition-all duration-200 flex items-center gap-2 ${
                     isActive(item.path)
-                      ? 'bg-purple-500/15 text-purple-300 border border-purple-500/30 shadow-lg shadow-purple-500/5'
-                      : 'text-gray-400 border border-transparent hover:text-white hover:bg-white/5'
+                      ? 'bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/40 hud-glow-cyan'
+                      : 'bg-transparent text-text-secondary border border-white/10 hover:border-white/30 hover:text-text-primary'
                   }`}
+                  style={{
+                    clipPath:
+                      'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',
+                  }}
                 >
                   <span>{item.icon}</span>
                   <span>{item.label}</span>
                   {item.path === '/sudosuperuser-ostaad/meetings' &&
                     unreadMeetings > 0 && (
-                      <span className="bg-purple-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-neon-magenta text-black font-display text-[9px]">
                         {unreadMeetings}
                       </span>
                     )}
@@ -273,51 +271,66 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         </div>
 
         {/* Mobile Navigation */}
-        <div
-          className={`md:hidden border-t border-gray-800 overflow-hidden transition-all duration-300 ${
-            mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}
-          aria-hidden={!mobileMenuOpen}
-        >
-          <nav
-            className="flex flex-col p-4 gap-2 text-sm"
-            aria-label="Mobile navigation"
-          >
-            {navItems.map((item) => (
-              <Link key={item.path} href={item.path}>
-                <a
-                  onClick={handleNavClick}
-                  className={`px-4 py-3 rounded-xl transition-all flex items-center justify-between ${
-                    isActive(item.path)
-                      ? 'bg-purple-500/15 text-purple-300 border border-purple-500/30'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
-                  }`}
-                >
-                  <span className="flex items-center gap-3">
-                    <span className="text-lg">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </span>
-                  {item.path === '/sudosuperuser-ostaad/meetings' &&
-                    unreadMeetings > 0 && (
-                      <span className="bg-purple-500 text-white text-xs px-2 py-1 rounded-full">
-                        {unreadMeetings}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ x: '-100%', opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: '-100%', opacity: 0 }}
+              transition={{
+                duration: motionTokens.dur.enter,
+                ease: motionTokens.ease,
+              }}
+              className="md:hidden border-t border-white/5 bg-bg-void"
+              aria-hidden={!mobileMenuOpen}
+            >
+              <nav
+                className="flex flex-col p-4 gap-2 text-sm"
+                aria-label="Mobile navigation"
+              >
+                {navItems.map((item) => (
+                  <Link key={item.path} href={item.path}>
+                    <a
+                      onClick={handleNavClick}
+                      className={`px-4 py-3 font-display tracking-[1.5px] uppercase text-[10px] transition-all flex items-center justify-between ${
+                        isActive(item.path)
+                          ? 'bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/40'
+                          : 'text-text-secondary border border-white/10 hover:border-white/30'
+                      }`}
+                      style={{
+                        clipPath:
+                          'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',
+                      }}
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="text-lg">{item.icon}</span>
+                        <span>{item.label}</span>
                       </span>
-                    )}
-                </a>
-              </Link>
-            ))}
-          </nav>
-        </div>
+                      {item.path === '/sudosuperuser-ostaad/meetings' &&
+                        unreadMeetings > 0 && (
+                          <span className="bg-neon-magenta text-black text-xs font-display px-2 py-0.5">
+                            {unreadMeetings}
+                          </span>
+                        )}
+                    </a>
+                  </Link>
+                ))}
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6 md:py-8">
         {isLoading ? (
           <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-center">
-              <div className="text-4xl mb-4 animate-pulse">⚡</div>
-              <div className="text-gray-400">Loading...</div>
-            </div>
+            <HudPanel accent="cyan" notch="md" className="p-8 text-center space-y-3">
+              <div className="w-8 h-8 border-4 border-neon-cyan/20 border-t-neon-cyan rounded-full animate-spin mx-auto" />
+              <div className="font-display tracking-[2px] text-neon-cyan">
+                LOADING…
+              </div>
+            </HudPanel>
           </div>
         ) : (
           children
@@ -325,24 +338,26 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 mt-auto">
+      <footer
+        className="mt-auto"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+      >
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-gray-500">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-2 text-[10px] font-display tracking-[2px] uppercase text-text-muted">
             <div className="flex items-center gap-2">
-              <span className="text-lime-400">●</span>
-              <span>System Online</span>
+              <span className="w-2 h-2 rounded-full bg-neon-green animate-pulse-dot" />
+              <span>SYSTEM ONLINE</span>
             </div>
             <div>
-              <code className="text-purple-400">$ /sudosuperuser-ostaad</code>
+              <code className="text-neon-magenta">$ /sudosuperuser-ostaad</code>
             </div>
             <div>
-              v2.0.0 | {user?.username || 'Guest'}
+              v2.0.0 | {user?.username || 'GUEST'}
             </div>
           </div>
         </div>
       </footer>
 
-      {/* Logout Confirmation Modal */}
       <LogoutConfirmation
         isOpen={showLogoutConfirm}
         onClose={handleLogoutCancel}
@@ -356,24 +371,24 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
 // Loading skeleton component
 export const AdminLayoutSkeleton: React.FC = () => (
-  <div className="min-h-screen bg-[#0a0a0f] text-white font-mono">
-    <header className="border-b border-gray-800">
+  <div className="min-h-screen bg-bg-void text-text-primary font-body">
+    <header
+      className="sticky top-0 z-40 bg-bg-void/95 backdrop-blur-md"
+      style={{ borderBottom: '1px solid rgba(0,240,255,0.2)' }}
+    >
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          <div className="h-8 w-48 bg-gray-800 animate-pulse rounded"></div>
-          <div className="h-8 w-24 bg-gray-800 animate-pulse rounded"></div>
+          <div className="h-8 w-48 bg-bg-smoke animate-pulse" />
+          <div className="h-8 w-24 bg-bg-smoke animate-pulse" />
         </div>
       </div>
     </header>
     <main className="max-w-7xl mx-auto px-4 py-8">
       <div className="space-y-4">
-        <div className="h-8 w-64 bg-gray-800 animate-pulse rounded"></div>
+        <div className="h-8 w-64 bg-bg-smoke animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-32 bg-gray-800 animate-pulse rounded border border-gray-800"
-            ></div>
+            <div key={i} className="h-32 bg-bg-smoke animate-pulse" />
           ))}
         </div>
       </div>
