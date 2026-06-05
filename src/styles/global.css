@@ -2,6 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './tokens.css';
+
+/* Cyberpunk reusable utilities */
+@layer utilities {
+  .text-shadow-neon-yellow {
+    text-shadow: 0 0 8px var(--neon-yellow), 0 0 16px var(--glow-yellow);
+  }
+  .text-shadow-neon-magenta {
+    text-shadow: 0 0 8px var(--neon-magenta), 0 0 16px var(--glow-magenta);
+  }
+  .text-shadow-neon-cyan {
+    text-shadow: 0 0 8px var(--neon-cyan), 0 0 16px var(--glow-cyan);
+  }
+  .clip-notch-sm {
+    clip-path: polygon(
+      var(--clip-notch-sm) 0,
+      100% 0,
+      100% calc(100% - var(--clip-notch-sm)),
+      calc(100% - var(--clip-notch-sm)) 100%,
+      0 100%,
+      0 var(--clip-notch-sm)
+    );
+  }
+  .clip-notch-md {
+    clip-path: polygon(
+      var(--clip-notch-md) 0,
+      100% 0,
+      100% calc(100% - var(--clip-notch-md)),
+      calc(100% - var(--clip-notch-md)) 100%,
+      0 100%,
+      0 var(--clip-notch-md)
+    );
+  }
+  .clip-notch-lg {
+    clip-path: polygon(
+      var(--clip-notch-lg) 0,
+      100% 0,
+      100% calc(100% - var(--clip-notch-lg)),
+      calc(100% - var(--clip-notch-lg)) 100%,
+      0 100%,
+      0 var(--clip-notch-lg)
+    );
+  }
+  .hud-glow-yellow { box-shadow: 0 0 18px var(--glow-yellow), inset 0 0 14px rgba(255, 170, 0, 0.08); }
+  .hud-glow-magenta { box-shadow: 0 0 18px var(--glow-magenta), inset 0 0 14px rgba(255, 0, 170, 0.08); }
+  .hud-glow-cyan { box-shadow: 0 0 18px var(--glow-cyan), inset 0 0 14px rgba(0, 240, 255, 0.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
+  }
+}
+
 @font-face { font-family: 'Hack'; src: url(/assets/fonts/Hack-NF.ttf); display: swap; }
 @font-face { font-family: 'JetBrainsMono'; src: url(/assets/fonts/JetBrainsMono-Regular.ttf); display: swap; }
 
