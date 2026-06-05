@@ -1,3 +1,4 @@
+// src/components/ContactForm.tsx
 import React, { useState } from 'react';
 import axios from 'axios';
 import {
@@ -9,14 +10,12 @@ import {
   FiMessageSquare,
   FiBookmark,
 } from 'react-icons/fi';
+import { HudPanel, NeonButton } from './ui';
 
-type ContactFormProps = {
-  onBackToChat: () => void;
-};
-
+type Props = { onBackToChat: () => void };
 type FormState = 'filling' | 'submitting' | 'submitted' | 'error';
 
-export default function ContactForm({ onBackToChat }: ContactFormProps) {
+export default function ContactForm({ onBackToChat }: Props) {
   const [formState, setFormState] = useState<FormState>('filling');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -27,41 +26,19 @@ export default function ContactForm({ onBackToChat }: ContactFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
-
-    // Validation
-    if (!name.trim()) {
-      setErrorMsg('Name is required.');
-      return;
-    }
-    if (!email.trim()) {
-      setErrorMsg('Email is required.');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setErrorMsg('Invalid email format.');
-      return;
-    }
-    if (!message.trim()) {
-      setErrorMsg('Message is required.');
-      return;
-    }
-    if (message.trim().length < 10) {
-      setErrorMsg('Message must be at least 10 characters.');
-      return;
-    }
-    if (message.trim().length > 5000) {
-      setErrorMsg('Message too long (max 5000 chars).');
-      return;
-    }
-    if (name.trim().length > 100) {
-      setErrorMsg('Name too long (max 100 chars).');
-      return;
-    }
-    if (subject.trim().length > 200) {
-      setErrorMsg('Subject too long (max 200 chars).');
-      return;
-    }
-
+    if (!name.trim()) return setErrorMsg('Name is required.');
+    if (!email.trim()) return setErrorMsg('Email is required.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return setErrorMsg('Invalid email format.');
+    if (!message.trim()) return setErrorMsg('Message is required.');
+    if (message.trim().length < 10)
+      return setErrorMsg('Message must be at least 10 characters.');
+    if (message.trim().length > 5000)
+      return setErrorMsg('Message too long (max 5000 chars).');
+    if (name.trim().length > 100)
+      return setErrorMsg('Name too long (max 100 chars).');
+    if (subject.trim().length > 200)
+      return setErrorMsg('Subject too long (max 200 chars).');
     setFormState('submitting');
     try {
       await axios.post('/api/contact', {
@@ -79,144 +56,210 @@ export default function ContactForm({ onBackToChat }: ContactFormProps) {
     }
   };
 
-  // Submitted view (readonly)
   if (formState === 'submitted') {
     return (
-      <div className="space-y-4 animate-fade-in-scale">
-        <div className="flex items-center gap-3 p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
-          <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-            <FiCheck className="w-5 h-5 text-lime-300" />
+      <div className="space-y-4">
+        <HudPanel
+          accent="green"
+          notch="md"
+          className="p-4 flex items-center gap-3"
+        >
+          <div className="w-10 h-10 rounded-full bg-neon-green/20 flex items-center justify-center flex-shrink-0">
+            <FiCheck className="w-5 h-5 text-neon-green" />
           </div>
           <div>
-            <p className="text-lime-300 font-medium">
-              Message Sent Successfully!
-            </p>
-            <p className="text-gray-400 text-sm">
-              I&apos;ll get back to you soon.
-            </p>
-          </div>
-        </div>
-
-        {/* Readonly submitted form */}
-        <div className="bg-[#0F172A]/80 border border-gray-700/50 rounded-lg p-4 space-y-3">
-          <div className="flex items-center gap-2 text-gray-400">
-            <FiUser className="w-4 h-4 text-blue-400" />
-            <span className="text-gray-300">{name}</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-400">
-            <FiMail className="w-4 h-4 text-blue-400" />
-            <span className="text-gray-300">{email}</span>
-          </div>
-          {subject && (
-            <div className="flex items-center gap-2 text-gray-400">
-              <FiBookmark className="w-4 h-4 text-blue-400" />
-              <span className="text-gray-300">{subject}</span>
+            <div className="font-display tracking-[2px] text-neon-green text-shadow-neon-yellow">
+              MESSAGE SENT
             </div>
-          )}
-          <div className="flex items-start gap-2 text-gray-400">
-            <FiMessageSquare className="w-4 h-4 text-blue-400 mt-0.5" />
-            <span className="text-gray-300 whitespace-pre-wrap">{message}</span>
+            <div className="font-body text-sm text-text-muted">
+              I&apos;ll get back to you soon.
+            </div>
           </div>
-        </div>
+        </HudPanel>
 
-        <button
-          onClick={onBackToChat}
-          className="px-4 py-2 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white rounded-lg text-sm transition-all"
-        >
-          Back to Chat
-        </button>
+        <HudPanel accent="cyan" notch="md" className="p-4 space-y-2">
+          <SummaryRow icon={<FiUser />} label="Name" value={name} />
+          <SummaryRow icon={<FiMail />} label="Email" value={email} />
+          {subject && (
+            <SummaryRow icon={<FiBookmark />} label="Subject" value={subject} />
+          )}
+          <div className="flex items-start gap-2 text-text-muted">
+            <FiMessageSquare className="w-4 h-4 text-neon-cyan mt-0.5 flex-shrink-0" />
+            <span className="text-text-primary whitespace-pre-wrap font-body text-sm">
+              {message}
+            </span>
+          </div>
+        </HudPanel>
+
+        <NeonButton accent="cyan" onClick={onBackToChat}>
+          BACK TO CHAT
+        </NeonButton>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 animate-fade-in-scale">
+    <form onSubmit={handleSubmit} className="space-y-3">
       {errorMsg && (
-        <div className="flex items-center gap-2 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
-          <FiAlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-          <span className="text-red-300 text-sm">{errorMsg}</span>
-        </div>
+        <HudPanel accent="red" notch="sm" className="p-3 flex items-center gap-2">
+          <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
+          <span className="font-body text-sm text-neon-red">{errorMsg}</span>
+        </HudPanel>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="relative">
-          <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your Name *"
-            maxLength={100}
-            className="form-premium-input w-full rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none placeholder-gray-500"
-            disabled={formState === 'submitting'}
-          />
-        </div>
-        <div className="relative">
-          <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Your Email *"
-            className="form-premium-input w-full rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none placeholder-gray-500"
-            disabled={formState === 'submitting'}
-          />
-        </div>
-      </div>
-
-      <div className="relative">
-        <FiBookmark className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-        <input
-          type="text"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          placeholder="Subject (optional)"
-          maxLength={200}
-          className="form-premium-input w-full rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none placeholder-gray-500"
+        <FieldInput
+          icon={<FiUser />}
+          placeholder="Your Name *"
+          maxLength={100}
+          value={name}
+          onChange={setName}
+          disabled={formState === 'submitting'}
+        />
+        <FieldInput
+          icon={<FiMail />}
+          type="email"
+          placeholder="Your Email *"
+          value={email}
+          onChange={setEmail}
           disabled={formState === 'submitting'}
         />
       </div>
 
-      <div className="relative">
-        <FiMessageSquare className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Your Message * (min 10 characters)"
-          maxLength={5000}
-          rows={4}
-          className="form-premium-input w-full rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none placeholder-gray-500 resize-none"
-          disabled={formState === 'submitting'}
-        />
-      </div>
+      <FieldInput
+        icon={<FiBookmark />}
+        placeholder="Subject (optional)"
+        maxLength={200}
+        value={subject}
+        onChange={setSubject}
+        disabled={formState === 'submitting'}
+      />
+
+      <FieldTextarea
+        icon={<FiMessageSquare />}
+        placeholder="Your Message * (min 10 characters)"
+        maxLength={5000}
+        rows={4}
+        value={message}
+        onChange={setMessage}
+        disabled={formState === 'submitting'}
+      />
 
       <div className="flex gap-2">
-        <button
+        <NeonButton
           type="submit"
-          disabled={formState === 'submitting'}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white rounded-xl text-sm font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+          accent="yellow"
+          iconLeft={formState === 'submitting' ? undefined : <FiSend />}
+          loading={formState === 'submitting'}
         >
-          {formState === 'submitting' ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Sending...
-            </>
-          ) : (
-            <>
-              <FiSend className="w-4 h-4" />
-              Send Message
-            </>
-          )}
-        </button>
-        <button
+          {formState === 'submitting' ? 'SENDING…' : 'SEND MESSAGE'}
+        </NeonButton>
+        <NeonButton
           type="button"
+          variant="ghost"
+          accent="cyan"
           onClick={onBackToChat}
-          className="px-4 py-2.5 bg-white/5 border border-gray-700/50 text-gray-400 rounded-xl text-sm hover:text-white hover:bg-white/10 transition-all backdrop-blur-sm"
           disabled={formState === 'submitting'}
         >
-          Cancel
-        </button>
+          CANCEL
+        </NeonButton>
       </div>
     </form>
+  );
+}
+
+function FieldInput({
+  icon,
+  type = 'text',
+  placeholder,
+  maxLength,
+  value,
+  onChange,
+  disabled,
+}: {
+  icon: React.ReactNode;
+  type?: string;
+  placeholder: string;
+  maxLength?: number;
+  value: string;
+  onChange: (v: string) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
+        {icon}
+      </span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        disabled={disabled}
+        className="w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-yellow placeholder-text-muted transition-colors"
+        style={{
+          clipPath:
+            'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',
+        }}
+      />
+    </div>
+  );
+}
+
+function FieldTextarea({
+  icon,
+  placeholder,
+  maxLength,
+  rows = 3,
+  value,
+  onChange,
+  disabled,
+}: {
+  icon: React.ReactNode;
+  placeholder: string;
+  maxLength?: number;
+  rows?: number;
+  value: string;
+  onChange: (v: string) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="relative">
+      <span className="absolute left-3 top-3 text-text-muted">{icon}</span>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        rows={rows}
+        disabled={disabled}
+        className="w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-yellow placeholder-text-muted resize-none transition-colors"
+        style={{
+          clipPath:
+            'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',
+        }}
+      />
+    </div>
+  );
+}
+
+function SummaryRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 text-text-muted">
+      <span className="text-neon-cyan">{icon}</span>
+      <span className="text-text-muted font-body text-xs uppercase tracking-wider">
+        {label}:
+      </span>
+      <span className="text-text-primary font-body text-sm">{value}</span>
+    </div>
   );
 }
