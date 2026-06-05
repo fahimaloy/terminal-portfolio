@@ -1,4 +1,7 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { GlitchText, HudPanel, NeonButton } from '../ui';
+import { motionTokens } from '../ui/motionConfig';
 
 export type LoadingScreenVariant = 'spinner' | 'dots' | 'matrix';
 
@@ -16,43 +19,105 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   variant = 'spinner',
 }) => {
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center">
-      <div className="text-center">
-        {variant === 'spinner' && (
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-gray-800 border-t-purple-400 rounded-full animate-spin" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-purple-400 text-2xl">🔐</span>
-            </div>
-          </div>
-        )}
-
-        {variant === 'dots' && (
-          <div className="flex gap-2">
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className="w-4 h-4 bg-purple-400 rounded-full animate-bounce"
-                style={{ animationDelay: `${i * 0.15}s` }}
+    <div className="min-h-screen bg-bg-void flex flex-col items-center justify-center px-4">
+      <HudPanel
+        accent="magenta"
+        notch="md"
+        title="// AUTHENTICATING"
+        className="p-8 max-w-md w-full"
+      >
+        <div className="flex flex-col items-center gap-6">
+          {variant === 'spinner' && (
+            <div className="relative w-20 h-20">
+              <motion.div
+                className="absolute inset-0 border-2 border-neon-magenta"
+                style={{
+                  clipPath:
+                    'polygon(0 0, 16px 0, 16px 4px, 4px 4px, 4px 16px, 0 16px)',
+                }}
+                animate={{ rotate: 360 }}
+                transition={{
+                  duration: 2.4,
+                  repeat: Infinity,
+                  ease: 'linear',
+                }}
               />
-            ))}
+              <motion.div
+                className="absolute inset-0 border-2 border-neon-cyan"
+                style={{
+                  clipPath:
+                    'polygon(100% 0, calc(100% - 16px) 0, calc(100% - 16px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 16px, 100% 16px)',
+                }}
+                animate={{ rotate: -360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              />
+              <motion.div
+                className="absolute inset-0 border-2 border-neon-yellow"
+                style={{
+                  clipPath:
+                    'polygon(0 100%, 16px 100%, 16px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 16px), 0 calc(100% - 16px))',
+                }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: 'linear' }}
+              />
+              <motion.div
+                className="absolute inset-0 border-2 border-neon-green"
+                style={{
+                  clipPath:
+                    'polygon(100% 100%, calc(100% - 16px) 100%, calc(100% - 16px) calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) calc(100% - 16px), 100% calc(100% - 16px))',
+                }}
+                animate={{ rotate: -360 }}
+                transition={{ duration: 2.8, repeat: Infinity, ease: 'linear' }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-2xl">🔐</span>
+              </div>
+            </div>
+          )}
+
+          {variant === 'dots' && (
+            <div className="flex gap-2">
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="w-3 h-3 rounded-full bg-neon-magenta"
+                  style={{ boxShadow: '0 0 8px var(--glow-magenta)' }}
+                  animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
+                  transition={{
+                    duration: 1.2,
+                    repeat: Infinity,
+                    delay: i * 0.2,
+                    ease: motionTokens.ease,
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          {variant === 'matrix' && (
+            <div className="font-mono text-neon-yellow text-3xl">
+              <motion.span
+                animate={{ opacity: [0.2, 1, 0.2] }}
+                transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
+              >
+                █
+              </motion.span>
+            </div>
+          )}
+
+          <div className="text-center space-y-1">
+            <div className="font-display tracking-[3px] text-neon-magenta text-shadow-neon-magenta text-sm">
+              AUTHENTICATING
+            </div>
+            <div className="font-body text-xs text-text-muted">
+              Verifying credentials...
+            </div>
+            <code className="text-[10px] font-mono text-text-muted">
+              {'>'} checking session status
+            </code>
           </div>
-        )}
-
-        {variant === 'matrix' && (
-          <div className="font-mono text-purple-400 text-lg">
-            <span className="animate-pulse">_</span>
-          </div>
-        )}
-
-        <p className="mt-6 text-gray-500 font-mono text-sm">
-          Verifying credentials...
-        </p>
-      </div>
-
-      <div className="mt-8 text-xs text-gray-600 font-mono">
-        <code>{'>'} checking session status</code>
-      </div>
+        </div>
+      </HudPanel>
     </div>
   );
 };
@@ -63,18 +128,24 @@ export const ErrorScreen: React.FC<ErrorScreenProps> = ({
   onRetry,
 }) => {
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center p-4">
-      <div className="text-center max-w-md">
-        <div className="text-6xl mb-4">⚠️</div>
-        <h1 className="text-xl text-red-400 font-mono mb-2">Session Error</h1>
-        <p className="text-gray-400 text-sm mb-6 font-mono">{message}</p>
-        <button
-          onClick={onRetry}
-          className="px-6 py-2 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-mono font-bold rounded-xl transition-all"
-        >
-          Try Again
-        </button>
-      </div>
+    <div className="min-h-screen bg-bg-void flex flex-col items-center justify-center p-4">
+      <HudPanel
+        accent="red"
+        notch="md"
+        title="// ACCESS_DENIED"
+        className="p-8 max-w-md w-full"
+      >
+        <div className="text-center space-y-4">
+          <div className="text-5xl">⚠️</div>
+          <GlitchText accent="red" as="h1" className="text-xl">
+            SESSION ERROR
+          </GlitchText>
+          <div className="font-mono text-sm text-text-secondary">{message}</div>
+          <NeonButton accent="yellow" onClick={onRetry}>
+            TRY AGAIN
+          </NeonButton>
+        </div>
+      </HudPanel>
     </div>
   );
 };
