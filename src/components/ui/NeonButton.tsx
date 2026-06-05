@@ -32,8 +32,8 @@ const GLOW: Record<GlitchAccent, string> = {
   yellow: 'hud-glow-yellow',
   magenta: 'hud-glow-magenta',
   cyan: 'hud-glow-cyan',
-  green: 'hud-glow-yellow',
-  red: 'hud-glow-yellow',
+  green: 'hud-glow-green',
+  red: 'hud-glow-red',
 };
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {

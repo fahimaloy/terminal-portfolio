@@ -68,7 +68,7 @@ export default function ContactForm({ onBackToChat }: Props) {
             <FiCheck className="w-5 h-5 text-neon-green" />
           </div>
           <div>
-            <div className="font-display tracking-[2px] text-neon-green text-shadow-neon-yellow">
+              <div className="font-display tracking-[2px] text-neon-green text-shadow-neon-green">
               MESSAGE SENT
             </div>
             <div className="font-body text-sm text-text-muted">

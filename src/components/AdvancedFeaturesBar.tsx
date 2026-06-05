@@ -25,12 +25,17 @@ const FEATURES: Feature[] = [
 const ACCENT_TEXT: Record<Feature['accent'], string> = {
   magenta: 'text-neon-magenta text-shadow-neon-magenta',
   cyan: 'text-neon-cyan text-shadow-neon-cyan',
-  green: 'text-neon-yellow text-shadow-neon-yellow',
+  green: 'text-neon-green text-shadow-neon-green',
 };
 const ACCENT_BG: Record<Feature['accent'], string> = {
   magenta: 'bg-neon-magenta/10 border-neon-magenta/40',
   cyan: 'bg-neon-cyan/10 border-neon-cyan/40',
-  green: 'bg-neon-yellow/10 border-neon-yellow/40',
+  green: 'bg-neon-green/10 border-neon-green/40',
+};
+const ACCENT_GLOW: Record<Feature['accent'], string> = {
+  magenta: 'hud-glow-magenta',
+  cyan: 'hud-glow-cyan',
+  green: 'hud-glow-green',
 };
 
 type Props = {
@@ -53,7 +58,7 @@ export default function AdvancedFeaturesBar({
             className={`inline-flex items-center gap-2 px-3 py-1.5 text-[10px] font-display tracking-[2px] uppercase border transition-all duration-200
               ${
                 isActive
-                  ? `${ACCENT_BG[f.accent]} ${ACCENT_TEXT[f.accent]} hud-glow-yellow`
+                  ? `${ACCENT_BG[f.accent]} ${ACCENT_TEXT[f.accent]} ${ACCENT_GLOW[f.accent]}`
                   : 'bg-transparent border-white/10 text-text-secondary hover:border-white/30'
               }
             `}
