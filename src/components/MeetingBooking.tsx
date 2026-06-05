@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
+// src/components/MeetingBooking.tsx
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
+import { FiX } from 'react-icons/fi';
+import { GlitchText, HudPanel, NeonButton } from './ui';
+import { motionTokens } from './ui/motionConfig';
 
 export const MeetingBooking: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [name, setName] = useState('');
@@ -7,9 +12,19 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [reason, setReason] = useState('');
-  
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
+    'idle',
+  );
   const [message, setMessage] = useState('');
+  const autoCloseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear pending auto-close on unmount
+  useEffect(() => {
+    return () => {
+      if (autoCloseRef.current) clearTimeout(autoCloseRef.current);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +47,7 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({ onClose }) =
       if (res.data?.ok) {
         setStatus('success');
         setMessage('Your meeting requested has been placed!');
-        setTimeout(() => {
+        autoCloseRef.current = setTimeout(() => {
           onClose();
         }, 3000);
       } else {
@@ -40,100 +55,153 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({ onClose }) =
       }
     } catch (err: any) {
       setStatus('error');
-      setMessage(err.response?.data?.message || err.message || 'Failed to book meeting');
+      setMessage(
+        err.response?.data?.message || err.message || 'Failed to book meeting',
+      );
     }
   };
 
+  const inputClass =
+    'w-full bg-bg-smoke border border-white/10 text-text-primary px-4 py-2.5 font-body text-sm focus:outline-none focus:border-neon-magenta placeholder-text-muted transition-colors [color-scheme:dark]';
+  const inputStyle: React.CSSProperties = {
+    clipPath:
+      'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-[#0F172A] border border-purple-500/20 shadow-[0_0_30px_rgba(139,92,246,0.1)] rounded-2xl overflow-hidden shadow-2xl">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold font-sans text-white">Book a Meeting</h3>
-            <button 
-              onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: motionTokens.dur.enter, ease: motionTokens.ease }}
+        className="w-full max-w-md relative"
+      >
+        <div
+          aria-hidden="true"
+          className="absolute -top-px left-0 right-0 h-[2px] bg-neon-magenta shadow-[0_0_12px_var(--glow-magenta)]"
+        />
+        <HudPanel accent="magenta" notch="md" title="// BOOK_MEETING" className="p-6">
+          <div className="text-[9px] font-display tracking-[3px] text-text-muted mb-4">
+            {'> USER: anonymous_visitor'}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 font-sans">
+          <div className="flex justify-between items-center mb-4">
+            <GlitchText accent="magenta" as="h3" className="text-lg">
+              BOOK A MEETING
+            </GlitchText>
+            <NeonButton
+              variant="ghost"
+              accent="magenta"
+              onClick={onClose}
+              iconLeft={<FiX />}
+            >
+              CLOSE
+            </NeonButton>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Name <span className="text-red-500">*</span></label>
+              <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                NAME <span className="text-neon-red">*</span>
+              </label>
               <input
                 type="text"
                 required
-                className="form-premium-input w-full rounded-xl px-4 py-2.5 text-white focus:outline-none text-sm"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                className={inputClass}
+                style={inputStyle}
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Email <span className="text-red-500">*</span></label>
+              <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                EMAIL <span className="text-neon-red">*</span>
+              </label>
               <input
                 type="email"
                 required
-                className="form-premium-input w-full rounded-xl px-4 py-2.5 text-white focus:outline-none text-sm"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+                style={inputStyle}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Date <span className="text-red-500">*</span></label>
+                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                  DATE <span className="text-neon-red">*</span>
+                </label>
                 <input
                   type="date"
                   required
-                  className="w-full px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all [color-scheme:dark]"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
+                  className={inputClass}
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Time <span className="text-red-500">*</span></label>
+                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                  TIME <span className="text-neon-red">*</span>
+                </label>
                 <input
                   type="time"
                   required
-                  className="w-full px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all [color-scheme:dark]"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
+                  className={inputClass}
+                  style={inputStyle}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Reason for meeting</label>
+              <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                REASON FOR MEETING
+              </label>
               <textarea
-                className="form-premium-input w-full rounded-xl px-4 py-2.5 text-white focus:outline-none text-sm resize-none h-24"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Briefly describe what you'd like to discuss..."
+                className={`${inputClass} resize-none h-24`}
+                style={inputStyle}
               />
             </div>
 
             {status === 'error' && (
-              <div className="text-red-400 text-sm py-2">{message}</div>
+              <HudPanel accent="red" notch="sm" className="p-2 text-center">
+                <span className="font-body text-sm text-neon-red">{message}</span>
+              </HudPanel>
             )}
-            
             {status === 'success' && (
-              <div className="text-lime-400 text-sm py-2">{message}</div>
+              <HudPanel accent="green" notch="sm" className="p-2 text-center">
+                <span className="font-body text-sm text-neon-green">{message}</span>
+              </HudPanel>
             )}
 
-            <button
+            <NeonButton
               type="submit"
+              accent="magenta"
+              className="w-full"
               disabled={status === 'loading' || status === 'success'}
-              className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white rounded-xl font-medium transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-[#0F172A] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              loading={status === 'loading'}
             >
-              {status === 'loading' ? 'Booking...' : status === 'success' ? 'Booked!' : 'Submit Request'}
-            </button>
+              {status === 'loading'
+                ? 'BOOKING…'
+                : status === 'success'
+                  ? 'BOOKED!'
+                  : 'SUBMIT REQUEST'}
+            </NeonButton>
           </form>
-        </div>
-      </div>
+        </HudPanel>
+      </motion.div>
     </div>
   );
 };
