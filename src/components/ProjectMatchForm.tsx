@@ -1,3 +1,4 @@
+// src/components/ProjectMatchForm.tsx
 import React, { useState } from 'react';
 import axios from 'axios';
 import { FiSearch, FiAlertCircle, FiArrowLeft, FiCheck } from 'react-icons/fi';
@@ -10,26 +11,22 @@ import {
 } from '../utils/aiResponseParser';
 import ProjectPreview from './ProjectPreview';
 import ProjectInlineRef from './ProjectInlineRef';
+import { HudPanel, NeonButton } from './ui';
 
-type ProjectMatchFormProps = {
+type Props = {
   onBackToChat: () => void;
   projects: PortfolioProject[];
 };
 
 type FormState = 'filling' | 'submitting' | 'result' | 'error';
 
-export default function ProjectMatchForm({
-  onBackToChat,
-  projects,
-}: ProjectMatchFormProps) {
+export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
   const [formState, setFormState] = useState<FormState>('filling');
   const [description, setDescription] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [result, setResult] = useState<string>('');
   const [segments, setSegments] = useState<ParsedSegment[]>([]);
-  const [previewProjects, setPreviewProjects] = useState<PortfolioProject[]>(
-    [],
-  );
+  const [previewProjects, setPreviewProjects] = useState<PortfolioProject[]>([]);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
   const [openInlineProject, setOpenInlineProject] =
@@ -38,7 +35,6 @@ export default function ProjectMatchForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
-
     if (!description.trim()) {
       setErrorMsg('Please describe your project.');
       return;
@@ -51,32 +47,25 @@ export default function ProjectMatchForm({
       setErrorMsg('Description too long (max 5000 chars).');
       return;
     }
-
     setFormState('submitting');
     setShowPreview(false);
     setPreviewProjects([]);
     setOpenInlineProject(null);
     setSegments([]);
-
     try {
       const res = await axios.post('/api/project-match', {
         description: description.trim(),
       });
       const responseText = res.data?.text || 'No response received.';
       setResult(responseText);
-
-      // Parse markers from response
-      const parsedSegments = parseAiResponse(responseText);
-      setSegments(parsedSegments);
-
-      // Auto-show preview for list/single markers
-      const listSegments = parsedSegments.filter(
+      const parsed = parseAiResponse(responseText);
+      setSegments(parsed);
+      const lists = parsed.filter(
         (s): s is ParsedSegment & { type: 'project_list' | 'project_single' } =>
           s.type === 'project_list' || s.type === 'project_single',
       );
-
-      if (listSegments.length > 0) {
-        const seg = listSegments[0];
+      if (lists.length > 0) {
+        const seg = lists[0];
         if (seg.type === 'project_list') {
           const projs = findProjectsByIds(projects, seg.ids);
           if (projs.length > 0) {
@@ -93,7 +82,6 @@ export default function ProjectMatchForm({
           }
         }
       }
-
       setFormState('result');
     } catch (err: any) {
       setFormState('error');
@@ -103,69 +91,61 @@ export default function ProjectMatchForm({
     }
   };
 
-  // Handle inline ref clicks
-  const handleInlineRefOpen = (project: PortfolioProject) => {
-    if (openInlineProject?.id === project.id) {
-      setOpenInlineProject(null);
-    } else {
-      setOpenInlineProject(project);
-    }
-  };
-
   return (
-    <div className="space-y-3 animate-fade-in-scale">
+    <div className="space-y-3">
       {formState === 'filling' && (
         <>
-          <div className="flex items-start gap-3 p-3 bg-emerald-900/20 border border-emerald-500/30 rounded-lg">
-            <FiSearch className="w-5 h-5 text-lime-400 flex-shrink-0 mt-0.5" />
+          <HudPanel accent="green" notch="md" className="p-3 flex items-start gap-3">
+            <FiSearch className="w-5 h-5 text-neon-yellow flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-lime-300 text-sm font-medium">
-                Project Match
-              </p>
-              <p className="text-gray-400 text-xs mt-1">
+              <div className="font-display text-[10px] tracking-[3px] text-neon-yellow mb-1">
+                PROJECT MATCH
+              </div>
+              <div className="font-body text-xs text-text-secondary">
                 Describe your project idea and I&apos;ll check my portfolio for
                 similar work I&apos;ve done.
-              </p>
+              </div>
             </div>
-          </div>
+          </HudPanel>
 
           {errorMsg && (
-            <div className="flex items-center gap-2 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
-              <FiAlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-              <span className="text-red-300 text-sm">{errorMsg}</span>
-            </div>
+            <HudPanel accent="red" notch="sm" className="p-3 flex items-center gap-2">
+              <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
+              <span className="font-body text-sm text-neon-red">{errorMsg}</span>
+            </HudPanel>
           )}
 
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe your project idea in detail...&#10;&#10;For example: I want to build a real-time chat application with WebSockets, user authentication, and message persistence. The frontend should use React and the backend should be in Node.js with PostgreSQL."
+            placeholder="Describe your project idea in detail..."
             maxLength={5000}
             rows={6}
-            className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500 resize-none"
+            className="w-full bg-bg-smoke border border-white/10 text-text-primary p-3 font-body text-sm focus:outline-none focus:border-neon-yellow placeholder-text-muted resize-none"
+            style={{
+              clipPath:
+                'polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)',
+            }}
+            disabled={false}
           />
           <div className="flex justify-end">
-            <span className="text-[10px] text-gray-600">
+            <span className="text-[10px] font-mono text-text-muted">
               {description.length}/5000
             </span>
           </div>
 
           <div className="flex gap-2">
-            <button
+            <NeonButton
+              accent="yellow"
+              iconLeft={<FiSearch />}
               onClick={handleSubmit}
               disabled={!description.trim() || description.trim().length < 20}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-lime-600 to-emerald-500 hover:from-lime-500 hover:to-emerald-400 text-white rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FiSearch className="w-4 h-4" />
-              Check Portfolio
-            </button>
-            <button
-              type="button"
-              onClick={onBackToChat}
-              className="px-4 py-2.5 bg-white/5 border border-gray-700/50 text-gray-400 rounded-xl text-sm hover:text-white hover:bg-white/10 transition-all backdrop-blur-sm"
-            >
-              Cancel
-            </button>
+              CHECK PORTFOLIO
+            </NeonButton>
+            <NeonButton variant="ghost" accent="cyan" onClick={onBackToChat}>
+              CANCEL
+            </NeonButton>
           </div>
         </>
       )}
@@ -173,124 +153,106 @@ export default function ProjectMatchForm({
       {formState === 'submitting' && (
         <div className="flex flex-col items-center justify-center py-8 space-y-4">
           <div className="relative w-16 h-16">
-            <div className="absolute inset-0 border-4 border-emerald-500/20 rounded-full" />
-            <div className="absolute inset-0 border-4 border-transparent border-t-lime-500 rounded-full animate-spin" />
+            <div className="absolute inset-0 border-4 border-neon-yellow/20 rounded-full" />
+            <div className="absolute inset-0 border-4 border-transparent border-t-neon-yellow rounded-full animate-spin" />
           </div>
           <div className="text-center">
-            <p className="text-lime-300 font-medium">
-              Analyzing your project...
-            </p>
-            <p className="text-gray-500 text-sm mt-1">
+            <div className="font-display tracking-[2px] text-neon-yellow">
+              ANALYZING…
+            </div>
+            <div className="font-body text-sm text-text-muted mt-1">
               Checking my portfolio for similar work
-            </p>
+            </div>
           </div>
         </div>
       )}
 
       {formState === 'result' && (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-emerald-900/20 border border-emerald-500/30 rounded-lg">
-            <FiCheck className="w-5 h-5 text-lime-300 flex-shrink-0" />
-            <span className="text-lime-300 text-sm font-medium">
-              Analysis Complete
+          <HudPanel accent="green" notch="md" className="p-3 flex items-center gap-3">
+            <FiCheck className="w-5 h-5 text-neon-green flex-shrink-0" />
+            <span className="font-display text-[10px] tracking-[3px] text-neon-green">
+              ANALYSIS COMPLETE
             </span>
-          </div>
+          </HudPanel>
 
-          {/* Result with parsed inline refs */}
-          <div className="bg-[#0F172A]/80 border border-gray-700/50 rounded-lg p-4 text-gray-300 text-sm leading-relaxed space-y-2">
-            {segments.map((segment, idx) => {
-              switch (segment.type) {
-                case 'text':
-                  return (
-                    <p key={idx}>
-                      {segment.content.split('\n').map((line, li) => (
-                        <React.Fragment key={li}>
-                          {line}
-                          {li < segment.content.split('\n').length - 1 && (
-                            <br />
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </p>
-                  );
-                case 'project_ref': {
-                  const proj = findProjectById(projects, segment.id);
-                  if (!proj) return null;
-                  return (
-                    <span key={idx} className="inline-block mx-1">
-                      <ProjectInlineRef
-                        project={proj}
-                        onOpen={handleInlineRefOpen}
-                        isOpen={openInlineProject?.id === proj.id}
-                      />
-                    </span>
-                  );
+          <HudPanel accent="cyan" notch="md" className="p-4">
+            <div className="font-body text-sm text-text-secondary space-y-2">
+              {segments.map((segment, idx) => {
+                switch (segment.type) {
+                  case 'text':
+                    return <p key={idx}>{segment.content}</p>;
+                  case 'project_ref': {
+                    const proj = findProjectById(projects, segment.id);
+                    if (!proj) return null;
+                    return (
+                      <span key={idx} className="inline-block mx-1">
+                        <ProjectInlineRef
+                          project={proj}
+                          onOpen={setOpenInlineProject}
+                          isOpen={openInlineProject?.id === proj.id}
+                        />
+                      </span>
+                    );
+                  }
+                  default:
+                    return null;
                 }
-                default:
-                  return null;
-              }
-            })}
-          </div>
+              })}
+            </div>
+          </HudPanel>
 
-          {/* Inline ref preview */}
           {openInlineProject && (
-            <div className="animate-fade-in-scale">
-              <ProjectPreview
-                projects={[openInlineProject]}
-                selectedIndex={0}
-                showCloseButton
-                onClose={() => setOpenInlineProject(null)}
-                inline
-              />
-            </div>
+            <ProjectPreview
+              projects={[openInlineProject]}
+              selectedIndex={0}
+              showCloseButton
+              onClose={() => setOpenInlineProject(null)}
+              inline
+            />
           )}
 
-          {/* Auto list/single preview */}
           {showPreview && previewProjects.length > 0 && !openInlineProject && (
-            <div className="animate-fade-in-up">
-              <ProjectPreview
-                projects={previewProjects}
-                selectedIndex={previewIndex}
-                onSelectProject={(idx) => setPreviewIndex(idx)}
-                inline
-              />
-            </div>
+            <ProjectPreview
+              projects={previewProjects}
+              selectedIndex={previewIndex}
+              onSelectProject={setPreviewIndex}
+              inline
+            />
           )}
 
-          <button
+          <NeonButton
+            variant="ghost"
+            accent="cyan"
+            iconLeft={<FiArrowLeft />}
             onClick={onBackToChat}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-lime-600 to-emerald-500 hover:from-lime-500 hover:to-emerald-400 text-white rounded-lg text-sm transition-all"
           >
-            <FiArrowLeft className="w-4 h-4" />
-            Back to Chat
-          </button>
+            BACK TO CHAT
+          </NeonButton>
         </div>
       )}
 
       {formState === 'error' && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
-            <FiAlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-            <span className="text-red-300 text-sm">
+          <HudPanel accent="red" notch="sm" className="p-3 flex items-center gap-2">
+            <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
+            <span className="font-body text-sm text-neon-red">
               {errorMsg || 'Something went wrong.'}
             </span>
-          </div>
+          </HudPanel>
           <div className="flex gap-2">
-            <button
+            <NeonButton
+              accent="yellow"
               onClick={() => {
                 setFormState('filling');
                 setErrorMsg('');
               }}
-              className="px-4 py-2 bg-gradient-to-r from-lime-600 to-emerald-500 hover:from-lime-500 hover:to-emerald-400 text-white rounded-lg text-sm transition-all"
             >
-              Try Again
-            </button>
-            <button
-              onClick={onBackToChat}
-              className="px-4 py-2 bg-white/5 border border-gray-700/50 text-gray-400 rounded-xl text-sm hover:text-white hover:bg-white/10 transition-all backdrop-blur-sm"
-            >
-              Cancel
-            </button>
+              TRY AGAIN
+            </NeonButton>
+            <NeonButton variant="ghost" accent="cyan" onClick={onBackToChat}>
+              CANCEL
+            </NeonButton>
           </div>
         </div>
       )}
