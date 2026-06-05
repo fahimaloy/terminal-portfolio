@@ -1,21 +1,13 @@
 import React from 'react';
-import { PortfolioProject, PortfolioProjectMedia, getProjectMedia } from '../../utils/api';
+import { FiArrowLeft, FiExternalLink, FiGithub } from 'react-icons/fi';
+import {
+  PortfolioProject,
+  PortfolioProjectMedia,
+  getProjectMedia,
+} from '../../utils/api';
+import { GlitchText, HudPanel, NeonButton, NeonChip, StatBar } from '../ui';
 
-// Color sets for random card backgrounds
-const cardColorSets = [
-  { bg: 'bg-blue-900/40', border: 'border-blue-500/40', text: 'text-blue-200' },
-  { bg: 'bg-purple-900/40', border: 'border-purple-500/40', text: 'text-purple-200' },
-  { bg: 'bg-emerald-900/40', border: 'border-emerald-500/40', text: 'text-emerald-200' },
-  { bg: 'bg-amber-900/40', border: 'border-amber-500/40', text: 'text-amber-200' },
-  { bg: 'bg-rose-900/40', border: 'border-rose-500/40', text: 'text-rose-200' },
-  { bg: 'bg-cyan-900/40', border: 'border-cyan-500/40', text: 'text-cyan-200' },
-  { bg: 'bg-violet-900/40', border: 'border-violet-500/40', text: 'text-violet-200' },
-  { bg: 'bg-fuchsia-900/40', border: 'border-fuchsia-500/40', text: 'text-fuchsia-200' },
-];
-
-const getRandomCardColor = (index: number) => {
-  return cardColorSets[index % cardColorSets.length];
-};
+const ACCENTS = ['yellow', 'magenta', 'cyan', 'green'] as const;
 
 interface ProjectDetailProps {
   project: PortfolioProject;
@@ -25,20 +17,15 @@ interface ProjectDetailProps {
 export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
   const [media, setMedia] = React.useState<PortfolioProjectMedia[]>([]);
   const [loading, setLoading] = React.useState(true);
-  
-  // Separate images and videos
-  const images = media.filter(m => m.media_type === 'image');
-  const videos = media.filter(m => m.media_type === 'video');
-  
-  // Current media state
+
+  const images = media.filter((m) => m.media_type === 'image');
+  const videos = media.filter((m) => m.media_type === 'video');
+  const allMedia = [...images, ...videos];
+
   const [currentMediaIndex, setCurrentMediaIndex] = React.useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = React.useState(false);
-  
-  // Get current media item
-  const allMedia = [...images, ...videos];
   const currentMedia = allMedia[currentMediaIndex];
-  
-  // Fetch project media when project loads
+
   React.useEffect(() => {
     const fetchMedia = async () => {
       if (project.id) {
@@ -55,186 +42,232 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
         }
       }
     };
-    
     fetchMedia();
   }, [project.id]);
-  
-  // Handle media change
+
   const handleMediaChange = (index: number) => {
     setCurrentMediaIndex(index);
-    // Reset video playing state when switching media
-    if (allMedia[index].media_type === 'video') {
-      setIsVideoPlaying(true);
-    } else {
-      setIsVideoPlaying(false);
-    }
+    setIsVideoPlaying(allMedia[index].media_type === 'video');
   };
-  
-  // Handle video play/pause
-  const handleVideoPlay = () => {
-    setIsVideoPlaying(true);
-  };
-  
-  const handleVideoPause = () => {
-    setIsVideoPlaying(false);
-  };
-  
-  // Get random color for this project detail view
-  const colors = getRandomCardColor(project.id || 0);
-  
+
+  const accent = ACCENTS[(project.id || 0) % ACCENTS.length];
+
   if (loading) {
     return (
-      <div className="space-y-8">
-        {/* Back Button */}
-        <div className="flex justify-between items-start">
-          <button 
-            onClick={onBack}
-            className={`flex items-center gap-2 px-3 py-1 ${colors.bg} ${colors.border} rounded-lg text-sm hover:${colors.bg.replace('/40', '/50')} hover:${colors.border.replace('/40', '/60')} transition-all`}
-          >
-            <span>← Back to Projects</span>
-          </button>
-        </div>
-        
-        {/* Loading State */}
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-400">Loading project...</p>
-        </div>
+      <div className="space-y-6">
+        <NeonButton
+          variant="outline"
+          accent="magenta"
+          iconLeft={<FiArrowLeft />}
+          onClick={onBack}
+        >
+          BACK TO PROJECTS
+        </NeonButton>
+        <HudPanel accent="cyan" notch="md" className="p-12 flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-neon-cyan/20 border-t-neon-cyan rounded-full animate-spin" />
+          <div className="font-display tracking-[2px] text-neon-cyan">
+            LOADING PROJECT…
+          </div>
+        </HudPanel>
       </div>
     );
   }
-  
+
   return (
-    <div className="space-y-8">
-      {/* Back Button */}
-      <div className="flex justify-between items-start">
-        <button 
-          onClick={onBack}
-          className={`flex items-center gap-2 px-3 py-1 ${colors.bg} ${colors.border} rounded-lg text-sm hover:${colors.bg.replace('/40', '/50')} hover:${colors.border.replace('/40', '/60')} transition-all`}
-        >
-          <span>← Back to Projects</span>
-        </button>
-      </div>
-      
-      {/* Main Preview Area */}
-      <div className="relative aspect-w-16 aspect-h-9 bg-black/50 overflow-hidden">
-        {currentMedia && (
-          <>
-            {currentMedia.media_type === 'video' && (
-              <div className="relative w-full h-full">
-                {/* Video Player */}
-                <video
-                  src={currentMedia.url}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="w-full h-full object-cover"
-                  onPlay={handleVideoPlay}
-                  onPause={handleVideoPause}
-                  onEnded={handleVideoPause}
-                />
-                {/* Play Overlay */}
-                {!isVideoPlaying && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-4 h-4 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-white">Loading...</span>
-                    </div>
-                  </div>
-                )}
-                {/* Play Button */}
-                {!isVideoPlaying && (
-                  <button
-                    onClick={handleVideoPlay}
-                    className="absolute inset-0 flex items-center justify-center text-2xl text-white/70 hover:text-white"
-                  >
-                    ▶
-                  </button>
-                )}
-              </div>
-            )}
-            {currentMedia.media_type === 'image' && (
-              <img
+    <div className="space-y-6">
+      <NeonButton
+        variant="outline"
+        accent="magenta"
+        iconLeft={<FiArrowLeft />}
+        onClick={onBack}
+      >
+        BACK TO PROJECTS
+      </NeonButton>
+
+      <HudPanel
+        accent="cyan"
+        notch="md"
+        title={`// DETAIL: ${project.title.toUpperCase()}`}
+        className="overflow-hidden"
+      >
+        {/* Main preview area */}
+        <div className="relative w-full aspect-video bg-black/50">
+          {currentMedia && currentMedia.media_type === 'video' && (
+            <div className="relative w-full h-full">
+              <video
                 src={currentMedia.url}
-                alt={`${project.title} media ${currentMediaIndex + 1}`}
+                autoPlay
+                muted
+                loop
+                playsInline
                 className="w-full h-full object-cover"
+                onPlay={() => setIsVideoPlaying(true)}
+                onPause={() => setIsVideoPlaying(false)}
+                onEnded={() => setIsVideoPlaying(false)}
               />
-            )}
-          </>
-        )}
-        
-        {/* Loading placeholder for media */}
-        {!allMedia.length && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-            <div className="space-y-3">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-              <p className="text-sm text-gray-400">No media available</p>
+              {!isVideoPlaying && (
+                <button
+                  onClick={() => setIsVideoPlaying(true)}
+                  className="absolute inset-0 flex items-center justify-center text-3xl text-white/70 hover:text-white"
+                  aria-label="Play video"
+                >
+                  ▶
+                </button>
+              )}
             </div>
+          )}
+          {currentMedia && currentMedia.media_type === 'image' && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={currentMedia.url}
+              alt={`${project.title} media ${currentMediaIndex + 1}`}
+              className="w-full h-full object-cover"
+            />
+          )}
+          {!allMedia.length && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-text-muted">
+              <div className="w-6 h-6 border-4 border-neon-cyan/20 border-t-neon-cyan rounded-full animate-spin" />
+              <div className="font-body text-sm">NO MEDIA AVAILABLE</div>
+            </div>
+          )}
+          {allMedia.length > 1 && (
+            <div className="absolute bottom-2 right-2 bg-black/60 text-text-primary text-[10px] font-mono px-2 py-1">
+              {currentMediaIndex + 1} / {allMedia.length}
+            </div>
+          )}
+        </div>
+
+        {/* Title */}
+        <div className="p-5 space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <GlitchText accent="cyan" as="h2" className="text-2xl">
+              {project.title}
+            </GlitchText>
+            {project.short_title && (
+              <NeonChip accent="yellow">{project.short_title}</NeonChip>
+            )}
+            {project.featured && <NeonChip accent="magenta">FEATURED</NeonChip>}
           </div>
-        )}
-        
-        {/* Media Counter */}
-        {allMedia.length > 1 && (
-          <div className="absolute bottom-2 right-2 bg-black/50 text-white text-sm px-2 py-1 rounded">
-            {currentMediaIndex + 1} / {allMedia.length}
+
+          {/* Description */}
+          <div className="font-body text-sm text-text-secondary leading-relaxed whitespace-pre-wrap">
+            {project.description || 'No description available.'}
           </div>
-        )}
-      </div>
-      
-      {/* Project Title */}
-      <h2 className={`text-3xl font-bold text-white ${colors.text}`}>{project.title}</h2>
-      
-      {/* Project Description */}
-      <div className="prose prose-invert max-w-none">
-        {project.description ? (
-          <>
-            {/* Simple markdown rendering - in production, use a proper markdown library */}
-            <p>{project.description}</p>
-          </>
-        ) : (
-          <p className="text-gray-400">No description available.</p>
-        )}
-      </div>
-      
-      {/* Additional Media Thumbnails */}
-      {allMedia.length > 1 && (
-        <div className="space-y-4">
-          <h3 className={`text-xl font-bold text-white ${colors.text}`} mb-4>Additional Media</h3>
-          <div className="flex flex-wrap gap-2 overflow-x-auto">
-            {allMedia.map((mediaItem, index) => (
-              <div
-                key={mediaItem.id}
-                onClick={() => handleMediaChange(index)}
-                className={`cursor-pointer w-24 h-24 ${colors.bg} ${colors.border} rounded overflow-hidden ${
-                  currentMediaIndex === index 
-                    ? `border-[${colors.border}]/70 ring-2 ring-[${colors.border}]` 
-                    : ''
-                } hover:border-[${colors.border}]/60 transition-all`}
+
+          {/* Languages */}
+          {project.languages && project.languages.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {project.languages.map((lang, i) => (
+                <NeonChip key={i} accent="cyan">
+                  {lang}
+                </NeonChip>
+              ))}
+            </div>
+          )}
+
+          {/* Numeric metrics as stat bars */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+            <StatBar
+              label="COMPLEXITY"
+              value={
+                typeof (project as any).complexity === 'number'
+                  ? (project as any).complexity
+                  : 75
+              }
+              accent="cyan"
+            />
+            <StatBar
+              label="QUALITY"
+              value={
+                typeof (project as any).quality === 'number'
+                  ? (project as any).quality
+                  : 90
+              }
+              accent="yellow"
+            />
+            <StatBar
+              label="MOMENTUM"
+              value={
+                typeof (project as any).momentum === 'number'
+                  ? (project as any).momentum
+                  : 60
+              }
+              accent="magenta"
+            />
+          </div>
+
+          {/* External links */}
+          <div className="flex flex-wrap gap-2 pt-2">
+            {project.project_url && (
+              <a
+                href={project.project_url}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                {mediaItem.media_type === 'video' && (
-                  <div className="absolute inset-0 flex items-center justify-center text-white/50">
-                    ▶
-                  </div>
-                )}
-                {mediaItem.media_type === 'image' && (
+                <NeonButton accent="yellow" iconLeft={<FiExternalLink />}>
+                  LIVE
+                </NeonButton>
+              </a>
+            )}
+            {project.repo_url && (
+              <a
+                href={project.repo_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <NeonButton variant="outline" accent="cyan" iconLeft={<FiGithub />}>
+                  SOURCE
+                </NeonButton>
+              </a>
+            )}
+          </div>
+        </div>
+      </HudPanel>
+
+      {/* Thumbnail strip */}
+      {allMedia.length > 1 && (
+        <div>
+          <div className="text-[9px] font-display tracking-[3px] text-text-muted mb-2">
+            {'// ADDITIONAL_MEDIA'}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {allMedia.map((m, index) => (
+              <button
+                key={m.id}
+                onClick={() => handleMediaChange(index)}
+                aria-label={`Media ${index + 1}`}
+                className={`relative w-24 h-16 overflow-hidden clip-notch-sm transition-all ${
+                  currentMediaIndex === index
+                    ? 'border-2 border-neon-cyan shadow-[0_0_8px_var(--glow-cyan)]'
+                    : 'border-2 border-transparent opacity-60 hover:opacity-100'
+                }`}
+              >
+                {m.media_type === 'image' ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={mediaItem.thumbnail_url || mediaItem.url}
-                    alt={`Media ${index + 1}`}
+                    src={m.thumbnail_url || m.url}
+                    alt=""
                     className="w-full h-full object-cover"
                   />
-                )}
-                {/* Video Indicator */}
-                {mediaItem.media_type === 'video' && (
-                  <div className="absolute bottom-0 left-0 bg-black/50 text-xs text-white px-1">
-                    VIDEO
+                ) : (
+                  <div className="w-full h-full bg-bg-ash flex items-center justify-center text-text-primary text-xl">
+                    ▶
                   </div>
                 )}
-              </div>
+              </button>
             ))}
           </div>
         </div>
       )}
+
+      <NeonButton
+        variant="outline"
+        accent="magenta"
+        iconLeft={<FiArrowLeft />}
+        onClick={onBack}
+      >
+        BACK TO PROJECTS
+      </NeonButton>
     </div>
   );
 }
