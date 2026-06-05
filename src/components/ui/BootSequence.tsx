@@ -11,6 +11,12 @@ const STEPS = [
 
 const STORAGE_KEY = 'cyberpunk-boot-shown';
 const TOTAL_MS = 1500;
+const REDUCED_MS = 200;
+
+function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
 
 export default function BootSequence() {
   const [show, setShow] = useState(false);
@@ -19,10 +25,12 @@ export default function BootSequence() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (window.sessionStorage.getItem(STORAGE_KEY)) return;
+    const reduced = prefersReducedMotion();
+    const total = reduced ? REDUCED_MS : TOTAL_MS;
     setShow(true);
     const t0 = Date.now();
     const id = setInterval(() => {
-      const p = Math.min(100, ((Date.now() - t0) / TOTAL_MS) * 100);
+      const p = Math.min(100, ((Date.now() - t0) / total) * 100);
       setProgress(p);
     }, 33);
     const finish = setTimeout(() => {
@@ -32,7 +40,7 @@ export default function BootSequence() {
       } catch {
         // ignore sessionStorage errors
       }
-    }, TOTAL_MS);
+    }, total);
     return () => {
       clearInterval(id);
       clearTimeout(finish);
@@ -47,7 +55,7 @@ export default function BootSequence() {
           aria-live="polite"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.2 }}
           className="fixed inset-0 z-[100] bg-bg-void flex flex-col items-center justify-center pointer-events-none"
         >
           <div className="font-display tracking-[6px] text-neon-cyan text-shadow-neon-cyan text-sm">
