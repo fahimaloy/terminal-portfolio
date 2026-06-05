@@ -64,6 +64,7 @@ export default function NeonButton({
         ${VARIANT_BG[variant][accent]} ${GLOW[accent]}
         transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]
         disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-bg-void
         inline-flex items-center gap-2 ${className}`}
     >
       {loading ? (

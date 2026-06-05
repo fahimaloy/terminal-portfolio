@@ -18,7 +18,7 @@ module.exports = {
         'neon-red': '#ff3355',
         'text-primary': '#ffffff',
         'text-secondary': '#b8b8c0',
-        'text-muted': '#6a6a72',
+        'text-muted': '#8a8a92',
       },
       fontFamily: {
         display: ['var(--font-audiowide)', 'Orbitron', 'sans-serif'],
