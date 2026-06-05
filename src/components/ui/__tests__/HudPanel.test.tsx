@@ -36,4 +36,24 @@ describe('HudPanel', () => {
     render(<HudPanel title="// STATUS">X</HudPanel>);
     expect(screen.getByText('// STATUS')).toBeInTheDocument();
   });
+
+  it('applies green glow + green title for accent="green"', () => {
+    render(
+      <HudPanel accent="green" title="// OK" data-testid="p">
+        X
+      </HudPanel>,
+    );
+    expect(screen.getByTestId('p').className).toMatch(/hud-glow-green/);
+    expect(screen.getByText('// OK').className).toMatch(/text-neon-green/);
+  });
+
+  it('applies red glow + red title for accent="red"', () => {
+    render(
+      <HudPanel accent="red" title="// ERR" data-testid="p">
+        X
+      </HudPanel>,
+    );
+    expect(screen.getByTestId('p').className).toMatch(/hud-glow-red/);
+    expect(screen.getByText('// ERR').className).toMatch(/text-neon-red/);
+  });
 });

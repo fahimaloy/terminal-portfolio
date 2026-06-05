@@ -21,9 +21,9 @@ module.exports = {
         'text-muted': '#8a8a92',
       },
       fontFamily: {
-        display: ['var(--font-audiowide)', 'Orbitron', 'sans-serif'],
-        body: ['var(--font-space-grotesk)', 'system-ui', 'sans-serif'],
-        mono: ['var(--font-jetbrains-mono)', 'ui-monospace', 'monospace'],
+        display: ['Audiowide', 'Orbitron', 'sans-serif'],
+        body: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       keyframes: {
         'pulse-glow': {

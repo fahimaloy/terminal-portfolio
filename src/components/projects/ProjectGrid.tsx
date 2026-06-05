@@ -63,7 +63,7 @@ export default function ProjectGrid({
                     onKeyDown={(e) =>
                       e.key === 'Enter' && onProjectClick(project)
                     }
-                    className="cursor-pointer focus:outline-none"
+                    className="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-bg-void"
                     aria-label={`Open ${project.title}`}
                   >
                     <HudPanel
@@ -109,7 +109,7 @@ export default function ProjectGrid({
                         <StatBar
                           label="COMPLEXITY"
                           value={complexity}
-                          accent={accent === 'green' ? 'yellow' : accent}
+                          accent={accent}
                           showValue
                         />
                         {project.languages && project.languages.length > 0 && (
