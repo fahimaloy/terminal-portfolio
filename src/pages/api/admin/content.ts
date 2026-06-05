@@ -49,11 +49,13 @@ export default async function handler(
   const action = body.action;
 
   if (!action) {
+    // eslint-disable-next-line no-console
     console.error('[admin/content] Missing action in request body:', body);
     res.status(400).json({ ok: false, message: 'Missing "action" field in request body' });
     return;
   }
 
+  // eslint-disable-next-line no-console
   console.log('[admin/content] action:', action, 'id:', body.id);
 
   try {
@@ -233,6 +235,7 @@ export default async function handler(
 
     res.status(400).json({ ok: false, message: `Unknown action: "${action}"` });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(`[admin/content] "${action}" failed:`, error);
     // Extract message from Error, Supabase PostgrestError, or plain object
     const errObj = error as Record<string, unknown>;
