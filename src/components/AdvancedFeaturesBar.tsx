@@ -1,38 +1,65 @@
+// src/components/AdvancedFeaturesBar.tsx
 import React from 'react';
 import { FiMail, FiCalendar, FiSearch } from 'react-icons/fi';
 
 export type FeatureMode = 'chat' | 'contact' | 'meeting' | 'project_match';
 
-type AdvancedFeaturesBarProps = { activeMode: FeatureMode; onModeChange: (mode: FeatureMode) => void; };
-
-const features = [
-  { mode: 'contact' as FeatureMode, label: 'Contact Me', icon: <FiMail className="w-4 h-4" />, color: 'purple' },
-  { mode: 'meeting' as FeatureMode, label: 'Book Meeting', icon: <FiCalendar className="w-4 h-4" />, color: 'cyan' },
-  { mode: 'project_match' as FeatureMode, label: 'Project Match', icon: <FiSearch className="w-4 h-4" />, color: 'lime' },
-];
-
-const colorMap: Record<string, { active: string; inactive: string; activeBg: string }> = {
-  purple: { active: 'text-purple-200 border-purple-500/60', inactive: 'text-gray-400 border-gray-700/50 hover:text-purple-300 hover:border-purple-500/30', activeBg: 'bg-purple-500/10' },
-  cyan: { active: 'text-cyan-200 border-cyan-500/60', inactive: 'text-gray-400 border-gray-700/50 hover:text-cyan-300 hover:border-cyan-500/30', activeBg: 'bg-cyan-500/10' },
-  lime: { active: 'text-lime-200 border-lime-500/60', inactive: 'text-gray-400 border-gray-700/50 hover:text-lime-300 hover:border-lime-500/30', activeBg: 'bg-lime-500/10' },
+type Feature = {
+  mode: FeatureMode;
+  label: string;
+  icon: React.ReactNode;
+  accent: 'magenta' | 'cyan' | 'green';
 };
 
-export default function AdvancedFeaturesBar({ activeMode, onModeChange }: AdvancedFeaturesBarProps) {
+const FEATURES: Feature[] = [
+  { mode: 'contact', label: 'CONTACT', icon: <FiMail />, accent: 'magenta' },
+  { mode: 'meeting', label: 'MEETING', icon: <FiCalendar />, accent: 'cyan' },
+  {
+    mode: 'project_match',
+    label: 'PROJECT MATCH',
+    icon: <FiSearch />,
+    accent: 'green',
+  },
+];
+
+const ACCENT_TEXT: Record<Feature['accent'], string> = {
+  magenta: 'text-neon-magenta text-shadow-neon-magenta',
+  cyan: 'text-neon-cyan text-shadow-neon-cyan',
+  green: 'text-neon-yellow text-shadow-neon-yellow',
+};
+const ACCENT_BG: Record<Feature['accent'], string> = {
+  magenta: 'bg-neon-magenta/10 border-neon-magenta/40',
+  cyan: 'bg-neon-cyan/10 border-neon-cyan/40',
+  green: 'bg-neon-yellow/10 border-neon-yellow/40',
+};
+
+type Props = {
+  activeMode: FeatureMode;
+  onModeChange: (mode: FeatureMode) => void;
+};
+
+export default function AdvancedFeaturesBar({
+  activeMode,
+  onModeChange,
+}: Props) {
   return (
-    <div className="flex flex-wrap items-center gap-2 px-2 py-2">
-      {features.map((feature) => {
-        const colors = colorMap[feature.color];
-        const isActive = activeMode === feature.mode;
+    <div className="flex flex-wrap items-center gap-2 px-3 py-2">
+      {FEATURES.map((f) => {
+        const isActive = activeMode === f.mode;
         return (
           <button
-            key={feature.mode}
-            onClick={() => onModeChange(isActive ? 'chat' : feature.mode)}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-medium transition-all duration-300 backdrop-blur-sm ${
-              isActive ? `${colors.active} ${colors.activeBg} shadow-lg` : `${colors.inactive} bg-transparent`
-            }`}
+            key={f.mode}
+            onClick={() => onModeChange(isActive ? 'chat' : f.mode)}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 text-[10px] font-display tracking-[2px] uppercase border transition-all duration-200
+              ${
+                isActive
+                  ? `${ACCENT_BG[f.accent]} ${ACCENT_TEXT[f.accent]} hud-glow-yellow`
+                  : 'bg-transparent border-white/10 text-text-secondary hover:border-white/30'
+              }
+            `}
           >
-            {feature.icon}
-            <span>{feature.label}</span>
+            {f.icon}
+            <span>{f.label}</span>
           </button>
         );
       })}
