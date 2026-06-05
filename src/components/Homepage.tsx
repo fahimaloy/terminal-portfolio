@@ -1,16 +1,16 @@
+// src/components/Homepage.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import config from '../../config.json';
 import {
   FiSend,
-  FiUser,
   FiCode,
   FiBriefcase,
   FiGithub,
+  FiUser,
   FiRotateCcw,
-  FiSettings,
   FiStar,
 } from 'react-icons/fi';
+import config from '../../config.json';
 import {
   getPortfolioProfile,
   PortfolioProfile,
@@ -20,30 +20,25 @@ import {
 import SEOMeta from './SEOMeta';
 import ChatMessage from './ChatMessage';
 import MessageOverlay from './MessageOverlay';
-import ErrorBoundary from './ErrorBoundary';
+import {
+  GlitchText,
+  HudPanel,
+  NeonButton,
+  Ripple,
+  StatBar,
+  Tilt3D,
+} from './ui';
 
-type Message = {
-  role: 'user' | 'model';
-  text: string;
-};
+type Message = { role: 'user' | 'model'; text: string };
 
 const SUGGESTIONS = [
-  { label: 'What are your core skills?', icon: <FiCode /> },
-  { label: 'Tell me about your recent projects.', icon: <FiBriefcase /> },
-  { label: 'Where can I find your GitHub?', icon: <FiGithub /> },
-  { label: 'What is your professional background?', icon: <FiUser /> },
+  { label: 'What are your core skills?', icon: <FiCode />, match: ['skills', 'tech'] },
+  { label: 'Tell me about your recent projects.', icon: <FiBriefcase />, match: ['projects', 'work'] },
+  { label: 'Where can I find your GitHub?', icon: <FiGithub />, match: ['github', 'code'] },
+  { label: 'What is your professional background?', icon: <FiUser />, match: ['about', 'bio'] },
 ];
 
-const premiumCardColors = [
-  { bg: 'bg-purple-500/15', border: 'border-purple-400/25', hoverBorder: 'hover:border-purple-400/50', glow: 'hover:shadow-purple-500/20' },
-  { bg: 'bg-cyan-500/15', border: 'border-cyan-400/25', hoverBorder: 'hover:border-cyan-400/50', glow: 'hover:shadow-cyan-500/20' },
-  { bg: 'bg-pink-500/15', border: 'border-pink-400/25', hoverBorder: 'hover:border-pink-400/50', glow: 'hover:shadow-pink-500/20' },
-  { bg: 'bg-emerald-500/15', border: 'border-emerald-400/25', hoverBorder: 'hover:border-emerald-400/50', glow: 'hover:shadow-emerald-500/20' },
-  { bg: 'bg-orange-500/15', border: 'border-orange-400/25', hoverBorder: 'hover:border-orange-400/50', glow: 'hover:shadow-orange-500/20' },
-  { bg: 'bg-yellow-500/15', border: 'border-yellow-400/25', hoverBorder: 'hover:border-yellow-400/50', glow: 'hover:shadow-yellow-500/20' },
-];
-
-const getColor = (index: number) => premiumCardColors[index % premiumCardColors.length];
+const ACCENTS = ['yellow', 'magenta', 'cyan', 'yellow'] as const;
 
 export default function Homepage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -53,35 +48,31 @@ export default function Homepage() {
   const [profile, setProfile] = useState<PortfolioProfile | null>(null);
   const [projects, setProjects] = useState<PortfolioProject[]>([]);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [detailProject, setDetailProject] = useState<PortfolioProject | null>(null);
   const [showProjectDetail, setShowProjectDetail] = useState(false);
-  const [detailProject, setDetailProject] = useState<PortfolioProject | null>(
-    null,
-  );
+  const [now, setNow] = useState<string>('');
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const messagesRef = useRef<Message[]>([]);
 
-  // Keep messagesRef in sync
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
 
-  // Load data
   useEffect(() => {
-    const loadData = async () => {
+    const load = async () => {
       setIsDataLoading(true);
-      const [profileData, projectsData] = await Promise.all([
+      const [p, pr] = await Promise.all([
         getPortfolioProfile(),
         getPortfolioProjects(),
       ]);
-      if (profileData) setProfile(profileData);
-      setProjects(projectsData);
+      if (p) setProfile(p);
+      setProjects(pr);
       setIsDataLoading(false);
     };
-    loadData();
+    load();
   }, []);
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (messages.length > 0) {
       setTimeout(
@@ -91,27 +82,36 @@ export default function Homepage() {
     }
   }, [messages]);
 
+  // HUD clock widget
+  useEffect(() => {
+    const update = () =>
+      setNow(
+        new Date().toLocaleTimeString('en-US', {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        }),
+      );
+    update();
+    const i = setInterval(update, 1000);
+    return () => clearInterval(i);
+  }, []);
+
   const handleSend = async (text: string) => {
     if (!text.trim() || isLoading) return;
-
     setInput('');
-    const userMessage: Message = { role: 'user', text };
-    const updatedMessages = [...messagesRef.current, userMessage];
-    setMessages(updatedMessages);
+    const updated = [...messagesRef.current, { role: 'user' as const, text }];
+    setMessages(updated);
     setIsLoading(true);
-
     try {
-      const res = await axios.post('/api/chat', { messages: updatedMessages });
-      const replyText =
-        res.data?.text || "I'm sorry, I couldn't reach the server right now.";
-      setMessages((prev) => [...prev, { role: 'model', text: replyText }]);
+      const res = await axios.post('/api/chat', { messages: updated });
+      const reply = res.data?.text || "I'm sorry, I couldn't reach the server right now.";
+      setMessages((prev) => [...prev, { role: 'model', text: reply }]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        {
-          role: 'model',
-          text: 'Oops! Something went wrong while fetching the answer.',
-        },
+        { role: 'model', text: 'Oops! Something went wrong while fetching the answer.' },
       ]);
     } finally {
       setIsLoading(false);
@@ -125,257 +125,248 @@ export default function Homepage() {
     setDetailProject(null);
   };
 
-  const handleOpenOverlay = () => {
-    setShowOverlay(true);
-  };
-
-  const handleCloseOverlay = () => {
-    setShowOverlay(false);
-  };
-
-  const isInitialState = messages.length === 0 && !showProjectDetail;
-
-  // Loading skeleton for initial state
-  const renderSkeleton = () => (
-    <div className="flex flex-col items-center w-full animate-fade-in-up">
-      <div className="mb-6">
-        <div className="w-32 h-32 rounded-full skeleton-pulse" />
-      </div>
-      <div
-        className="skeleton-line skeleton-line-lg mb-3"
-        style={{ maxWidth: 300 }}
-      />
-      <div
-        className="skeleton-line skeleton-line-md mb-6"
-        style={{ maxWidth: 200 }}
-      />
-      <div
-        className="skeleton-line skeleton-line-md mb-10"
-        style={{ maxWidth: 400 }}
-      />
-      <div className="skeleton-grid w-full max-w-3xl">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="skeleton-card p-4">
-            <div className="skeleton-line skeleton-line-md mb-2" />
-            <div className="skeleton-line skeleton-line-sm" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const isInitial = messages.length === 0 && !showProjectDetail;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex flex-col font-sans text-white relative overflow-hidden">
+    <div className="min-h-screen relative z-10">
       <SEOMeta
         title={profile?.full_name || config.name || 'Fahim Ahmed'}
-        description={
-          profile?.bio || 'Portfolio of Fahim Ahmed - Full-Stack Developer'
-        }
+        description={profile?.bio || 'Portfolio of Fahim Ahmed - Full-Stack Developer'}
         image={profile?.avatar_url}
         path="/"
       />
 
-      {/* Premium Animated Background */}
-      <div className="animated-bg-mesh" aria-hidden="true" />
+      {/* HUD chrome (4 corners) — fixed */}
+      <div className="pointer-events-none fixed inset-0 z-20">
+        {/* Top-left: ROOT.USER */}
+        <div className="absolute top-4 left-4 pointer-events-auto">
+          <HudPanel accent="yellow" notch="md" className="p-3 inline-flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-neon-yellow to-neon-magenta flex items-center justify-center font-display text-black text-sm shadow-[0_0_12px_var(--glow-yellow)]">
+              {(profile?.full_name || 'FA').charAt(0)}
+            </div>
+            <div>
+              <div className="text-[9px] font-display tracking-[3px] text-neon-yellow text-shadow-neon-yellow">
+                {'// ROOT.USER'}
+              </div>
+              <div className="text-sm font-display tracking-wider text-text-primary">
+                {profile?.full_name?.split(' ')[0] || 'Fahim'}
+              </div>
+            </div>
+          </HudPanel>
+        </div>
 
-      {/* Top Bar */}
-      <nav
-        className="w-full flex justify-between items-center p-4 z-10 relative"
-        aria-label="Main navigation"
-      >
-        <div className="flex items-center gap-3">
-          <div className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-cyan-400 to-pink-400">
-            {profile?.full_name ? `${profile.full_name.split(' ')[0]}'s Portfolio` : ''}
+        {/* Top-right: SYS.STATUS + clock */}
+        <div className="absolute top-4 right-4 pointer-events-auto flex flex-col items-end gap-2">
+          <HudPanel accent="cyan" notch="md" className="p-2 px-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-neon-green animate-pulse-dot shadow-[0_0_8px_var(--neon-green)]" />
+              <span className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan">
+                ONLINE
+              </span>
+            </div>
+          </HudPanel>
+          <div className="text-[10px] font-mono text-text-muted">{now}</div>
+        </div>
+
+        {/* Bottom-left: LATEST TRANSMISSION */}
+        {messages.length > 0 && (
+          <div className="absolute bottom-28 left-4 max-w-[260px] pointer-events-auto">
+            <HudPanel accent="magenta" notch="md" className="p-3">
+              <div className="text-[9px] font-display tracking-[3px] text-neon-magenta text-shadow-neon-magenta mb-1">
+                {'\u25BC LATEST TRANSMISSION'}
+              </div>
+              <div className="text-[11px] font-body text-text-secondary line-clamp-2">
+                {messages[messages.length - 1]?.text}
+              </div>
+            </HudPanel>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          {!isInitialState && (
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-2 px-3 py-2 bg-[#1E293B]/80 hover:bg-[#334155] border border-gray-700 hover:border-gray-600 transition-all rounded-lg text-sm font-medium shadow-lg backdrop-blur-sm"
-              title="Reset chat"
-            >
-              <FiRotateCcw className="w-4 h-4" />
-              <span className="hidden sm:inline">Reset</span>
-            </button>
-          )}
-        </div>
-      </nav>
+        )}
 
-      {/* Main Content */}
+        {/* Bottom-right: SYSTEM */}
+        <div className="absolute bottom-28 right-4 pointer-events-auto">
+          <HudPanel accent="cyan" notch="md" className="p-3 text-right">
+            <div className="text-[9px] font-display tracking-[3px] text-neon-cyan text-shadow-neon-cyan">
+              SYSTEM v3.4.2
+            </div>
+            <div className="text-[9px] font-mono text-text-muted mt-0.5">
+              UPLINK: STABLE
+            </div>
+          </HudPanel>
+        </div>
+      </div>
+
+      {/* Main content */}
       <div
-        className={`flex-1 flex flex-col items-center z-10 px-4 w-full max-w-4xl mx-auto transition-all duration-700 ease-in-out ${
-          showOverlay ? 'blur-behind active' : ''
-        } ${
-          isInitialState && !isDataLoading
-            ? 'justify-center pb-[15vh]'
-            : 'justify-end pb-6'
+        className={`relative z-10 flex-1 flex flex-col items-center px-4 w-full max-w-4xl mx-auto transition-all duration-500 ${
+          isInitial && !isDataLoading ? 'justify-center pb-[18vh] pt-[10vh]' : 'justify-end pb-6 pt-[10vh]'
         }`}
       >
-        {/* Initial Centered Content */}
-        {isInitialState && !isDataLoading && (
-          <div className="flex flex-col items-center animate-fade-in-up w-full">
-            <div className="mb-6 relative">
-              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500/40 shadow-2xl shadow-purple-500/20">
-                {profile?.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt={profile.full_name || 'Fahim Ahmed'}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center">
-                    <span className="text-4xl font-bold text-white">
-                      {(profile?.full_name || 'FA').charAt(0)}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div className="absolute inset-0 rounded-full border-2 border-purple-400/40 scale-110 animate-pulse"></div>
+        {isInitial && !isDataLoading && (
+          <div className="flex flex-col items-center w-full animate-fade-in-up">
+            <div className="text-[10px] font-display tracking-[6px] text-neon-magenta text-shadow-neon-magenta mb-2">
+              {'// OPERATIVE PROFILE'}
             </div>
-
-            <h1 className="text-3xl md:text-5xl font-extrabold mb-3 text-center tracking-tight text-white">
-              {profile?.full_name || 'FAHIM AHMED'}
-            </h1>
-
-            {profile?.title && (
-              <p className="text-lg md:text-xl text-blue-400 text-center mb-6 font-medium">
-                {profile.title}
-              </p>
+            <GlitchText as="h1" accent="magenta" className="text-4xl md:text-6xl">
+              {profile?.full_name?.toUpperCase() || 'FAHIM AHMED'}
+            </GlitchText>
+            <div className="font-body text-text-secondary text-sm md:text-base tracking-widest mt-3">
+              FULL-STACK{' '}
+              <span className="text-neon-yellow text-shadow-neon-yellow font-display tracking-[2px]">
+                DEVELOPER
+              </span>
+            </div>
+            {profile?.bio && (
+              <div className="text-text-muted text-xs md:text-sm font-body text-center mt-5 max-w-lg">
+                {profile.bio}
+              </div>
             )}
 
-            <p className="text-base md:text-lg text-gray-400 text-center mb-10 max-w-lg">
-               {profile?.welcome_message || profile?.bio || ''}
-            </p>
+            <div className="flex gap-3 mt-7">
+              <NeonButton accent="yellow" onClick={() => setShowOverlay(true)}>
+                DEPLOY
+              </NeonButton>
+              <NeonButton
+                accent="cyan"
+                variant="outline"
+                onClick={() => window.open('https://github.com/fahimaloy', '_blank')}
+              >
+                SCAN GITHUB
+              </NeonButton>
+            </div>
 
-            <div className="flex flex-wrap justify-center gap-3 mb-8 w-full max-w-3xl">
-              {SUGGESTIONS.map((suggestion, idx) => {
-                const colors = getColor(idx);
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => handleSend(suggestion.label)}
-                    className={`premium-card flex items-center gap-3 px-5 py-3.5 ${colors.bg} border ${colors.border} ${colors.hoverBorder} text-white rounded-xl text-sm font-medium font-sans backdrop-blur-sm ${colors.glow} group`}
-                  >
-                    <span className="text-white/80 group-hover:scale-110 transition-transform">{suggestion.icon}</span>
-                    {suggestion.label}
-                  </button>
-                );
-              })}
+            {/* Suggestion cards above input */}
+            <div className="mt-12 w-full">
+              <div className="text-[9px] font-display tracking-[3px] text-text-muted text-center mb-3">
+                {'// QUICK COMMANDS'}
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {SUGGESTIONS.map((s, idx) => (
+                  <Tilt3D key={s.label}>
+                    <Ripple
+                      onClick={() => handleSend(s.label)}
+                      className="clip-notch-md bg-bg-smoke hover:bg-bg-ash p-4 hud-glow-yellow cursor-pointer transition-all duration-200 hover:scale-[1.02]"
+                      color="rgba(255,170,0,0.4)"
+                    >
+                      <div className="text-center">
+                        <div
+                          className={`text-2xl mb-2 text-${ACCENTS[idx]} ${
+                            ACCENTS[idx] === 'yellow'
+                              ? 'text-shadow-neon-yellow'
+                              : ACCENTS[idx] === 'magenta'
+                                ? 'text-shadow-neon-magenta'
+                                : 'text-shadow-neon-cyan'
+                          }`}
+                        >
+                          {s.icon}
+                        </div>
+                        <div className="font-display text-[10px] tracking-[2px] text-text-primary">
+                          {s.label.split(' ').slice(0, 2).join(' ').toUpperCase()}
+                        </div>
+                      </div>
+                    </Ripple>
+                  </Tilt3D>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Data loading skeleton */}
-        {isInitialState && isDataLoading && renderSkeleton()}
-
-        {/* Chat Messages Area */}
-        {!isInitialState && (
-          <ErrorBoundary
-            fallback={
-              <div className="w-full p-6 text-center">
-                <p className="text-gray-400 text-sm">Chat area encountered an error. <button onClick={() => window.location.reload()} className="text-blue-400 hover:underline">Reload page</button></p>
-              </div>
-            }
-          >
-            <div
-              className="w-full flex-1 overflow-y-auto mb-4 pr-2"
-              role="log"
-              aria-label="Chat conversation"
-              aria-live="polite"
-            >
-              <div className="flex flex-col gap-4 py-4">
-                {messages.map((msg, idx) => (
-                  <ChatMessage
-                    key={idx}
-                    role={msg.role}
-                    text={msg.text}
-                    projects={projects}
-                  />
-                ))}
-                {isLoading && (
-                  <div className="flex w-full justify-start">
-                    <div className="px-4 py-3 bg-[#1E293B] border border-gray-700 rounded-lg rounded-bl-md shadow-sm flex items-center gap-2">
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
-                    </div>
-                  </div>
-                )}
-                <div ref={bottomRef} />
-              </div>
-            </div>
-          </ErrorBoundary>
+        {isInitial && isDataLoading && (
+          <div className="w-full max-w-2xl space-y-3 animate-pulse-glow">
+            <StatBar label="LOADING" value={40} accent="yellow" />
+            <StatBar label="SYNCING" value={70} accent="magenta" />
+            <StatBar label="READY" value={20} accent="cyan" />
+          </div>
         )}
 
-        {/* Quick Project Cards */}
-        {!isInitialState && projects.length > 0 && (
+        {!isInitial && (
+          <div className="w-full flex-1 overflow-y-auto mb-4 pr-2" role="log" aria-live="polite">
+            <div className="flex flex-col gap-4 py-4">
+              {messages.map((msg, idx) => (
+                <ChatMessage key={idx} role={msg.role} text={msg.text} projects={projects} />
+              ))}
+              {isLoading && (
+                <div className="flex w-full justify-start">
+                  <HudPanel accent="cyan" notch="sm" className="px-4 py-3 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-neon-cyan animate-pulse-dot" />
+                    <span className="w-2 h-2 rounded-full bg-neon-cyan animate-pulse-dot [animation-delay:0.2s]" />
+                    <span className="w-2 h-2 rounded-full bg-neon-cyan animate-pulse-dot [animation-delay:0.4s]" />
+                  </HudPanel>
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
+          </div>
+        )}
+
+        {!isInitial && projects.length > 0 && (
           <div className="w-full mb-4">
             <div className="flex flex-wrap justify-center gap-3">
               {projects.slice(0, 4).map((project, idx) => {
-                const colors = getColor(idx + 3);
+                const accent = ACCENTS[(idx + 3) % ACCENTS.length];
                 return (
-                  <button
+                  <Ripple
                     key={project.id}
-                    onClick={() => { setDetailProject(project); setShowProjectDetail(true); }}
-                    className={`premium-card flex flex-col items-center p-3 rounded-xl border ${colors.border} ${colors.bg} w-[140px]`}
+                    onClick={() => {
+                      setDetailProject(project);
+                      setShowProjectDetail(true);
+                    }}
+                    className="w-[150px] cursor-pointer"
                   >
-                    <div className="w-full h-16 rounded-lg overflow-hidden mb-2 bg-black/30">
-                      {project.thumbnail_url ? (
-                        <img src={project.thumbnail_url} alt={project.title} className="w-full h-full object-cover" loading="lazy" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <FiStar className="w-5 h-5 text-white/80" />
-                        </div>
-                      )}
-                    </div>
-                    <span className="text-[11px] font-semibold text-center leading-tight text-white">{project.short_title || project.title}</span>
-                    <div className="flex flex-wrap gap-0.5 mt-1.5 justify-center">
-                      {project.languages?.slice(0, 2).map((lang, li) => (
-                        <span key={li} className="text-[7px] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/80">{lang}</span>
-                      ))}
-                    </div>
-                  </button>
+                    <HudPanel accent={accent} notch="sm" className="p-2 hud-glow-yellow">
+                      <div className="w-full h-16 overflow-hidden bg-black/40 mb-2">
+                        {project.thumbnail_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={project.thumbnail_url}
+                            alt={project.title}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-text-muted">
+                            <FiStar />
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-[10px] font-display tracking-[1.5px] text-center text-text-primary">
+                        {project.short_title || project.title}
+                      </div>
+                    </HudPanel>
+                  </Ripple>
                 );
               })}
             </div>
           </div>
         )}
 
-        {/* Project Detail View */}
         {showProjectDetail && detailProject && (
-          <div className="w-full mb-4 animate-fade-in-up">
-            <div className="bg-[#0F172A]/80 border border-gray-700/50 rounded-lg p-4">
+          <div className="w-full mb-4">
+            <HudPanel accent="yellow" notch="md" className="p-4">
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-lg overflow-hidden bg-black/40 flex-shrink-0">
+                <div className="w-16 h-16 overflow-hidden bg-black/40 flex-shrink-0">
                   {detailProject.thumbnail_url ? (
-                    <img
-                      src={detailProject.thumbnail_url}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={detailProject.thumbnail_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-600">
-                      <FiBriefcase className="w-6 h-6" />
+                    <div className="w-full h-full flex items-center justify-center text-text-muted">
+                      <FiBriefcase />
                     </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-bold">
+                  <div className="font-display text-base text-text-primary tracking-wider">
                     {detailProject.title}
-                  </h3>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {detailProject.languages?.map((lang, li) => {
-                      const lc = getColor(li);
-                      return (
-                        <span
-                          key={li}
-                          className={`text-[10px] px-2 py-0.5 rounded-full ${lc.bg} text-white/90 border ${lc.border}`}
-                        >
-                          {lang}
-                        </span>
-                      );
-                    })}
+                  </div>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {detailProject.languages?.map((l, i) => (
+                      <span
+                        key={i}
+                        className="text-[9px] font-display tracking-[1px] px-1.5 py-0.5 bg-neon-yellow/20 text-neon-yellow border border-neon-yellow/30"
+                      >
+                        {l}
+                      </span>
+                    ))}
                   </div>
                 </div>
                 <button
@@ -383,57 +374,81 @@ export default function Homepage() {
                     setShowProjectDetail(false);
                     setDetailProject(null);
                   }}
-                  className="p-1.5 rounded-lg hover:bg-[#1E293B] text-gray-500 hover:text-white transition-all"
+                  className="text-text-muted hover:text-text-primary text-lg"
+                  aria-label="Close project"
                 >
-                  <span className="text-lg">&times;</span>
+                  ×
                 </button>
               </div>
-            </div>
+            </HudPanel>
           </div>
         )}
 
-        {/* Main Input Bar - Always Visible */}
-        <div className="w-full relative group flex-shrink-0 premium-input-wrapper">
-          <div className="input-glow absolute inset-0 bg-gradient-to-r from-purple-600 via-cyan-500 to-pink-500 rounded-2xl" aria-hidden="true" />
-          <div className="relative bg-[#0F172A]/80 border border-gray-700/50 rounded-2xl shadow-2xl flex items-center p-2 backdrop-blur-lg focus-within:border-purple-500/40 focus-within:shadow-[0_0_30px_rgba(139,92,246,0.1)] transition-all duration-300 cursor-text" onClick={handleOpenOverlay}>
-            <input
-              type="text"
-              className="main-chat-input flex-1 bg-transparent border-none text-white px-4 py-3.5 focus:outline-none placeholder-gray-500 text-base cursor-text"
-              placeholder="Ask anything about my work..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onFocus={handleOpenOverlay}
-              disabled={isLoading}
-              aria-label="Type your message"
-              readOnly
-            />
-            <button
-              onClick={(e) => { e.stopPropagation(); handleSend(input); }}
-              disabled={!input.trim() || isLoading}
-              className="p-3 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ml-1 shadow-lg flex items-center justify-center"
-              aria-label="Send message"
+        {/* Main input bar — fixed at bottom */}
+        <div className="w-full relative z-30">
+          <Ripple className="clip-notch-md" color="rgba(255,170,0,0.4)">
+            <HudPanel
+              accent="yellow"
+              notch="md"
+              className="p-1.5 flex items-center gap-2 cursor-text hud-glow-yellow"
+              onClick={() => setShowOverlay(true)}
             >
-              <FiSend className="w-5 h-5" />
-            </button>
-          </div>
+              <span className="font-display text-neon-yellow text-shadow-neon-yellow pl-3 text-lg">
+                &gt;
+              </span>
+              <input
+                type="text"
+                className="flex-1 bg-transparent border-none text-text-primary px-2 py-2.5 focus:outline-none placeholder-text-muted text-sm font-body cursor-text"
+                placeholder="Ask anything about my work…"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onFocus={() => setShowOverlay(true)}
+                readOnly
+                aria-label="Open chat"
+              />
+              {!isInitial && (
+                <NeonButton
+                  variant="ghost"
+                  accent="cyan"
+                  iconLeft={<FiRotateCcw />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReset();
+                  }}
+                >
+                  RESET
+                </NeonButton>
+              )}
+              <NeonButton
+                accent="yellow"
+                iconRight={<FiSend />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (input.trim()) handleSend(input);
+                  else setShowOverlay(true);
+                }}
+              >
+                SEND
+              </NeonButton>
+            </HudPanel>
+          </Ripple>
         </div>
       </div>
 
-      {/* Message Overlay */}
       <MessageOverlay
         isOpen={showOverlay}
-        onClose={handleCloseOverlay}
+        onClose={() => setShowOverlay(false)}
         inputValue={input}
         onInputChange={setInput}
         onSend={(text) => {
           handleSend(text);
-          handleCloseOverlay();
+          setShowOverlay(false);
         }}
         isLoading={isLoading}
         suggestions={SUGGESTIONS}
         onSuggestionClick={(label) => {
           handleSend(label);
-          handleCloseOverlay();
+          setShowOverlay(false);
         }}
         projects={projects}
       />
