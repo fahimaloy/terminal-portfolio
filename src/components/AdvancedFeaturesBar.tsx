@@ -55,11 +55,11 @@ export default function AdvancedFeaturesBar({
           <button
             key={f.mode}
             onClick={() => onModeChange(isActive ? 'chat' : f.mode)}
-            className={`inline-flex items-center gap-2 px-3 py-1.5 text-[10px] font-display tracking-[2px] uppercase border transition-all duration-200
+            className={`inline-flex items-center gap-2 px-3 py-1.5 text-[10px] font-display tracking-[2px] uppercase border transition-all duration-200 clip-notch-sm
               ${
                 isActive
                   ? `${ACCENT_BG[f.accent]} ${ACCENT_TEXT[f.accent]} ${ACCENT_GLOW[f.accent]}`
-                  : 'bg-transparent border-white/10 text-text-secondary hover:border-white/30'
+                  : 'bg-transparent border-white/10 text-text-secondary hover:border-white/30 hover:text-text-primary'
               }
             `}
           >

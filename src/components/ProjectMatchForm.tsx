@@ -127,11 +127,7 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
             placeholder="Describe your project idea in detail..."
             maxLength={5000}
             rows={6}
-            className="w-full bg-bg-smoke border border-white/10 text-text-primary p-3 font-body text-sm focus:outline-none focus:border-neon-yellow placeholder-text-muted resize-none"
-            style={{
-              clipPath:
-                'polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)',
-            }}
+            className="w-full bg-bg-smoke border border-white/10 text-text-primary p-3 font-body text-sm focus:outline-none focus:border-neon-yellow focus:shadow-[0_0_12px_var(--glow-yellow)] placeholder-text-muted resize-none transition-all duration-200 clip-notch-md"
             disabled={false}
           />
           <div className="flex justify-end">

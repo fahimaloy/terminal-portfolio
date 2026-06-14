@@ -162,17 +162,17 @@ export default function MessageOverlay({
                 )}
 
                 <div className="flex items-end p-3 border-t border-white/5">
-                  <textarea
-                    ref={inputRef}
-                    value={inputValue}
-                    onChange={(e) => onInputChange(e.target.value)}
-                    onKeyDown={handleKey}
-                    placeholder="Ask anything about my work…"
-                    maxLength={2000}
-                    rows={2}
-                    className="flex-1 bg-transparent border-none text-text-primary px-2 py-2 focus:outline-none placeholder-text-muted text-sm font-body resize-none"
-                    disabled={isLoading}
-                  />
+<textarea
+                      ref={inputRef}
+                      value={inputValue}
+                      onChange={(e) => onInputChange(e.target.value)}
+                      onKeyDown={handleKey}
+                      placeholder="Ask anything about my work…"
+                      maxLength={2000}
+                      rows={2}
+                      className="flex-1 bg-transparent border-none text-text-primary px-2 py-2 focus:outline-none placeholder-text-muted text-sm font-body resize-none focus:shadow-[0_0_12px_var(--glow-yellow)] transition-all duration-200"
+                      disabled={isLoading}
+                    />
                   <div className="flex items-center gap-2 ml-2">
                     <span className="text-[10px] font-mono text-text-muted">
                       {inputValue.length}/2000

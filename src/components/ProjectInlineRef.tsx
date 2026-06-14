@@ -22,11 +22,7 @@ export default function ProjectInlineRef({ project, onOpen, isOpen }: Props) {
   return (
     <button
       onClick={() => onOpen?.(project)}
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-display tracking-[1.5px] uppercase border bg-black/40 ${c.accent} ${c.border} ${c.glow} transition-all duration-200 hover:scale-[1.03] active:scale-95`}
-      style={{
-        clipPath:
-          'polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px)',
-      }}
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-display tracking-[1.5px] uppercase border bg-black/40 ${c.accent} ${c.border} ${c.glow} transition-all duration-200 hover:scale-[1.03] active:scale-95 clip-notch-sm`}
       title={`Click to view ${project.title} details`}
     >
       {project.thumbnail_url ? (

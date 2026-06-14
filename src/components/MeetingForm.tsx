@@ -21,11 +21,8 @@ type MeetingFormProps = {
 type FormState = 'filling' | 'submitting' | 'submitted' | 'error';
 
 const inputClass =
-  'w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-yellow placeholder-text-muted transition-colors [color-scheme:dark]';
-const inputStyle: React.CSSProperties = {
-  clipPath:
-    'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',
-};
+  'w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-yellow focus:shadow-[0_0_12px_var(--glow-yellow)] placeholder-text-muted transition-all duration-200 clip-notch-md [color-scheme:dark]';
+const inputStyle: React.CSSProperties = {};
 
 export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
   const [formState, setFormState] = useState<FormState>('filling');
@@ -180,7 +177,7 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="relative">
-          <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+          <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-yellow" />
           <input
             type="text"
             value={name}
@@ -188,19 +185,17 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
             placeholder="Your Name *"
             maxLength={100}
             className={inputClass}
-            style={inputStyle}
             disabled={formState === 'submitting'}
           />
         </div>
         <div className="relative">
-          <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+          <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-yellow" />
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Your Email *"
             className={inputClass}
-            style={inputStyle}
             disabled={formState === 'submitting'}
           />
         </div>
@@ -208,43 +203,40 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="relative">
-          <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+          <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-yellow" />
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             min={minDate}
             className={inputClass}
-            style={inputStyle}
             disabled={formState === 'submitting'}
           />
         </div>
         <div className="relative">
-          <FiClock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+          <FiClock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-yellow" />
           <input
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
             className={inputClass}
-            style={inputStyle}
             disabled={formState === 'submitting'}
           />
         </div>
       </div>
 
-      <div className="relative">
-        <FiMessageSquare className="absolute left-3 top-3 w-4 h-4 text-text-muted" />
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="Reason for meeting (optional)"
-          maxLength={1000}
-          rows={3}
-          className={`${inputClass} resize-none`}
-          style={inputStyle}
-          disabled={formState === 'submitting'}
-        />
-      </div>
+<div className="relative">
+          <FiMessageSquare className="absolute left-3 top-3 w-4 h-4 text-neon-yellow" />
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Reason for meeting (optional)"
+            maxLength={1000}
+            rows={3}
+            className={`${inputClass} resize-none`}
+            disabled={formState === 'submitting'}
+          />
+        </div>
 
       <div className="flex gap-2">
         <NeonButton

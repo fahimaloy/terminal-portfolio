@@ -99,50 +99,50 @@ export default function ProjectPreview({
         </div>
       )}
 
-      {projects.length > 1 && (
-        <div className="flex flex-wrap justify-center gap-3 mb-4">
-          {projects.map((project, idx) => {
-            const c = getColor(idx);
-            const isActive = idx === activeIndex;
-            return (
-              <Ripple
-                key={project.id}
-                onClick={() => handleSelectProject(idx)}
-                className="w-[150px] cursor-pointer"
-              >
-                <HudPanel
-                  accent={c.accent}
-                  notch="sm"
-                  className={`p-2 transition-all duration-200 ${
-                    isActive ? 'scale-105' : 'opacity-60 hover:opacity-100'
-                  }`}
-                >
-                  <div className="w-full h-16 overflow-hidden bg-black/30 mb-2">
-                    {project.thumbnail_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={project.thumbnail_url}
-                        alt={project.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className={`text-lg font-display ${c.text}`}>
-                          {project.title.charAt(0)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-[10px] font-display tracking-[1.5px] text-center text-text-primary">
-                    {project.short_title || project.title}
-                  </div>
-                </HudPanel>
-              </Ripple>
-            );
-          })}
-        </div>
-      )}
+{projects.length > 1 && (
+         <div className="flex flex-wrap justify-center gap-3 mb-4">
+           {projects.map((project, idx) => {
+             const c = getColor(idx);
+             const isActive = idx === activeIndex;
+             return (
+               <Ripple
+                 key={project.id}
+                 onClick={() => handleSelectProject(idx)}
+                 className="w-[150px] cursor-pointer"
+               >
+                 <HudPanel
+                   accent={c.accent}
+                   notch="sm"
+                   className={`p-2 transition-all duration-200 ${
+                     isActive ? 'scale-105 hud-glow-' + c.accent.replace('neon-', '') : 'opacity-60 hover:opacity-100 hover:hud-glow-' + c.accent.replace('neon-', '')
+                   }`}
+                 >
+                   <div className="w-full h-16 overflow-hidden bg-black/30 mb-2">
+                     {project.thumbnail_url ? (
+                       // eslint-disable-next-line @next/next/no-img-element
+                       <img
+                         src={project.thumbnail_url}
+                         alt={project.title}
+                         className="w-full h-full object-cover"
+                         loading="lazy"
+                       />
+                     ) : (
+                       <div className="w-full h-full flex items-center justify-center">
+                         <span className={`text-lg font-display ${c.text}`}>
+                           {project.title.charAt(0)}
+                         </span>
+                       </div>
+                     )}
+                   </div>
+                   <div className="text-[10px] font-display tracking-[1.5px] text-center text-text-primary">
+                     {project.short_title || project.title}
+                   </div>
+                 </HudPanel>
+               </Ripple>
+             );
+           })}
+         </div>
+       )}
 
       <HudPanel accent={colors.accent} notch="md" className="p-0 overflow-hidden">
         <div className="relative w-full aspect-video bg-black/60">
