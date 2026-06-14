@@ -15,6 +15,7 @@ import {
   reorderModels,
 } from '../../../utils/aiApi';
 import { GlitchText, HudPanel, NeonButton, NeonChip } from '../../../components/ui';
+import { getErrorMessage } from '../../../utils/errorMessage';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -113,8 +114,8 @@ const AiModelsPage = () => {
       });
       setFetchedModels(result.models);
       setStep('select');
-    } catch (err: any) {
-      setTestError(err.message || 'Connection failed');
+    } catch (err: unknown) {
+      setTestError(getErrorMessage(err, 'Connection failed'));
       setStep('form');
     }
   };
@@ -194,8 +195,8 @@ const AiModelsPage = () => {
 
       // Reload data
       await loadData();
-    } catch (err: any) {
-      updateStatus(err.message || 'Failed to create');
+    } catch (err: unknown) {
+      updateStatus(getErrorMessage(err, 'Failed to create'));
     }
 
     setIsSaving(false);
