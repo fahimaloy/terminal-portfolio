@@ -47,6 +47,7 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
   }, [project.id]);
 
   const handleMediaChange = (index: number) => {
+    if (index < 0 || index >= allMedia.length) return;
     setCurrentMediaIndex(index);
     setIsVideoPlaying(allMedia[index].media_type === 'video');
   };

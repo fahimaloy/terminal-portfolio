@@ -35,40 +35,52 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
                   clipPath:
                     'polygon(0 0, 16px 0, 16px 4px, 4px 4px, 4px 16px, 0 16px)',
                 }}
-                animate={{ rotate: 360 }}
-                transition={{
-                  duration: 2.4,
-                  repeat: Infinity,
-                  ease: 'linear',
-                }}
-              />
-              <motion.div
-                className="absolute inset-0 border-2 border-neon-cyan"
-                style={{
-                  clipPath:
-                    'polygon(100% 0, calc(100% - 16px) 0, calc(100% - 16px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 16px, 100% 16px)',
-                }}
-                animate={{ rotate: -360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              />
-              <motion.div
-                className="absolute inset-0 border-2 border-neon-yellow"
-                style={{
-                  clipPath:
-                    'polygon(0 100%, 16px 100%, 16px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 16px), 0 calc(100% - 16px))',
-                }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1.6, repeat: Infinity, ease: 'linear' }}
-              />
-              <motion.div
-                className="absolute inset-0 border-2 border-neon-green"
-                style={{
-                  clipPath:
-                    'polygon(100% 100%, calc(100% - 16px) 100%, calc(100% - 16px) calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) calc(100% - 16px), 100% calc(100% - 16px))',
-                }}
-                animate={{ rotate: -360 }}
-                transition={{ duration: 2.8, repeat: Infinity, ease: 'linear' }}
-              />
+animate={{ rotate: 360 }}
+                 transition={{
+                   duration: motionTokens.dur.pulse,
+                   repeat: Infinity,
+                   ease: 'linear',
+                 }}
+               />
+               <motion.div
+                 className="absolute inset-0 border-2 border-neon-cyan"
+                 style={{
+                   clipPath:
+                     'polygon(100% 0, calc(100% - 16px) 0, calc(100% - 16px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 16px, 100% 16px)',
+                 }}
+                 animate={{ rotate: -360 }}
+                 transition={{
+                   duration: motionTokens.dur.enter,
+                   repeat: Infinity,
+                   ease: 'linear',
+                 }}
+               />
+               <motion.div
+                 className="absolute inset-0 border-2 border-neon-yellow"
+                 style={{
+                   clipPath:
+                     'polygon(0 100%, 16px 100%, 16px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 16px), 0 calc(100% - 16px))',
+                 }}
+                 animate={{ rotate: 360 }}
+                 transition={{
+                   duration: motionTokens.dur.tap * 10,
+                   repeat: Infinity,
+                   ease: 'linear',
+                 }}
+               />
+               <motion.div
+                 className="absolute inset-0 border-2 border-neon-green"
+                 style={{
+                   clipPath:
+                     'polygon(100% 100%, calc(100% - 16px) 100%, calc(100% - 16px) calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) calc(100% - 16px), 100% calc(100% - 16px))',
+                 }}
+                 animate={{ rotate: -360 }}
+                 transition={{
+                   duration: motionTokens.dur.hover * 10,
+                   repeat: Infinity,
+                   ease: 'linear',
+                 }}
+               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-2xl">🔐</span>
               </div>
