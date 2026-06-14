@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -102,49 +102,39 @@ const LogoutConfirmation: React.FC<{
 };
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
-  children,
-  user,
-  isLoading = false,
-}) => {
-  const router = useRouter();
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [unreadMeetings, setUnreadMeetings] = useState(0);
+   children,
+   user,
+   isLoading = false,
+ }) => {
+   const router = useRouter();
+   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+   const [isLoggingOut, setIsLoggingOut] = useState(false);
+   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+   const [unreadMeetings, setUnreadMeetings] = useState(0);
+   const isMounted = useRef(true);
 
-  useEffect(() => {
-    const handleKeyboard = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'L') {
-        e.preventDefault();
-        if (!isLoggingOut) {
-          setShowLogoutConfirm(true);
-        }
-      }
-      if (e.key === 'Escape' && showLogoutConfirm) {
-        setShowLogoutConfirm(false);
-      }
-    };
+   useEffect(() => {
+     return () => {
+       isMounted.current = false;
+     };
+   }, []);
 
-    window.addEventListener('keydown', handleKeyboard);
-    return () => window.removeEventListener('keydown', handleKeyboard);
-  }, [isLoggingOut, showLogoutConfirm]);
-
-  useEffect(() => {
-    const fetchMeetings = async () => {
-      try {
-        const data = await getMeetings();
-        if (data) {
-          const pending = data.filter(
-            (m: any) => m.status === 'pending',
-          ).length;
-          setUnreadMeetings(pending);
-        }
-      } catch {
-        // Ignore errors
-      }
-    };
-    fetchMeetings();
-  }, []);
+   useEffect(() => {
+     const fetchMeetings = async () => {
+       try {
+         const data = await getMeetings();
+         if (isMounted.current && data) {
+           const pending = data.filter(
+             (m: unknown) => (m as { status?: string }).status === 'pending',
+           ).length;
+           setUnreadMeetings(pending);
+         }
+       } catch {
+         // Ignore errors
+       }
+     };
+     fetchMeetings();
+   }, []);
 
   const handleLogoutClick = useCallback(() => {
     if (!isLoggingOut) {
