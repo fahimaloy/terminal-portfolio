@@ -38,7 +38,7 @@ const SUGGESTIONS = [
   { label: 'What is your professional background?', icon: <FiUser />, match: ['about', 'bio'] },
 ];
 
-const ACCENTS = ['yellow', 'magenta', 'cyan', 'yellow'] as const;
+const ACCENTS = ['yellow', 'magenta', 'cyan', 'green'] as const;
 
 export default function Homepage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -240,32 +240,31 @@ export default function Homepage() {
                 {'// QUICK COMMANDS'}
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {SUGGESTIONS.map((s, idx) => (
-                  <Tilt3D key={s.label}>
-                    <Ripple
-                      onClick={() => handleSend(s.label)}
-                      className="clip-notch-md bg-bg-smoke hover:bg-bg-ash p-4 hud-glow-yellow cursor-pointer transition-all duration-200 hover:scale-[1.02]"
-                      color="rgba(255,170,0,0.4)"
-                    >
-                      <div className="text-center">
-                        <div
-                          className={`text-2xl mb-2 text-${ACCENTS[idx]} ${
-                            ACCENTS[idx] === 'yellow'
-                              ? 'text-shadow-neon-yellow'
-                              : ACCENTS[idx] === 'magenta'
-                                ? 'text-shadow-neon-magenta'
-                                : 'text-shadow-neon-cyan'
-                          }`}
-                        >
-                          {s.icon}
-                        </div>
-                        <div className="font-display text-[10px] tracking-[2px] text-text-primary">
-                          {s.label.split(' ').slice(0, 2).join(' ').toUpperCase()}
-                        </div>
-                      </div>
-                    </Ripple>
-                  </Tilt3D>
-                ))}
+{SUGGESTIONS.map((s, idx) => {
+                   const accent = ACCENTS[idx % ACCENTS.length];
+                   const glowClass = `hud-glow-${accent}`;
+                   const textShadowClass = accent === 'yellow' ? 'text-shadow-neon-yellow' : accent === 'magenta' ? 'text-shadow-neon-magenta' : accent === 'cyan' ? 'text-shadow-neon-cyan' : 'text-shadow-neon-green';
+                   return (
+                     <Tilt3D key={s.label}>
+                       <Ripple
+                         onClick={() => handleSend(s.label)}
+                         className={`clip-notch-md bg-bg-smoke hover:bg-bg-ash p-4 cursor-pointer transition-all duration-200 hover:scale-[1.02] ${glowClass}`}
+                         color={accent === 'yellow' ? 'rgba(255,170,0,0.4)' : accent === 'magenta' ? 'rgba(255,0,170,0.4)' : accent === 'cyan' ? 'rgba(0,240,255,0.4)' : 'rgba(57,255,20,0.4)'}
+                       >
+                         <div className="text-center">
+                           <div
+                             className={`text-2xl mb-2 text-${accent} ${textShadowClass}`}
+                           >
+                             {s.icon}
+                           </div>
+                           <div className="font-display text-[10px] tracking-[2px] text-text-primary">
+                             {s.label.split(' ').slice(0, 2).join(' ').toUpperCase()}
+                           </div>
+                         </div>
+                       </Ripple>
+                     </Tilt3D>
+                   );
+                 })}
               </div>
             </div>
           </div>
@@ -398,7 +397,7 @@ export default function Homepage() {
               </span>
               <input
                 type="text"
-                className="flex-1 bg-transparent border-none text-text-primary px-2 py-2.5 focus:outline-none placeholder-text-muted text-sm font-body cursor-text"
+                className="flex-1 bg-transparent border-none text-text-primary px-2 py-2.5 focus:outline-none placeholder-text-muted text-sm font-body cursor-text focus:shadow-[0_0_12px_var(--glow-yellow)] transition-all duration-200"
                 placeholder="Ask anything about my work…"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}

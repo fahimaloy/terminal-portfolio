@@ -186,7 +186,7 @@ function FieldInput({
 }) {
   return (
     <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neon-yellow">
         {icon}
       </span>
       <input
@@ -196,11 +196,7 @@ function FieldInput({
         placeholder={placeholder}
         maxLength={maxLength}
         disabled={disabled}
-        className="w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-yellow placeholder-text-muted transition-colors"
-        style={{
-          clipPath:
-            'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',
-        }}
+        className="w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-yellow focus:shadow-[0_0_12px_var(--glow-yellow)] placeholder-text-muted transition-all duration-200 clip-notch-md"
       />
     </div>
   );
@@ -225,7 +221,7 @@ function FieldTextarea({
 }) {
   return (
     <div className="relative">
-      <span className="absolute left-3 top-3 text-text-muted">{icon}</span>
+      <span className="absolute left-3 top-3 text-neon-yellow">{icon}</span>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -233,11 +229,7 @@ function FieldTextarea({
         maxLength={maxLength}
         rows={rows}
         disabled={disabled}
-        className="w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-yellow placeholder-text-muted resize-none transition-colors"
-        style={{
-          clipPath:
-            'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',
-        }}
+        className="w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-yellow focus:shadow-[0_0_12px_var(--glow-yellow)] placeholder-text-muted resize-none transition-all duration-200 clip-notch-md"
       />
     </div>
   );

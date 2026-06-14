@@ -14,6 +14,7 @@ import {
   deleteModel,
   reorderModels,
 } from '../../../utils/aiApi';
+import { GlitchText, HudPanel, NeonButton, NeonChip } from '../../../components/ui';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -312,34 +313,28 @@ const AiModelsPage = () => {
 
   if (!authorized) return null;
 
-  // ─── Provider Badge ──────────────────────────────────────
-  const providerBadge = (model: AiModel) => {
-    const provider = providers.find((p) => p.id === model.provider_id);
-    if (!provider) return <span className="text-xs text-red-400">No provider</span>;
-    return (
-      <span
-        className={`text-xs px-2 py-0.5 rounded ${
-          provider.provider_type === 'gemini'
-            ? 'bg-blue-900 text-blue-300'
-            : 'bg-purple-900 text-purple-300'
-        }`}
-      >
-        {provider.name} ({provider.provider_type === 'gemini' ? 'Gemini' : 'OpenAI'})
-      </span>
-    );
-  };
+// ─── Provider Badge ──────────────────────────────────────
+const providerBadge = (model: AiModel) => {
+  const provider = providers.find((p) => p.id === model.provider_id);
+  if (!provider) return <span className="text-[10px] text-neon-red">No provider</span>;
+  return (
+    <NeonChip accent={provider.provider_type === 'gemini' ? 'cyan' : 'magenta'}>
+      {provider.name} ({provider.provider_type === 'gemini' ? 'GEMINI' : 'OPENAI'})
+    </NeonChip>
+  );
+};
 
-  // ─── Cooldown Badge ──────────────────────────────────────
-  const cooldownBadge = (model: AiModel) => {
-    if (!model.cooldown_until) return null;
-    const until = new Date(model.cooldown_until);
-    if (until <= new Date()) return null;
-    return (
-      <span className="text-xs bg-yellow-900 text-yellow-300 px-2 py-0.5 rounded">
-        Cooldown until {until.toLocaleTimeString()}
-      </span>
-    );
-  };
+// ─── Cooldown Badge ──────────────────────────────────────
+const cooldownBadge = (model: AiModel) => {
+  if (!model.cooldown_until) return null;
+  const until = new Date(model.cooldown_until);
+  if (until <= new Date()) return null;
+  return (
+    <NeonChip accent="yellow" className="mt-1">
+      COOLDOWN UNTIL {until.toLocaleTimeString()}
+    </NeonChip>
+  );
+};
 
   return (
     <>
@@ -349,40 +344,48 @@ const AiModelsPage = () => {
 
       <AdminLayout user={user} isLoading={loading}>
         <div>
-          <h2 className="text-2xl font-bold mb-6">AI Models Management</h2>
+          <GlitchText accent="cyan" className="text-2xl font-display tracking-[2px] mb-6">
+            AI MODELS MANAGEMENT
+          </GlitchText>
 
           {statusMessage && (
-            <div className="mb-4 p-3 bg-lime-500/10 border border-lime-500/30 text-lime-400 text-sm rounded-xl">
-              {statusMessage}
-            </div>
+            <HudPanel accent="green" notch="sm" className="mb-4 p-3">
+              <span className="font-body text-sm text-neon-green">{statusMessage}</span>
+            </HudPanel>
           )}
 
           {/* ─── Create New Model Form ─────────────────────── */}
-          <div className="glass-deep rounded-xl p-6 mb-8">
-            <h3 className="text-lg font-bold text-white mb-4">Add New AI Model</h3>
+          <HudPanel accent="cyan" notch="md" className="p-6 mb-8">
+            <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-4">
+              ADD NEW AI MODEL
+            </div>
 
             {step === 'form' || step === 'testing' ? (
               <div className="space-y-4">
                 {/* Provider Type */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Provider Type:</label>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    PROVIDER TYPE:
+                  </label>
                   <select
-                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
                     value={providerType}
                     onChange={(e) => setProviderType(e.target.value as 'gemini' | 'openai_compatible')}
                     disabled={isSaving}
                   >
-                    <option value="gemini">Google Gemini</option>
-                    <option value="openai_compatible">OpenAI Compatible</option>
+                    <option value="gemini">GOOGLE GEMINI</option>
+                    <option value="openai_compatible">OPENAI COMPATIBLE</option>
                   </select>
                 </div>
 
                 {/* Provider Name */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Provider Name:</label>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    PROVIDER NAME:
+                  </label>
                   <input
                     type="text"
-                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     placeholder="e.g., My Gemini Provider"
                     value={providerName}
                     onChange={(e) => handleNameChange(e.target.value)}
@@ -392,13 +395,13 @@ const AiModelsPage = () => {
 
                 {/* Identifier Slug */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Identifier Slug:
-                    <span className="text-gray-500 ml-2 text-xs">(unique, used for model identifiers)</span>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    IDENTIFIER SLUG:
+                    <span className="text-text-muted ml-2 text-[9px]">(unique, used for model identifiers)</span>
                   </label>
                   <input
                     type="text"
-                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500 font-mono"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted font-mono clip-notch-sm transition-all duration-200"
                     placeholder="e.g., my-gemini-provider"
                     value={identifierSlug}
                     onChange={(e) => setIdentifierSlug(generateSlug(e.target.value))}
@@ -409,10 +412,12 @@ const AiModelsPage = () => {
                 {/* Base URL (OpenAI Compatible only) */}
                 {providerType === 'openai_compatible' && (
                   <div>
-                    <label className="block text-sm text-gray-400 mb-1">Base URL:</label>
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      BASE URL:
+                    </label>
                     <input
                       type="url"
-                      className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500 font-mono"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted font-mono clip-notch-sm transition-all duration-200"
                       placeholder="e.g., https://api.openai.com/v1"
                       value={baseUrl}
                       onChange={(e) => setBaseUrl(e.target.value)}
@@ -423,10 +428,12 @@ const AiModelsPage = () => {
 
                 {/* API Key */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">API Key:</label>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    API KEY:
+                  </label>
                   <input
                     type="password"
-                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     placeholder="Enter your API key"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
@@ -437,11 +444,13 @@ const AiModelsPage = () => {
                 {/* RPM / RPD Limits */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-400 mb-1">Requests Per Minute (optional):</label>
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      REQUESTS PER MINUTE (OPTIONAL):
+                    </label>
                     <input
                       type="number"
                       min="0"
-                      className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                       placeholder="e.g., 60"
                       value={rpmLimit}
                       onChange={(e) => setRpmLimit(e.target.value ? Number(e.target.value) : '')}
@@ -449,11 +458,13 @@ const AiModelsPage = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-400 mb-1">Requests Per Day (optional):</label>
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      REQUESTS PER DAY (OPTIONAL):
+                    </label>
                     <input
                       type="number"
                       min="0"
-                      className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                       placeholder="e.g., 10000"
                       value={rpdLimit}
                       onChange={(e) => setRpdLimit(e.target.value ? Number(e.target.value) : '')}
@@ -463,25 +474,19 @@ const AiModelsPage = () => {
                 </div>
 
                 {/* Test Connection Button */}
-                <button
+                <NeonButton
+                  accent="cyan"
                   onClick={handleTestConnection}
                   disabled={isSaving || step === 'testing'}
-                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white rounded-xl font-medium transition-all shadow-lg disabled:opacity-50 text-sm"
+                  loading={step === 'testing'}
                 >
-                  {step === 'testing' ? (
-                    <span className="flex items-center gap-2">
-                      <span className="animate-spin">⟳</span>
-                      Testing Connection...
-                    </span>
-                  ) : (
-                    'Test & Fetch Models'
-                  )}
-                </button>
+                  {step === 'testing' ? 'TESTING…' : 'TEST & FETCH MODELS'}
+                </NeonButton>
 
                 {testError && (
-                  <div className="p-3 bg-red-900/30 border border-red-500/30 text-red-300 text-sm rounded-xl">
-                    {testError}
-                  </div>
+                  <HudPanel accent="red" notch="sm" className="p-3">
+                    <span className="font-body text-sm text-neon-red">{testError}</span>
+                  </HudPanel>
                 )}
               </div>
             ) : null}
@@ -489,27 +494,29 @@ const AiModelsPage = () => {
             {/* ─── Model Selection (after test) ────────────── */}
             {step === 'select' && (
               <div className="space-y-4">
-                <div className="p-3 bg-lime-500/10 border border-lime-500/30 text-lime-400 text-sm rounded-xl">
-                  Found {fetchedModels.length} models. Select the ones you want to add:
-                </div>
+                <HudPanel accent="green" notch="sm" className="p-3">
+                  <span className="font-body text-sm text-neon-green">
+                    Found {fetchedModels.length} models. Select the ones you want to add:
+                  </span>
+                </HudPanel>
 
-                <div className="max-h-64 overflow-y-auto border border-gray-800 rounded-xl p-3 bg-white/5">
+                <div className="max-h-64 overflow-y-auto border border-white/5 rounded-xl p-3 bg-black/30">
                   {fetchedModels.length === 0 ? (
-                    <p className="text-gray-400 text-sm">No models found from this provider.</p>
+                    <p className="text-text-muted text-sm font-body">No models found from this provider.</p>
                   ) : (
                     <div className="space-y-1">
                       {fetchedModels.map((modelName) => (
                         <label
                           key={modelName}
-                          className="flex items-center gap-3 text-sm cursor-pointer hover:bg-white/5 p-2 rounded-lg"
+                          className="flex items-center gap-3 text-sm cursor-pointer hover:bg-white/5 p-2 rounded clip-notch-sm transition-all duration-200"
                         >
                           <input
                             type="checkbox"
                             checked={selectedModels.has(modelName)}
                             onChange={() => toggleModelSelection(modelName)}
-                            className="cursor-pointer"
+                            className="cursor-pointer accent-neon-cyan"
                           />
-                          <span className="font-mono text-white">{modelName}</span>
+                          <span className="font-mono text-text-primary">{modelName}</span>
                         </label>
                       ))}
                     </div>
@@ -517,45 +524,48 @@ const AiModelsPage = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <button
+                  <NeonButton
+                    accent="yellow"
                     onClick={handleCreate}
                     disabled={isSaving || selectedModels.size === 0}
-                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white rounded-xl font-medium transition-all shadow-lg disabled:opacity-50"
                   >
-                    {isSaving ? 'Creating...' : `Create ${selectedModels.size} Model(s)`}
-                  </button>
-                  <button
+                    {isSaving ? 'CREATING…' : `CREATE ${selectedModels.size} MODEL(S)`}
+                  </NeonButton>
+                  <NeonButton
+                    variant="ghost"
+                    accent="magenta"
                     onClick={handleCancelCreate}
                     disabled={isSaving}
-                    className="px-4 py-2.5 bg-white/5 border border-gray-700/50 text-gray-400 rounded-xl hover:text-white hover:bg-white/10 backdrop-blur-sm text-sm transition-all disabled:opacity-50"
                   >
-                    Cancel
-                  </button>
+                    CANCEL
+                  </NeonButton>
                 </div>
               </div>
             )}
-          </div>
+          </HudPanel>
 
           {/* ─── Models Table ──────────────────────────────── */}
-          <div className="glass-deep rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-gray-800">
-              <h3 className="text-lg font-bold text-white">
-                Configured Models ({models.length})
-              </h3>
+          <HudPanel accent="cyan" notch="md" className="overflow-hidden">
+            <div className="p-4 border-b border-white/5">
+              <div className="text-lg font-display tracking-[2px] text-neon-cyan">
+                CONFIGURED MODELS ({models.length})
+              </div>
               {models.length > 0 && (
-                <p className="text-xs text-gray-400 mt-1">Drag rows to reorder. Models are used in top-to-bottom order.</p>
+                <p className="text-[10px] font-body text-text-muted mt-1">
+                  Drag rows to reorder. Models are used in top-to-bottom order.
+                </p>
               )}
             </div>
 
             {models.length === 0 ? (
-              <div className="p-8 text-center text-gray-400">
+              <div className="p-8 text-center text-text-muted font-body">
                 No models configured yet. Add one above.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-800 text-gray-400">
+                    <tr className="border-b border-white/5 text-text-muted">
                       <th className="p-3 text-left w-8">#</th>
                       <th className="p-3 text-left">Model</th>
                       <th className="p-3 text-left">Provider</th>
@@ -574,30 +584,30 @@ const AiModelsPage = () => {
                         onDragStart={() => handleDragStart(model.id)}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={() => handleDrop(model.id)}
-                        className={`border-b border-gray-800 hover:bg-white/5 cursor-move ${
+                        className={`border-b border-white/5 hover:bg-white/5 cursor-move ${
                           !model.is_active ? 'opacity-50' : ''
                         }`}
                       >
-                        <td className="p-3 text-gray-500">{model.sort_order}</td>
+                        <td className="p-3 text-text-muted font-mono">{model.sort_order}</td>
                         <td className="p-3">
                           <div>
-                            <span className="font-bold text-white">{model.display_name || model.model_name}</span>
+                            <span className="font-display text-text-primary">{model.display_name || model.model_name}</span>
                             {model.model_name !== model.display_name && (
-                              <div className="text-xs text-gray-500 font-mono">{model.model_name}</div>
+                              <div className="text-[10px] text-text-muted font-mono">{model.model_name}</div>
                             )}
                           </div>
                           {cooldownBadge(model)}
                         </td>
                         <td className="p-3">{providerBadge(model)}</td>
                         <td className="p-3">
-                          <code className="text-xs text-gray-500">{model.identifier}</code>
+                          <code className="text-[10px] text-text-muted">{model.identifier}</code>
                         </td>
                         <td className="p-3 text-center">
                           {editingLimits[model.id] ? (
                             <input
                               type="number"
                               min="0"
-                              className="w-16 px-1 py-0.5 bg-white/5 border border-gray-700 text-white text-xs text-center rounded"
+                              className="w-16 px-1 py-0.5 bg-black/30 border border-white/10 text-text-primary text-[10px] text-center rounded clip-notch-sm focus:outline-none focus:border-neon-cyan"
                               value={editingLimits[model.id].rpm}
                               onChange={(e) =>
                                 setEditingLimits((prev) => ({
@@ -611,7 +621,7 @@ const AiModelsPage = () => {
                               autoFocus
                             />
                           ) : (
-                            <span className="text-gray-300">{model.rpm_limit ?? '—'}</span>
+                            <span className="text-text-secondary">{model.rpm_limit ?? '—'}</span>
                           )}
                         </td>
                         <td className="p-3 text-center">
@@ -619,7 +629,7 @@ const AiModelsPage = () => {
                             <input
                               type="number"
                               min="0"
-                              className="w-16 px-1 py-0.5 bg-white/5 border border-gray-700 text-white text-xs text-center rounded"
+                              className="w-16 px-1 py-0.5 bg-black/30 border border-white/10 text-text-primary text-[10px] text-center rounded clip-notch-sm focus:outline-none focus:border-neon-cyan"
                               value={editingLimits[model.id].rpd}
                               onChange={(e) =>
                                 setEditingLimits((prev) => ({
@@ -632,7 +642,7 @@ const AiModelsPage = () => {
                               }
                             />
                           ) : (
-                            <span className="text-gray-300">{model.rpd_limit ?? '—'}</span>
+                            <span className="text-text-secondary">{model.rpd_limit ?? '—'}</span>
                           )}
                         </td>
                         <td className="p-3 text-center">
@@ -640,7 +650,7 @@ const AiModelsPage = () => {
                             onClick={() => handleToggleActive(model)}
                             disabled={togglingIds.has(model.id)}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                              model.is_active ? 'bg-purple-500' : 'bg-gray-600'
+                              model.is_active ? 'bg-neon-green/30' : 'bg-neon-red/30'
                             }`}
                           >
                             <span
@@ -655,40 +665,43 @@ const AiModelsPage = () => {
                           <div className="flex gap-1 justify-center">
                             {editingLimits[model.id] ? (
                               <>
-                                <button
+                                <NeonButton
+                                  accent="green"
                                   onClick={() => handleSaveLimits(model.id)}
                                   disabled={isSaving}
-                                  className="px-2 py-1 bg-gradient-to-r from-purple-600 to-cyan-500 text-white text-xs rounded-lg hover:from-purple-500 hover:to-cyan-400 disabled:opacity-50 transition-all"
-                                  title="Save limits"
+                                  className="text-[10px] px-2 py-1"
                                 >
-                                  💾
-                                </button>
-                                <button
+                                  SAVE
+                                </NeonButton>
+                                <NeonButton
+                                  variant="ghost"
+                                  accent="magenta"
                                   onClick={() => handleCancelEditLimits(model.id)}
                                   disabled={isSaving}
-                                  className="px-2 py-1 bg-white/5 border border-gray-700/50 text-gray-400 text-xs rounded-lg hover:text-white hover:bg-white/10 disabled:opacity-50 transition-all"
-                                  title="Cancel"
+                                  className="text-[10px] px-2 py-1"
                                 >
                                   ✕
-                                </button>
+                                </NeonButton>
                               </>
                             ) : (
-                              <button
+                              <NeonButton
+                                variant="ghost"
+                                accent="cyan"
                                 onClick={() => handleEditLimits(model)}
-                                className="px-2 py-1 bg-white/5 border border-gray-700/50 text-gray-400 text-xs rounded-lg hover:text-white hover:bg-white/10 transition-all"
-                                title="Edit limits"
+                                className="text-[10px] px-2 py-1"
                               >
-                                Limits
-                              </button>
+                                LIMITS
+                              </NeonButton>
                             )}
-                            <button
+                            <NeonButton
+                              variant="ghost"
+                              accent="red"
                               onClick={() => handleDeleteModel(model.id)}
                               disabled={isSaving}
-                              className="px-2 py-1 bg-white/5 border border-gray-700/50 text-gray-400 text-xs rounded-lg hover:text-white hover:bg-white/10 disabled:opacity-50 transition-all"
-                              title="Delete model"
+                              className="text-[10px] px-2 py-1"
                             >
                               🗑
-                            </button>
+                            </NeonButton>
                           </div>
                         </td>
                       </tr>
@@ -697,7 +710,7 @@ const AiModelsPage = () => {
                 </table>
               </div>
             )}
-          </div>
+          </HudPanel>
         </div>
       </AdminLayout>
     </>

@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
+import { NeonButton, HudPanel } from '../../components/ui';
 
 type LoginStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -19,9 +20,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<LoginStatus>('idle');
   const [errorMessage, setErrorMessage] = useState('');
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
-    {},
-  );
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [attempts, setAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
   const [lockTimer, setLockTimer] = useState(0);
@@ -217,9 +216,7 @@ const LoginPage = () => {
         // Focus back on username
         usernameInputRef.current?.focus();
       }
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Login error:', err);
+    } catch {
       setErrorMessage(
         'Network error. Please check your connection and try again.',
       );
@@ -245,17 +242,17 @@ const LoginPage = () => {
     hasError: boolean,
   ) => {
     const baseClasses =
-      'w-full px-4 py-3 bg-white/5 border-2 border-gray-700 text-white placeholder-gray-500 transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed rounded-xl';
+      'w-full px-4 py-3 bg-bg-smoke border-2 border-white/10 text-text-primary placeholder-text-muted transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed clip-notch-md font-body text-sm';
 
     if (hasError && touched[fieldName]) {
-      return `${baseClasses} border-red-500 focus:border-red-400 focus:bg-red-950/30 text-red-400`;
+      return `${baseClasses} border-neon-red focus:border-neon-red focus:shadow-[0_0_12px_var(--glow-red)] text-neon-red`;
     }
 
     if (focusedField === fieldName) {
-      return `${baseClasses} border-purple-500 bg-purple-950/30 text-white`;
+      return `${baseClasses} border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)]`;
     }
 
-    return `${baseClasses} border-gray-700 hover:border-gray-600 focus:border-purple-500 focus:bg-purple-950/20`;
+    return `${baseClasses} border-white/10 hover:border-white/30 focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)]`;
   };
 
   const isFormValid =
@@ -279,12 +276,12 @@ const LoginPage = () => {
         />
       </Head>
 
-      <div className="min-h-screen bg-[#0a0a0f] text-white font-mono flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen bg-bg-void text-text-primary font-body flex flex-col items-center justify-center p-4 relative overflow-hidden">
         {/* Animated background */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-magenta/5 rounded-full blur-3xl animate-pulse" />
           <div
-            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse"
+            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-cyan/5 rounded-full blur-3xl animate-pulse"
             style={{ animationDelay: '2s' }}
           />
         </div>
@@ -295,91 +292,83 @@ const LoginPage = () => {
             <div className="text-6xl mb-4 filter drop-shadow-lg animate-float">
               {status === 'success' ? '🎉' : status === 'error' ? '⚠️' : '🔐'}
             </div>
-            <h1 className="text-3xl font-bold mb-2 tracking-wider">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
+            <h1 className="text-3xl font-display mb-2 tracking-wider">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-magenta to-neon-cyan">
                 Admin Access
               </span>
             </h1>
-            <p className="text-gray-500 text-sm">
+            <p className="text-text-muted text-sm">
               Secure Portfolio Management
             </p>
           </div>
 
+          {/* Error Message */}
+          {errorMessage && (
+            <HudPanel accent="red" notch="sm" className="mb-6 p-4">
+              <div className="flex items-start gap-3">
+                <span className="text-lg">⚠️</span>
+                <div>
+                  <div className="font-display tracking-[2px] mb-1">
+                    AUTHENTICATION FAILED
+                  </div>
+                  <div className="font-body text-sm">{errorMessage}</div>
+                </div>
+              </div>
+            </HudPanel>
+          )}
+
+          {/* Success Message */}
+          {status === 'success' && (
+            <HudPanel accent="green" notch="sm" className="mb-6 p-4">
+              <div className="flex items-center gap-3">
+                <span className="text-lg animate-bounce">✓</span>
+                <div>
+                  <div className="font-display tracking-[2px]">
+                    ACCESS GRANTED
+                  </div>
+                  <div className="font-body text-sm text-text-muted">
+                    Redirecting to dashboard...
+                  </div>
+                </div>
+              </div>
+            </HudPanel>
+          )}
+
+          {/* Lockout Message */}
+          {isLocked && (
+            <HudPanel accent="yellow" notch="sm" className="mb-6 p-4">
+              <div className="flex items-center gap-3">
+                <span className="text-lg animate-pulse">🔒</span>
+                <div>
+                  <div className="font-display tracking-[2px]">
+                    ACCOUNT TEMPORARILY LOCKED
+                  </div>
+                  <div className="font-body text-sm">
+                    Please wait{' '}
+                    <span className="font-mono font-bold">{lockTimer}</span>{' '}
+                    seconds before retrying.
+                  </div>
+                </div>
+              </div>
+            </HudPanel>
+          )}
+
           {/* Login Card */}
-          <div
-            key={shakeKey}
-            className="glass-deep rounded-xl overflow-hidden shadow-2xl transition-transform"
-            style={{
-              animation: status === 'error' ? 'shake 0.5s ease-in-out' : 'none',
-            }}
-          >
+          <HudPanel accent="cyan" notch="md" className="overflow-hidden">
             {/* Status Bar */}
             <div
               className={`h-1 transition-all duration-500 ${
                 status === 'loading'
-                  ? 'bg-yellow-400 animate-pulse'
+                  ? 'bg-neon-yellow animate-pulse-glow'
                   : status === 'success'
-                  ? 'bg-lime-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]'
-                  : status === 'error'
-                  ? 'bg-red-500 animate-pulse'
-                  : 'bg-purple-600'
+                    ? 'bg-neon-green shadow-[0_0_10px_var(--glow-green)]'
+                    : status === 'error'
+                      ? 'bg-neon-red animate-pulse-glow'
+                      : 'bg-neon-cyan'
               }`}
             />
 
             <div className="p-8">
-              {/* Error Message */}
-              {errorMessage && (
-                <div
-                  className="mb-6 p-4 bg-red-950/30 border border-red-500/30 rounded-xl text-red-300 text-sm animate-fade-in"
-                  role="alert"
-                  aria-live="assertive"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="text-lg">⚠️</span>
-                    <div>
-                      <div className="font-bold mb-1">
-                        Authentication Failed
-                      </div>
-                      <div>{errorMessage}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Success Message */}
-              {status === 'success' && (
-                <div className="mb-6 p-4 bg-lime-500/10 border border-lime-500/30 rounded-xl text-lime-400 text-sm animate-fade-in">
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg animate-bounce">✓</span>
-                    <div>
-                      <div className="font-bold">Access Granted</div>
-                      <div className="text-lime-400/70">
-                        Redirecting to dashboard...
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Lockout Message */}
-              {isLocked && (
-                <div className="mb-6 p-4 bg-yellow-950/30 border border-yellow-500/30 rounded-xl text-yellow-300 text-sm animate-fade-in">
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg animate-pulse">🔒</span>
-                    <div>
-                      <div className="font-bold">
-                        Account Temporarily Locked
-                      </div>
-                      <div>
-                        Please wait{' '}
-                        <span className="font-mono font-bold">{lockTimer}</span>{' '}
-                        seconds before retrying.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               <form
                 ref={formRef}
                 onSubmit={handleLogin}
@@ -390,11 +379,11 @@ const LoginPage = () => {
                 <div>
                   <label
                     htmlFor="username"
-                    className="block text-sm font-bold mb-2 flex items-center gap-2 text-gray-300"
+                    className="block text-sm font-display mb-2 flex items-center gap-2 text-text-muted"
                   >
                     <span>👤</span>
                     <span>Username</span>
-                    <span className="text-red-400">*</span>
+                    <span className="text-neon-red">*</span>
                   </label>
                   <input
                     ref={usernameInputRef}
@@ -424,7 +413,7 @@ const LoginPage = () => {
                   {touched.username && validationErrors.username && (
                     <p
                       id="username-error"
-                      className="mt-1 text-xs text-red-400 flex items-center gap-1 animate-fade-in"
+                      className="mt-1 text-xs text-neon-red flex items-center gap-1 animate-fade-in"
                     >
                       <span>⚠️</span> {validationErrors.username}
                     </p>
@@ -435,11 +424,11 @@ const LoginPage = () => {
                 <div>
                   <label
                     htmlFor="password"
-                    className="block text-sm font-bold mb-2 flex items-center gap-2 text-gray-300"
+                    className="block text-sm font-display mb-2 flex items-center gap-2 text-text-muted"
                   >
                     <span>🔑</span>
                     <span>Password</span>
-                    <span className="text-red-400">*</span>
+                    <span className="text-neon-red">*</span>
                   </label>
                   <div className="relative">
                     <input
@@ -468,7 +457,7 @@ const LoginPage = () => {
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       disabled={status === 'loading' || isLocked}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-300 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-purple-400 rounded"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text-primary transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-neon-cyan rounded"
                       aria-label={
                         showPassword ? 'Hide password' : 'Show password'
                       }
@@ -507,7 +496,7 @@ const LoginPage = () => {
                   {touched.password && validationErrors.password && (
                     <p
                       id="password-error"
-                      className="mt-1 text-xs text-red-400 flex items-center gap-1 animate-fade-in"
+                      className="mt-1 text-xs text-neon-red flex items-center gap-1 animate-fade-in"
                     >
                       <span>⚠️</span> {validationErrors.password}
                     </p>
@@ -515,57 +504,22 @@ const LoginPage = () => {
                 </div>
 
                 {/* Submit Button */}
-                <button
+                <NeonButton
                   type="submit"
+                  accent="cyan"
                   disabled={
                     status === 'loading' || status === 'success' || isLocked
                   }
-                  className={`w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-medium rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base shadow-lg ${
-                    status === 'loading' ? 'animate-pulse' : ''
-                  }`}
-                  aria-busy={status === 'loading'}
+                  loading={status === 'loading'}
                 >
-                  {status === 'loading' ? (
-                    <>
-                      <svg
-                        className="animate-spin h-5 w-5"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      <span>Authenticating...</span>
-                    </>
-                  ) : status === 'success' ? (
-                    <>
-                      <span className="animate-bounce">✓</span>
-                      <span>Success!</span>
-                    </>
-                  ) : isLocked ? (
-                    <>
-                      <span>🔒</span>
-                      <span>Locked ({lockTimer}s)</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>🚀</span>
-                      <span>Login</span>
-                    </>
-                  )}
-                </button>
+                  {status === 'loading'
+                    ? 'AUTHENTICATING…'
+                    : status === 'success'
+                      ? 'SUCCESS!'
+                      : isLocked
+                        ? `LOCKED (${lockTimer}s)`
+                        : 'LOGIN'}
+                </NeonButton>
               </form>
 
               {/* Attempts indicator */}
@@ -574,17 +528,17 @@ const LoginPage = () => {
                   <div className="flex justify-center gap-1">
                     {Array.from({ length: MAX_ATTEMPTS }).map((_, i) => (
                       <div
-                        key={i}
-                        className={`w-2 h-2 rounded-full transition-colors ${
-                          i < MAX_ATTEMPTS - attempts
-                            ? 'bg-purple-400 shadow-[0_0_5px_rgba(139,92,246,0.5)]'
-                            : 'bg-red-500/30'
-                        }`}
-                        aria-label={`Attempt ${i + 1} of ${MAX_ATTEMPTS}`}
-                      />
+                      key={i}
+                      className={`w-2 h-2 rounded-full transition-colors ${
+                        i < MAX_ATTEMPTS - attempts
+                          ? 'bg-neon-magenta shadow-[0_0_5px_var(--glow-magenta)]'
+                          : 'bg-neon-red/30'
+                      }`}
+                      aria-label={`Attempt ${i + 1} of ${MAX_ATTEMPTS}`}
+                    />
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-text-muted mt-2">
                     {MAX_ATTEMPTS - attempts} attempt
                     {MAX_ATTEMPTS - attempts !== 1 ? 's' : ''} remaining
                   </p>
@@ -592,11 +546,11 @@ const LoginPage = () => {
               )}
 
               {/* Security Notice */}
-              <div className="mt-6 pt-6 border-t border-gray-800/50">
-                <div className="flex items-start gap-3 text-xs text-gray-500">
+              <div className="mt-6 pt-6 border-t border-white/5">
+                <div className="flex items-start gap-3 text-xs text-text-muted">
                   <span className="text-lg flex-shrink-0">🛡️</span>
                   <div>
-                    <div className="font-bold mb-1 text-gray-400">
+                    <div className="font-display mb-1 text-neon-cyan">
                       Secure Connection
                     </div>
                     <p>
@@ -608,15 +562,15 @@ const LoginPage = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </HudPanel>
 
           {/* Footer */}
-          <div className="mt-8 text-center text-xs text-gray-500">
+          <div className="mt-8 text-center text-xs text-text-muted">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="w-2 h-2 bg-lime-400 rounded-full animate-pulse shadow-[0_0_5px_rgba(74,222,128,0.5)]" />
+              <span className="w-2 h-2 bg-neon-green rounded-full animate-pulse-dot shadow-[0_0_5px_var(--glow-green)]" />
               <span>System Online</span>
             </div>
-            <code className="text-gray-600">
+            <code className="text-text-muted">
               $ sudo access-portfolio --admin
             </code>
           </div>

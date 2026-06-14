@@ -23,7 +23,7 @@ export default function NeonChip({
   return (
     <span
       {...rest}
-      className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-display tracking-[1.5px] uppercase border bg-black/30 ${COLOR[accent]} ${className}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-display tracking-[1.5px] uppercase border bg-black/30 ${COLOR[accent]} ${className} clip-notch-sm transition-all duration-200 hover:scale-[1.03]`}
     >
       {children}
     </span>
