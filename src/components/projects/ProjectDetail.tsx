@@ -6,6 +6,7 @@ import {
   getProjectMedia,
 } from '../../utils/api';
 import { GlitchText, HudPanel, NeonButton, NeonChip, StatBar } from '../ui';
+import { getProjectMetric } from '../../types/project';
 
 const ACCENTS = ['yellow', 'magenta', 'cyan', 'green'] as const;
 
@@ -169,29 +170,17 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
             <StatBar
               label="COMPLEXITY"
-              value={
-                typeof (project as any).complexity === 'number'
-                  ? (project as any).complexity
-                  : 75
-              }
+              value={getProjectMetric(project, 'complexity', 75)}
               accent="cyan"
             />
             <StatBar
               label="QUALITY"
-              value={
-                typeof (project as any).quality === 'number'
-                  ? (project as any).quality
-                  : 90
-              }
+              value={getProjectMetric(project, 'quality', 90)}
               accent="yellow"
             />
             <StatBar
               label="MOMENTUM"
-              value={
-                typeof (project as any).momentum === 'number'
-                  ? (project as any).momentum
-                  : 60
-              }
+              value={getProjectMetric(project, 'momentum', 60)}
               accent="magenta"
             />
           </div>
