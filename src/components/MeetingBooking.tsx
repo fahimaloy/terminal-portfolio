@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { FiX } from 'react-icons/fi';
 import { GlitchText, HudPanel, NeonButton } from './ui';
 import { motionTokens } from './ui/motionConfig';
+import { getErrorMessage } from '../utils/errorMessage';
 
 export const MeetingBooking: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [name, setName] = useState('');
@@ -53,11 +54,9 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({ onClose }) =
       } else {
         throw new Error('Something went wrong');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus('error');
-      setMessage(
-        err.response?.data?.message || err.message || 'Failed to book meeting',
-      );
+      setMessage(getErrorMessage(err, 'Failed to book meeting'));
     }
   };
 

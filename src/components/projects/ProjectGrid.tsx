@@ -2,6 +2,7 @@ import Head from 'next/head';
 import React from 'react';
 import { PortfolioProject } from '../../utils/api';
 import { HudPanel, NeonChip, StatBar, Tilt3D } from '../ui';
+import { getProjectMetric } from '../../types/project';
 
 const ACCENTS = ['yellow', 'magenta', 'cyan', 'green'] as const;
 
@@ -50,10 +51,11 @@ export default function ProjectGrid({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project, index) => {
               const accent = ACCENTS[index % ACCENTS.length];
-              const complexity =
-                typeof (project as any).complexity === 'number'
-                  ? Math.max(0, Math.min(100, (project as any).complexity))
-                  : 50 + ((project.id * 7) % 40);
+              const complexity = getProjectMetric(
+                project,
+                'complexity',
+                50 + ((project.id * 7) % 40),
+              );
               return (
                 <Tilt3D key={project.id}>
                   <div

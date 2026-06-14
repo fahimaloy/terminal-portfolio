@@ -11,6 +11,7 @@ import {
   FiBookmark,
 } from 'react-icons/fi';
 import { HudPanel, NeonButton } from './ui';
+import { getErrorMessage } from '../utils/errorMessage';
 
 type Props = { onBackToChat: () => void };
 type FormState = 'filling' | 'submitting' | 'submitted' | 'error';
@@ -48,11 +49,9 @@ export default function ContactForm({ onBackToChat }: Props) {
         message: message.trim(),
       });
       setFormState('submitted');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFormState('error');
-      setErrorMsg(
-        err.response?.data?.message || 'Failed to send. Please try again.',
-      );
+      setErrorMsg(getErrorMessage(err, 'Failed to send. Please try again.'));
     }
   };
 

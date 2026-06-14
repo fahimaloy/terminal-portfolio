@@ -12,6 +12,7 @@ import {
   FiArrowLeft,
 } from 'react-icons/fi';
 import { GlitchText, HudPanel, NeonButton, NeonChip } from './ui';
+import { getErrorMessage } from '../utils/errorMessage';
 
 type MeetingFormProps = {
   onBackToChat: () => void;
@@ -83,16 +84,14 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
         reason: reason.trim() || undefined,
       });
       setFormState('submitted');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFormState('error');
-      setErrorMsg(
-        err.response?.data?.message || 'Failed to book. Please try again.',
-      );
+      setErrorMsg(getErrorMessage(err, 'Failed to book. Please try again.'));
     }
   };
 
   if (formState === 'submitted') {
-    const formattedDate = new Date(date + 'T' + time);
+    const formattedDate = date && time ? new Date(date + 'T' + time) : null;
     return (
       <div className="space-y-4" data-testid="meeting-confirmation">
         <HudPanel
@@ -121,24 +120,28 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
         >
           <Row icon={<FiUser />} accent="cyan" text={name} />
           <Row icon={<FiMail />} accent="cyan" text={email} />
-          <Row
-            icon={<FiCalendar />}
-            accent="cyan"
-            text={formattedDate.toLocaleDateString('en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          />
-          <Row
-            icon={<FiClock />}
-            accent="cyan"
-            text={formattedDate.toLocaleTimeString('en-US', {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          />
+          {formattedDate && !isNaN(formattedDate.getTime()) && (
+            <Row
+              icon={<FiCalendar />}
+              accent="cyan"
+              text={formattedDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            />
+          )}
+          {formattedDate && !isNaN(formattedDate.getTime()) && (
+            <Row
+              icon={<FiClock />}
+              accent="cyan"
+              text={formattedDate.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            />
+          )}
           {reason && (
             <div className="flex items-start gap-2 text-text-muted">
               <FiMessageSquare className="w-4 h-4 text-neon-cyan mt-0.5 flex-shrink-0" />
@@ -148,7 +151,9 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
             </div>
           )}
           <div className="flex flex-wrap gap-1.5 pt-1">
-            <NeonChip accent="yellow">REQUEST_ID: {date.replaceAll('-', '')}-{time.replace(':', '')}</NeonChip>
+            <NeonChip accent="yellow">
+              REQUEST_ID: {date.replaceAll('-', '')}-{time.replace(':', '')}
+            </NeonChip>
           </div>
         </HudPanel>
 

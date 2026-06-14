@@ -1,5 +1,5 @@
 // src/components/ProjectMatchForm.tsx
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import axios from 'axios';
 import { FiSearch, FiAlertCircle, FiArrowLeft, FiCheck } from 'react-icons/fi';
 import { PortfolioProject } from '../utils/api';
@@ -12,6 +12,7 @@ import {
 import ProjectPreview from './ProjectPreview';
 import ProjectInlineRef from './ProjectInlineRef';
 import { HudPanel, NeonButton } from './ui';
+import { getErrorMessage } from '../utils/errorMessage';
 
 type Props = {
   onBackToChat: () => void;
@@ -31,6 +32,13 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
   const [showPreview, setShowPreview] = useState(false);
   const [openInlineProject, setOpenInlineProject] =
     useState<PortfolioProject | null>(null);
+
+  // Stable array reference for the inline ProjectPreview so its
+  // [projects] useEffect doesn't refetch media on every parent render.
+  const inlinePreviewProjects = useMemo(
+    () => (openInlineProject ? [openInlineProject] : []),
+    [openInlineProject],
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,11 +91,9 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
         }
       }
       setFormState('result');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFormState('error');
-      setErrorMsg(
-        err.response?.data?.message || 'Failed to analyze. Please try again.',
-      );
+      setErrorMsg(getErrorMessage(err, 'Failed to analyze. Please try again.'));
     }
   };
 
@@ -204,7 +210,7 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
 
           {openInlineProject && (
             <ProjectPreview
-              projects={[openInlineProject]}
+              projects={inlinePreviewProjects}
               selectedIndex={0}
               showCloseButton
               onClose={() => setOpenInlineProject(null)}
