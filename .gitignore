@@ -40,7 +40,15 @@ docker-data/
 .opencode/
 .tmp/
 
+# playwright
+playwright-report/
+test-results/
+
+# supabase local
+supabase/.temp/
+
+# local notes
+*.local.md
+
 # superpowers brainstorming
 .superpowers/
-
-.gitattributes
