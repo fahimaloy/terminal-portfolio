@@ -125,6 +125,7 @@ export interface PortfolioSkill {
   icon_key: string | null;
   icon_type: string | null;
   icon_color: string | null;
+  duration: string | null;
   sort_order: number;
   is_visible: boolean;
 }
@@ -133,6 +134,7 @@ export interface PortfolioProject {
   id: number;
   title: string;
   description: string | null;
+  description_html: string | null;
   image_url: string | null;
   thumbnail_url: string | null;
   short_title: string | null;
@@ -141,6 +143,9 @@ export interface PortfolioProject {
   repo_url: string | null;
   languages: string[] | null;
   tags: string[] | null;
+  client_name: string | null;
+  client_location: string | null;
+  client_logo: string | null;
   featured: boolean;
   featured_order: number;
   sort_order: number;
@@ -195,11 +200,62 @@ export interface PortfolioProfile {
   is_active: boolean;
 }
 
+export interface SiteText {
+  id: number;
+  key: string;
+  value: string;
+  category: string;
+  description: string | null;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export type PortfolioExperience = {
+  id: number;
+  title: string;
+  company_name: string;
+  company_logo: string | null;
+  location: string | null;
+  from_date: string;
+  to_date: string | null;
+  is_current: boolean;
+  description: string | null;
+  sort_order: number;
+  is_visible: boolean;
+  created_at: string;
+  projects?: PortfolioProject[];
+  skills?: PortfolioSkill[];
+};
+
+export type ExperienceProject = {
+  experience_id: number;
+  project_id: number;
+};
+
 const hasSupabaseConfig = () =>
   Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
+
+// Mutating actions that should invalidate the public cache
+const MUTATING_ACTIONS = new Set([
+  'upsertProfile',
+  'createSkill',
+  'updateSkill',
+  'deleteSkill',
+  'createProject',
+  'updateProject',
+  'deleteProject',
+  'addProjectMedia',
+  'deleteProjectMedia',
+  'createKnowledgeBase',
+  'updateKnowledgeBase',
+  'deleteKnowledgeBase',
+  'createMeeting',
+  'updateMeeting',
+  'deleteMeeting',
+]);
 
 const adminContentAction = async (
   action: string,
@@ -212,6 +268,9 @@ const adminContentAction = async (
       payload,
       id,
     });
+    if (data?.ok && MUTATING_ACTIONS.has(action)) {
+      clearPortfolioCache();
+    }
     return Boolean(data?.ok);
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -234,7 +293,7 @@ export const getPortfolioSkills = async (): Promise<PortfolioSkill[]> => {
   }
 
   return getCachedOrFetch('skills', async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from('skills')
       .select('*')
       .eq('is_visible', true)
@@ -255,7 +314,7 @@ export const getKnowledgeBases = async (): Promise<PortfolioKnowledgeBase[]> => 
   }
 
   return getCachedOrFetch('knowledge_bases', async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from('knowledge_bases')
       .select('*')
       .order('id', { ascending: true });
@@ -274,7 +333,7 @@ export const getMeetings = async (): Promise<PortfolioMeeting[]> => {
   }
 
   return getCachedOrFetch('meetings', async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from('meetings')
       .select('*')
       .order('created_at', { ascending: false });
@@ -293,7 +352,7 @@ export const getPortfolioProjects = async (): Promise<PortfolioProject[]> => {
   }
 
   return getCachedOrFetch('projects', async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from('projects')
       .select('*')
       .eq('is_visible', true)
@@ -317,7 +376,7 @@ export const getFeaturedPortfolioProjects = async (): Promise<
   }
 
   return getCachedOrFetch('projects:featured', async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from('projects')
       .select('*')
       .eq('is_visible', true)
@@ -346,7 +405,7 @@ export const getProjectMedia = async (
     .join(',')}`;
 
   return getCachedOrFetch(key, async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from('project_media')
       .select('*')
       .in('project_id', projectIds)
@@ -369,7 +428,7 @@ export const getPortfolioProfile =
     }
 
     return getCachedOrFetch('profile:active', async () => {
-      const { data, error } = await supabase
+      const { data, error } = await supabase!
         .from('profiles')
         .select('*')
         .eq('is_active', true)
@@ -383,6 +442,52 @@ export const getPortfolioProfile =
       return data as PortfolioProfile;
     });
   };
+
+export const getSiteTexts = async (): Promise<Record<string, string>> => {
+  if (!hasSupabaseConfig() || !supabase) {
+    return {};
+  }
+
+  return getCachedOrFetch('site_texts', async () => {
+    const { data, error } = await supabase!
+      .from('site_texts')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+
+    if (error || !data) {
+      return {};
+    }
+
+    const texts = data as SiteText[];
+    const result: Record<string, string> = {};
+    texts.forEach((t) => {
+      result[t.key] = t.value;
+    });
+    return result;
+  });
+};
+
+export const getSiteTextByKey = async (key: string): Promise<string | null> => {
+  if (!hasSupabaseConfig() || !supabase) {
+    return null;
+  }
+
+  return getCachedOrFetch(`site_texts:${key}`, async () => {
+    const { data, error } = await supabase!
+      .from('site_texts')
+      .select('value')
+      .eq('key', key)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return (data as { value: string }).value;
+  });
+};
 
 export const upsertPortfolioProfile = async (
   payload: Partial<PortfolioProfile>,
@@ -625,7 +730,7 @@ export const uploadProjectAsset = async (
   }
 
   const filePath = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-  const { error } = await supabase.storage.from(bucket).upload(filePath, file, {
+  const { error } = await supabase!.storage.from(bucket).upload(filePath, file, {
     upsert: false,
   });
 
@@ -635,6 +740,118 @@ export const uploadProjectAsset = async (
 
   const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
   return data.publicUrl || null;
+};
+
+// ─── Experiences ───────────────────────────────────────
+
+export const getPortfolioExperiences = async (): Promise<PortfolioExperience[]> => {
+  if (!hasSupabaseConfig() || !supabase) return [];
+  return getCachedOrFetch('experiences', async () => {
+    const { data, error } = await supabase!
+      .from('experiences')
+      .select('*')
+      .eq('is_visible', true)
+      .order('sort_order', { ascending: true });
+    if (error || !data) return [];
+    return data as PortfolioExperience[];
+  });
+};
+
+export const getAllExperiences = async (): Promise<PortfolioExperience[]> => {
+  if (!hasSupabaseConfig() || !supabase) return [];
+  const { data, error } = await supabase!
+    .from('experiences')
+    .select('*')
+    .order('sort_order', { ascending: true });
+  if (error || !data) return [];
+  return data as PortfolioExperience[];
+};
+
+export const getExperienceProjects = async (experienceId: number): Promise<PortfolioProject[]> => {
+  if (!hasSupabaseConfig() || !supabase) return [];
+  const { data: links, error: linkError } = await supabase!
+    .from('experience_projects')
+    .select('project_id')
+    .eq('experience_id', experienceId);
+  if (linkError || !links?.length) return [];
+  const projectIds = links.map((l) => l.project_id);
+  const { data: projects, error: projError } = await supabase!
+    .from('projects')
+    .select('*')
+    .in('id', projectIds);
+  if (projError) return [];
+  return (projects || []) as PortfolioProject[];
+};
+
+export const createExperience = async (
+  experience: Partial<PortfolioExperience>,
+  projectIds: number[] = [],
+): Promise<boolean> => {
+  if (!hasSupabaseConfig() || !supabase) return false;
+  const { data, error } = await supabase!
+    .from('experiences')
+    .insert({
+      title: experience.title,
+      company_name: experience.company_name,
+      company_logo: experience.company_logo || null,
+      location: experience.location || null,
+      from_date: experience.from_date,
+      to_date: experience.is_current ? null : experience.to_date,
+      is_current: experience.is_current || false,
+      description: experience.description || null,
+      sort_order: experience.sort_order || 0,
+      is_visible: experience.is_visible ?? true,
+    })
+    .select('id')
+    .single();
+  if (error || !data) return false;
+  if (projectIds.length > 0) {
+    const links = projectIds.map((pid) => ({ experience_id: data.id, project_id: pid }));
+    await supabase!.from('experience_projects').insert(links);
+  }
+  clearPortfolioCache();
+  return true;
+};
+
+export const updateExperience = async (
+  id: number,
+  experience: Partial<PortfolioExperience>,
+  projectIds?: number[],
+): Promise<boolean> => {
+  if (!hasSupabaseConfig() || !supabase) return false;
+  const { error } = await supabase!
+    .from('experiences')
+    .update({
+      title: experience.title,
+      company_name: experience.company_name,
+      company_logo: experience.company_logo || null,
+      location: experience.location || null,
+      from_date: experience.from_date,
+      to_date: experience.is_current ? null : experience.to_date,
+      is_current: experience.is_current || false,
+      description: experience.description || null,
+      sort_order: experience.sort_order || 0,
+      is_visible: experience.is_visible ?? true,
+    })
+    .eq('id', id);
+  if (error) return false;
+  if (projectIds !== undefined) {
+    await supabase!.from('experience_projects').delete().eq('experience_id', id);
+    if (projectIds.length > 0) {
+      const links = projectIds.map((pid) => ({ experience_id: id, project_id: pid }));
+      await supabase!.from('experience_projects').insert(links);
+    }
+  }
+  clearPortfolioCache();
+  return true;
+};
+
+export const deleteExperience = async (id: number): Promise<boolean> => {
+  if (!hasSupabaseConfig() || !supabase) return false;
+  const { error } = await supabase!.from('experiences').delete().eq('id', id);
+  if (error) return false;
+  clearPortfolioCache();
+  return true;
 };
 
 export const getProjects = async () => {

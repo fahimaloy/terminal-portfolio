@@ -16,7 +16,19 @@ create table if not exists public.profiles (
   avatar_url text,
   summary text,
   phone text,
+  welcome_message text,
   is_active boolean not null default true,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.site_texts (
+  id bigint generated always as identity primary key,
+  key text not null unique,
+  value text not null,
+  category text not null default 'ui',
+  description text,
+  is_active boolean not null default true,
+  sort_order integer not null default 0,
   updated_at timestamptz not null default now()
 );
 
@@ -28,6 +40,7 @@ create table if not exists public.skills (
   icon_key text,
   icon_type text,
   icon_color text,
+  duration text,
   sort_order integer not null default 0,
   is_visible boolean not null default true
 );
@@ -42,6 +55,10 @@ create table if not exists public.projects (
   icon_key text,
   project_url text,
   repo_url text,
+  client_name text,
+  client_location text,
+  client_logo text,
+  description_html text,
   languages text[] not null default '{}',
   tags text[] not null default '{}',
   featured boolean not null default false,
@@ -104,6 +121,9 @@ create table if not exists public.contact_messages (
 
 alter table public.profiles add column if not exists summary text;
 alter table public.profiles add column if not exists phone text;
+alter table public.profiles add column if not exists welcome_message text;
+alter table public.site_texts add column if not exists category text not null default 'ui';
+alter table public.site_texts add column if not exists description text;
 alter table public.skills add column if not exists icon_key text;
 alter table public.skills add column if not exists icon_type text;
 alter table public.skills add column if not exists icon_color text;
@@ -113,6 +133,7 @@ alter table public.projects add column if not exists icon_key text;
 alter table public.projects add column if not exists featured_order integer not null default 0;
 
 alter table public.profiles enable row level security;
+alter table public.site_texts enable row level security;
 alter table public.skills enable row level security;
 alter table public.projects enable row level security;
 alter table public.project_media enable row level security;
@@ -122,6 +143,8 @@ alter table public.meetings enable row level security;
 alter table public.contact_messages enable row level security;
 
 drop policy if exists "Public read profiles" on public.profiles;
+drop policy if exists "Public read site_texts" on public.site_texts;
+drop policy if exists "Authenticated write site_texts" on public.site_texts;
 drop policy if exists "Public read skills" on public.skills;
 drop policy if exists "Public read projects" on public.projects;
 drop policy if exists "Public read project_media" on public.project_media;
@@ -141,6 +164,19 @@ create policy "Public read profiles"
   for select
   to anon
   using (true);
+
+create policy "Public read site_texts"
+  on public.site_texts
+  for select
+  to anon
+  using (true);
+
+create policy "Authenticated write site_texts"
+  on public.site_texts
+  for all
+  to authenticated
+  using (true)
+  with check (true);
 
 create policy "Public read skills"
   on public.skills
@@ -241,6 +277,7 @@ insert into public.profiles (
   github,
   linkedin,
   resume_url,
+  welcome_message,
   is_active
 )
 values (
@@ -253,8 +290,23 @@ values (
   'https://github.com/your-handle',
   'https://www.linkedin.com/in/your-handle/',
   'https://example.com/resume.pdf',
+  'Hi! I am a Full-Stack Web and App Developer. Ask me about my projects, skills, or experience.',
   true
 )
+on conflict do nothing;
+
+insert into public.site_texts (key, value, category, description, sort_order)
+values
+  ('developer_profile_label', 'DEVELOPER PROFILE', 'ui', 'Label for developer profile section', 1),
+  ('quick_commands_label', 'QUICK COMMANDS', 'ui', 'Label for quick commands section', 2),
+  ('terminal_version', 'TERMINAL v3.4.2', 'ui', 'Terminal version display', 3),
+  ('status_ready', 'STATUS: READY', 'ui', 'System status display', 4),
+  ('compiling_label', 'COMPILING', 'loading', 'Loading step 1 - Compiling', 5),
+  ('linking_label', 'LINKING', 'loading', 'Loading step 2 - Linking', 6),
+  ('executing_label', 'EXECUTING', 'loading', 'Loading step 3 - Executing', 7),
+  ('last_command_label', 'LAST COMMAND', 'ui', 'Label for last command display', 8),
+  ('developer_label', 'DEVELOPER', 'ui', 'Label for developer badge', 9),
+  ('active_label', 'ACTIVE', 'ui', 'Label for active status', 10)
 on conflict do nothing;
 
 insert into public.skills (name, category, level, sort_order)
@@ -315,3 +367,58 @@ select
 from public.projects p
 where p.title = 'Terminal Portfolio'
 on conflict do nothing;
+
+create table if not exists public.experiences (
+  id bigint generated always as identity primary key,
+  title text not null,
+  company_name text not null,
+  company_logo text,
+  location text,
+  from_date date not null,
+  to_date date,
+  is_current boolean not null default false,
+  description text,
+  sort_order integer not null default 0,
+  is_visible boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.experience_projects (
+  experience_id bigint not null references public.experiences(id) on delete cascade,
+  project_id bigint not null references public.projects(id) on delete cascade,
+  primary key (experience_id, project_id)
+);
+
+alter table public.experiences enable row level security;
+alter table public.experience_projects enable row level security;
+
+create policy "Public read experiences"
+  on public.experiences
+  for select
+  to anon
+  using (is_visible = true);
+
+create policy "Authenticated all experiences"
+  on public.experiences
+  for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create policy "Public read experience_projects"
+  on public.experience_projects
+  for select
+  to anon
+  using (true);
+
+create policy "Authenticated all experience_projects"
+  on public.experience_projects
+  for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create index if not exists idx_experiences_sort on public.experiences(sort_order);
+create index if not exists idx_experiences_visible on public.experiences(is_visible);
+create index if not exists idx_experience_projects_exp on public.experience_projects(experience_id);
+create index if not exists idx_experience_projects_proj on public.experience_projects(project_id);

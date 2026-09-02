@@ -20,7 +20,9 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<LoginStatus>('idle');
   const [errorMessage, setErrorMessage] = useState('');
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
+    {},
+  );
   const [attempts, setAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
   const [lockTimer, setLockTimer] = useState(0);
@@ -71,7 +73,7 @@ const LoginPage = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isLocked]);
+  }, [isLocked, lockTimer]);
 
   // Validate inputs in real-time
   const validateField = useCallback(
@@ -361,10 +363,10 @@ const LoginPage = () => {
                 status === 'loading'
                   ? 'bg-neon-yellow animate-pulse-glow'
                   : status === 'success'
-                    ? 'bg-neon-green shadow-[0_0_10px_var(--glow-green)]'
-                    : status === 'error'
-                      ? 'bg-neon-red animate-pulse-glow'
-                      : 'bg-neon-cyan'
+                  ? 'bg-neon-green shadow-[0_0_10px_var(--glow-green)]'
+                  : status === 'error'
+                  ? 'bg-neon-red animate-pulse-glow'
+                  : 'bg-neon-cyan'
               }`}
             />
 
@@ -515,10 +517,10 @@ const LoginPage = () => {
                   {status === 'loading'
                     ? 'AUTHENTICATING…'
                     : status === 'success'
-                      ? 'SUCCESS!'
-                      : isLocked
-                        ? `LOCKED (${lockTimer}s)`
-                        : 'LOGIN'}
+                    ? 'SUCCESS!'
+                    : isLocked
+                    ? `LOCKED (${lockTimer}s)`
+                    : 'LOGIN'}
                 </NeonButton>
               </form>
 
@@ -528,14 +530,14 @@ const LoginPage = () => {
                   <div className="flex justify-center gap-1">
                     {Array.from({ length: MAX_ATTEMPTS }).map((_, i) => (
                       <div
-                      key={i}
-                      className={`w-2 h-2 rounded-full transition-colors ${
-                        i < MAX_ATTEMPTS - attempts
-                          ? 'bg-neon-magenta shadow-[0_0_5px_var(--glow-magenta)]'
-                          : 'bg-neon-red/30'
-                      }`}
-                      aria-label={`Attempt ${i + 1} of ${MAX_ATTEMPTS}`}
-                    />
+                        key={i}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          i < MAX_ATTEMPTS - attempts
+                            ? 'bg-neon-magenta shadow-[0_0_5px_var(--glow-magenta)]'
+                            : 'bg-neon-red/30'
+                        }`}
+                        aria-label={`Attempt ${i + 1} of ${MAX_ATTEMPTS}`}
+                      />
                     ))}
                   </div>
                   <p className="text-xs text-text-muted mt-2">

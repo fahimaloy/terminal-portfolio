@@ -14,10 +14,18 @@ export default async function handler(
 
   // Rate limiting: 10 requests per 60 seconds per IP
   const clientIp = getClientIp(req);
-  const rateLimit = checkRateLimit(`project-match:${clientIp}`, { maxRequests: 10, windowSeconds: 60 });
+  const rateLimit = checkRateLimit(`project-match:${clientIp}`, {
+    maxRequests: 10,
+    windowSeconds: 60,
+  });
   if (!rateLimit.allowed) {
-    res.setHeader('Retry-After', Math.ceil((rateLimit.resetAt - Date.now()) / 1000).toString());
-    return res.status(429).json({ message: 'Too many requests. Please try again later.' });
+    res.setHeader(
+      'Retry-After',
+      Math.ceil((rateLimit.resetAt - Date.now()) / 1000).toString(),
+    );
+    return res
+      .status(429)
+      .json({ message: 'Too many requests. Please try again later.' });
   }
 
   try {
@@ -36,12 +44,10 @@ export default async function handler(
     }
 
     if (description.length < 20) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Please provide a more detailed description (at least 20 characters).',
-        });
+      return res.status(400).json({
+        message:
+          'Please provide a more detailed description (at least 20 characters).',
+      });
     }
 
     if (!supabaseAdmin) {
@@ -99,7 +105,11 @@ Instructions:
 
     if (dbModels.length > 0) {
       // Use the new load-balanced AI service
-      const response = await generateWithFallback('project-match', systemInstruction, description);
+      const response = await generateWithFallback(
+        'project-match',
+        systemInstruction,
+        description,
+      );
       return res.status(200).json({ text: response.text });
     }
 

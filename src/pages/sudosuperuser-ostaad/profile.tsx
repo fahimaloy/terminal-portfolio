@@ -133,11 +133,15 @@ const ProfilePage = () => {
           )}
 
           <div className="glass-deep rounded-xl p-6 mb-8">
-            <h3 className="text-lg font-bold text-white mb-4">Portfolio Details</h3>
+            <h3 className="text-lg font-bold text-white mb-4">
+              Portfolio Details
+            </h3>
 
             <div className="grid gap-3 mb-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Full Name:</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Full Name:
+                </label>
                 <input
                   type="text"
                   className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
@@ -154,19 +158,25 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Title:</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Title:
+                </label>
                 <input
                   type="text"
                   className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
                   placeholder="Professional title"
                   value={profile.title || ''}
-                  onChange={(e) => setProfile((prev) => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) =>
+                    setProfile((prev) => ({ ...prev, title: e.target.value }))
+                  }
                   disabled={isSaving}
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Phone:</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Phone:
+                </label>
                 <input
                   type="text"
                   className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
@@ -180,7 +190,9 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Email:</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Email:
+                </label>
                 <input
                   type="email"
                   className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
@@ -194,7 +206,9 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Website:</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Website:
+                </label>
                 <input
                   type="url"
                   className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
@@ -211,7 +225,9 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">GitHub:</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  GitHub:
+                </label>
                 <input
                   type="url"
                   className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
@@ -225,7 +241,9 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">LinkedIn:</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  LinkedIn:
+                </label>
                 <input
                   type="url"
                   className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
@@ -242,7 +260,9 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Avatar URL:</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Avatar URL:
+                </label>
                 <input
                   type="url"
                   className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
@@ -260,7 +280,9 @@ const ProfilePage = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm text-gray-400 mb-1">Summary:</label>
+              <label className="block text-sm text-gray-400 mb-1">
+                Summary:
+              </label>
               <textarea
                 className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500 resize-none"
                 rows={3}
@@ -294,10 +316,14 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2 mb-4">
-              <label className="block text-sm text-gray-400">Welcome / Greeting Message</label>
+              <label className="block text-sm text-gray-400">
+                Welcome / Greeting Message
+              </label>
               <textarea
                 value={profile.welcome_message || ''}
-                onChange={(e) => setProfile({ ...profile, welcome_message: e.target.value })}
+                onChange={(e) =>
+                  setProfile({ ...profile, welcome_message: e.target.value })
+                }
                 placeholder="Hi, I'm your AI assistant. Ask me anything about my skills, projects, and professional background!"
                 maxLength={500}
                 rows={3}
@@ -316,7 +342,9 @@ const ProfilePage = () => {
           </div>
 
           <div className="glass-deep rounded-xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4">Admin Credentials</h3>
+            <h3 className="text-lg font-bold text-white mb-4">
+              Admin Credentials
+            </h3>
 
             <p className="mb-4 text-sm text-gray-400">
               Default seed: <code className="text-purple-400">fahimaloy</code> /{' '}
@@ -328,7 +356,9 @@ const ProfilePage = () => {
 
             <div className="grid gap-3 mb-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Username:</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Username:
+                </label>
                 <input
                   type="text"
                   className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
@@ -345,7 +375,9 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Private Email:</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Private Email:
+                </label>
                 <input
                   type="email"
                   className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"

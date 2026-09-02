@@ -11,9 +11,15 @@ import {
 } from '../../utils/api';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { useAdminGuard } from '../../utils/adminPageGuard';
+import { useToast } from '../../components/ui/Toast';
+import { useStagger } from '../../hooks/useStagger';
+import { NeonButton, HudPanel } from '../../components/ui';
+import { motion, AnimatePresence } from 'framer-motion';
+import { motionTokens } from '../../components/ui/motionConfig';
 
 const MediaPage = () => {
   const { authorized, loading, user } = useAdminGuard();
+  const { success, error: toastError } = useToast();
   const [projects, setProjects] = React.useState<PortfolioProject[]>([]);
   const [projectMedia, setProjectMedia] = React.useState<
     PortfolioProjectMedia[]
@@ -26,8 +32,19 @@ const MediaPage = () => {
   const [videoProvider, setVideoProvider] = React.useState<
     'youtube' | 'vimeo' | 'direct'
   >('direct');
-  const [statusMessage, setStatusMessage] = React.useState('');
   const [isSaving, setIsSaving] = React.useState(false);
+  const [uploadProgress, setUploadProgress] = React.useState(0);
+  const [confirmDelete, setConfirmDelete] = React.useState<number | null>(null);
+  const gridRef = React.useRef<HTMLDivElement>(null);
+
+  // Stagger grid items
+  useStagger({
+    rootRef: gridRef,
+    selector: '.media-item',
+    mode: 'grid',
+    delay: 60,
+    respectReduced: true,
+  });
 
   const loadData = React.useCallback(async () => {
     const projectsData = await getPortfolioProjects();
@@ -57,14 +74,9 @@ const MediaPage = () => {
     }
   }, [authorized, selectedProjectId]);
 
-  const updateStatus = (message: string) => {
-    setStatusMessage(message);
-    window.setTimeout(() => setStatusMessage(''), 2500);
-  };
-
   const handleAddMediaByUrl = async () => {
     if (!selectedProjectId || !mediaUrl.trim()) {
-      updateStatus('Select a project and enter a media URL.');
+      toastError('Select a project and enter a media URL.');
       return;
     }
 
@@ -78,11 +90,13 @@ const MediaPage = () => {
       is_visible: true,
     });
 
-    updateStatus(ok ? 'Media added.' : 'Failed to add media.');
     if (ok) {
+      success('Media added.');
       setMediaUrl('');
       const media = await getProjectMedia([selectedProjectId]);
       setProjectMedia(media);
+    } else {
+      toastError('Failed to add media.');
     }
     setIsSaving(false);
   };
@@ -95,19 +109,31 @@ const MediaPage = () => {
       !event.target.files ||
       event.target.files.length === 0
     ) {
-      updateStatus('Select a project first.');
+      toastError('Select a project first.');
       return;
     }
 
     setIsSaving(true);
+    setUploadProgress(10);
+
     const file = event.target.files[0];
+
+    // Simulate progress since Supabase doesn't expose progress easily
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => Math.min(prev + 15, 90));
+    }, 200);
+
     const publicUrl = await uploadProjectAsset(file);
 
+    clearInterval(progressInterval);
+    setUploadProgress(100);
+
     if (!publicUrl) {
-      updateStatus(
+      toastError(
         'Upload failed. Ensure bucket exists and public access is enabled.',
       );
       setIsSaving(false);
+      setUploadProgress(0);
       return;
     }
 
@@ -120,28 +146,30 @@ const MediaPage = () => {
       video_provider: file.type.startsWith('video') ? 'direct' : null,
     });
 
-    updateStatus(
-      ok ? 'Media uploaded and linked.' : 'Failed to link uploaded media.',
-    );
     if (ok) {
+      success('Media uploaded and linked.');
       const media = await getProjectMedia([selectedProjectId]);
       setProjectMedia(media);
+    } else {
+      toastError('Failed to link uploaded media.');
     }
     setIsSaving(false);
+    setTimeout(() => setUploadProgress(0), 1000);
   };
 
   const handleDeleteMedia = async (id: number) => {
-    if (!window.confirm('Delete this media?')) {
-      return;
-    }
-
     setIsSaving(true);
     const ok = await deleteProjectMedia(id);
-    updateStatus(ok ? 'Media deleted.' : 'Failed to delete media.');
-    if (ok && selectedProjectId) {
-      const media = await getProjectMedia([selectedProjectId]);
-      setProjectMedia(media);
+    if (ok) {
+      success('Media deleted.');
+      if (selectedProjectId) {
+        const media = await getProjectMedia([selectedProjectId]);
+        setProjectMedia(media);
+      }
+    } else {
+      toastError('Failed to delete media.');
     }
+    setConfirmDelete(null);
     setIsSaving(false);
   };
 
@@ -163,14 +191,10 @@ const MediaPage = () => {
         <div>
           <h2 className="text-2xl font-bold mb-6">Manage Project Media</h2>
 
-          {statusMessage && (
-            <div className="mb-4 p-3 bg-lime-500/10 border border-lime-500/30 text-lime-400 text-sm rounded-xl">
-              {statusMessage}
-            </div>
-          )}
-
           <div className="glass-deep rounded-xl p-6 mb-8">
-            <h3 className="text-lg font-bold text-white mb-4">Select Project</h3>
+            <h3 className="text-lg font-bold text-white mb-4">
+              Select Project
+            </h3>
 
             {projects.length > 0 ? (
               <select
@@ -197,7 +221,9 @@ const MediaPage = () => {
 
                 <div className="space-y-3 mb-4">
                   <div>
-                    <label className="block text-sm text-gray-400 mb-1">Media Type:</label>
+                    <label className="block text-sm text-gray-400 mb-1">
+                      Media Type:
+                    </label>
                     <select
                       value={mediaType}
                       onChange={(e) =>
@@ -234,7 +260,9 @@ const MediaPage = () => {
                   )}
 
                   <div>
-                    <label className="block text-sm text-gray-400 mb-1">Media URL:</label>
+                    <label className="block text-sm text-gray-400 mb-1">
+                      Media URL:
+                    </label>
                     <input
                       type="url"
                       value={mediaUrl}
@@ -245,17 +273,20 @@ const MediaPage = () => {
                     />
                   </div>
 
-                  <button
+                  <NeonButton
+                    accent="cyan"
                     onClick={handleAddMediaByUrl}
                     disabled={isSaving}
-                    className="w-full px-4 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white rounded-xl font-medium transition-all shadow-lg disabled:opacity-50"
+                    loading={isSaving}
                   >
-                    {isSaving ? 'Adding...' : 'Add by URL'}
-                  </button>
+                    ADD BY URL
+                  </NeonButton>
                 </div>
 
                 <div className="border-t border-gray-700 pt-4">
-                  <h4 className="text-sm font-bold text-gray-400 mb-2">Or Upload File</h4>
+                  <h4 className="text-sm font-bold text-gray-400 mb-2">
+                    Or Upload File
+                  </h4>
                   <input
                     type="file"
                     onChange={handleMediaUpload}
@@ -266,6 +297,24 @@ const MediaPage = () => {
                   <p className="text-xs text-gray-500 mt-2">
                     Accepts images and videos
                   </p>
+
+                  {/* Upload progress bar */}
+                  {uploadProgress > 0 && (
+                    <div className="mt-3">
+                      <div className="flex justify-between text-xs text-gray-400 mb-1">
+                        <span>Uploading...</span>
+                        <span>{uploadProgress}%</span>
+                      </div>
+                      <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                        <motion.div
+                          className="h-full bg-gradient-to-r from-purple-500 to-cyan-400"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${uploadProgress}%` }}
+                          transition={{ duration: 0.3, ease: 'easeOut' }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -275,31 +324,51 @@ const MediaPage = () => {
                 </h3>
 
                 {filteredMedia.length > 0 ? (
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                  <div
+                    ref={gridRef}
+                    className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto"
+                  >
                     {filteredMedia.map((media) => (
                       <div
                         key={media.id}
-                        className="p-3 bg-white/5 border border-gray-800 rounded-xl"
+                        className="media-item relative group rounded-xl overflow-hidden border border-gray-800 bg-white/5"
                       >
-                        <div className="text-xs text-gray-400 mb-2">
-                          {media.media_type.toUpperCase()}
-                          {media.video_provider && ` (${media.video_provider})`}
+                        {/* Thumbnail with zoom on hover */}
+                        <div className="aspect-video overflow-hidden">
+                          {media.media_type === 'image' ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={media.url}
+                              alt="Media"
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-black/40">
+                              <span className="text-2xl">🎬</span>
+                            </div>
+                          )}
                         </div>
-                        <a
-                          href={media.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-purple-400 underline break-all hover:text-cyan-400 mb-2 block"
-                        >
-                          {media.url.substring(0, 50)}...
-                        </a>
-                        <button
-                          onClick={() => handleDeleteMedia(media.id)}
-                          disabled={isSaving}
-                          className="w-full px-2 py-1.5 bg-white/5 border border-gray-700/50 text-gray-400 rounded-xl hover:text-white hover:bg-white/10 backdrop-blur-sm text-xs transition-all disabled:opacity-50"
-                        >
-                          Delete
-                        </button>
+
+                        {/* Overlay with actions */}
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                          <NeonButton
+                            variant="ghost"
+                            accent="red"
+                            onClick={() => setConfirmDelete(media.id)}
+                            disabled={isSaving}
+                          >
+                            DELETE
+                          </NeonButton>
+                        </div>
+
+                        <div className="p-2">
+                          <div className="text-xs text-gray-400 truncate">
+                            {media.media_type.toUpperCase()}
+                            {media.video_provider &&
+                              ` (${media.video_provider})`}
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -312,6 +381,63 @@ const MediaPage = () => {
             </div>
           )}
         </div>
+
+        {/* Spring Delete Confirmation Modal */}
+        <AnimatePresence>
+          {confirmDelete !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: motionTokens.dur.tap, ease: motionTokens.ease }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              role="dialog"
+              aria-modal="true"
+            >
+              <div
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                onClick={() => setConfirmDelete(null)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 25,
+                }}
+                className="relative max-w-sm w-full"
+              >
+                <HudPanel accent="red" notch="md" title="// CONFIRM_DELETE" className="p-6">
+                  <div className="text-center space-y-4">
+                    <div className="text-4xl">⚠️</div>
+                    <p className="text-text-muted text-sm font-body">
+                      Delete this media? This cannot be undone.
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                      <NeonButton
+                        variant="ghost"
+                        accent="cyan"
+                        onClick={() => setConfirmDelete(null)}
+                        disabled={isSaving}
+                      >
+                        CANCEL
+                      </NeonButton>
+                      <NeonButton
+                        accent="red"
+                        onClick={() => handleDeleteMedia(confirmDelete)}
+                        loading={isSaving}
+                      >
+                        DELETE
+                      </NeonButton>
+                    </div>
+                  </div>
+                </HudPanel>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </AdminLayout>
     </>
   );

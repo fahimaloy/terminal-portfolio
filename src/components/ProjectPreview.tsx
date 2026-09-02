@@ -17,10 +17,26 @@ import {
 import { HudPanel, NeonButton, NeonChip, Ripple } from './ui';
 
 const COLOR_SETS = [
-  { accent: 'yellow' as const, text: 'text-neon-yellow', border: 'border-neon-yellow/30' },
-  { accent: 'magenta' as const, text: 'text-neon-magenta', border: 'border-neon-magenta/30' },
-  { accent: 'cyan' as const, text: 'text-neon-cyan', border: 'border-neon-cyan/30' },
-  { accent: 'yellow' as const, text: 'text-neon-yellow', border: 'border-neon-yellow/30' },
+  {
+    accent: 'yellow' as const,
+    text: 'text-neon-yellow',
+    border: 'border-neon-yellow/30',
+  },
+  {
+    accent: 'magenta' as const,
+    text: 'text-neon-magenta',
+    border: 'border-neon-magenta/30',
+  },
+  {
+    accent: 'cyan' as const,
+    text: 'text-neon-cyan',
+    border: 'border-neon-cyan/30',
+  },
+  {
+    accent: 'yellow' as const,
+    text: 'text-neon-yellow',
+    border: 'border-neon-yellow/30',
+  },
 ];
 const getColor = (i: number) => COLOR_SETS[i % COLOR_SETS.length];
 
@@ -42,7 +58,9 @@ export default function ProjectPreview({
   inline = false,
 }: Props) {
   const [activeIndex, setActiveIndex] = useState(selectedIndex);
-  const [mediaMap, setMediaMap] = useState<Record<number, PortfolioProjectMedia[]>>({});
+  const [mediaMap, setMediaMap] = useState<
+    Record<number, PortfolioProjectMedia[]>
+  >({});
   const [mediaLoading, setMediaLoading] = useState(true);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
@@ -99,52 +117,59 @@ export default function ProjectPreview({
         </div>
       )}
 
-{projects.length > 1 && (
-         <div className="flex flex-wrap justify-center gap-3 mb-4">
-           {projects.map((project, idx) => {
-             const c = getColor(idx);
-             const isActive = idx === activeIndex;
-             return (
-               <Ripple
-                 key={project.id}
-                 onClick={() => handleSelectProject(idx)}
-                 className="w-[150px] cursor-pointer"
-               >
-                 <HudPanel
-                   accent={c.accent}
-                   notch="sm"
-                   className={`p-2 transition-all duration-200 ${
-                     isActive ? 'scale-105 hud-glow-' + c.accent.replace('neon-', '') : 'opacity-60 hover:opacity-100 hover:hud-glow-' + c.accent.replace('neon-', '')
-                   }`}
-                 >
-                   <div className="w-full h-16 overflow-hidden bg-black/30 mb-2">
-                     {project.thumbnail_url ? (
-                       // eslint-disable-next-line @next/next/no-img-element
-                       <img
-                         src={project.thumbnail_url}
-                         alt={project.title}
-                         className="w-full h-full object-cover"
-                         loading="lazy"
-                       />
-                     ) : (
-                       <div className="w-full h-full flex items-center justify-center">
-                         <span className={`text-lg font-display ${c.text}`}>
-                           {project.title.charAt(0)}
-                         </span>
-                       </div>
-                     )}
-                   </div>
-                   <div className="text-[10px] font-display tracking-[1.5px] text-center text-text-primary">
-                     {project.short_title || project.title}
-                   </div>
-                 </HudPanel>
-               </Ripple>
-             );
-           })}
-         </div>
-       )}
+      {projects.length > 1 && (
+        <div className="flex flex-wrap justify-center gap-3 mb-4">
+          {projects.map((project, idx) => {
+            const c = getColor(idx);
+            const isActive = idx === activeIndex;
+            return (
+              <Ripple
+                key={project.id}
+                onClick={() => handleSelectProject(idx)}
+                className="w-[150px] cursor-pointer"
+              >
+                <HudPanel
+                  accent={c.accent}
+                  notch="sm"
+                  className={`p-2 transition-all duration-200 ${
+                    isActive
+                      ? 'scale-105 hud-glow-' + c.accent.replace('neon-', '')
+                      : 'opacity-60 hover:opacity-100 hover:hud-glow-' +
+                        c.accent.replace('neon-', '')
+                  }`}
+                >
+                  <div className="w-full h-16 overflow-hidden bg-black/30 mb-2">
+                    {project.thumbnail_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={project.thumbnail_url}
+                        alt={project.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className={`text-lg font-display ${c.text}`}>
+                          {project.title.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-[10px] font-display tracking-[1.5px] text-center text-text-primary">
+                    {project.short_title || project.title}
+                  </div>
+                </HudPanel>
+              </Ripple>
+            );
+          })}
+        </div>
+      )}
 
-      <HudPanel accent={colors.accent} notch="md" className="p-0 overflow-hidden">
+      <HudPanel
+        accent={colors.accent}
+        notch="md"
+        className="p-0 overflow-hidden"
+      >
         <div className="relative w-full aspect-video bg-black/60">
           {mediaLoading && (
             <div className="absolute inset-0 flex items-center justify-center text-text-muted font-body text-sm">
@@ -166,7 +191,9 @@ export default function ProjectPreview({
                   <video
                     src={activeMedia[selectedMediaIndex].url}
                     controls
-                    poster={activeMedia[selectedMediaIndex].thumbnail_url || undefined}
+                    poster={
+                      activeMedia[selectedMediaIndex].thumbnail_url || undefined
+                    }
                     className="w-full h-full object-contain"
                   />
                 )
@@ -204,7 +231,8 @@ export default function ProjectPreview({
               <button
                 onClick={() =>
                   setSelectedMediaIndex(
-                    (prev) => (prev - 1 + activeMedia.length) % activeMedia.length,
+                    (prev) =>
+                      (prev - 1 + activeMedia.length) % activeMedia.length,
                   )
                 }
                 className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-text-secondary hover:text-text-primary transition-all"
@@ -214,7 +242,9 @@ export default function ProjectPreview({
               </button>
               <button
                 onClick={() =>
-                  setSelectedMediaIndex((prev) => (prev + 1) % activeMedia.length)
+                  setSelectedMediaIndex(
+                    (prev) => (prev + 1) % activeMedia.length,
+                  )
                 }
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-text-secondary hover:text-text-primary transition-all"
                 aria-label="Next media"
@@ -248,13 +278,22 @@ export default function ProjectPreview({
                   <div className="relative w-full h-full bg-bg-ash flex items-center justify-center">
                     {m.thumbnail_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={m.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                      <img
+                        src={m.thumbnail_url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                     ) : null}
                     <FiVideo className="w-4 h-4 absolute text-text-primary" />
                   </div>
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={m.url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  <img
+                    src={m.url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 )}
               </button>
             ))}
@@ -263,7 +302,9 @@ export default function ProjectPreview({
 
         <div className="p-4 space-y-3">
           <div className="flex flex-wrap items-start gap-3">
-            <h3 className={`text-xl font-display tracking-wider ${colors.text}`}>
+            <h3
+              className={`text-xl font-display tracking-wider ${colors.text}`}
+            >
               {activeProject.title}
             </h3>
             {activeProject.featured && (
@@ -277,7 +318,10 @@ export default function ProjectPreview({
           {activeProject.languages && activeProject.languages.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {activeProject.languages.map((lang, i) => (
-                <NeonChip key={i} accent={getColor(i + activeProject.id).accent}>
+                <NeonChip
+                  key={i}
+                  accent={getColor(i + activeProject.id).accent}
+                >
                   {lang}
                 </NeonChip>
               ))}

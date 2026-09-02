@@ -42,8 +42,9 @@ const MeetingsPage = () => {
   };
 
   const handleDeleteMeeting = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this meeting request?')) return;
-    
+    if (!confirm('Are you sure you want to delete this meeting request?'))
+      return;
+
     setIsSaving(true);
     const ok = await deleteMeeting(id);
     updateStatus(ok ? 'Meeting deleted.' : 'Failed to delete meeting.');
@@ -78,26 +79,34 @@ const MeetingsPage = () => {
               </h3>
               <div className="space-y-4">
                 {meetings.map((meeting) => (
-                  <div key={meeting.id} className="p-4 bg-white/5 border border-gray-800 rounded-xl flex flex-col md:flex-row justify-between gap-4">
+                  <div
+                    key={meeting.id}
+                    className="p-4 bg-white/5 border border-gray-800 rounded-xl flex flex-col md:flex-row justify-between gap-4"
+                  >
                     <div className="flex-1">
                       <div className="font-bold text-white mb-1">
                         {meeting.name} &lt;{meeting.email}&gt;
                       </div>
                       <div className="text-sm text-gray-400 mb-1">
-                        <span className="font-bold">Date & Time:</span> {meeting.date} at {meeting.time}
+                        <span className="font-bold">Date & Time:</span>{' '}
+                        {meeting.date} at {meeting.time}
                       </div>
                       <div className="text-sm text-gray-400 mb-2">
-                        <span className="font-bold">Reason:</span> {meeting.reason || 'N/A'}
+                        <span className="font-bold">Reason:</span>{' '}
+                        {meeting.reason || 'N/A'}
                       </div>
                       <div className="text-xs text-gray-500">
-                        Requested on: {new Date(meeting.created_at || '').toLocaleString()}
+                        Requested on:{' '}
+                        {new Date(meeting.created_at || '').toLocaleString()}
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 items-end">
                       <select
                         className="form-premium-input rounded-xl p-2 text-white text-sm focus:outline-none"
                         value={meeting.status}
-                        onChange={(e) => handleStatusChange(meeting.id, e.target.value)}
+                        onChange={(e) =>
+                          handleStatusChange(meeting.id, e.target.value)
+                        }
                         disabled={isSaving}
                       >
                         <option value="pending">Pending</option>

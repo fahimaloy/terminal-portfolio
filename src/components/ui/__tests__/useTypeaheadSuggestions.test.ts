@@ -1,7 +1,10 @@
 // src/components/ui/__tests__/useTypeaheadSuggestions.test.ts
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useTypeaheadSuggestions, Suggestion } from '../useTypeaheadSuggestions';
+import {
+  useTypeaheadSuggestions,
+  Suggestion,
+} from '../useTypeaheadSuggestions';
 
 const POOL: Suggestion[] = [
   { id: '1', label: 'React component patterns', hint: 'article' },

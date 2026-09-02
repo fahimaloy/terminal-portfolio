@@ -4,11 +4,31 @@ import { PortfolioProject } from '../utils/api';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 const COLORS = [
-  { accent: 'text-neon-yellow', border: 'border-neon-yellow/40', glow: 'hud-glow-yellow' },
-  { accent: 'text-neon-magenta', border: 'border-neon-magenta/40', glow: 'hud-glow-magenta' },
-  { accent: 'text-neon-cyan', border: 'border-neon-cyan/40', glow: 'hud-glow-cyan' },
-  { accent: 'text-neon-yellow', border: 'border-neon-yellow/40', glow: 'hud-glow-yellow' },
-  { accent: 'text-neon-magenta', border: 'border-neon-magenta/40', glow: 'hud-glow-magenta' },
+  {
+    accent: 'text-neon-yellow',
+    border: 'border-neon-yellow/40',
+    glow: 'hud-glow-yellow',
+  },
+  {
+    accent: 'text-neon-magenta',
+    border: 'border-neon-magenta/40',
+    glow: 'hud-glow-magenta',
+  },
+  {
+    accent: 'text-neon-cyan',
+    border: 'border-neon-cyan/40',
+    glow: 'hud-glow-cyan',
+  },
+  {
+    accent: 'text-neon-yellow',
+    border: 'border-neon-yellow/40',
+    glow: 'hud-glow-yellow',
+  },
+  {
+    accent: 'text-neon-magenta',
+    border: 'border-neon-magenta/40',
+    glow: 'hud-glow-magenta',
+  },
 ];
 
 type Props = {

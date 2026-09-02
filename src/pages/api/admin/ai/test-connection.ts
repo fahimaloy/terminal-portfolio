@@ -18,12 +18,17 @@ export default async function handler(
     const { provider_type, api_key, base_url } = req.body || {};
 
     if (!provider_type || !api_key) {
-      res.status(400).json({ ok: false, message: 'provider_type and api_key are required' });
+      res
+        .status(400)
+        .json({ ok: false, message: 'provider_type and api_key are required' });
       return;
     }
 
     if (!['gemini', 'openai_compatible'].includes(provider_type)) {
-      res.status(400).json({ ok: false, message: 'provider_type must be "gemini" or "openai_compatible"' });
+      res.status(400).json({
+        ok: false,
+        message: 'provider_type must be "gemini" or "openai_compatible"',
+      });
       return;
     }
 
@@ -33,7 +38,10 @@ export default async function handler(
       models = await fetchGeminiModels(api_key);
     } else if (provider_type === 'openai_compatible') {
       if (!base_url) {
-        res.status(400).json({ ok: false, message: 'base_url is required for openai_compatible providers' });
+        res.status(400).json({
+          ok: false,
+          message: 'base_url is required for openai_compatible providers',
+        });
         return;
       }
       models = await fetchOpenAICompatibleModels(base_url, api_key);
@@ -69,10 +77,11 @@ async function fetchGeminiModels(apiKey: string): Promise<string[]> {
 
   // Filter to only generative models (exclude embedding, tuning, etc.)
   return data.models
-    .filter((m: any) =>
-      m.name &&
-      m.supportedGenerationMethods &&
-      m.supportedGenerationMethods.includes('generateContent'),
+    .filter(
+      (m: any) =>
+        m.name &&
+        m.supportedGenerationMethods &&
+        m.supportedGenerationMethods.includes('generateContent'),
     )
     .map((m: any) => m.name.replace('models/', ''));
 }

@@ -40,22 +40,47 @@ export default async function handler(
 
     // POST - Create model(s)
     if (req.method === 'POST') {
-      const { provider_id, model_names, display_name, identifier_slug, rpm_limit, rpd_limit } = req.body || {};
+      const {
+        provider_id,
+        model_names,
+        display_name,
+        identifier_slug,
+        rpm_limit,
+        rpd_limit,
+      } = req.body || {};
 
-      if (!provider_id || !model_names || !Array.isArray(model_names) || model_names.length === 0) {
-        res.status(400).json({ ok: false, message: 'provider_id and model_names (array) are required' });
+      if (
+        !provider_id ||
+        !model_names ||
+        !Array.isArray(model_names) ||
+        model_names.length === 0
+      ) {
+        res.status(400).json({
+          ok: false,
+          message: 'provider_id and model_names (array) are required',
+        });
         return;
       }
 
       if (!identifier_slug) {
-        res.status(400).json({ ok: false, message: 'identifier_slug is required' });
+        res
+          .status(400)
+          .json({ ok: false, message: 'identifier_slug is required' });
         return;
       }
 
       // Verify provider exists and get current max sort_order
       const [{ data: provider }, { data: existingModels }] = await Promise.all([
-        supabaseAdmin.from('ai_providers').select('*').eq('id', provider_id).single(),
-        supabaseAdmin.from('ai_models').select('sort_order').order('sort_order', { ascending: false }).limit(1),
+        supabaseAdmin
+          .from('ai_providers')
+          .select('*')
+          .eq('id', provider_id)
+          .single(),
+        supabaseAdmin
+          .from('ai_models')
+          .select('sort_order')
+          .order('sort_order', { ascending: false })
+          .limit(1),
       ]);
 
       if (!provider) {
@@ -67,7 +92,9 @@ export default async function handler(
 
       // Create model records
       const modelRecords = model_names.map((modelName: string) => {
-        const identifier = `${identifier_slug}-${modelName.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase()}`;
+        const identifier = `${identifier_slug}-${modelName
+          .replace(/[^a-zA-Z0-9_-]/g, '-')
+          .toLowerCase()}`;
         const record = {
           provider_id,
           model_name: modelName,
@@ -88,7 +115,10 @@ export default async function handler(
 
       if (error) {
         if (error.code === '23505') {
-          res.status(409).json({ ok: false, message: 'One or more model identifiers already exist' });
+          res.status(409).json({
+            ok: false,
+            message: 'One or more model identifiers already exist',
+          });
           return;
         }
         throw error;
@@ -108,8 +138,13 @@ export default async function handler(
       }
 
       const allowedFields = [
-        'display_name', 'rpm_limit', 'rpd_limit', 'is_active',
-        'model_name', 'sort_order', 'cooldown_until',
+        'display_name',
+        'rpm_limit',
+        'rpd_limit',
+        'is_active',
+        'model_name',
+        'sort_order',
+        'cooldown_until',
       ];
 
       const updateData: Record<string, unknown> = {};
@@ -120,7 +155,9 @@ export default async function handler(
       }
 
       if (Object.keys(updateData).length === 0) {
-        res.status(400).json({ ok: false, message: 'No valid fields to update' });
+        res
+          .status(400)
+          .json({ ok: false, message: 'No valid fields to update' });
         return;
       }
 
@@ -162,7 +199,8 @@ export default async function handler(
     res.setHeader('Allow', 'GET, POST, PATCH, DELETE');
     res.status(405).json({ ok: false, message: 'Method not allowed' });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to process request';
+    const message =
+      error instanceof Error ? error.message : 'Failed to process request';
     res.status(400).json({ ok: false, message });
   }
 }

@@ -54,7 +54,9 @@ const ProgressBar: React.FC<{
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-16 text-right text-white">{value.toLocaleString()}</span>
+      <span className="w-16 text-right text-white">
+        {value.toLocaleString()}
+      </span>
     </div>
   );
 };
@@ -66,7 +68,9 @@ const AiUsagePage = () => {
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [days, setDays] = useState(30);
-  const [activeTab, setActiveTab] = useState<'overview' | 'per-model' | 'daily' | 'errors'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'per-model' | 'daily' | 'errors'
+  >('overview');
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -93,7 +97,12 @@ const AiUsagePage = () => {
     { id: 'overview' as const, label: 'Overview', icon: '📊' },
     { id: 'per-model' as const, label: 'Per Model', icon: '🤖' },
     { id: 'daily' as const, label: 'Daily Trends', icon: '📈' },
-    { id: 'errors' as const, label: 'Errors', icon: '⚠️', count: recentErrors.length },
+    {
+      id: 'errors' as const,
+      label: 'Errors',
+      icon: '⚠️',
+      count: recentErrors.length,
+    },
   ];
 
   return (
@@ -139,7 +148,9 @@ const AiUsagePage = () => {
             <div className="text-center text-gray-400 p-12 glass-deep rounded-xl">
               <div className="text-5xl mb-4">📭</div>
               <p className="text-lg mb-2">No usage data yet</p>
-              <p className="text-sm">Usage data will appear here once AI models are used.</p>
+              <p className="text-sm">
+                Usage data will appear here once AI models are used.
+              </p>
             </div>
           ) : (
             <>
@@ -206,7 +217,9 @@ const AiUsagePage = () => {
                   </div>
 
                   <div className="glass-deep rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-white mb-4">Request Distribution</h3>
+                    <h3 className="text-lg font-bold text-white mb-4">
+                      Request Distribution
+                    </h3>
                     <div className="space-y-3">
                       <ProgressBar
                         label="Successful"
@@ -229,7 +242,9 @@ const AiUsagePage = () => {
               {activeTab === 'per-model' && (
                 <div className="space-y-4">
                   {modelStats.length === 0 ? (
-                    <p className="text-gray-400">No model-specific data available.</p>
+                    <p className="text-gray-400">
+                      No model-specific data available.
+                    </p>
                   ) : (
                     modelStats.map((stat) => (
                       <div
@@ -289,7 +304,9 @@ const AiUsagePage = () => {
                               style={{
                                 width: `${
                                   stat.totalRequests > 0
-                                    ? (stat.failedRequests / stat.totalRequests) * 100
+                                    ? (stat.failedRequests /
+                                        stat.totalRequests) *
+                                      100
                                     : 0
                                 }%`,
                               }}
@@ -315,15 +332,24 @@ const AiUsagePage = () => {
                         </h3>
                         <div className="space-y-1">
                           {dailyStats.map((day) => {
-                            const maxVal = Math.max(...dailyStats.map((d) => d.totalRequests));
+                            const maxVal = Math.max(
+                              ...dailyStats.map((d) => d.totalRequests),
+                            );
                             return (
-                              <div key={day.date} className="flex items-center gap-2 text-xs">
-                                <span className="w-24 text-gray-400 font-mono">{day.date}</span>
+                              <div
+                                key={day.date}
+                                className="flex items-center gap-2 text-xs"
+                              >
+                                <span className="w-24 text-gray-400 font-mono">
+                                  {day.date}
+                                </span>
                                 <div className="flex-1 bg-gray-800 h-5 rounded overflow-hidden flex">
                                   <div
                                     className="bg-purple-500 h-full transition-all"
                                     style={{
-                                      width: `${(day.totalRequests / maxVal) * 100}%`,
+                                      width: `${
+                                        (day.totalRequests / maxVal) * 100
+                                      }%`,
                                     }}
                                   />
                                 </div>
@@ -355,9 +381,16 @@ const AiUsagePage = () => {
                           </thead>
                           <tbody>
                             {dailyStats.map((day) => (
-                              <tr key={day.date} className="border-b border-gray-800 hover:bg-white/5">
-                                <td className="p-3 font-mono text-gray-300">{day.date}</td>
-                                <td className="p-3 text-right text-gray-300">{day.totalRequests}</td>
+                              <tr
+                                key={day.date}
+                                className="border-b border-gray-800 hover:bg-white/5"
+                              >
+                                <td className="p-3 font-mono text-gray-300">
+                                  {day.date}
+                                </td>
+                                <td className="p-3 text-right text-gray-300">
+                                  {day.totalRequests}
+                                </td>
                                 <td className="p-3 text-right text-lime-400">
                                   {day.successfulRequests}
                                 </td>
@@ -369,7 +402,11 @@ const AiUsagePage = () => {
                                 </td>
                                 <td className="p-3 text-right text-gray-300">
                                   {day.totalRequests > 0
-                                    ? `${Math.round((day.successfulRequests / day.totalRequests) * 100)}%`
+                                    ? `${Math.round(
+                                        (day.successfulRequests /
+                                          day.totalRequests) *
+                                          100,
+                                      )}%`
                                     : '—'}
                                 </td>
                               </tr>
@@ -404,18 +441,28 @@ const AiUsagePage = () => {
                         </thead>
                         <tbody>
                           {recentErrors.map((err) => (
-                            <tr key={err.id} className="border-b border-gray-800 hover:bg-white/5">
+                            <tr
+                              key={err.id}
+                              className="border-b border-gray-800 hover:bg-white/5"
+                            >
                               <td className="p-3 text-xs font-mono text-gray-500">
                                 {new Date(err.createdAt).toLocaleString()}
                               </td>
-                              <td className="p-3 text-red-400">{err.modelIdentifier}</td>
-                              <td className="p-3 text-gray-300">{err.providerName}</td>
+                              <td className="p-3 text-red-400">
+                                {err.modelIdentifier}
+                              </td>
+                              <td className="p-3 text-gray-300">
+                                {err.providerName}
+                              </td>
                               <td className="p-3">
                                 <span className="text-xs bg-red-900/50 text-red-300 px-2 py-0.5 rounded">
                                   {err.requestType}
                                 </span>
                               </td>
-                              <td className="p-3 text-xs text-red-400 max-w-xs truncate" title={err.errorMessage}>
+                              <td
+                                className="p-3 text-xs text-red-400 max-w-xs truncate"
+                                title={err.errorMessage}
+                              >
                                 {err.errorMessage}
                               </td>
                             </tr>

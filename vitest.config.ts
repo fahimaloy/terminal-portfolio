@@ -10,6 +10,14 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
     css: false,
+    // Exclude Playwright e2e tests from vitest
+    exclude: [
+      '**/e2e/**',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/.next/**',
+    ],
   },
   resolve: {
     alias: {

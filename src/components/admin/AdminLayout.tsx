@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
+import { animate, createScope, stagger } from 'animejs';
+import { canAnimate } from '../../config/animations';
 import { logout, clearAdminSession } from '../../utils/adminPageGuard';
 import { getMeetings } from '../../utils/api';
 import { GlitchText, HudPanel, NeonButton } from '../ui';
@@ -18,8 +21,11 @@ const navItems = [
   { path: '/sudosuperuser-ostaad/profile', label: 'Profile', icon: '👤' },
   { path: '/sudosuperuser-ostaad/skills', label: 'Skills', icon: '🎯' },
   { path: '/sudosuperuser-ostaad/projects', label: 'Projects', icon: '🚀' },
+  { path: '/sudosuperuser-ostaad/experiences', label: 'Experiences', icon: '💼' },
+  { path: '/sudosuperuser-ostaad/blogs', label: 'Blogs', icon: '📝' },
   { path: '/sudosuperuser-ostaad/media', label: 'Media', icon: '📁' },
   { path: '/sudosuperuser-ostaad/knowledge', label: 'Knowledge', icon: '🧠' },
+  { path: '/sudosuperuser-ostaad/site-texts', label: 'Site Texts', icon: '✏️' },
   { path: '/sudosuperuser-ostaad/meetings', label: 'Meetings', icon: '📅' },
   { path: '/sudosuperuser-ostaad/ai/models', label: 'Models', icon: '🤖' },
   { path: '/sudosuperuser-ostaad/ai/usage', label: 'Usage', icon: '📈' },
@@ -55,7 +61,10 @@ const LogoutConfirmation: React.FC<{
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: motionTokens.dur.enter, ease: motionTokens.ease }}
+        transition={{
+          duration: motionTokens.dur.enter,
+          ease: motionTokens.ease,
+        }}
         className="relative max-w-sm w-full"
       >
         <HudPanel
@@ -102,39 +111,59 @@ const LogoutConfirmation: React.FC<{
 };
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
-   children,
-   user,
-   isLoading = false,
- }) => {
-   const router = useRouter();
-   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-   const [isLoggingOut, setIsLoggingOut] = useState(false);
-   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-   const [unreadMeetings, setUnreadMeetings] = useState(0);
-   const isMounted = useRef(true);
+  children,
+  user,
+  isLoading = false,
+}) => {
+  const router = useRouter();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadMeetings, setUnreadMeetings] = useState(0);
+  const isMounted = useRef(true);
+  const desktopNavRef = useRef<HTMLElement>(null);
 
-   useEffect(() => {
-     return () => {
-       isMounted.current = false;
-     };
-   }, []);
+  // Stagger the nav items in on first mount.
+  useEffect(() => {
+    const nav = desktopNavRef.current;
+    if (!nav || !canAnimate()) return;
 
-   useEffect(() => {
-     const fetchMeetings = async () => {
-       try {
-         const data = await getMeetings();
-         if (isMounted.current && data) {
-           const pending = data.filter(
-             (m: unknown) => (m as { status?: string }).status === 'pending',
-           ).length;
-           setUnreadMeetings(pending);
-         }
-       } catch {
-         // Ignore errors
-       }
-     };
-     fetchMeetings();
-   }, []);
+    const scope = createScope({ root: nav });
+    scope.add(() => {
+      animate(nav.querySelectorAll('.admin-nav-item'), {
+        opacity: [0, 1],
+        y: [-8, 0],
+        duration: 320,
+        ease: 'outExpo',
+        delay: stagger(35),
+      });
+    });
+
+    return () => scope.revert();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      try {
+        const data = await getMeetings();
+        if (isMounted.current && data) {
+          const pending = data.filter(
+            (m: unknown) => (m as { status?: string }).status === 'pending',
+          ).length;
+          setUnreadMeetings(pending);
+        }
+      } catch {
+        // Ignore errors
+      }
+    };
+    fetchMeetings();
+  }, []);
 
   const handleLogoutClick = useCallback(() => {
     if (!isLoggingOut) {
@@ -166,6 +195,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
   return (
     <div className="min-h-screen bg-bg-void text-text-primary font-body">
+      {/* Admin surfaces must never be indexed. */}
+      <Head>
+        <meta name="robots" content="noindex, nofollow" />
+      </Head>
       {/* Header */}
       <header
         className="sticky top-0 z-40 bg-bg-void/95 backdrop-blur-md"
@@ -178,11 +211,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <GlitchText
-                as="h1"
-                accent="cyan"
-                className="text-lg md:text-xl"
-              >
+              <GlitchText as="h1" accent="cyan" className="text-lg md:text-xl">
                 {'// ADMIN_PANEL'}
               </GlitchText>
             </div>
@@ -229,6 +258,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
           {/* Desktop Navigation */}
           <nav
+            ref={desktopNavRef}
             className="hidden md:flex gap-1.5 mt-4 text-sm flex-wrap"
             aria-label="Main navigation"
           >
@@ -236,7 +266,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               <Link key={item.path} href={item.path}>
                 <a
                   onClick={handleNavClick}
-                  className={`px-3 py-2 font-display tracking-[1.5px] uppercase text-[10px] transition-all duration-200 flex items-center gap-2 ${
+                  className={`admin-nav-item px-3 py-2 font-display tracking-[1.5px] uppercase text-[10px] transition-all duration-200 flex items-center gap-2 ${
                     isActive(item.path)
                       ? 'bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/40 hud-glow-cyan'
                       : 'bg-transparent text-text-secondary border border-white/10 hover:border-white/30 hover:text-text-primary'
@@ -315,7 +345,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       <main className="max-w-7xl mx-auto px-4 py-6 md:py-8">
         {isLoading ? (
           <div className="flex items-center justify-center min-h-[60vh]">
-            <HudPanel accent="cyan" notch="md" className="p-8 text-center space-y-3">
+            <HudPanel
+              accent="cyan"
+              notch="md"
+              className="p-8 text-center space-y-3"
+            >
               <div className="w-8 h-8 border-4 border-neon-cyan/20 border-t-neon-cyan rounded-full animate-spin mx-auto" />
               <div className="font-display tracking-[2px] text-neon-cyan">
                 LOADING…
@@ -341,9 +375,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <div>
               <code className="text-neon-magenta">$ /sudosuperuser-ostaad</code>
             </div>
-            <div>
-              v2.0.0 | {user?.username || 'GUEST'}
-            </div>
+            <div>v2.0.0 | {user?.username || 'GUEST'}</div>
           </div>
         </div>
       </footer>

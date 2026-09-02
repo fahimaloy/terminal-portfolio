@@ -18,10 +18,18 @@ export default async function handler(
 
   // Rate limiting: 5 requests per 60 seconds per IP
   const clientIp = getClientIp(req);
-  const rateLimit = checkRateLimit(`contact:${clientIp}`, { maxRequests: 5, windowSeconds: 60 });
+  const rateLimit = checkRateLimit(`contact:${clientIp}`, {
+    maxRequests: 5,
+    windowSeconds: 60,
+  });
   if (!rateLimit.allowed) {
-    res.setHeader('Retry-After', Math.ceil((rateLimit.resetAt - Date.now()) / 1000).toString());
-    return res.status(429).json({ message: 'Too many requests. Please try again later.' });
+    res.setHeader(
+      'Retry-After',
+      Math.ceil((rateLimit.resetAt - Date.now()) / 1000).toString(),
+    );
+    return res
+      .status(429)
+      .json({ message: 'Too many requests. Please try again later.' });
   }
 
   try {

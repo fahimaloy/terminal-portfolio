@@ -30,7 +30,10 @@ export default function TypeaheadSuggestions({
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: motionTokens.dur.tap, ease: motionTokens.ease }}
+          transition={{
+            duration: motionTokens.dur.tap,
+            ease: motionTokens.ease,
+          }}
           className={`font-body text-sm ${className}`}
         >
           {suggestions.length === 0 ? (

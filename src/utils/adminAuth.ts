@@ -13,7 +13,7 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 
 const ADMIN_DEFAULT_USERNAME =
   process.env.ADMIN_DEFAULT_USERNAME || 'fahimaloy';
-const ADMIN_DEFAULT_PASSWORD = process.env.ADMIN_DEFAULT_PASSWORD || 'dibona';
+const ADMIN_DEFAULT_PASSWORD = process.env.ADMIN_DEFAULT_PASSWORD;
 const ADMIN_DEFAULT_EMAIL =
   process.env.ADMIN_DEFAULT_EMAIL || 'private.fahimaloy@proton.me';
 
@@ -100,6 +100,10 @@ const sessionTokenHash = (token: string) =>
 
 export const ensureDefaultAdminSeeded = async (): Promise<void> => {
   if (!supabaseAdmin) {
+    return;
+  }
+
+  if (!ADMIN_DEFAULT_PASSWORD) {
     return;
   }
 

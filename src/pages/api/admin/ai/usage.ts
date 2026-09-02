@@ -21,7 +21,10 @@ export default async function handler(
   if (!admin) return;
 
   try {
-    const days = Math.min(Math.max(parseInt(req.query.days as string) || 30, 1), 365);
+    const days = Math.min(
+      Math.max(parseInt(req.query.days as string) || 30, 1),
+      365,
+    );
     const since = new Date();
     since.setDate(since.getDate() - days);
 
@@ -40,26 +43,37 @@ export default async function handler(
     const totalRequests = allLogs.length;
     const successfulRequests = allLogs.filter((l) => l.success).length;
     const failedRequests = totalRequests - successfulRequests;
-    const totalTokens = allLogs.reduce((sum, l) => sum + (l.total_tokens || 0), 0);
-    const avgLatencyMs = totalRequests > 0
-      ? Math.round(allLogs.reduce((sum, l) => sum + (l.latency_ms || 0), 0) / totalRequests)
-      : 0;
+    const totalTokens = allLogs.reduce(
+      (sum, l) => sum + (l.total_tokens || 0),
+      0,
+    );
+    const avgLatencyMs =
+      totalRequests > 0
+        ? Math.round(
+            allLogs.reduce((sum, l) => sum + (l.latency_ms || 0), 0) /
+              totalRequests,
+          )
+        : 0;
 
     // ─── Per-Model Stats ────────────────────────────────────
-    const modelStatsMap = new Map<string, {
-      modelId: number | null;
-      modelIdentifier: string;
-      providerName: string;
-      totalRequests: number;
-      successfulRequests: number;
-      failedRequests: number;
-      totalTokens: number;
-      avgLatencyMs: number;
-      requestsByDate: Record<string, number>;
-    }>();
+    const modelStatsMap = new Map<
+      string,
+      {
+        modelId: number | null;
+        modelIdentifier: string;
+        providerName: string;
+        totalRequests: number;
+        successfulRequests: number;
+        failedRequests: number;
+        totalTokens: number;
+        avgLatencyMs: number;
+        requestsByDate: Record<string, number>;
+      }
+    >();
 
     for (const log of allLogs) {
-      const key = log.model_identifier || `unknown-${log.model_id || log.provider_id}`;
+      const key =
+        log.model_identifier || `unknown-${log.model_id || log.provider_id}`;
       if (!modelStatsMap.has(key)) {
         modelStatsMap.set(key, {
           modelId: log.model_id,
@@ -86,26 +100,35 @@ export default async function handler(
 
     // Calculate averages
     for (const stats of modelStatsMap.values()) {
-      stats.avgLatencyMs = stats.totalRequests > 0
-        ? Math.round(
-            allLogs
-              .filter((l) => l.model_identifier === stats.modelIdentifier)
-              .reduce((sum, l) => sum + (l.latency_ms || 0), 0) / stats.totalRequests,
-          )
-        : 0;
+      stats.avgLatencyMs =
+        stats.totalRequests > 0
+          ? Math.round(
+              allLogs
+                .filter((l) => l.model_identifier === stats.modelIdentifier)
+                .reduce((sum, l) => sum + (l.latency_ms || 0), 0) /
+                stats.totalRequests,
+            )
+          : 0;
     }
 
     // ─── Daily Stats ────────────────────────────────────────
-    const dailyStatsMap = new Map<string, {
-      totalRequests: number;
-      successfulRequests: number;
-      totalTokens: number;
-    }>();
+    const dailyStatsMap = new Map<
+      string,
+      {
+        totalRequests: number;
+        successfulRequests: number;
+        totalTokens: number;
+      }
+    >();
 
     for (const log of allLogs) {
       const date = log.created_at.split('T')[0];
       if (!dailyStatsMap.has(date)) {
-        dailyStatsMap.set(date, { totalRequests: 0, successfulRequests: 0, totalTokens: 0 });
+        dailyStatsMap.set(date, {
+          totalRequests: 0,
+          successfulRequests: 0,
+          totalTokens: 0,
+        });
       }
       const ds = dailyStatsMap.get(date)!;
       ds.totalRequests += 1;
@@ -138,16 +161,22 @@ export default async function handler(
         failedRequests,
         totalTokens,
         avgLatencyMs,
-        successRate: totalRequests > 0 ? Math.round((successfulRequests / totalRequests) * 100) : 0,
+        successRate:
+          totalRequests > 0
+            ? Math.round((successfulRequests / totalRequests) * 100)
+            : 0,
       },
-      modelStats: Array.from(modelStatsMap.values()).sort((a, b) => b.totalRequests - a.totalRequests),
+      modelStats: Array.from(modelStatsMap.values()).sort(
+        (a, b) => b.totalRequests - a.totalRequests,
+      ),
       dailyStats,
       recentErrors,
       totalLogs: allLogs.length,
       daysQueried: days,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch usage data';
+    const message =
+      error instanceof Error ? error.message : 'Failed to fetch usage data';
     res.status(400).json({ ok: false, message });
   }
 }

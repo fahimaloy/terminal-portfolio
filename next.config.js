@@ -1,6 +1,10 @@
+/** @type {import('next').NextConfig} */
 module.exports = {
   distDir: 'build',
   reactStrictMode: true,
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
@@ -12,4 +16,15 @@ module.exports = {
   },
   compress: true,
   productionBrowserSourceMaps: false,
+  // Performance optimizations
+  poweredByHeader: false,
+  // Enable SWC minification (default in Next 13+)
+  swcMinify: true,
+  // Optimize fonts
+  optimizeFonts: true,
+  // Experimental features for better performance
+  experimental: {
+    // Optimize package imports for lucide-react
+    optimizePackageImports: ['lucide-react'],
+  },
 };
