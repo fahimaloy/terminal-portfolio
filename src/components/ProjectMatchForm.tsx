@@ -27,7 +27,9 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
   const [errorMsg, setErrorMsg] = useState('');
   const [result, setResult] = useState<string>('');
   const [segments, setSegments] = useState<ParsedSegment[]>([]);
-  const [previewProjects, setPreviewProjects] = useState<PortfolioProject[]>([]);
+  const [previewProjects, setPreviewProjects] = useState<PortfolioProject[]>(
+    [],
+  );
   const [previewIndex, setPreviewIndex] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
   const [openInlineProject, setOpenInlineProject] =
@@ -101,7 +103,11 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
     <div className="space-y-3">
       {formState === 'filling' && (
         <>
-          <HudPanel accent="green" notch="md" className="p-3 flex items-start gap-3">
+          <HudPanel
+            accent="green"
+            notch="md"
+            className="p-3 flex items-start gap-3"
+          >
             <FiSearch className="w-5 h-5 text-neon-yellow flex-shrink-0 mt-0.5" />
             <div>
               <div className="font-display text-[10px] tracking-[3px] text-neon-yellow mb-1">
@@ -115,9 +121,15 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
           </HudPanel>
 
           {errorMsg && (
-            <HudPanel accent="red" notch="sm" className="p-3 flex items-center gap-2">
+            <HudPanel
+              accent="red"
+              notch="sm"
+              className="p-3 flex items-center gap-2"
+            >
               <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
-              <span className="font-body text-sm text-neon-red">{errorMsg}</span>
+              <span className="font-body text-sm text-neon-red">
+                {errorMsg}
+              </span>
             </HudPanel>
           )}
 
@@ -171,7 +183,11 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
 
       {formState === 'result' && (
         <div className="space-y-4">
-          <HudPanel accent="green" notch="md" className="p-3 flex items-center gap-3">
+          <HudPanel
+            accent="green"
+            notch="md"
+            className="p-3 flex items-center gap-3"
+          >
             <FiCheck className="w-5 h-5 text-neon-green flex-shrink-0" />
             <span className="font-display text-[10px] tracking-[3px] text-neon-green">
               ANALYSIS COMPLETE
@@ -236,7 +252,11 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
 
       {formState === 'error' && (
         <div className="space-y-4">
-          <HudPanel accent="red" notch="sm" className="p-3 flex items-center gap-2">
+          <HudPanel
+            accent="red"
+            notch="sm"
+            className="p-3 flex items-center gap-2"
+          >
             <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
             <span className="font-body text-sm text-neon-red">
               {errorMsg || 'Something went wrong.'}

@@ -9,52 +9,37 @@ import {
 } from '../../utils/api';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { useAdminGuard } from '../../utils/adminPageGuard';
-
-const ICON_OPTIONS = [
-  'html5',
-  'css3',
-  'javascript',
-  'vuedotjs',
-  'react',
-  'nextdotjs',
-  'nuxtdotjs',
-  'linux',
-  'go',
-  'rust',
-  'axum',
-  'cargo',
-  'django',
-  'fastapi',
-  'tauri',
-  'nodedotjs',
-  'express',
-  'redis',
-  'pinecone',
-  'mongodb',
-  'postgresql',
-  'flutter',
-  'electron',
-  'python',
-  'c',
-  'gtk',
-  'typescript',
-  'docker',
-  'kubernetes',
-  'firebase',
-  'supabase',
-  'tailwindcss',
-  'git',
-  'github',
-];
+import { useToast } from '../../components/ui/Toast';
+import { useFormAnimation } from '../../hooks/useFormAnimation';
+import { useStagger } from '../../hooks/useStagger';
+import { NeonButton, HudPanel } from '../../components/ui';
+import IconPicker from '../../components/ui/IconPicker';
+import { motion, AnimatePresence } from 'framer-motion';
+import { motionTokens } from '../../components/ui/motionConfig';
 
 const SkillsPage = () => {
   const { authorized, loading, user } = useAdminGuard();
+  const { success, error: toastError } = useToast();
+  const { shake } = useFormAnimation();
   const [skills, setSkills] = React.useState<PortfolioSkill[]>([]);
   const [newSkill, setNewSkill] = React.useState('');
-  const [newSkillIconKey, setNewSkillIconKey] = React.useState('');
-  const [statusMessage, setStatusMessage] = React.useState('');
+  const [newSkillIcon, setNewSkillIcon] = React.useState('');
+  const [newSkillDuration, setNewSkillDuration] = React.useState('');
+  const [editingId, setEditingId] = React.useState<number | null>(null);
   const [dragSkillId, setDragSkillId] = React.useState<number | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [confirmDelete, setConfirmDelete] = React.useState<number | null>(null);
+  const formRef = React.useRef<HTMLDivElement>(null);
+  const listRef = React.useRef<HTMLDivElement>(null);
+
+  // Stagger list items
+  useStagger({
+    rootRef: listRef,
+    selector: '.skill-item',
+    mode: 'list',
+    delay: 60,
+    respectReduced: true,
+  });
 
   const loadData = React.useCallback(async () => {
     const skillsData = await getPortfolioSkills();
@@ -67,30 +52,48 @@ const SkillsPage = () => {
     }
   }, [authorized, loadData]);
 
-  const updateStatus = (message: string) => {
-    setStatusMessage(message);
-    window.setTimeout(() => setStatusMessage(''), 2500);
+  const resetForm = () => {
+    setNewSkill('');
+    setNewSkillIcon('');
+    setNewSkillDuration('');
+    setEditingId(null);
   };
 
-  const handleAddSkill = async () => {
+  const handleEdit = (skill: PortfolioSkill) => {
+    setEditingId(skill.id);
+    setNewSkill(skill.name);
+    setNewSkillIcon(skill.icon_key || '');
+    setNewSkillDuration(skill.duration || '');
+  };
+
+  const handleSubmit = async () => {
     if (!newSkill.trim()) {
-      updateStatus('Skill name is required.');
+      shake(formRef.current);
+      toastError('Skill name is required.');
       return;
     }
 
     setIsSaving(true);
-    const ok = await createSkill({
+    const payload = {
       name: newSkill.trim(),
-      icon_key: newSkillIconKey.trim() || null,
-      sort_order: skills.length + 1,
+      icon_key: newSkillIcon.trim() || null,
+      duration: newSkillDuration.trim() || null,
+      sort_order: editingId
+        ? skills.find((s) => s.id === editingId)?.sort_order || 0
+        : skills.length + 1,
       is_visible: true,
-    });
+    };
 
-    updateStatus(ok ? 'Skill added.' : 'Failed to add skill.');
+    const ok = editingId
+      ? await updateSkill(editingId, payload)
+      : await createSkill(payload);
+
     if (ok) {
-      setNewSkill('');
-      setNewSkillIconKey('');
+      success(editingId ? 'Skill updated.' : 'Skill created.');
+      resetForm();
       await loadData();
+    } else {
+      toastError('Failed to save skill.');
     }
     setIsSaving(false);
   };
@@ -98,10 +101,13 @@ const SkillsPage = () => {
   const handleDeleteSkill = async (id: number) => {
     setIsSaving(true);
     const ok = await deleteSkill(id);
-    updateStatus(ok ? 'Skill deleted.' : 'Failed to delete skill.');
     if (ok) {
+      success('Skill deleted.');
       await loadData();
+    } else {
+      toastError('Failed to delete skill.');
     }
+    setConfirmDelete(null);
     setIsSaving(false);
   };
 
@@ -133,7 +139,7 @@ const SkillsPage = () => {
     );
 
     setDragSkillId(null);
-    updateStatus('Skill order updated.');
+    success('Skill order updated.');
     await loadData();
     setIsSaving(false);
   };
@@ -152,18 +158,16 @@ const SkillsPage = () => {
         <div className="max-w-2xl">
           <h2 className="text-2xl font-bold text-white mb-6">Manage Skills</h2>
 
-          {statusMessage && (
-            <div className="mb-4 p-3 bg-lime-500/10 border border-lime-500/30 text-lime-400 text-sm rounded-xl">
-              {statusMessage}
-            </div>
-          )}
+          <div ref={formRef} className="glass-deep rounded-xl p-6 mb-8">
+            <h3 className="text-lg font-bold text-white mb-4">
+              {editingId ? 'Edit' : 'Add New'} Skill
+            </h3>
 
-          <div className="glass-deep rounded-xl p-6 mb-8">
-            <h3 className="text-lg font-bold text-white mb-4">Add New Skill</h3>
-
-            <div className="grid gap-3 mb-4 md:grid-cols-2">
+            <div className="grid gap-4 mb-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Skill Name:</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Skill Name *
+                </label>
                 <input
                   type="text"
                   className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
@@ -175,30 +179,49 @@ const SkillsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Icon Key:</label>
-                <select
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none"
-                  value={newSkillIconKey}
-                  onChange={(e) => setNewSkillIconKey(e.target.value)}
+                <label className="block text-sm text-gray-400 mb-1">
+                  Duration
+                </label>
+                <input
+                  type="text"
+                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
+                  placeholder="e.g., 5 years, 2+ years"
+                  value={newSkillDuration}
+                  onChange={(e) => setNewSkillDuration(e.target.value)}
                   disabled={isSaving}
-                >
-                  <option value="">Select icon (optional)</option>
-                  {ICON_OPTIONS.map((icon) => (
-                    <option key={icon} value={icon}>
-                      {icon}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
             </div>
 
-            <button
-              onClick={handleAddSkill}
-              disabled={isSaving}
-              className="bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white rounded-xl px-5 py-2.5 font-medium transition-all shadow-lg disabled:opacity-50"
-            >
-              {isSaving ? 'Adding...' : 'Add Skill'}
-            </button>
+            <div className="mb-4">
+              <label className="block text-sm text-gray-400 mb-2">Icon</label>
+              <IconPicker
+                value={newSkillIcon}
+                onChange={(iconName) => setNewSkillIcon(iconName ?? '')}
+                disabled={isSaving}
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <NeonButton
+                accent="cyan"
+                onClick={handleSubmit}
+                disabled={isSaving}
+                loading={isSaving}
+              >
+                {editingId ? 'UPDATE' : 'ADD SKILL'}
+              </NeonButton>
+              {editingId && (
+                <NeonButton
+                  variant="ghost"
+                  accent="cyan"
+                  onClick={resetForm}
+                  disabled={isSaving}
+                >
+                  CANCEL
+                </NeonButton>
+              )}
+            </div>
           </div>
 
           {skills.length > 0 ? (
@@ -211,7 +234,7 @@ const SkillsPage = () => {
                 Drag to reorder skills
               </p>
 
-              <div className="space-y-2">
+              <div ref={listRef} className="space-y-2">
                 {skills.map((skill) => (
                   <div
                     key={skill.id}
@@ -219,26 +242,40 @@ const SkillsPage = () => {
                     onDragStart={() => setDragSkillId(skill.id)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleSkillDrop(skill.id)}
-                    className="p-3 bg-white/5 border border-gray-800 rounded-xl flex justify-between items-center cursor-move hover:bg-gray-800 transition-all"
+                    className="skill-item p-3 bg-white/5 border border-gray-800 rounded-xl flex justify-between items-center cursor-move hover:bg-gray-800 transition-all"
                   >
-                    <div className="flex-1">
-                      <div className="font-bold text-white">{skill.name}</div>
+                    <div className="flex items-center gap-3 flex-1">
                       {skill.icon_key && (
-                        <div className="text-xs text-gray-400">
-                          Icon: {skill.icon_key}
+                        <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-purple-400 text-sm">
+                          {skill.icon_key.slice(0, 2).toUpperCase()}
                         </div>
                       )}
-                      <div className="text-xs text-gray-400">
-                        Order: {skill.sort_order}
+                      <div>
+                        <div className="font-bold text-white">{skill.name}</div>
+                        <div className="text-xs text-gray-400">
+                          {skill.duration && `${skill.duration} · `}
+                          Order: {skill.sort_order}
+                        </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleDeleteSkill(skill.id)}
-                      disabled={isSaving}
-                      className="bg-white/5 border border-gray-700/50 text-gray-400 rounded-xl hover:text-white hover:bg-white/10 backdrop-blur-sm px-4 py-2.5 text-sm transition-all disabled:opacity-50"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex gap-2">
+                      <NeonButton
+                        variant="outline"
+                        accent="cyan"
+                        onClick={() => handleEdit(skill)}
+                        disabled={isSaving}
+                      >
+                        EDIT
+                      </NeonButton>
+                      <NeonButton
+                        variant="ghost"
+                        accent="red"
+                        onClick={() => setConfirmDelete(skill.id)}
+                        disabled={isSaving}
+                      >
+                        DELETE
+                      </NeonButton>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -249,6 +286,63 @@ const SkillsPage = () => {
             </div>
           )}
         </div>
+
+        {/* Spring Delete Confirmation Modal */}
+        <AnimatePresence>
+          {confirmDelete !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: motionTokens.dur.tap, ease: motionTokens.ease }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              role="dialog"
+              aria-modal="true"
+            >
+              <div
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                onClick={() => setConfirmDelete(null)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 25,
+                }}
+                className="relative max-w-sm w-full"
+              >
+                <HudPanel accent="red" notch="md" title="// CONFIRM_DELETE" className="p-6">
+                  <div className="text-center space-y-4">
+                    <div className="text-4xl">⚠️</div>
+                    <p className="text-text-muted text-sm font-body">
+                      Delete this skill? This cannot be undone.
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                      <NeonButton
+                        variant="ghost"
+                        accent="cyan"
+                        onClick={() => setConfirmDelete(null)}
+                        disabled={isSaving}
+                      >
+                        CANCEL
+                      </NeonButton>
+                      <NeonButton
+                        accent="red"
+                        onClick={() => handleDeleteSkill(confirmDelete)}
+                        loading={isSaving}
+                      >
+                        DELETE
+                      </NeonButton>
+                    </div>
+                  </div>
+                </HudPanel>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </AdminLayout>
     </>
   );

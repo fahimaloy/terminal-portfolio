@@ -6,6 +6,7 @@ import {
   verifyPassword,
 } from '../../../utils/adminAuth';
 import { supabaseAdmin } from '../../../utils/supabaseAdmin';
+import { checkRateLimit, getClientIp } from '../../../utils/rateLimit';
 
 type LoginBody = {
   username?: string;
@@ -23,7 +24,6 @@ const validateInput = (body: LoginBody): ValidationError[] => {
   const username = body.username?.trim();
   const password = body.password;
 
-  // Username validation
   if (!username || username.length === 0) {
     errors.push({ field: 'username', message: 'Username is required' });
   } else if (username.length < 2) {
@@ -38,7 +38,6 @@ const validateInput = (body: LoginBody): ValidationError[] => {
     });
   }
 
-  // Password validation
   if (!password || password.length === 0) {
     errors.push({ field: 'password', message: 'Password is required' });
   }
@@ -61,13 +60,27 @@ export default async function handler(
     return;
   }
 
-  // Seed default admin if needed (non-blocking)
-  // eslint-disable-next-line no-console
+  // Rate limiting: 10 login attempts per 10 minutes per IP
+  const clientIp = getClientIp(req);
+  const rateLimit = checkRateLimit(`login:${clientIp}`, {
+    maxRequests: 10,
+    windowSeconds: 600,
+  });
+  if (!rateLimit.allowed) {
+    res.setHeader(
+      'Retry-After',
+      Math.ceil((rateLimit.resetAt - Date.now()) / 1000).toString(),
+    );
+    res
+      .status(429)
+      .json({ ok: false, message: 'Too many login attempts. Please try again later.' });
+    return;
+  }
+
   ensureDefaultAdminSeeded().catch(console.error);
 
   const body = (req.body || {}) as LoginBody;
 
-  // Validate input before processing
   const validationErrors = validateInput(body);
   if (validationErrors.length > 0) {
     res.status(400).json({
@@ -78,7 +91,6 @@ export default async function handler(
     return;
   }
 
-  // Use provided username or default - but only if valid
   const providedUsername = body.username?.trim();
   const username =
     providedUsername && providedUsername.length > 0
@@ -101,7 +113,6 @@ export default async function handler(
       .maybeSingle();
 
     if (error) {
-      // eslint-disable-next-line no-console
       console.error('Database query error:', error);
       res
         .status(500)
@@ -110,7 +121,6 @@ export default async function handler(
     }
 
     if (!data || !data.is_active) {
-      // Use generic message to prevent username enumeration
       res.status(401).json({ ok: false, message: 'Invalid credentials' });
       return;
     }
@@ -132,7 +142,6 @@ export default async function handler(
       },
     });
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('Login handler error:', err);
     res.status(500).json({
       ok: false,

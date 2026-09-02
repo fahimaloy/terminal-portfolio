@@ -1,5 +1,5 @@
 // src/components/ContactForm.tsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import {
   FiSend,
@@ -11,6 +11,7 @@ import {
   FiBookmark,
 } from 'react-icons/fi';
 import { HudPanel, NeonButton } from './ui';
+import { useFormAnimation } from '../hooks/useFormAnimation';
 import { getErrorMessage } from '../utils/errorMessage';
 
 type Props = { onBackToChat: () => void };
@@ -23,6 +24,12 @@ export default function ContactForm({ onBackToChat }: Props) {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const errorRef = useRef<HTMLDivElement>(null);
+  const { shake, focusIn, focusOut } = useFormAnimation();
+
+  useEffect(() => {
+    if (errorMsg) shake(errorRef.current);
+  }, [errorMsg, shake]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +74,7 @@ export default function ContactForm({ onBackToChat }: Props) {
             <FiCheck className="w-5 h-5 text-neon-green" />
           </div>
           <div>
-              <div className="font-display tracking-[2px] text-neon-green text-shadow-neon-green">
+            <div className="font-display tracking-[2px] text-neon-green text-shadow-neon-green">
               MESSAGE SENT
             </div>
             <div className="font-body text-sm text-text-muted">
@@ -100,10 +107,16 @@ export default function ContactForm({ onBackToChat }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       {errorMsg && (
-        <HudPanel accent="red" notch="sm" className="p-3 flex items-center gap-2">
-          <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
-          <span className="font-body text-sm text-neon-red">{errorMsg}</span>
-        </HudPanel>
+        <div ref={errorRef}>
+          <HudPanel
+            accent="red"
+            notch="sm"
+            className="p-3 flex items-center gap-2"
+          >
+            <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
+            <span className="font-body text-sm text-neon-red">{errorMsg}</span>
+          </HudPanel>
+        </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -184,8 +197,10 @@ function FieldInput({
   onChange: (v: string) => void;
   disabled?: boolean;
 }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const { focusIn, focusOut } = useFormAnimation();
   return (
-    <div className="relative">
+    <div className="relative" ref={wrapRef}>
       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neon-yellow">
         {icon}
       </span>
@@ -193,6 +208,8 @@ function FieldInput({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={() => focusIn(wrapRef.current)}
+        onBlur={() => focusOut(wrapRef.current)}
         placeholder={placeholder}
         maxLength={maxLength}
         disabled={disabled}
@@ -219,12 +236,16 @@ function FieldTextarea({
   onChange: (v: string) => void;
   disabled?: boolean;
 }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const { focusIn, focusOut } = useFormAnimation();
   return (
-    <div className="relative">
+    <div className="relative" ref={wrapRef}>
       <span className="absolute left-3 top-3 text-neon-yellow">{icon}</span>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={() => focusIn(wrapRef.current)}
+        onBlur={() => focusOut(wrapRef.current)}
         placeholder={placeholder}
         maxLength={maxLength}
         rows={rows}

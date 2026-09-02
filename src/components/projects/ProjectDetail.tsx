@@ -65,7 +65,11 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
         >
           BACK TO PROJECTS
         </NeonButton>
-        <HudPanel accent="cyan" notch="md" className="p-12 flex flex-col items-center gap-3">
+        <HudPanel
+          accent="cyan"
+          notch="md"
+          className="p-12 flex flex-col items-center gap-3"
+        >
           <div className="w-8 h-8 border-4 border-neon-cyan/20 border-t-neon-cyan rounded-full animate-spin" />
           <div className="font-display tracking-[2px] text-neon-cyan">
             LOADING PROJECT…
@@ -205,7 +209,11 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <NeonButton variant="outline" accent="cyan" iconLeft={<FiGithub />}>
+                <NeonButton
+                  variant="outline"
+                  accent="cyan"
+                  iconLeft={<FiGithub />}
+                >
                   SOURCE
                 </NeonButton>
               </a>

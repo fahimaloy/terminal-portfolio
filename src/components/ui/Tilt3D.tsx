@@ -1,11 +1,6 @@
 // src/components/ui/Tilt3D.tsx
 import React, { useRef } from 'react';
-import {
-  motion,
-  useMotionValue,
-  useSpring,
-  useTransform,
-} from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { motionTokens } from './motionConfig';
 
 type Props = {

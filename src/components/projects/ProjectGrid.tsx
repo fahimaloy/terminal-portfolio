@@ -71,7 +71,10 @@ export default function ProjectGrid({
                     <HudPanel
                       accent={accent}
                       notch="md"
-                      title={`// PROJECT_${String(project.id).padStart(3, '0')}`}
+                      title={`// PROJECT_${String(project.id).padStart(
+                        3,
+                        '0',
+                      )}`}
                       className="overflow-hidden transition-all duration-200 hover:scale-[1.02]"
                     >
                       <div className="relative aspect-video">
@@ -116,13 +119,11 @@ export default function ProjectGrid({
                         />
                         {project.languages && project.languages.length > 0 && (
                           <div className="flex flex-wrap gap-1 pt-1">
-                            {project.languages
-                              .slice(0, 3)
-                              .map((lang, idx) => (
-                                <NeonChip key={idx} accent="cyan">
-                                  {lang}
-                                </NeonChip>
-                              ))}
+                            {project.languages.slice(0, 3).map((lang, idx) => (
+                              <NeonChip key={idx} accent="cyan">
+                                {lang}
+                              </NeonChip>
+                            ))}
                             {project.languages.length > 3 && (
                               <NeonChip accent="magenta">
                                 +{project.languages.length - 3}

@@ -24,7 +24,9 @@ export default async function handler(
     const { modelIds } = req.body || {};
 
     if (!modelIds || !Array.isArray(modelIds) || modelIds.length === 0) {
-      res.status(400).json({ ok: false, message: 'modelIds (array) is required' });
+      res
+        .status(400)
+        .json({ ok: false, message: 'modelIds (array) is required' });
       return;
     }
 
@@ -38,7 +40,10 @@ export default async function handler(
     for (const update of updates) {
       const { error } = await supabaseAdmin
         .from('ai_models')
-        .update({ sort_order: update.sort_order, updated_at: update.updated_at })
+        .update({
+          sort_order: update.sort_order,
+          updated_at: update.updated_at,
+        })
         .eq('id', update.id);
 
       if (error) throw error;
@@ -46,7 +51,8 @@ export default async function handler(
 
     res.status(200).json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to reorder models';
+    const message =
+      error instanceof Error ? error.message : 'Failed to reorder models';
     res.status(400).json({ ok: false, message });
   }
 }

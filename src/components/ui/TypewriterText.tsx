@@ -19,13 +19,19 @@ export default function TypewriterText({
   className = '',
 }: Props) {
   const [shown, setShown] = useState('');
-  const doneRef = useRef(false);
+  const [done, setDone] = useState(false);
   const cancelledRef = useRef(false);
+  const onDoneRef = useRef(onDone);
   const [cursorOn, setCursorOn] = useState(true);
+
+  // Keep ref in sync with latest callback without triggering effect re-run
+  useEffect(() => {
+    onDoneRef.current = onDone;
+  });
 
   useEffect(() => {
     cancelledRef.current = false;
-    doneRef.current = false;
+    setDone(false);
     setShown('');
     let timeout: ReturnType<typeof setTimeout> | undefined;
     let interval: ReturnType<typeof setInterval> | undefined;
@@ -41,10 +47,8 @@ export default function TypewriterText({
         setShown(text.slice(0, i));
         if (i >= text.length) {
           if (interval) clearInterval(interval);
-          if (!doneRef.current) {
-            doneRef.current = true;
-            onDone?.();
-          }
+          setDone(true);
+          onDoneRef.current?.();
         }
       }, speed);
     };
@@ -59,18 +63,18 @@ export default function TypewriterText({
       if (interval) clearInterval(interval);
       if (timeout) clearTimeout(timeout);
     };
-  }, [text, speed, startDelay, onDone]);
+  }, [text, speed, startDelay]);
 
   useEffect(() => {
-    if (!showCursor || doneRef.current) return;
+    if (!showCursor || done) return;
     const id = setInterval(() => setCursorOn((c) => !c), 500);
     return () => clearInterval(id);
-  }, [showCursor, doneRef.current]);
+  }, [showCursor, done]);
 
   return (
     <span className={`whitespace-pre-wrap ${className}`}>
       {shown}
-      {showCursor && !doneRef.current && (
+      {showCursor && !done && (
         <span
           className="inline-block w-[6px] h-[1em] bg-current align-middle ml-0.5"
           style={{ opacity: cursorOn ? 1 : 0 }}

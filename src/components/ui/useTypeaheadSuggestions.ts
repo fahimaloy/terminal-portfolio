@@ -10,8 +10,27 @@ export type Suggestion = {
 };
 
 const STOP_WORDS = new Set([
-  'the', 'a', 'an', 'is', 'are', 'and', 'or', 'to', 'of', 'in', 'on',
-  'for', 'with', 'as', 'at', 'by', 'be', 'this', 'that', 'it', 'from',
+  'the',
+  'a',
+  'an',
+  'is',
+  'are',
+  'and',
+  'or',
+  'to',
+  'of',
+  'in',
+  'on',
+  'for',
+  'with',
+  'as',
+  'at',
+  'by',
+  'be',
+  'this',
+  'that',
+  'it',
+  'from',
 ]);
 
 function tokenize(s: string): string[] {

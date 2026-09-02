@@ -1,33 +1,59 @@
 // src/components/ChatMessage.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { PortfolioProject } from '../utils/api';
+import { PortfolioProject, PortfolioSkill, PortfolioExperience } from '../utils/api';
 import {
   parseAiResponse,
   findProjectsByIds,
   findProjectById,
-  containsProjectMarker,
+  findSkillsByIds,
+  findSkillById,
+  containsAnyMarker,
   ParsedSegment,
 } from '../utils/aiResponseParser';
 import ProjectPreview from './ProjectPreview';
 import ProjectInlineRef from './ProjectInlineRef';
+import ProjectTableView from './ProjectTableView';
+import ProjectDetailModal from './ProjectDetailModal';
+import InlineProjectCard from './InlineProjectCard';
+import SkillCard from './SkillCard';
+import SkillGrid from './SkillGrid';
+import ExperienceTimeline from './ExperienceTimeline';
+import RichTextRenderer from './RichTextRenderer';
 import { HudPanel, TypewriterText } from './ui';
 
 type ChatMessageProps = {
   role: 'user' | 'model';
   text: string;
   projects: PortfolioProject[];
+  skills: PortfolioSkill[];
+  experiences?: PortfolioExperience[];
+  responseType?: string;
+  responseData?: any;
 };
 
-export default function ChatMessage({ role, text, projects }: ChatMessageProps) {
-  const [openInlineProject, setOpenInlineProject] = useState<PortfolioProject | null>(null);
-  const [previewProjects, setPreviewProjects] = useState<PortfolioProject[]>([]);
+export default React.memo(function ChatMessage({
+  role,
+  text,
+  projects,
+  skills,
+  experiences = [],
+  responseType,
+  responseData,
+}: ChatMessageProps) {
+  const [openInlineProject, setOpenInlineProject] =
+    useState<PortfolioProject | null>(null);
+  const [previewProjects, setPreviewProjects] = useState<PortfolioProject[]>(
+    [],
+  );
   const [previewIndex, setPreviewIndex] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
   const previewInitializedRef = useRef(false);
   const [typedDone, setTypedDone] = useState(false);
+  const [modalProjects, setModalProjects] = useState<PortfolioProject[]>([]);
+  const [showModal, setShowModal] = useState(false);
 
   const isUser = role === 'user';
-  const hasMarkers = !isUser && containsProjectMarker(text);
+  const hasMarkers = !isUser && containsAnyMarker(text);
   const segments = hasMarkers ? parseAiResponse(text) : [];
 
   useEffect(() => {
@@ -58,7 +84,6 @@ export default function ChatMessage({ role, text, projects }: ChatMessageProps) 
     }
   }, [isUser, hasMarkers, segments, projects]);
 
-  // When new message arrives, reset typewriter
   useEffect(() => {
     setTypedDone(false);
   }, [text]);
@@ -82,6 +107,57 @@ export default function ChatMessage({ role, text, projects }: ChatMessageProps) 
     );
   }
 
+  // RAG response types - render custom components
+  if (responseType === 'project_table' && responseData?.projects) {
+    return (
+      <div className="flex w-full justify-start">
+        <div className="w-full max-w-[95%] md:max-w-[85%]">
+          <HudPanel accent="cyan" notch="sm" className="px-4 py-3 hud-glow-cyan">
+            <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-3">
+              {'> AI.RESPONSE'}
+            </div>
+            <ProjectTableView
+              projects={responseData.projects}
+              skills={skills}
+              skillFilter={responseData.skillFilter}
+            />
+          </HudPanel>
+        </div>
+      </div>
+    );
+  }
+
+  if (responseType === 'skill_list' && responseData?.skills) {
+    return (
+      <div className="flex w-full justify-start">
+        <div className="w-full max-w-[95%] md:max-w-[85%]">
+          <HudPanel accent="cyan" notch="sm" className="px-4 py-3 hud-glow-cyan">
+            <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-3">
+              {'> AI.RESPONSE'}
+            </div>
+            <SkillGrid skills={responseData.skills} />
+          </HudPanel>
+        </div>
+      </div>
+    );
+  }
+
+  if (responseType === 'experience_timeline' && responseData?.experiences) {
+    return (
+      <div className="flex w-full justify-start">
+        <div className="w-full max-w-[95%] md:max-w-[85%]">
+          <HudPanel accent="cyan" notch="sm" className="px-4 py-3 hud-glow-cyan">
+            <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-3">
+              {'> AI.RESPONSE'}
+            </div>
+            <ExperienceTimeline experiences={responseData.experiences} />
+          </HudPanel>
+        </div>
+      </div>
+    );
+  }
+
+  // AI response with markers
   if (!hasMarkers) {
     return (
       <div className="flex w-full justify-start">
@@ -116,12 +192,12 @@ export default function ChatMessage({ role, text, projects }: ChatMessageProps) 
           <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-2">
             {'> AI.RESPONSE'}
           </div>
-          <div className="font-body text-sm text-text-primary space-y-2">
+          <div className="font-body text-sm text-text-primary space-y-3">
             {segments.map((segment, idx) => {
               switch (segment.type) {
                 case 'text':
                   return (
-                    <span key={idx} className="block">
+                    <span key={idx} className="block whitespace-pre-wrap">
                       {typedDone ? (
                         segment.content
                       ) : (
@@ -138,12 +214,72 @@ export default function ChatMessage({ role, text, projects }: ChatMessageProps) 
                   if (!proj) return null;
                   return (
                     <span key={idx} className="inline-block mx-1">
-                      <ProjectInlineRef
+                      <InlineProjectCard
                         project={proj}
-                        onOpen={setOpenInlineProject}
-                        isOpen={openInlineProject?.id === proj.id}
+                        skills={skills}
+                        onClick={() => {
+                          setModalProjects([proj]);
+                          setShowModal(true);
+                        }}
                       />
                     </span>
+                  );
+                }
+                case 'skill_ref': {
+                  const skill = findSkillById(skills, segment.id);
+                  if (!skill) return null;
+                  return (
+                    <span key={idx} className="inline-block mx-1">
+                      <SkillCard skill={skill} inline />
+                    </span>
+                  );
+                }
+                case 'skill_list': {
+                  const skillList = findSkillsByIds(skills, segment.ids);
+                  return <SkillGrid key={idx} skills={skillList} />;
+                }
+                case 'experience_timeline':
+                  return <ExperienceTimeline key={idx} experiences={experiences} />;
+                case 'project_table':
+                  return (
+                    <ProjectTableView
+                      key={idx}
+                      projects={projects}
+                      skills={skills}
+                    />
+                  );
+                case 'project_list': {
+                  const projs = findProjectsByIds(projects, segment.ids);
+                  return (
+                    <div key={idx} className="flex flex-wrap gap-3">
+                      {projs.map((p) => (
+                        <InlineProjectCard
+                          key={p.id}
+                          project={p}
+                          skills={skills}
+                          onClick={() => {
+                            setModalProjects([p]);
+                            setShowModal(true);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  );
+                }
+                case 'project_single': {
+                  const proj = findProjectById(projects, segment.id);
+                  if (!proj) return null;
+                  return (
+                    <div key={idx}>
+                      <InlineProjectCard
+                        project={proj}
+                        skills={skills}
+                        onClick={() => {
+                          setModalProjects([proj]);
+                          setShowModal(true);
+                        }}
+                      />
+                    </div>
                   );
                 }
                 default:
@@ -176,6 +312,13 @@ export default function ChatMessage({ role, text, projects }: ChatMessageProps) 
           </div>
         )}
       </div>
+
+      <ProjectDetailModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        projects={modalProjects}
+        skills={skills}
+      />
     </div>
   );
-}
+});

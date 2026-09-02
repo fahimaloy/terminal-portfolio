@@ -19,7 +19,13 @@ export default class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false, error: null };
+    this.reducedMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
+
+  reducedMotion: boolean;
 
   static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
@@ -45,15 +51,14 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div className="flex flex-col items-center justify-center p-6">
           <motion.div
             animate={
-              typeof window !== 'undefined' &&
-              window.matchMedia('(prefers-reduced-motion: reduce)').matches
+              this.reducedMotion
                 ? {}
                 : { x: [0, -1, 1, 0] }
             }
             transition={{
               duration: 4,
               repeat: Infinity,
-              ease: 'steps(1, end)',
+              ease: 'linear',
             }}
             className="w-full max-w-md"
           >

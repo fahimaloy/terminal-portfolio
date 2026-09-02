@@ -1,5 +1,5 @@
 // src/components/MeetingForm.tsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import {
   FiCalendar,
@@ -12,6 +12,7 @@ import {
   FiArrowLeft,
 } from 'react-icons/fi';
 import { GlitchText, HudPanel, NeonButton, NeonChip } from './ui';
+import { useFormAnimation } from '../hooks/useFormAnimation';
 import { getErrorMessage } from '../utils/errorMessage';
 
 type MeetingFormProps = {
@@ -32,6 +33,12 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
   const [time, setTime] = useState('');
   const [reason, setReason] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const errorRef = useRef<HTMLDivElement>(null);
+  const { shake } = useFormAnimation();
+
+  useEffect(() => {
+    if (errorMsg) shake(errorRef.current);
+  }, [errorMsg, shake]);
 
   // Set min date to tomorrow
   const tomorrow = new Date();
@@ -167,12 +174,22 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3" data-testid="meeting-form">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-3"
+      data-testid="meeting-form"
+    >
       {errorMsg && (
-        <HudPanel accent="red" notch="sm" className="p-3 flex items-center gap-2">
-          <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
-          <span className="font-body text-sm text-neon-red">{errorMsg}</span>
-        </HudPanel>
+        <div ref={errorRef}>
+          <HudPanel
+            accent="red"
+            notch="sm"
+            className="p-3 flex items-center gap-2"
+          >
+            <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
+            <span className="font-body text-sm text-neon-red">{errorMsg}</span>
+          </HudPanel>
+        </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -225,25 +242,27 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
         </div>
       </div>
 
-<div className="relative">
-          <FiMessageSquare className="absolute left-3 top-3 w-4 h-4 text-neon-yellow" />
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Reason for meeting (optional)"
-            maxLength={1000}
-            rows={3}
-            className={`${inputClass} resize-none`}
-            disabled={formState === 'submitting'}
-          />
-        </div>
+      <div className="relative">
+        <FiMessageSquare className="absolute left-3 top-3 w-4 h-4 text-neon-yellow" />
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Reason for meeting (optional)"
+          maxLength={1000}
+          rows={3}
+          className={`${inputClass} resize-none`}
+          disabled={formState === 'submitting'}
+        />
+      </div>
 
       <div className="flex gap-2">
         <NeonButton
           type="submit"
           accent="yellow"
           iconLeft={
-            formState === 'submitting' ? undefined : <FiCalendar className="w-4 h-4" />
+            formState === 'submitting' ? undefined : (
+              <FiCalendar className="w-4 h-4" />
+            )
           }
           loading={formState === 'submitting'}
           data-testid="meeting-submit"

@@ -7,16 +7,18 @@ import { GlitchText, HudPanel, NeonButton } from './ui';
 import { motionTokens } from './ui/motionConfig';
 import { getErrorMessage } from '../utils/errorMessage';
 
-export const MeetingBooking: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+export const MeetingBooking: React.FC<{ onClose: () => void }> = ({
+  onClose,
+}) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [reason, setReason] = useState('');
 
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
-    'idle',
-  );
+  const [status, setStatus] = useState<
+    'idle' | 'loading' | 'success' | 'error'
+  >('idle');
   const [message, setMessage] = useState('');
   const autoCloseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -77,14 +79,22 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({ onClose }) =
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: motionTokens.dur.enter, ease: motionTokens.ease }}
+        transition={{
+          duration: motionTokens.dur.enter,
+          ease: motionTokens.ease,
+        }}
         className="w-full max-w-md relative"
       >
         <div
           aria-hidden="true"
           className="absolute -top-px left-0 right-0 h-[2px] bg-neon-magenta shadow-[0_0_12px_var(--glow-magenta)]"
         />
-        <HudPanel accent="magenta" notch="md" title="// BOOK_MEETING" className="p-6">
+        <HudPanel
+          accent="magenta"
+          notch="md"
+          title="// BOOK_MEETING"
+          className="p-6"
+        >
           <div className="text-[9px] font-display tracking-[3px] text-text-muted mb-4">
             {'> USER: anonymous_visitor'}
           </div>
@@ -176,12 +186,16 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
             {status === 'error' && (
               <HudPanel accent="red" notch="sm" className="p-2 text-center">
-                <span className="font-body text-sm text-neon-red">{message}</span>
+                <span className="font-body text-sm text-neon-red">
+                  {message}
+                </span>
               </HudPanel>
             )}
             {status === 'success' && (
               <HudPanel accent="green" notch="sm" className="p-2 text-center">
-                <span className="font-body text-sm text-neon-green">{message}</span>
+                <span className="font-body text-sm text-neon-green">
+                  {message}
+                </span>
               </HudPanel>
             )}
 
@@ -195,8 +209,8 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({ onClose }) =
               {status === 'loading'
                 ? 'BOOKING…'
                 : status === 'success'
-                  ? 'BOOKED!'
-                  : 'SUBMIT REQUEST'}
+                ? 'BOOKED!'
+                : 'SUBMIT REQUEST'}
             </NeonButton>
           </form>
         </HudPanel>

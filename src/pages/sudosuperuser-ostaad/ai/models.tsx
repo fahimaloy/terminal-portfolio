@@ -14,7 +14,12 @@ import {
   deleteModel,
   reorderModels,
 } from '../../../utils/aiApi';
-import { GlitchText, HudPanel, NeonButton, NeonChip } from '../../../components/ui';
+import {
+  GlitchText,
+  HudPanel,
+  NeonButton,
+  NeonChip,
+} from '../../../components/ui';
 import { getErrorMessage } from '../../../utils/errorMessage';
 
 // ─── Types ────────────────────────────────────────────────────
@@ -40,7 +45,9 @@ const AiModelsPage = () => {
   const [statusMessage, setStatusMessage] = useState('');
 
   // Create form
-  const [providerType, setProviderType] = useState<'gemini' | 'openai_compatible'>('gemini');
+  const [providerType, setProviderType] = useState<
+    'gemini' | 'openai_compatible'
+  >('gemini');
   const [providerName, setProviderName] = useState('');
   const [identifierSlug, setIdentifierSlug] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
@@ -55,7 +62,9 @@ const AiModelsPage = () => {
   const [testError, setTestError] = useState('');
 
   // Inline editing
-  const [editingLimits, setEditingLimits] = useState<Record<number, { rpm: number | ''; rpd: number | '' }>>({});
+  const [editingLimits, setEditingLimits] = useState<
+    Record<number, { rpm: number | ''; rpd: number | '' }>
+  >({});
 
   // Drag & drop
   const [dragModelId, setDragModelId] = useState<number | null>(null);
@@ -179,7 +188,9 @@ const AiModelsPage = () => {
         throw new Error('Failed to create models');
       }
 
-      updateStatus(`Created provider "${providerName}" with ${created.length} model(s)`);
+      updateStatus(
+        `Created provider "${providerName}" with ${created.length} model(s)`,
+      );
 
       // Reset form
       setProviderType('gemini');
@@ -314,28 +325,32 @@ const AiModelsPage = () => {
 
   if (!authorized) return null;
 
-// ─── Provider Badge ──────────────────────────────────────
-const providerBadge = (model: AiModel) => {
-  const provider = providers.find((p) => p.id === model.provider_id);
-  if (!provider) return <span className="text-[10px] text-neon-red">No provider</span>;
-  return (
-    <NeonChip accent={provider.provider_type === 'gemini' ? 'cyan' : 'magenta'}>
-      {provider.name} ({provider.provider_type === 'gemini' ? 'GEMINI' : 'OPENAI'})
-    </NeonChip>
-  );
-};
+  // ─── Provider Badge ──────────────────────────────────────
+  const providerBadge = (model: AiModel) => {
+    const provider = providers.find((p) => p.id === model.provider_id);
+    if (!provider)
+      return <span className="text-[10px] text-neon-red">No provider</span>;
+    return (
+      <NeonChip
+        accent={provider.provider_type === 'gemini' ? 'cyan' : 'magenta'}
+      >
+        {provider.name} (
+        {provider.provider_type === 'gemini' ? 'GEMINI' : 'OPENAI'})
+      </NeonChip>
+    );
+  };
 
-// ─── Cooldown Badge ──────────────────────────────────────
-const cooldownBadge = (model: AiModel) => {
-  if (!model.cooldown_until) return null;
-  const until = new Date(model.cooldown_until);
-  if (until <= new Date()) return null;
-  return (
-    <NeonChip accent="yellow" className="mt-1">
-      COOLDOWN UNTIL {until.toLocaleTimeString()}
-    </NeonChip>
-  );
-};
+  // ─── Cooldown Badge ──────────────────────────────────────
+  const cooldownBadge = (model: AiModel) => {
+    if (!model.cooldown_until) return null;
+    const until = new Date(model.cooldown_until);
+    if (until <= new Date()) return null;
+    return (
+      <NeonChip accent="yellow" className="mt-1">
+        COOLDOWN UNTIL {until.toLocaleTimeString()}
+      </NeonChip>
+    );
+  };
 
   return (
     <>
@@ -345,13 +360,18 @@ const cooldownBadge = (model: AiModel) => {
 
       <AdminLayout user={user} isLoading={loading}>
         <div>
-          <GlitchText accent="cyan" className="text-2xl font-display tracking-[2px] mb-6">
+          <GlitchText
+            accent="cyan"
+            className="text-2xl font-display tracking-[2px] mb-6"
+          >
             AI MODELS MANAGEMENT
           </GlitchText>
 
           {statusMessage && (
             <HudPanel accent="green" notch="sm" className="mb-4 p-3">
-              <span className="font-body text-sm text-neon-green">{statusMessage}</span>
+              <span className="font-body text-sm text-neon-green">
+                {statusMessage}
+              </span>
             </HudPanel>
           )}
 
@@ -371,7 +391,11 @@ const cooldownBadge = (model: AiModel) => {
                   <select
                     className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
                     value={providerType}
-                    onChange={(e) => setProviderType(e.target.value as 'gemini' | 'openai_compatible')}
+                    onChange={(e) =>
+                      setProviderType(
+                        e.target.value as 'gemini' | 'openai_compatible',
+                      )
+                    }
                     disabled={isSaving}
                   >
                     <option value="gemini">GOOGLE GEMINI</option>
@@ -398,14 +422,18 @@ const cooldownBadge = (model: AiModel) => {
                 <div>
                   <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
                     IDENTIFIER SLUG:
-                    <span className="text-text-muted ml-2 text-[9px]">(unique, used for model identifiers)</span>
+                    <span className="text-text-muted ml-2 text-[9px]">
+                      (unique, used for model identifiers)
+                    </span>
                   </label>
                   <input
                     type="text"
                     className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted font-mono clip-notch-sm transition-all duration-200"
                     placeholder="e.g., my-gemini-provider"
                     value={identifierSlug}
-                    onChange={(e) => setIdentifierSlug(generateSlug(e.target.value))}
+                    onChange={(e) =>
+                      setIdentifierSlug(generateSlug(e.target.value))
+                    }
                     disabled={isSaving}
                   />
                 </div>
@@ -454,7 +482,11 @@ const cooldownBadge = (model: AiModel) => {
                       className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                       placeholder="e.g., 60"
                       value={rpmLimit}
-                      onChange={(e) => setRpmLimit(e.target.value ? Number(e.target.value) : '')}
+                      onChange={(e) =>
+                        setRpmLimit(
+                          e.target.value ? Number(e.target.value) : '',
+                        )
+                      }
                       disabled={isSaving}
                     />
                   </div>
@@ -468,7 +500,11 @@ const cooldownBadge = (model: AiModel) => {
                       className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                       placeholder="e.g., 10000"
                       value={rpdLimit}
-                      onChange={(e) => setRpdLimit(e.target.value ? Number(e.target.value) : '')}
+                      onChange={(e) =>
+                        setRpdLimit(
+                          e.target.value ? Number(e.target.value) : '',
+                        )
+                      }
                       disabled={isSaving}
                     />
                   </div>
@@ -486,7 +522,9 @@ const cooldownBadge = (model: AiModel) => {
 
                 {testError && (
                   <HudPanel accent="red" notch="sm" className="p-3">
-                    <span className="font-body text-sm text-neon-red">{testError}</span>
+                    <span className="font-body text-sm text-neon-red">
+                      {testError}
+                    </span>
                   </HudPanel>
                 )}
               </div>
@@ -497,13 +535,16 @@ const cooldownBadge = (model: AiModel) => {
               <div className="space-y-4">
                 <HudPanel accent="green" notch="sm" className="p-3">
                   <span className="font-body text-sm text-neon-green">
-                    Found {fetchedModels.length} models. Select the ones you want to add:
+                    Found {fetchedModels.length} models. Select the ones you
+                    want to add:
                   </span>
                 </HudPanel>
 
                 <div className="max-h-64 overflow-y-auto border border-white/5 rounded-xl p-3 bg-black/30">
                   {fetchedModels.length === 0 ? (
-                    <p className="text-text-muted text-sm font-body">No models found from this provider.</p>
+                    <p className="text-text-muted text-sm font-body">
+                      No models found from this provider.
+                    </p>
                   ) : (
                     <div className="space-y-1">
                       {fetchedModels.map((modelName) => (
@@ -517,7 +558,9 @@ const cooldownBadge = (model: AiModel) => {
                             onChange={() => toggleModelSelection(modelName)}
                             className="cursor-pointer accent-neon-cyan"
                           />
-                          <span className="font-mono text-text-primary">{modelName}</span>
+                          <span className="font-mono text-text-primary">
+                            {modelName}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -530,7 +573,9 @@ const cooldownBadge = (model: AiModel) => {
                     onClick={handleCreate}
                     disabled={isSaving || selectedModels.size === 0}
                   >
-                    {isSaving ? 'CREATING…' : `CREATE ${selectedModels.size} MODEL(S)`}
+                    {isSaving
+                      ? 'CREATING…'
+                      : `CREATE ${selectedModels.size} MODEL(S)`}
                   </NeonButton>
                   <NeonButton
                     variant="ghost"
@@ -589,19 +634,27 @@ const cooldownBadge = (model: AiModel) => {
                           !model.is_active ? 'opacity-50' : ''
                         }`}
                       >
-                        <td className="p-3 text-text-muted font-mono">{model.sort_order}</td>
+                        <td className="p-3 text-text-muted font-mono">
+                          {model.sort_order}
+                        </td>
                         <td className="p-3">
                           <div>
-                            <span className="font-display text-text-primary">{model.display_name || model.model_name}</span>
+                            <span className="font-display text-text-primary">
+                              {model.display_name || model.model_name}
+                            </span>
                             {model.model_name !== model.display_name && (
-                              <div className="text-[10px] text-text-muted font-mono">{model.model_name}</div>
+                              <div className="text-[10px] text-text-muted font-mono">
+                                {model.model_name}
+                              </div>
                             )}
                           </div>
                           {cooldownBadge(model)}
                         </td>
                         <td className="p-3">{providerBadge(model)}</td>
                         <td className="p-3">
-                          <code className="text-[10px] text-text-muted">{model.identifier}</code>
+                          <code className="text-[10px] text-text-muted">
+                            {model.identifier}
+                          </code>
                         </td>
                         <td className="p-3 text-center">
                           {editingLimits[model.id] ? (
@@ -615,14 +668,19 @@ const cooldownBadge = (model: AiModel) => {
                                   ...prev,
                                   [model.id]: {
                                     ...prev[model.id],
-                                    rpm: e.target.value !== '' ? Number(e.target.value) : '',
+                                    rpm:
+                                      e.target.value !== ''
+                                        ? Number(e.target.value)
+                                        : '',
                                   },
                                 }))
                               }
                               autoFocus
                             />
                           ) : (
-                            <span className="text-text-secondary">{model.rpm_limit ?? '—'}</span>
+                            <span className="text-text-secondary">
+                              {model.rpm_limit ?? '—'}
+                            </span>
                           )}
                         </td>
                         <td className="p-3 text-center">
@@ -637,13 +695,18 @@ const cooldownBadge = (model: AiModel) => {
                                   ...prev,
                                   [model.id]: {
                                     ...prev[model.id],
-                                    rpd: e.target.value !== '' ? Number(e.target.value) : '',
+                                    rpd:
+                                      e.target.value !== ''
+                                        ? Number(e.target.value)
+                                        : '',
                                   },
                                 }))
                               }
                             />
                           ) : (
-                            <span className="text-text-secondary">{model.rpd_limit ?? '—'}</span>
+                            <span className="text-text-secondary">
+                              {model.rpd_limit ?? '—'}
+                            </span>
                           )}
                         </td>
                         <td className="p-3 text-center">
@@ -651,14 +714,22 @@ const cooldownBadge = (model: AiModel) => {
                             onClick={() => handleToggleActive(model)}
                             disabled={togglingIds.has(model.id)}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                              model.is_active ? 'bg-neon-green/30' : 'bg-neon-red/30'
+                              model.is_active
+                                ? 'bg-neon-green/30'
+                                : 'bg-neon-red/30'
                             }`}
                           >
                             <span
                               className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                                model.is_active ? 'translate-x-4.5' : 'translate-x-0.5'
+                                model.is_active
+                                  ? 'translate-x-4.5'
+                                  : 'translate-x-0.5'
                               }`}
-                              style={{ transform: model.is_active ? 'translateX(18px)' : 'translateX(2px)' }}
+                              style={{
+                                transform: model.is_active
+                                  ? 'translateX(18px)'
+                                  : 'translateX(2px)',
+                              }}
                             />
                           </button>
                         </td>
@@ -677,7 +748,9 @@ const cooldownBadge = (model: AiModel) => {
                                 <NeonButton
                                   variant="ghost"
                                   accent="magenta"
-                                  onClick={() => handleCancelEditLimits(model.id)}
+                                  onClick={() =>
+                                    handleCancelEditLimits(model.id)
+                                  }
                                   disabled={isSaving}
                                   className="text-[10px] px-2 py-1"
                                 >

@@ -20,7 +20,9 @@ describe('StatBar', () => {
   });
   it('sets bar width style to value%', () => {
     render(<StatBar label="X" value={42} />);
-    const bar = document.querySelector('[data-testid="stat-bar-fill"]') as HTMLElement;
+    const bar = document.querySelector(
+      '[data-testid="stat-bar-fill"]',
+    ) as HTMLElement;
     expect(bar.style.width).toBe('42%');
   });
 });

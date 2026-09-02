@@ -1,104 +1,196 @@
 // src/components/ui/ParticleField.tsx
-import React, { useEffect, useRef } from 'react';
+/* ═══════════════════════════════════════════════════════════════════════════════
+   PARTICLE FIELD — Cursor-reactive floating particles
+   Uses anime.js createAnimatable for smooth cursor-follow physics.
+   Particles drift upward, react to cursor proximity.
+═══════════════════════════════════════════════════════════════════════════════ */
+
+import React, { useEffect, useRef, useCallback } from 'react';
+import { createAnimatable, damp, mapRange } from 'animejs';
+import { isReducedMotion } from '../../config/animations';
 
 type Particle = {
+  el: HTMLDivElement;
   x: number;
   y: number;
-  vy: number;
+  baseX: number;
+  baseY: number;
   vx: number;
+  vy: number;
   size: number;
-  color: string;
-  alpha: number;
+  speed: number;
+  animatable: ReturnType<typeof createAnimatable>;
 };
 
-const COLORS = ['#ffaa00', '#ff00aa', '#00f0ff'];
-const COUNT = 40;
+const COLORS = ['#ffaa00', '#ff00aa', '#00f0ff', '#39ff14', '#8a2be2'];
+const COUNT = 30;
 
 function rand(min: number, max: number) {
   return Math.random() * (max - min) + min;
 }
 
 export default function ParticleField() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const rafRef = useRef<number | null>(null);
-  const lastTsRef = useRef<number>(0);
+  const cursorRef = useRef({ x: -9999, y: -9999 });
+  const dimsRef = useRef({ w: 0, h: 0 });
+
+  const createParticles = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Clear existing
+    particlesRef.current.forEach((p) => p.el.remove());
+    particlesRef.current = [];
+
+    dimsRef.current = {
+      w: window.innerWidth,
+      h: window.innerHeight,
+    };
+
+    for (let i = 0; i < COUNT; i++) {
+      const el = document.createElement('div');
+      const size = rand(1.5, 4);
+      const baseX = rand(0, dimsRef.current.w);
+      const baseY = rand(0, dimsRef.current.h);
+
+      el.style.cssText = `
+        position: absolute;
+        width: ${size}px;
+        height: ${size}px;
+        background: ${COLORS[Math.floor(Math.random() * COLORS.length)]};
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        left: 0;
+        top: 0;
+        will-change: transform, opacity;
+      `;
+      container.appendChild(el);
+
+      particlesRef.current.push({
+        el,
+        x: baseX,
+        y: baseY,
+        baseX,
+        baseY,
+        vx: rand(-0.3, 0.3),
+        vy: rand(-0.6, -0.2),
+        size,
+        speed: rand(0.3, 1),
+        animatable: createAnimatable(el, {
+          duration: 600,
+          ease: 'outExpo',
+        }),
+      });
+    }
+  }, []);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (isReducedMotion()) return;
 
-    const reduce = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches;
-    if (reduce) return; // static
+    createParticles();
 
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      // Seed particles
-      particlesRef.current = Array.from({ length: COUNT }, () => ({
-        x: rand(0, canvas.width),
-        y: rand(0, canvas.height),
-        vx: rand(-0.05, 0.05),
-        vy: rand(-0.4, -0.15),
-        size: rand(1, 3),
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        alpha: rand(0.2, 0.6),
-      }));
+    const handleResize = () => {
+      dimsRef.current = {
+        w: window.innerWidth,
+        h: window.innerHeight,
+      };
     };
-    resize();
-    window.addEventListener('resize', resize);
 
-    const tick = (ts: number) => {
-      const dt = lastTsRef.current ? (ts - lastTsRef.current) / 16 : 1;
-      lastTsRef.current = ts;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (const p of particlesRef.current) {
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
-        if (p.y < -4) {
-          p.y = canvas.height + 4;
-          p.x = rand(0, canvas.width);
-        }
-        if (p.x < -4) p.x = canvas.width;
-        if (p.x > canvas.width + 4) p.x = 0;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.alpha;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = p.color;
-        ctx.fill();
+    const handleMouseMove = (e: MouseEvent) => {
+      cursorRef.current = { x: e.clientX, y: e.clientY };
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        cursorRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
-      ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchmove', handleTouchMove);
+
+    const tick = () => {
+      const { w, h } = dimsRef.current;
+      const cursor = cursorRef.current;
+      const time = Date.now() * 0.001;
+
+      for (const p of particlesRef.current) {
+        // Floating drift
+        p.vx += Math.sin(time * p.speed) * 0.005;
+        p.vy -= 0.002;
+
+        // Cursor repulsion
+        const dx = p.x - cursor.x;
+        const dy = p.y - cursor.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const maxDist = 120;
+
+        if (dist < maxDist && dist > 0) {
+          const force = (1 - dist / maxDist) * 2.5;
+          p.vx += (dx / dist) * force;
+          p.vy += (dy / dist) * force;
+        }
+
+        // Apply velocity with damping
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vx = damp(p.vx, 0, 0.92, 0.08);
+        p.vy = damp(p.vy, 0, 0.92, 0.08);
+
+        // Wrap around screen
+        if (p.y < -10) { p.y = h + 10; p.x = rand(0, w); }
+        if (p.y > h + 10) { p.y = -10; p.x = rand(0, w); }
+        if (p.x < -10) p.x = w + 10;
+        if (p.x > w + 10) p.x = -10;
+
+        // Opacity based on proximity to cursor
+        const proximityOpacity = dist < maxDist
+          ? mapRange(dist, 0, maxDist, 0.9, 0.3)
+          : 0.4;
+
+        p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
+        p.el.style.opacity = String(proximityOpacity);
+      }
+
       rafRef.current = requestAnimationFrame(tick);
     };
+
     rafRef.current = requestAnimationFrame(tick);
 
+    // Handle visibility
     const onVis = () => {
       if (document.hidden) {
-        if (rafRef.current) cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      } else if (!rafRef.current) {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+        }
+      } else {
         rafRef.current = requestAnimationFrame(tick);
       }
     };
     document.addEventListener('visibilitychange', onVis);
 
     return () => {
-      window.removeEventListener('resize', resize);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('visibilitychange', onVis);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      particlesRef.current.forEach((p) => {
+        p.animatable.revert();
+        p.el.remove();
+      });
+      particlesRef.current = [];
     };
-  }, []);
+  }, [createParticles]);
 
   return (
-    <canvas
-      ref={canvasRef}
+    <div
+      ref={containerRef}
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-[2]"
     />
