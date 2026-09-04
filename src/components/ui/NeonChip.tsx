@@ -9,23 +9,27 @@ import { animate } from 'animejs';
 import { GlitchAccent } from './GlitchText';
 import { isReducedMotion } from '../../config/animations';
 
-const ACCENT_BG: Record<GlitchAccent, string> = {
+const ACCENT_BG: Record<GlitchAccent | 'purple' | 'blue', string> = {
   yellow: 'bg-neon-yellow/15 border-neon-yellow/30',
   magenta: 'bg-neon-magenta/15 border-neon-magenta/30',
   cyan: 'bg-neon-cyan/15 border-neon-cyan/30',
   green: 'bg-neon-green/15 border-neon-green/30',
   red: 'bg-neon-red/15 border-neon-red/30',
+  purple: 'bg-neon-purple/15 border-neon-purple/30',
+  blue: 'bg-neon-blue/15 border-neon-blue/30',
 };
-const ACCENT_TEXT: Record<GlitchAccent, string> = {
+const ACCENT_TEXT: Record<GlitchAccent | 'purple' | 'blue', string> = {
   yellow: 'text-neon-yellow',
   magenta: 'text-neon-magenta',
   cyan: 'text-neon-cyan',
   green: 'text-neon-green',
   red: 'text-neon-red',
+  purple: 'text-neon-purple',
+  blue: 'text-neon-blue',
 };
 
 type Props = React.HTMLAttributes<HTMLSpanElement> & {
-  accent?: GlitchAccent;
+  accent?: GlitchAccent | 'purple' | 'blue';
   children: React.ReactNode;
   icon?: React.ReactNode;
   onClick?: () => void;

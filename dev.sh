@@ -2,13 +2,16 @@
 # ═══════════════════════════════════════════════════════════════
 # Development Server Script
 # ═══════════════════════════════════════════════════════════════
-# Runs both frontend (Next.js) and backend (Supabase) locally
+# Default backend is Supabase Cloud (configured via .env.local).
+# The legacy local Supabase Docker backend was removed; if a local
+# compose file is present it is still honored, otherwise backend
+# steps are skipped with an informational message.
 #
 # Usage:
 #   chmod +x dev.sh
-#   ./dev.sh              # Start all services
+#   ./dev.sh              # Start frontend (+ local backend if configured)
 #   ./dev.sh --frontend   # Start frontend only
-#   ./dev.sh --backend    # Start backend only
+#   ./dev.sh --backend    # Check backend (Cloud default: no-op check)
 #   ./dev.sh --stop       # Stop all services
 # ═══════════════════════════════════════════════════════════════
 
@@ -30,6 +33,11 @@ log_ok()    { echo -e "${GREEN}[OK]${NC}    $1"; }
 log_warn()  { echo -e "${YELLOW}[WARN]${NC}  $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 log_step()  { echo -e "${CYAN}[STEP]${NC}  $1"; }
+
+# ─── Local backend detection ──────────────────────────────────
+# Legacy local Supabase Docker backend was removed in favor of Supabase Cloud.
+LOCAL_COMPOSE_FILE="docker-compose.local.yml"
+has_local_backend() { [ -f "${LOCAL_COMPOSE_FILE}" ]; }
 
 # ─── Load nvm and use compatible Node.js ──────────────────────
 setup_node() {
@@ -64,13 +72,20 @@ setup_node() {
 
 setup_node
 
-# ─── Load .env ───────────────────────────────────────────────
+# ─── Load env (.env.local preferred, .env fallback) ──────────
 load_env() {
-  if [ -f ".env" ]; then
-    set -a
-    source ".env"
-    set +a
+  local env_file=""
+  if [ -f ".env.local" ]; then
+    env_file=".env.local"
+  elif [ -f ".env" ]; then
+    env_file=".env"
+  else
+    return 0
   fi
+  set -a
+  # shellcheck disable=SC1090,SC1091
+  source "$env_file"
+  set +a
 }
 
 load_env
@@ -88,15 +103,15 @@ Usage: $0 [OPTIONS]
 
 Options:
   --frontend   Start frontend (Next.js) only
-  --backend    Start backend (Supabase Docker) only
+  --backend    Check backend (Supabase Cloud by default; local Docker if configured)
   --stop       Stop all services
   --status     Show status of services
   --help       Show this help message
 
 Services:
   Frontend:  Next.js dev server (http://localhost:${FRONTEND_PORT})
-  Backend:   Supabase Kong API Gateway (http://localhost:${BACKEND_PORT})
-             Supabase PostgREST (via Kong)
+  Backend:   Supabase Cloud (via .env.local) — local Docker only if
+             docker-compose.local.yml exists (legacy)
 
 EOF
   exit 0
@@ -123,11 +138,15 @@ check_status() {
   echo -e "${BLUE}╚══════════════════════════════════════════════════╝${NC}"
   echo ""
 
-  # Check Docker containers
-  if docker compose -f docker-compose.local.yml ps --format json 2>/dev/null | grep -q "running"; then
-    log_ok "Backend (Supabase): Running"
+  # Backend is Supabase Cloud by default; local Docker only if compose file exists
+  if has_local_backend; then
+    if docker compose -f "${LOCAL_COMPOSE_FILE}" ps --format json 2>/dev/null | grep -q "running"; then
+      log_ok "Backend (local Supabase): Running"
+    else
+      log_warn "Backend (local Supabase): Not running"
+    fi
   else
-    log_warn "Backend (Supabase): Not running"
+    log_ok "Backend: Supabase Cloud (see NEXT_PUBLIC_SUPABASE_URL in .env.local)"
   fi
 
   # Check Next.js
@@ -145,12 +164,16 @@ stop_services() {
   echo ""
   log_info "Stopping services..."
   
-  # Stop Docker containers
-  if docker compose -f docker-compose.local.yml ps --format json 2>/dev/null | grep -q "running"; then
-    docker compose -f docker-compose.local.yml down
-    log_ok "Backend services stopped"
+  # Stop local Docker backend if configured (Cloud needs no local stop)
+  if has_local_backend; then
+    if docker compose -f "${LOCAL_COMPOSE_FILE}" ps --format json 2>/dev/null | grep -q "running"; then
+      docker compose -f "${LOCAL_COMPOSE_FILE}" down
+      log_ok "Backend services stopped"
+    else
+      log_warn "Backend services were not running"
+    fi
   else
-    log_warn "Backend services were not running"
+    log_info "Backend is Supabase Cloud — nothing local to stop"
   fi
 
   # Kill Next.js if running
@@ -169,19 +192,23 @@ stop_services() {
 check_prerequisites() {
   log_step "Checking prerequisites..."
   
-  # Docker
-  if ! command -v docker &>/dev/null; then
-    log_error "Docker not found. Install Docker: https://docs.docker.com/engine/install/"
-    exit 1
-  fi
-  log_ok "Docker found"
+  # Docker (only required for legacy local backend)
+  if has_local_backend; then
+    if ! command -v docker &>/dev/null; then
+      log_error "Docker not found. Install Docker: https://docs.docker.com/engine/install/"
+      exit 1
+    fi
+    log_ok "Docker found"
 
-  # Docker Compose
-  if ! docker compose version &>/dev/null; then
-    log_error "Docker Compose not found"
-    exit 1
+    # Docker Compose
+    if ! docker compose version &>/dev/null; then
+      log_error "Docker Compose not found"
+      exit 1
+    fi
+    log_ok "Docker Compose found"
+  else
+    log_info "No local backend configured — skipping Docker checks (Supabase Cloud)"
   fi
-  log_ok "Docker Compose found"
 
   # Node.js
   if ! command -v node &>/dev/null; then
@@ -197,19 +224,19 @@ check_prerequisites() {
   fi
   log_ok "npm found: $(npm --version)"
 
-  # .env file
-  if [ ! -f ".env" ]; then
-    if [ -f ".env.example" ]; then
-      log_warn ".env not found, creating from .env.example"
-      cp .env.example .env
-      log_ok ".env created"
-      load_env
-    else
-      log_error ".env.example not found"
-      exit 1
-    fi
+  # env file (.env.local preferred, .env fallback for cloud default)
+  if [ -f ".env.local" ]; then
+    log_ok ".env.local file found"
+  elif [ -f ".env" ]; then
+    log_ok ".env file found (fallback; prefer .env.local for Supabase Cloud)"
+  elif [ -f ".env.example" ]; then
+    log_warn ".env.local not found, creating from .env.example"
+    cp .env.example .env.local
+    log_ok ".env.local created — fill in Supabase Cloud values, apply install/supabase/*.sql via the dashboard SQL editor if needed"
+    load_env
   else
-    log_ok ".env file found"
+    log_error ".env.local not found and .env.example missing (copy .env.example to .env.local)"
+    exit 1
   fi
 
   # node_modules
@@ -229,7 +256,7 @@ check_database_schema() {
   # Check if psql is available
   if ! command -v psql &>/dev/null; then
     log_warn "psql not found - cannot verify database schema"
-    log_info "If you encounter errors, run: ./setup-db.sh"
+    log_info "Backend is Supabase Cloud — apply install/supabase/*.sql via the Supabase dashboard SQL editor if needed"
     return 0
   fi
 
@@ -251,15 +278,11 @@ check_database_schema() {
     read -p "Run database setup now? (y/n) " -n 1 -r
     echo ""
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-      if [ -f "./setup-db.sh" ]; then
-        ./setup-db.sh
-      else
-        log_error "setup-db.sh not found"
-        exit 1
-      fi
+      log_info "Local setup script was removed — apply install/supabase/*.sql via the Supabase dashboard SQL editor"
+      log_info "Cloud database is configured via NEXT_PUBLIC_SUPABASE_DB_CONNECTION_STRING in .env.local"
     else
       log_warn "Skipping database setup"
-      log_info "Run './setup-db.sh' manually if you encounter errors"
+      log_info "Apply install/supabase/*.sql via the Supabase dashboard SQL editor if you encounter errors"
     fi
   else
     log_ok "Database schema verified"
@@ -269,9 +292,16 @@ check_database_schema() {
 # ─── Start backend ────────────────────────────────────────────
 start_backend() {
   log_step "Starting backend services..."
-  
+
+  # Cloud default: no local backend to start
+  if ! has_local_backend; then
+    log_ok "Backend is Supabase Cloud — nothing local to start (see .env.local)"
+    echo ""
+    return 0
+  fi
+
   # Check if already running
-  if docker compose -f docker-compose.local.yml ps --format json 2>/dev/null | grep -q "running"; then
+  if docker compose -f "${LOCAL_COMPOSE_FILE}" ps --format json 2>/dev/null | grep -q "running"; then
     log_warn "Backend services already running"
     return 0
   fi
@@ -280,7 +310,7 @@ start_backend() {
   check_database_schema
 
   # Start Docker Compose
-  docker compose -f docker-compose.local.yml up -d
+  docker compose -f "${LOCAL_COMPOSE_FILE}" up -d
   log_ok "Backend services starting..."
 
   # Wait for Kong to be ready (check PostgREST via Kong)
@@ -356,9 +386,9 @@ cleanup() {
     log_ok "Frontend stopped"
   fi
 
-  # Stop Docker containers if we started them
-  if [ "$MODE" != "frontend" ]; then
-    docker compose -f docker-compose.local.yml down 2>/dev/null || true
+  # Stop local Docker backend if we started it (Cloud needs no local stop)
+  if [ "$MODE" != "frontend" ] && has_local_backend; then
+    docker compose -f "${LOCAL_COMPOSE_FILE}" down 2>/dev/null || true
     log_ok "Backend stopped"
   fi
 
@@ -404,7 +434,11 @@ case "$MODE" in
   backend)
     check_prerequisites
     start_backend
-    log_ok "Backend running at http://localhost:${BACKEND_PORT}"
+    if has_local_backend; then
+      log_ok "Backend running at http://localhost:${BACKEND_PORT}"
+    else
+      log_ok "Backend is Supabase Cloud — nothing local to run"
+    fi
     log_info "Press Ctrl+C to stop"
     wait
     ;;
@@ -419,7 +453,11 @@ case "$MODE" in
     echo -e "${GREEN}╚══════════════════════════════════════════════════╝${NC}"
     echo ""
     echo -e "  ${GREEN}●${NC} Frontend:  http://localhost:${FRONTEND_PORT}"
-    echo -e "  ${GREEN}●${NC} Backend:   http://localhost:${BACKEND_PORT}"
+    if has_local_backend; then
+      echo -e "  ${GREEN}●${NC} Backend:   http://localhost:${BACKEND_PORT} (local)"
+    else
+      echo -e "  ${GREEN}●${NC} Backend:   Supabase Cloud (see .env.local)"
+    fi
     echo ""
     echo -e "  ${YELLOW}Press Ctrl+C to stop all services${NC}"
     echo ""

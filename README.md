@@ -20,10 +20,10 @@ This project now supports a backend-free setup with Supabase (free tier):
 ### 2. Configure Environment
 
 1. Copy `.env.example` to `.env.local`.
-2. Fill in:
+2. Fill in (Supabase Cloud):
 	- `NEXT_PUBLIC_SUPABASE_URL`
-	- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-	- `SUPABASE_SERVICE_ROLE_KEY`
+	- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+	- `NEXT_PUBLIC_SUPABASE_SECRET_KEY` (server-only; prefer `SUPABASE_SECRET_KEY`)
 	- `ADMIN_DEFAULT_USERNAME`
 	- `ADMIN_DEFAULT_PASSWORD`
 	- `ADMIN_DEFAULT_EMAIL`

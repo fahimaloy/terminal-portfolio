@@ -3,10 +3,11 @@
    PARTICLE FIELD — Cursor-reactive floating particles
    Uses anime.js createAnimatable for smooth cursor-follow physics.
    Particles drift upward, react to cursor proximity.
-═══════════════════════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════════════════════════════ */
 
 import React, { useEffect, useRef, useCallback } from 'react';
-import { createAnimatable, damp, mapRange } from 'animejs';
+import { damp, mapRange } from 'animejs';
+import { createSafeAnimatable } from '../../utils/animatable';
 import { isReducedMotion } from '../../config/animations';
 
 type Particle = {
@@ -19,7 +20,7 @@ type Particle = {
   vy: number;
   size: number;
   speed: number;
-  animatable: ReturnType<typeof createAnimatable>;
+  animatable: ReturnType<typeof createSafeAnimatable>;
 };
 
 const COLORS = ['#ffaa00', '#ff00aa', '#00f0ff', '#39ff14', '#8a2be2'];
@@ -79,7 +80,9 @@ export default function ParticleField() {
         vy: rand(-0.6, -0.2),
         size,
         speed: rand(0.3, 1),
-        animatable: createAnimatable(el, {
+        animatable: createSafeAnimatable(el, {
+          x: 0,
+          y: 0,
           duration: 600,
           ease: 'outExpo',
         }),

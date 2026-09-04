@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useCallback } from 'react';
-import { animate, createAnimatable } from 'animejs';
+import { createSafeAnimatable } from '../../utils/animatable';
 import { isReducedMotion } from '../../config/animations';
 
 interface MagneticButtonProps {
@@ -18,20 +18,34 @@ export default function MagneticButton({
   onClick,
 }: MagneticButtonProps) {
   const ref = useRef<HTMLButtonElement>(null);
-  const animatableRef = useRef<ReturnType<typeof createAnimatable> | null>(null);
+  const animatableRef = useRef<ReturnType<typeof createSafeAnimatable> | null>(null);
 
   React.useEffect(() => {
     if (ref.current && !isReducedMotion()) {
-      animatableRef.current = createAnimatable(ref.current, {
+      animatableRef.current = createSafeAnimatable(ref.current, {
+        x: 0,
+        y: 0,
         duration: 200,
         ease: 'outExpo',
       });
     }
+    return () => {
+      animatableRef.current?.revert();
+      const cancellable = animatableRef.current as unknown as { cancel?: () => void } | null;
+      if (cancellable && typeof cancellable.cancel === 'function') {
+        try {
+          cancellable.cancel();
+        } catch {}
+      }
+      animatableRef.current = null;
+    };
   }, []);
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (!ref.current || !animatableRef.current || isReducedMotion()) return;
+      if (typeof animatableRef.current.x !== 'function') return;
+      if (typeof animatableRef.current.y !== 'function') return;
       const rect = ref.current.getBoundingClientRect();
       const x = e.clientX - rect.left - rect.width / 2;
       const y = e.clientY - rect.top - rect.height / 2;
@@ -43,6 +57,8 @@ export default function MagneticButton({
 
   const handleMouseLeave = useCallback(() => {
     if (!animatableRef.current || isReducedMotion()) return;
+    if (typeof animatableRef.current.x !== 'function') return;
+    if (typeof animatableRef.current.y !== 'function') return;
     animatableRef.current.x(0);
     animatableRef.current.y(0);
   }, []);
