@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { checkRateLimit, getClientIp } from '../../utils/rateLimit';
+import { verifyCsrf } from '../../utils/csrf';
 
 type ContactBody = {
   name: string;
@@ -16,10 +17,7 @@ export default async function handler(
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  // CSRF: verify Origin or Referer header matches host
-  const origin = req.headers.origin || req.headers.referer || '';
-  const host = req.headers.host || '';
-  if (origin && !origin.includes(host)) {
+  if (!verifyCsrf(req)) {
     return res.status(403).json({ message: 'Invalid origin.' });
   }
 
@@ -91,19 +89,23 @@ export default async function handler(
       });
 
       if (error) {
-        // eslint-disable-next-line no-console
-        console.error('Contact insert error:', error);
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.error('Contact insert error:', error);
+        }
         return res.status(500).json({ message: 'Failed to save message.' });
       }
     } else {
       // Fallback: log
-      // eslint-disable-next-line no-console
-      console.log('Contact message received:', {
-        name,
-        email,
-        subject,
-        message,
-      });
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.log('Contact message received:', {
+          name,
+          email,
+          subject,
+          message,
+        });
+      }
     }
 
     return res.status(200).json({
@@ -111,9 +113,11 @@ export default async function handler(
       message:
         'Thank you! Your message has been received. I will get back to you soon.',
     });
-  } catch (error: any) {
-    // eslint-disable-next-line no-console
-    console.error('Contact API Error:', error);
+  } catch (error: unknown) {
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.error('Contact API Error:', error);
+    }
     return res.status(500).json({ message: 'Internal server error.' });
   }
 }

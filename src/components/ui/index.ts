@@ -17,7 +17,6 @@ export { default as Tilt3D } from './Tilt3D';
 export { default as Ripple } from './Ripple';
 export { default as TypeaheadSuggestions } from './TypeaheadSuggestions';
 export { useTypeaheadSuggestions } from './useTypeaheadSuggestions';
-export { motionTokens } from './motionConfig';
 // Animation hooks (re-exported for convenience)
 export { useStagger } from '../../hooks/useStagger';
 export { useHover } from '../../hooks/useHover';
@@ -29,5 +28,4 @@ export { default as AnimatedDivider } from './AnimatedDivider';
 export { default as CursorGlow } from './CursorGlow';
 export { default as MagneticButton } from './MagneticButton';
 export { default as Tooltip } from './Tooltip';
-export { default as ScrollIndicator } from '../HUD/ScrollIndicator';
 

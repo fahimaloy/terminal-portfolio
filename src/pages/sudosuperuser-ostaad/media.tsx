@@ -13,7 +13,8 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { useAdminGuard } from '../../utils/adminPageGuard';
 import { useToast } from '../../components/ui/Toast';
 import { useStagger } from '../../hooks/useStagger';
-import { NeonButton, HudPanel } from '../../components/ui';
+import { NeonButton } from '../../components/ui';
+import ConfirmDeleteModal from '../../components/admin/ConfirmDeleteModal';
 
 const MediaPage = () => {
   const { authorized, loading, user } = useAdminGuard();
@@ -378,26 +379,15 @@ const MediaPage = () => {
           )}
         </div>
 
-        {/* Delete Confirmation Modal */}
-        {confirmDelete !== null && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setConfirmDelete(null)} />
-            <div className="relative max-w-sm w-full">
-              <HudPanel accent="red" notch="md" title="// CONFIRM_DELETE" className="p-6">
-                <div className="text-center space-y-4">
-                  <div className="text-4xl">⚠️</div>
-                  <p className="text-text-muted text-sm font-body">
-                    Delete this media? This cannot be undone.
-                  </p>
-                  <div className="flex gap-3 justify-center">
-                    <NeonButton variant="ghost" accent="cyan" onClick={() => setConfirmDelete(null)} disabled={isSaving}>CANCEL</NeonButton>
-                    <NeonButton accent="red" onClick={() => handleDeleteMedia(confirmDelete)} loading={isSaving}>DELETE</NeonButton>
-                  </div>
-                </div>
-              </HudPanel>
-            </div>
-          </div>
-        )}
+        <ConfirmDeleteModal
+          open={confirmDelete !== null}
+          onClose={() => setConfirmDelete(null)}
+          onConfirm={() => {
+            if (confirmDelete !== null) handleDeleteMedia(confirmDelete);
+          }}
+          message="Delete this media? This cannot be undone."
+          isSaving={isSaving}
+        />
       </AdminLayout>
     </>
   );

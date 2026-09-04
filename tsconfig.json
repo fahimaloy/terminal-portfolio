@@ -14,9 +14,8 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
-    "types": []
+    "jsx": "preserve"
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "e2e", "playwright.config.ts", "**/__tests__/**"]
+  "exclude": ["node_modules", ".next", "e2e", "playwright.config.ts"]
 }

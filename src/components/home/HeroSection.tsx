@@ -46,21 +46,23 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
     return (
       <div ref={ref} className="flex flex-col items-center w-full" id="hero">
         {/* Animated label */}
-        <div className="hero-label text-[10px] font-display tracking-[6px] text-neon-magenta text-shadow-neon-magenta mb-2 opacity-0">
+        <div data-hero="label" className="hero-label text-[10px] font-display tracking-[6px] text-neon-magenta text-shadow-neon-magenta mb-2 opacity-0">
           {'// ' + (siteTexts.developer_profile_label || 'DEVELOPER PROFILE')}
         </div>
 
         {/* Name with glitch */}
-        <GlitchText
-          as="h1"
-          accent="magenta"
-          className="hero-name text-4xl md:text-6xl opacity-0"
-        >
-          {profile?.full_name?.toUpperCase() || 'FAHIM AHMED'}
-        </GlitchText>
+        <div data-hero="name" className="hero-name opacity-0">
+          <GlitchText
+            as="h1"
+            accent="magenta"
+            className="text-4xl md:text-6xl"
+          >
+            {profile?.full_name?.toUpperCase() || 'FAHIM AHMED'}
+          </GlitchText>
+        </div>
 
         {/* Title */}
-        <div className="hero-title font-body text-text-secondary text-sm md:text-base tracking-widest mt-3 opacity-0">
+        <div data-hero="title" className="hero-title font-body text-text-secondary text-sm md:text-base tracking-widest mt-3 opacity-0">
           FULL-STACK{' '}
           <span className="text-neon-yellow text-shadow-neon-yellow font-display tracking-[2px]">
             DEVELOPER
@@ -69,13 +71,13 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
 
         {/* Bio */}
         {profile?.bio && (
-          <div className="hero-bio text-text-muted text-xs md:text-sm font-body text-center mt-5 max-w-lg opacity-0">
+          <div data-hero="bio" className="hero-bio text-text-muted text-xs md:text-sm font-body text-center mt-5 max-w-lg opacity-0">
             {profile.bio}
           </div>
         )}
 
         {/* Stats row */}
-        <div className="flex gap-8 mt-6 opacity-0" style={{ animation: 'none' }}>
+        <div data-hero="stats" className="hero-stats flex gap-8 mt-6 opacity-0">
           <div className="text-center">
             <div className="text-2xl font-display text-neon-cyan text-shadow-neon-cyan">{projectCount}+</div>
             <div className="text-[9px] font-display tracking-[2px] text-text-muted">PROJECTS</div>
@@ -92,13 +94,14 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
 
         {/* CTA Buttons */}
         <div className="flex gap-3 mt-7">
-          <NeonButton accent="yellow" onClick={onOpenChat} className="hero-btn opacity-0">
+          <NeonButton accent="yellow" onClick={onOpenChat} data-hero="cta" className="hero-btn opacity-0">
             START CHAT
           </NeonButton>
           <NeonButton
             accent="cyan"
             variant="outline"
             onClick={() => window.open('https://github.com/fahimaloy', '_blank')}
+            data-hero="cta"
             className="hero-btn opacity-0"
           >
             VIEW CODE
@@ -107,6 +110,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
             accent="magenta"
             variant="outline"
             onClick={() => router.push('/blog')}
+            data-hero="cta"
             className="hero-btn opacity-0"
           >
             READ BLOG
@@ -136,6 +140,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
                 <Tilt3D key={card.label} intensity={3}>
                   <Ripple
                     onClick={() => onSend(card.message)}
+                    data-hero="card"
                     className={`quick-card clip-notch-md bg-bg-smoke p-4 cursor-pointer ${glowClass} hover:bg-bg-ash transition-colors duration-200 opacity-0`}
                     color={
                       accent === 'yellow' ? 'rgba(255,170,0,0.4)'
