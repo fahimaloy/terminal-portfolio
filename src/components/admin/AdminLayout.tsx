@@ -90,6 +90,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const isMounted = useRef(true);
   const desktopNavRef = useRef<HTMLElement>(null);
   const mobileNavRef = useRef<HTMLDivElement>(null);
+  const [renderMobileMenu, setRenderMobileMenu] = useState(false);
 
   useEffect(() => {
     const nav = desktopNavRef.current;
@@ -109,16 +110,36 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     return () => scope.revert();
   }, []);
 
+  // Mobile menu mount/unmount with exit animation before unmount
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      setRenderMobileMenu(true);
+    } else if (renderMobileMenu && mobileNavRef.current) {
+      const el = mobileNavRef.current;
+      animate(el, {
+        x: ['0%', '-100%'],
+        opacity: [1, 0],
+        duration: 250,
+        ease: 'inExpo',
+      });
+      const timer = setTimeout(() => setRenderMobileMenu(false), 260);
+      return () => clearTimeout(timer);
+    } else if (!mobileMenuOpen && renderMobileMenu && !mobileNavRef.current) {
+      setRenderMobileMenu(false);
+    }
+  }, [mobileMenuOpen, renderMobileMenu]);
+
   // Mobile menu entrance animation
   useEffect(() => {
-    if (!mobileMenuOpen || !mobileNavRef.current) return;
-    animate(mobileNavRef.current, {
-      x: ['-100%', '0%'],
-      opacity: [0, 1],
-      duration: 300,
-      ease: 'outExpo',
-    });
-  }, [mobileMenuOpen]);
+    if (renderMobileMenu && mobileMenuOpen && mobileNavRef.current) {
+      animate(mobileNavRef.current, {
+        x: ['-100%', '0%'],
+        opacity: [0, 1],
+        duration: 300,
+        ease: 'outExpo',
+      });
+    }
+  }, [renderMobileMenu, mobileMenuOpen]);
 
   useEffect(() => {
     return () => { isMounted.current = false; };
@@ -215,8 +236,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           </nav>
         </div>
 
-        {mobileMenuOpen && (
-          <div ref={mobileNavRef} className="md:hidden border-t border-white/5 bg-bg-void opacity-0" aria-hidden={!mobileMenuOpen}>
+        {renderMobileMenu && (
+          <div ref={mobileNavRef} className="md:hidden border-t border-white/5 bg-bg-void opacity-0">
             <nav className="flex flex-col p-4 gap-2 text-sm" aria-label="Mobile navigation">
               {navItems.map((item) => (
                 <Link key={item.path} href={item.path}>

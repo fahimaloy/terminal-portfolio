@@ -18,7 +18,7 @@ export default function Document() {
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
           media="print"
-          // @ts-ignore — onLoad is valid on link elements
+          // @ts-expect-error onLoad exists on link
           onLoad="this.media='all'"
         />
         <noscript>

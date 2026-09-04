@@ -410,8 +410,9 @@ export async function sendMessageWithFallback(
         modelId: model.id,
         providerId: model.provider!.id,
       };
-    } catch (error: any) {
-      lastError = error;
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      lastError = err;
       const latency = Date.now() - startTime;
 
       // Log failure
@@ -426,7 +427,7 @@ export async function sendMessageWithFallback(
         totalTokens: 0,
         latencyMs: latency,
         success: false,
-        errorMessage: error.message,
+        errorMessage: err.message,
       });
 
       // Put model on temporary cooldown (30 seconds for transient errors)

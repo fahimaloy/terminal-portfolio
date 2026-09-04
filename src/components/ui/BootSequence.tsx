@@ -17,10 +17,13 @@ export default function BootSequence() {
   const [show, setShow] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
+  const mountTime = useRef<number>(Date.now());
 
   const skip = useCallback(() => {
     if (!show) return;
+    if (Date.now() - mountTime.current < SKIPPABLE_AFTER_MS) return;
     scopeRef.current?.revert();
+    if (rootRef.current) rootRef.current.style.opacity = '';
     setShow(false);
     try { window.sessionStorage.setItem(STORAGE_KEY, '1'); } catch {}
   }, [show]);
@@ -31,6 +34,7 @@ export default function BootSequence() {
 
     const reduced = isReducedMotion();
     setShow(true);
+    mountTime.current = Date.now();
 
     if (reduced) {
       const t = setTimeout(() => {
@@ -109,8 +113,10 @@ export default function BootSequence() {
       }, TOTAL_MS - 400);
     });
 
-    const skipTimer = setTimeout(() => {}, SKIPPABLE_AFTER_MS);
-    return () => { clearTimeout(skipTimer); scope.revert(); };
+    return () => {
+      scope.revert();
+      if (rootRef.current) rootRef.current.style.opacity = '';
+    };
   }, []);
 
   // Skip on any input
@@ -122,7 +128,11 @@ export default function BootSequence() {
     };
     document.addEventListener('keydown', handler);
     document.addEventListener('click', handler);
-    return () => { document.removeEventListener('keydown', handler); document.removeEventListener('click', handler); };
+    return () => {
+      document.removeEventListener('keydown', handler);
+      document.removeEventListener('click', handler);
+      if (rootRef.current) rootRef.current.style.opacity = '';
+    };
   }, [show, skip]);
 
   if (!show) return null;

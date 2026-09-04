@@ -8,6 +8,7 @@ import {
 } from '../../utils/aiService';
 import { checkRateLimit, getClientIp } from '../../utils/rateLimit';
 import { detectIntent } from '../../utils/intentDetection';
+import { verifyCsrf } from '../../utils/csrf';
 
 // Session abuse tracking
 const sessionAbuse = new Map<string, { count: number; resetAt: number; bannedUntil: number }>();
@@ -148,10 +149,7 @@ export default async function handler(
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  // CSRF: verify Origin or Referer header matches host
-  const origin = req.headers.origin || req.headers.referer || '';
-  const host = req.headers.host || '';
-  if (origin && !origin.includes(host)) {
+  if (!verifyCsrf(req)) {
     return res.status(403).json({ message: 'Invalid origin.' });
   }
 

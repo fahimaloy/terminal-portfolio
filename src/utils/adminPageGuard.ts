@@ -143,14 +143,20 @@ export const useAdminGuard = (
 
         const errorMessage =
           error instanceof Error ? error.message : 'Unknown error';
-        console.error('Session check failed:', errorMessage);
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.error('Session check failed:', errorMessage);
+        }
 
         // Retry logic for network errors
         if (isRetry && retryCount.current < MAX_RETRIES) {
           retryCount.current += 1;
-          console.log(
-            `Retrying session check (${retryCount.current}/${MAX_RETRIES})...`,
-          );
+          if (process.env.NODE_ENV !== 'production') {
+            // eslint-disable-next-line no-console
+            console.log(
+              `Retrying session check (${retryCount.current}/${MAX_RETRIES})...`,
+            );
+          }
 
           // Exponential backoff
           setTimeout(() => {
@@ -261,7 +267,10 @@ export const logout = async (): Promise<{
 
     return { success: true };
   } catch (error) {
-    console.error('Logout error:', error);
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.error('Logout error:', error);
+    }
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

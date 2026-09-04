@@ -43,7 +43,7 @@ type Message = {
   role: 'user' | 'model';
   text: string;
   responseType?: string;
-  responseData?: any;
+  responseData?: unknown;
 };
 
 const SUGGESTIONS = [
@@ -162,22 +162,25 @@ export default function Homepage() {
     scope.add(() => {
       const tl = createTimeline({ defaults: { ease: 'outExpo' } });
 
-      const label = heroRef.current!.querySelector('.hero-label');
+      const label = heroRef.current!.querySelector('[data-hero="label"]');
       if (label) tl.add(label, { opacity: [0, 1], y: [8, 0], duration: 400 }, 0);
 
-      const name = heroRef.current!.querySelector('.hero-name');
+      const name = heroRef.current!.querySelector('[data-hero="name"]');
       if (name) tl.add(name, { opacity: [0, 1], y: [20, 0], scale: [0.95, 1], ...spring({ stiffness: 100, damping: 12 }) }, 200);
 
-      const title = heroRef.current!.querySelector('.hero-title');
+      const title = heroRef.current!.querySelector('[data-hero="title"]');
       if (title) tl.add(title, { opacity: [0, 1], y: [10, 0], duration: 400 }, 600);
 
-      const bio = heroRef.current!.querySelector('.hero-bio');
+      const bio = heroRef.current!.querySelector('[data-hero="bio"]');
       if (bio) tl.add(bio, { opacity: [0, 1], y: [10, 0], duration: 400 }, 800);
 
-      const btns = heroRef.current!.querySelectorAll('.hero-btn');
+      const stats = heroRef.current!.querySelector('[data-hero="stats"]');
+      if (stats) tl.add(stats, { opacity: [0, 1], y: [10, 0], duration: 400 }, 900);
+
+      const btns = heroRef.current!.querySelectorAll('[data-hero="cta"]');
       if (btns) tl.add(btns, { opacity: [0, 1], y: [12, 0], duration: 350, delay: stagger(80) }, 1000);
 
-      const cards = heroRef.current!.querySelectorAll('.quick-card');
+      const cards = heroRef.current!.querySelectorAll('[data-hero="card"]');
       if (cards) tl.add(cards, { opacity: [0, 1], y: [24, 0], scale: [0.92, 1], delay: stagger(60, { from: 'first' }), ...spring({ stiffness: 150, damping: 14 }) }, 1200);
 
       setTimeout(() => setHeroReady(true), 100);
