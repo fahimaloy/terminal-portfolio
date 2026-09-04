@@ -5,7 +5,7 @@
 ═══════════════════════════════════════════════════════════════════════════════ */
 
 import React, { useRef, useEffect } from 'react';
-import { animate, createScope } from 'animejs';
+import { animate } from 'animejs';
 import { GlitchAccent } from './GlitchText';
 import { isReducedMotion } from '../../config/animations';
 
@@ -45,31 +45,28 @@ export default function NeonChip({
   ...rest
 }: Props) {
   const ref = useRef<HTMLSpanElement>(null);
-  const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
+  const animRef = useRef<ReturnType<typeof animate> | null>(null);
 
   useEffect(() => {
-    if (isReducedMotion() || !ref.current) return;
-    if (!onClick) return;
+    return () => { animRef.current?.cancel(); };
+  }, []);
 
-    const scope = createScope({ root: ref.current });
-    scopeRef.current = scope;
-
-    scope.add(() => {
-      animate(ref.current!, {
-        scale: [1, 1.05],
-        duration: 200,
-        ease: 'outExpo',
-      });
+  const handleClick = () => {
+    if (isReducedMotion() || !ref.current || !onClick) return;
+    animRef.current?.cancel();
+    animRef.current = animate(ref.current, {
+      scale: [1, 1.05],
+      duration: 200,
+      ease: 'outExpo',
     });
-
-    return () => scope.revert();
-  }, [onClick]);
+    onClick();
+  };
 
   return (
     <span
       {...rest}
       ref={ref}
-      onClick={onClick}
+      onClick={handleClick}
       className={`inline-flex items-center gap-1 px-2 py-0.5 border rounded-md text-[10px] font-display tracking-[1px] transition-colors duration-200 ${
         ACCENT_BG[accent]
       } ${ACCENT_TEXT[accent]} ${onClick ? 'cursor-pointer hover:scale-[1.05]' : ''} ${className}`}

@@ -24,6 +24,10 @@ export default function CursorGlow({
       duration: 400,
       ease: 'outExpo',
     });
+    return () => {
+      animatableRef.current?.cancel();
+      animatableRef.current = null;
+    };
   }, []);
 
   const handleMouseMove = useCallback(

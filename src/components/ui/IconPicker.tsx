@@ -12,8 +12,9 @@ export default function IconPicker({ value, onChange, disabled }: IconPickerProp
   const [search, setSearch] = useState('');
 
   const allIcons = useMemo(() => {
-    return Object.keys(LucideIcons).filter(
-      (name) => typeof LucideIcons[name] === 'object' && name !== 'default' && !name.startsWith('create'),
+    const iconRecord = LucideIcons as Record<string, any>;
+    return Object.keys(iconRecord).filter(
+      (name) => typeof iconRecord[name] === 'object' && name !== 'default' && !name.startsWith('create'),
     );
   }, []);
 
@@ -24,7 +25,8 @@ export default function IconPicker({ value, onChange, disabled }: IconPickerProp
     );
   }, [allIcons, search]);
 
-  const SelectedIcon = value ? (LucideIcons[value] as React.ComponentType<any>) : null;
+  const icons = LucideIcons as Record<string, any>;
+  const SelectedIcon = value ? (icons[value] || null) : null;
 
   return (
     <div className="space-y-2">
@@ -34,7 +36,7 @@ export default function IconPicker({ value, onChange, disabled }: IconPickerProp
       <div className="flex items-center gap-2 p-2 bg-white/5 rounded-xl border border-gray-800">
         {SelectedIcon ? (
           <div className="flex items-center gap-2">
-            <SelectedIcon size={20} className="text-purple-400" />
+            <SelectedIcon size={20} className="text-neon-purple" />
             <span className="text-sm text-white">{value}</span>
             <button
               type="button"
@@ -64,19 +66,19 @@ export default function IconPicker({ value, onChange, disabled }: IconPickerProp
       <div className="max-h-48 overflow-y-auto rounded-xl border border-gray-800 p-2">
         <div className="grid grid-cols-6 gap-1">
           {filteredIcons.map((name) => {
-            const Icon = LucideIcons[name] as React.ComponentType<any>;
+            const Icon = icons[name];
             return (
               <button
                 key={name}
                 type="button"
                 onClick={() => onChange(name)}
                 className={`p-2 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center ${
-                  value === name ? 'bg-purple-500/20 border border-purple-500/50' : ''
+                  value === name ? 'bg-neon-purple/20 border border-neon-purple/50' : ''
                 }`}
                 title={name}
                 disabled={disabled}
               >
-                <Icon size={18} className={value === name ? 'text-purple-400' : 'text-gray-400'} />
+                <Icon size={18} className={value === name ? 'text-neon-purple' : 'text-gray-400'} />
               </button>
             );
           })}

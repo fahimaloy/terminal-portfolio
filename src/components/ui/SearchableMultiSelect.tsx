@@ -75,7 +75,7 @@ export default function SearchableMultiSelect({
           selectedOptions.slice(0, maxDisplay).map((opt) => (
             <span
               key={opt.id}
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 border border-purple-500/30 rounded-lg text-xs text-purple-300"
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-neon-purple/20 border border-neon-purple/30 rounded-lg text-xs text-neon-purple/80"
             >
               {opt.icon}
               {opt.label}
@@ -127,13 +127,13 @@ export default function SearchableMultiSelect({
                 type="button"
                 onClick={() => toggle(opt.id)}
                 className={`w-full px-3 py-2 flex items-center gap-2 text-left text-sm hover:bg-white/5 transition-colors ${
-                  selectedIds.includes(opt.id) ? 'bg-purple-500/10' : ''
+                  selectedIds.includes(opt.id) ? 'bg-neon-purple/10' : ''
                 }`}
               >
                 <div
                   className={`w-4 h-4 rounded border flex items-center justify-center ${
                     selectedIds.includes(opt.id)
-                      ? 'bg-purple-500 border-purple-500'
+                      ? 'bg-neon-purple border-neon-purple'
                       : 'border-gray-600'
                   }`}
                 >

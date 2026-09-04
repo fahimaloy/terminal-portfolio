@@ -3,7 +3,7 @@ module.exports = {
   distDir: 'build',
   reactStrictMode: true,
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   images: {
     formats: ['image/avif', 'image/webp'],

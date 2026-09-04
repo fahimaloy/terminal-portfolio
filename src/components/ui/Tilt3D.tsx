@@ -1,7 +1,7 @@
 // src/components/ui/Tilt3D.tsx
-import React, { useRef } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { motionTokens } from './motionConfig';
+import React, { useRef, useEffect, useCallback } from 'react';
+import { animate } from 'animejs';
+import { isReducedMotion } from '../../config/animations';
 
 type Props = {
   children: React.ReactNode;
@@ -15,39 +15,60 @@ export default function Tilt3D({
   className = '',
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const sx = useSpring(mx, { stiffness: 200, damping: 20 });
-  const sy = useSpring(my, { stiffness: 200, damping: 20 });
-  const rx = useTransform(sy, [-0.5, 0.5], [intensity, -intensity]);
-  const ry = useTransform(sx, [-0.5, 0.5], [-intensity, intensity]);
+  const currentAnim = useRef<ReturnType<typeof animate> | null>(null);
 
-  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
-    const r = ref.current.getBoundingClientRect();
-    mx.set((e.clientX - r.left) / r.width - 0.5);
-    my.set((e.clientY - r.top) / r.height - 0.5);
-  };
-  const onLeave = () => {
-    mx.set(0);
-    my.set(0);
-  };
+  const cancelPrev = useCallback(() => {
+    currentAnim.current?.cancel();
+    currentAnim.current = null;
+  }, []);
+
+  const onMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!ref.current || isReducedMotion()) return;
+      const r = ref.current.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      const rotateX = -y * intensity;
+      const rotateY = x * intensity;
+
+      cancelPrev();
+      currentAnim.current = animate(ref.current, {
+        rotateX: `${rotateX}deg`,
+        rotateY: `${rotateY}deg`,
+        duration: 240,
+        ease: 'outQuad',
+      });
+    },
+    [intensity, cancelPrev],
+  );
+
+  const onLeave = useCallback(() => {
+    if (!ref.current || isReducedMotion()) return;
+    cancelPrev();
+    currentAnim.current = animate(ref.current, {
+      rotateX: '0deg',
+      rotateY: '0deg',
+      duration: 500,
+      ease: 'outElastic(1, .5)',
+    });
+  }, [cancelPrev]);
+
+  useEffect(() => {
+    return () => cancelPrev();
+  }, [cancelPrev]);
 
   return (
-    <motion.div
+    <div
       ref={ref}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       style={{
-        rotateX: rx,
-        rotateY: ry,
         transformStyle: 'preserve-3d',
-        transformPerspective: 800,
+        perspective: '800px',
       }}
-      transition={{ duration: motionTokens.dur.hover, ease: motionTokens.ease }}
       className={className}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
