@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { animate, createScope } from 'animejs';
 import { GlitchText, HudPanel, NeonButton } from '../ui';
-import { motionTokens } from '../ui/motionConfig';
 import { canAnimate } from '../../config/animations';
 
 export type LoadingScreenVariant = 'spinner' | 'dots' | 'matrix';
@@ -15,6 +14,8 @@ interface ErrorScreenProps {
   onRetry: () => void;
 }
 
+const CORNER_DURATIONS = [2000, 1500, 2500, 3000];
+
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   variant = 'spinner',
 }) => {
@@ -25,12 +26,14 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
     const scope = createScope({ root: spinnerRef.current });
     scope.add(() => {
       const corners = spinnerRef.current!.querySelectorAll('.spinner-corner');
-      animate(corners, {
-        rotate: '1turn',
-        duration: (el: Element, i: number) => [2000, 1500, 2500, 3000][i] || 2000,
-        loop: true,
-        ease: 'linear',
-        alternate: (el: Element, i: number) => i % 2 === 1,
+      corners.forEach((corner, i) => {
+        animate(corner, {
+          rotate: '1turn',
+          duration: CORNER_DURATIONS[i] || 2000,
+          loop: true,
+          ease: 'linear',
+          alternate: i % 2 === 1,
+        });
       });
     });
     return () => scope.revert();
