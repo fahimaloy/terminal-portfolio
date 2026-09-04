@@ -1,7 +1,5 @@
 import Head from 'next/head';
 import React from 'react';
-import { useEffect, useRef } from 'react';
-import { animate, createScope } from 'animejs';
 import { getSiteTexts, SiteText } from '../../utils/api';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { useAdminGuard } from '../../utils/adminPageGuard';
