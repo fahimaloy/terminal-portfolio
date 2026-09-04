@@ -1,0 +1,9 @@
+{
+  "*.{js,jsx,ts,tsx}": ["eslint --fix", "prettier --write --ignore-unknown"],
+  "*.{json,md,css}": ["prettier --write --ignore-unknown"],
+  "*.{js,jsx,ts,tsx,css}": ["node scripts/token-lint.mjs --warn-legacy"],
+  "src/styles/tokens.css": [
+    "prettier --write --ignore-unknown",
+    "node scripts/generate-tokens.mjs"
+  ]
+}

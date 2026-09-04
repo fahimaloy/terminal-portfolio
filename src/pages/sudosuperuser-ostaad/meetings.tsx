@@ -8,6 +8,7 @@ import {
 } from '../../utils/api';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { useAdminGuard } from '../../utils/adminPageGuard';
+import { GlitchText, HudPanel, NeonButton } from '../../components/ui';
 
 const MeetingsPage = () => {
   const { authorized, loading, user } = useAdminGuard();
@@ -64,45 +65,56 @@ const MeetingsPage = () => {
 
       <AdminLayout user={user} isLoading={loading}>
         <div className="max-w-4xl">
-          <h2 className="text-2xl font-bold mb-6">Meeting Requests</h2>
+          <GlitchText
+            accent="yellow"
+            className="text-2xl font-display tracking-[2px] mb-6"
+          >
+            MEETING REQUESTS
+          </GlitchText>
 
           {statusMessage && (
-            <div className="mb-4 p-3 bg-lime-500/10 border border-lime-500/30 text-lime-400 text-sm rounded-xl">
-              {statusMessage}
-            </div>
+            <HudPanel accent="green" notch="sm" className="mb-4 p-3">
+              <span className="font-body text-sm text-neon-green">
+                {statusMessage}
+              </span>
+            </HudPanel>
           )}
 
           {meetings.length > 0 ? (
-            <div className="glass-deep rounded-xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4">
-                Requests ({meetings.length})
-              </h3>
+            <HudPanel accent="yellow" notch="md" className="p-6">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-yellow mb-4">
+                REQUESTS ({meetings.length})
+              </div>
               <div className="space-y-4">
                 {meetings.map((meeting) => (
                   <div
                     key={meeting.id}
-                    className="p-4 bg-white/5 border border-gray-800 rounded-xl flex flex-col md:flex-row justify-between gap-4"
+                    className="p-4 bg-white/[0.03] border border-white/10 clip-notch-sm flex flex-col md:flex-row justify-between gap-4 hover:border-neon-cyan/30 transition-all duration-200"
                   >
                     <div className="flex-1">
-                      <div className="font-bold text-white mb-1">
+                      <div className="font-display tracking-[2px] text-text-primary text-sm mb-1">
                         {meeting.name} &lt;{meeting.email}&gt;
                       </div>
-                      <div className="text-sm text-gray-400 mb-1">
-                        <span className="font-bold">Date & Time:</span>{' '}
+                      <div className="font-body text-sm text-text-muted mb-1">
+                        <span className="font-display text-[10px] tracking-[2px]">
+                          Date & Time:
+                        </span>{' '}
                         {meeting.date} at {meeting.time}
                       </div>
-                      <div className="text-sm text-gray-400 mb-2">
-                        <span className="font-bold">Reason:</span>{' '}
+                      <div className="font-body text-sm text-text-muted mb-2">
+                        <span className="font-display text-[10px] tracking-[2px]">
+                          Reason:
+                        </span>{' '}
                         {meeting.reason || 'N/A'}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="font-mono text-xs text-text-muted">
                         Requested on:{' '}
                         {new Date(meeting.created_at || '').toLocaleString()}
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 items-end">
                       <select
-                        className="form-premium-input rounded-xl p-2 text-white text-sm focus:outline-none"
+                        className="bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
                         value={meeting.status}
                         onChange={(e) =>
                           handleStatusChange(meeting.id, e.target.value)
@@ -114,22 +126,25 @@ const MeetingsPage = () => {
                         <option value="cancelled">Cancelled</option>
                         <option value="completed">Completed</option>
                       </select>
-                      <button
+                      <NeonButton
+                        variant="ghost"
+                        accent="red"
                         onClick={() => handleDeleteMeeting(meeting.id)}
                         disabled={isSaving}
-                        className="bg-white/5 border border-gray-700/50 text-gray-400 rounded-xl hover:text-white hover:bg-white/10 backdrop-blur-sm px-4 py-2.5 text-sm transition-all disabled:opacity-50"
                       >
-                        Delete
-                      </button>
+                        DELETE
+                      </NeonButton>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            </HudPanel>
           ) : (
-            <div className="text-center text-gray-400 p-6 glass-deep rounded-xl">
-              No meeting requests yet.
-            </div>
+            <HudPanel accent="yellow" notch="md" className="p-6 text-center">
+              <span className="font-body text-sm text-text-muted">
+                No meeting requests yet.
+              </span>
+            </HudPanel>
           )}
         </div>
       </AdminLayout>

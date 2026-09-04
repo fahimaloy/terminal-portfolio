@@ -15,6 +15,8 @@ const ACCENT_BG: Record<GlitchAccent, string> = {
   cyan: 'bg-neon-cyan',
   green: 'bg-neon-green',
   red: 'bg-neon-red',
+  purple: 'bg-neon-purple',
+  blue: 'bg-neon-blue',
 };
 const ACCENT_TEXT: Record<GlitchAccent, string> = {
   yellow: 'text-neon-yellow',
@@ -22,13 +24,17 @@ const ACCENT_TEXT: Record<GlitchAccent, string> = {
   cyan: 'text-neon-cyan',
   green: 'text-neon-green',
   red: 'text-neon-red',
+  purple: 'text-neon-purple',
+  blue: 'text-neon-blue',
 };
 const ACCENT_GLOW: Record<GlitchAccent, string> = {
-  yellow: 'rgba(255,170,0,0.5)',
-  magenta: 'rgba(255,0,170,0.5)',
-  cyan: 'rgba(0,240,255,0.5)',
-  green: 'rgba(57,255,20,0.5)',
-  red: 'rgba(255,51,85,0.5)',
+  yellow: 'var(--glow-yellow)',
+  magenta: 'var(--glow-magenta)',
+  cyan: 'var(--glow-cyan)',
+  green: 'var(--glow-green)',
+  red: 'var(--glow-red)',
+  purple: 'var(--glow-purple)',
+  blue: 'var(--glow-blue)',
 };
 
 type Props = {

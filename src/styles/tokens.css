@@ -39,13 +39,33 @@
   --glow-green-sm: rgba(57, 255, 20, 0.15);
   --glow-red: rgba(255, 51, 85, 0.5);
   --glow-red-sm: rgba(255, 51, 85, 0.15);
+  --glow-purple: rgba(138, 43, 226, 0.5);
+  --glow-purple-sm: rgba(138, 43, 226, 0.15);
+  --glow-blue: rgba(0, 170, 255, 0.5);
+  --glow-blue-sm: rgba(0, 170, 255, 0.15);
 
   /* ── GRADIENTS ────────────────────────────────────────────────────────────── */
-  --gradient-cyan-magenta: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
-  --gradient-yellow-cyan: linear-gradient(90deg, var(--neon-yellow), var(--neon-cyan));
+  --gradient-cyan-magenta: linear-gradient(
+    90deg,
+    var(--neon-cyan),
+    var(--neon-magenta)
+  );
+  --gradient-yellow-cyan: linear-gradient(
+    90deg,
+    var(--neon-yellow),
+    var(--neon-cyan)
+  );
   --gradient-magenta-pink: linear-gradient(90deg, var(--neon-magenta), #ff4d94);
-  --gradient-glow-card: linear-gradient(135deg, rgba(0,240,255,0.1), rgba(255,0,170,0.1));
-  --gradient-bg-overlay: radial-gradient(ellipse at center, rgba(10,10,10,0.8) 0%, rgba(5,5,5,0.9) 100%);
+  --gradient-glow-card: linear-gradient(
+    135deg,
+    rgba(0, 240, 255, 0.1),
+    rgba(255, 0, 170, 0.1)
+  );
+  --gradient-bg-overlay: radial-gradient(
+    ellipse at center,
+    rgba(10, 10, 10, 0.8) 0%,
+    rgba(5, 5, 5, 0.9) 100%
+  );
 
   /* ── SHAPE / CLIP-PATH NOTCHES ─────────────────────────────────────────────── */
   --clip-notch-sm: 8px;
@@ -71,18 +91,18 @@
   --z-tooltip: 500;
 
   /* ── TYPOGRAPHY SCALE ─────────────────────────────────────────────────────── */
-  --text-xs: 0.75rem;     /* 12px */
-  --text-sm: 0.875rem;    /* 14px */
-  --text-base: 1rem;      /* 16px */
-  --text-lg: 1.125rem;    /* 18px */
-  --text-xl: 1.25rem;     /* 20px */
-  --text-2xl: 1.5rem;     /* 24px */
-  --text-3xl: 1.875rem;   /* 30px */
-  --text-4xl: 2.25rem;    /* 36px */
-  --text-5xl: 3rem;       /* 48px */
-  --text-6xl: 3.75rem;    /* 60px */
-  --text-7xl: 4.625rem;   /* 74px */
-  --text-8xl: 6rem;       /* 96px */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem; /* 36px */
+  --text-5xl: 3rem; /* 48px */
+  --text-6xl: 3.75rem; /* 60px */
+  --text-7xl: 4.625rem; /* 74px */
+  --text-8xl: 6rem; /* 96px */
 
   /* ── FONT FAMILIES ───────────────────────────────────────────────────────── */
   --font-display: 'Audiowide', sans-serif;
@@ -104,22 +124,22 @@
 
   /* ── SPACING SCALE (base 4px) ─────────────────────────────────────────────── */
   --space-0: 0;
-  --space-1: 0.25rem;   /* 4px */
-  --space-2: 0.5rem;    /* 8px */
-  --space-3: 0.75rem;   /* 12px */
-  --space-4: 1rem;      /* 16px */
-  --space-5: 1.25rem;   /* 20px */
-  --space-6: 1.5rem;    /* 24px */
-  --space-7: 1.75rem;   /* 28px */
-  --space-8: 2rem;      /* 32px */
-  --space-9: 2.25rem;   /* 36px */
-  --space-10: 2.5rem;   /* 40px */
-  --space-11: 2.75rem;  /* 44px */
-  --space-12: 3rem;     /* 48px */
-  --space-14: 3.5rem;   /* 56px */
-  --space-16: 4rem;     /* 64px */
-  --space-20: 5rem;     /* 80px */
-  --space-24: 6rem;     /* 96px */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-7: 1.75rem; /* 28px */
+  --space-8: 2rem; /* 32px */
+  --space-9: 2.25rem; /* 36px */
+  --space-10: 2.5rem; /* 40px */
+  --space-11: 2.75rem; /* 44px */
+  --space-12: 3rem; /* 48px */
+  --space-14: 3.5rem; /* 56px */
+  --space-16: 4rem; /* 64px */
+  --space-20: 5rem; /* 80px */
+  --space-24: 6rem; /* 96px */
 
   /* ── BORDER RADII ──  (complements shape notches) */
   --radius-xs: 4px;
@@ -147,21 +167,21 @@
   --overlay-90: rgba(0, 0, 0, 0.9);
 
   /* ── MOTION DURATIONS ─────────────────────────────────────────────────────── */
-  --dur-tap: 120ms;          /* Tap / press feedback */
-  --dur-hover: 240ms;        /* Hover state transitions */
-  --dur-enter: 480ms;        /* Element enter */
-  --dur-exit: 320ms;         /* Element exit */
-  --dur-stagger: 80ms;       /* Stagger delay between items */
-  --dur-slide: 320ms;        /* Slide panel transitions */
-  --dur-pulse: 1200ms;       /* Pulsing / breathing */
-  --dur-typing: 2000ms;      /* Typewriter effect */
-  --dur-scramble: 1500ms;    /* Scramble text reveal */
-  --dur-draw: 1200ms;        /* SVG line draw */
-  --dur-morph: 2000ms;       /* SVG shape morph */
-  --dur-transition: 300ms;   /* General transitions */
-  --dur-spring: 800ms;       /* Spring physics */
-  --dur-scroll: 600ms;       /* Scroll-triggered */
-  --dur-counter: 2000ms;     /* Number counter animation */
+  --dur-tap: 120ms; /* Tap / press feedback */
+  --dur-hover: 240ms; /* Hover state transitions */
+  --dur-enter: 480ms; /* Element enter */
+  --dur-exit: 320ms; /* Element exit */
+  --dur-stagger: 80ms; /* Stagger delay between items */
+  --dur-slide: 320ms; /* Slide panel transitions */
+  --dur-pulse: 1200ms; /* Pulsing / breathing */
+  --dur-typing: 2000ms; /* Typewriter effect */
+  --dur-scramble: 1500ms; /* Scramble text reveal */
+  --dur-draw: 1200ms; /* SVG line draw */
+  --dur-morph: 2000ms; /* SVG shape morph */
+  --dur-transition: 300ms; /* General transitions */
+  --dur-spring: 800ms; /* Spring physics */
+  --dur-scroll: 600ms; /* Scroll-triggered */
+  --dur-counter: 2000ms; /* Number counter animation */
 
   /* ── MOTION EASINGS ───────────────────────────────────────────────────────── */
   --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
@@ -204,10 +224,31 @@
 }
 
 /* ── COLOR ACCENT MAP ── (for JS access via CSS variable lookup) */
-[data-accent="yellow"] { --accent-color: var(--neon-yellow); --accent-glow: var(--glow-yellow-sm); }
-[data-accent="magenta"] { --accent-color: var(--neon-magenta); --accent-glow: var(--glow-magenta-sm); }
-[data-accent="cyan"] { --accent-color: var(--neon-cyan); --accent-glow: var(--glow-cyan-sm); }
-[data-accent="green"] { --accent-color: var(--neon-green); --accent-glow: var(--glow-green-sm); }
-[data-accent="red"] { --accent-color: var(--neon-red); --accent-glow: var(--glow-red-sm); }
-[data-accent="purple"] { --accent-color: var(--neon-purple); --accent-glow: rgba(138, 43, 226, 0.15); }
-[data-accent="blue"] { --accent-color: var(--neon-blue); --accent-glow: rgba(0, 170, 255, 0.15); }
+[data-accent='yellow'] {
+  --accent-color: var(--neon-yellow);
+  --accent-glow: var(--glow-yellow-sm);
+}
+[data-accent='magenta'] {
+  --accent-color: var(--neon-magenta);
+  --accent-glow: var(--glow-magenta-sm);
+}
+[data-accent='cyan'] {
+  --accent-color: var(--neon-cyan);
+  --accent-glow: var(--glow-cyan-sm);
+}
+[data-accent='green'] {
+  --accent-color: var(--neon-green);
+  --accent-glow: var(--glow-green-sm);
+}
+[data-accent='red'] {
+  --accent-color: var(--neon-red);
+  --accent-glow: var(--glow-red-sm);
+}
+[data-accent='purple'] {
+  --accent-color: var(--neon-purple);
+  --accent-glow: var(--glow-purple-sm);
+}
+[data-accent='blue'] {
+  --accent-color: var(--neon-blue);
+  --accent-glow: var(--glow-blue-sm);
+}

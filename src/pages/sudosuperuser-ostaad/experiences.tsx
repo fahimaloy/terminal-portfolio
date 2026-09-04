@@ -16,7 +16,12 @@ import { useAdminGuard } from '../../utils/adminPageGuard';
 import { useToast } from '../../components/ui/Toast';
 import { useFormAnimation } from '../../hooks/useFormAnimation';
 import { useStagger } from '../../hooks/useStagger';
-import { NeonButton, NeonChip } from '../../components/ui';
+import {
+  NeonButton,
+  NeonChip,
+  GlitchText,
+  HudPanel,
+} from '../../components/ui';
 import ConfirmDeleteModal from '../../components/admin/ConfirmDeleteModal';
 
 const ExperiencesPage = () => {
@@ -100,7 +105,8 @@ const ExperiencesPage = () => {
       .from('experience_projects')
       .select('project_id')
       .eq('experience_id', exp.id);
-    const projectIds = links?.map((l: { project_id: number }) => l.project_id) || [];
+    const projectIds =
+      links?.map((l: { project_id: number }) => l.project_id) || [];
 
     setForm({
       title: exp.title,
@@ -207,182 +213,189 @@ const ExperiencesPage = () => {
       </Head>
       <AdminLayout user={user} isLoading={loading}>
         <div className="max-w-4xl">
-          <h2 className="text-2xl font-bold text-white mb-6">
-            Manage Experiences
-          </h2>
+          <GlitchText
+            accent="yellow"
+            className="text-2xl font-display tracking-[2px] mb-6"
+          >
+            MANAGE EXPERIENCES
+          </GlitchText>
 
           {/* Form */}
-          <div ref={formRef} className="glass-deep rounded-xl p-6 mb-8">
-            <h3 className="text-lg font-bold text-white mb-4">
-              {editingId ? 'Edit' : 'Add'} Experience
-            </h3>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm"
-                  placeholder="e.g., Senior Developer"
-                  value={form.title}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, title: e.target.value }))
-                  }
-                  disabled={isSaving}
-                />
+          <HudPanel accent="yellow" notch="md" className="p-6 mb-8">
+            <div ref={formRef}>
+              <div className="text-[10px] font-display tracking-[3px] text-neon-yellow mb-4">
+                {editingId ? 'EDIT EXPERIENCE' : 'ADD EXPERIENCE'}
               </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Company *
-                </label>
-                <input
-                  type="text"
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm"
-                  placeholder="Company name"
-                  value={form.company_name}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, company_name: e.target.value }))
-                  }
-                  disabled={isSaving}
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Company Logo URL
-                </label>
-                <input
-                  type="url"
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm"
-                  placeholder="https://..."
-                  value={form.company_logo}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, company_logo: e.target.value }))
-                  }
-                  disabled={isSaving}
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm"
-                  placeholder="City, Country"
-                  value={form.location}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, location: e.target.value }))
-                  }
-                  disabled={isSaving}
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  From Date *
-                </label>
-                <input
-                  type="date"
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm"
-                  value={form.from_date}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, from_date: e.target.value }))
-                  }
-                  disabled={isSaving}
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  To Date
-                </label>
-                <input
-                  type="date"
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm"
-                  value={form.to_date}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, to_date: e.target.value }))
-                  }
-                  disabled={isSaving || form.is_current}
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="flex items-center gap-2 text-sm cursor-pointer text-gray-300">
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Title *
+                  </label>
                   <input
-                    type="checkbox"
-                    checked={form.is_current}
+                    type="text"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    placeholder="e.g., Senior Developer"
+                    value={form.title}
                     onChange={(e) =>
-                      setForm((p) => ({ ...p, is_current: e.target.checked }))
+                      setForm((p) => ({ ...p, title: e.target.value }))
                     }
                     disabled={isSaving}
                   />
-                  Currently working here
-                </label>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm text-gray-400 mb-1">
-                  Description
-                </label>
-                <textarea
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm resize-none"
-                  rows={3}
-                  placeholder="Brief description of your role..."
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, description: e.target.value }))
-                  }
-                  disabled={isSaving}
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm text-gray-400 mb-2">
-                  Linked Projects
-                </label>
-                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-                  {projects.map((proj) => (
-                    <button
-                      key={proj.id}
-                      onClick={() => toggleProject(proj.id)}
-                      className={`px-3 py-1 rounded-lg text-xs border transition-all ${
-                        form.projectIds.includes(proj.id)
-                          ? 'bg-purple-500/20 border-purple-500/50 text-purple-300'
-                          : 'bg-white/5 border-gray-700 text-gray-400 hover:bg-white/10'
-                      }`}
-                    >
-                      {proj.short_title || proj.title}
-                    </button>
-                  ))}
+                </div>
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Company *
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    placeholder="Company name"
+                    value={form.company_name}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, company_name: e.target.value }))
+                    }
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Company Logo URL
+                  </label>
+                  <input
+                    type="url"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    placeholder="https://..."
+                    value={form.company_logo}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, company_logo: e.target.value }))
+                    }
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    placeholder="City, Country"
+                    value={form.location}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, location: e.target.value }))
+                    }
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    From Date *
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    value={form.from_date}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, from_date: e.target.value }))
+                    }
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    To Date
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    value={form.to_date}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, to_date: e.target.value }))
+                    }
+                    disabled={isSaving || form.is_current}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="flex items-center gap-2 font-body text-sm cursor-pointer text-text-secondary">
+                    <input
+                      type="checkbox"
+                      checked={form.is_current}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, is_current: e.target.checked }))
+                      }
+                      disabled={isSaving}
+                    />
+                    Currently working here
+                  </label>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200 resize-none"
+                    rows={3}
+                    placeholder="Brief description of your role..."
+                    value={form.description}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, description: e.target.value }))
+                    }
+                    disabled={isSaving}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-2">
+                    Linked Projects
+                  </label>
+                  <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                    {projects.map((proj) => (
+                      <button
+                        key={proj.id}
+                        onClick={() => toggleProject(proj.id)}
+                        className={`px-3 py-1 clip-notch-sm font-body text-xs border transition-all duration-200 ${
+                          form.projectIds.includes(proj.id)
+                            ? 'bg-neon-magenta/20 border-neon-magenta/50 text-neon-magenta'
+                            : 'bg-white/[0.03] border-white/10 text-text-muted hover:border-neon-cyan/30 hover:text-text-primary'
+                        }`}
+                      >
+                        {proj.short_title || proj.title}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <NeonButton
-                accent="cyan"
-                onClick={handleSubmit}
-                disabled={isSaving}
-                loading={isSaving}
-              >
-                {editingId ? 'UPDATE' : 'ADD'}
-              </NeonButton>
-              {editingId && (
+              <div className="flex gap-2 mt-4">
                 <NeonButton
-                  variant="ghost"
                   accent="cyan"
-                  onClick={resetForm}
+                  onClick={handleSubmit}
                   disabled={isSaving}
+                  loading={isSaving}
                 >
-                  CANCEL
+                  {editingId ? 'UPDATE' : 'ADD'}
                 </NeonButton>
-              )}
+                {editingId && (
+                  <NeonButton
+                    variant="ghost"
+                    accent="cyan"
+                    onClick={resetForm}
+                    disabled={isSaving}
+                  >
+                    CANCEL
+                  </NeonButton>
+                )}
+              </div>
             </div>
-          </div>
+          </HudPanel>
 
           {/* List */}
           {experiences.length > 0 ? (
-            <div className="glass-deep rounded-xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4">
-                Experiences ({experiences.length})
-              </h3>
-              <p className="text-sm text-gray-400 mb-4">Drag to reorder</p>
+            <HudPanel accent="yellow" notch="md" className="p-6">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-yellow mb-4">
+                EXPERIENCES ({experiences.length})
+              </div>
+              <p className="font-body text-sm text-text-muted mb-4">
+                Drag to reorder
+              </p>
               <div ref={listRef} className="space-y-2">
                 {experiences.map((exp) => (
                   <div
@@ -391,11 +404,13 @@ const ExperiencesPage = () => {
                     onDragStart={() => setDragId(exp.id)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleDrop(exp.id)}
-                    className="exp-item p-3 bg-white/5 border border-gray-800 rounded-xl flex justify-between items-center cursor-move hover:bg-gray-800 transition-all"
+                    className="exp-item p-3 bg-white/[0.03] border border-white/10 clip-notch-sm flex justify-between items-center cursor-move hover:border-neon-cyan/30 hover:bg-neon-cyan/5 transition-all duration-200"
                   >
                     <div className="flex-1">
-                      <div className="font-bold text-white">{exp.title}</div>
-                      <div className="text-xs text-gray-400">
+                      <div className="font-display tracking-[2px] text-text-primary text-sm">
+                        {exp.title}
+                      </div>
+                      <div className="text-xs text-text-muted font-body">
                         {exp.company_name} · {exp.from_date} –{' '}
                         {exp.is_current ? 'Present' : exp.to_date || ''}
                       </div>
@@ -421,11 +436,13 @@ const ExperiencesPage = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </HudPanel>
           ) : (
-            <div className="text-center text-gray-400 p-6 glass-deep rounded-xl">
-              No experiences yet.
-            </div>
+            <HudPanel accent="yellow" notch="md" className="p-6 text-center">
+              <span className="font-body text-sm text-text-muted">
+                No experiences yet.
+              </span>
+            </HudPanel>
           )}
         </div>
 

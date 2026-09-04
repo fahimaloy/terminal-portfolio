@@ -14,7 +14,12 @@ import { useAdminGuard } from '../../utils/adminPageGuard';
 import { useToast } from '../../components/ui/Toast';
 import { useFormAnimation } from '../../hooks/useFormAnimation';
 import { useStagger } from '../../hooks/useStagger';
-import { NeonButton } from '../../components/ui';
+import {
+  NeonButton,
+  GlitchText,
+  HudPanel,
+  NeonChip,
+} from '../../components/ui';
 import ConfirmDeleteModal from '../../components/admin/ConfirmDeleteModal';
 import RichTextEditor from '../../components/ui/RichTextEditor';
 import SearchableMultiSelect from '../../components/ui/SearchableMultiSelect';
@@ -189,45 +194,46 @@ const ProjectsPage = () => {
 
       <AdminLayout user={user} isLoading={loading}>
         <div>
-          <h2 className="text-2xl font-bold text-white mb-6">
-            Manage Projects
-          </h2>
+          <GlitchText
+            accent="magenta"
+            className="text-2xl font-display tracking-[2px] mb-6"
+          >
+            MANAGE PROJECTS
+          </GlitchText>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div ref={listRef} className="lg:col-span-2">
               {projects.length > 0 ? (
-                <div className="glass-deep rounded-xl p-6">
-                  <h3 className="text-lg font-bold text-white mb-4">
-                    Projects ({projects.length})
-                  </h3>
+                <HudPanel accent="magenta" notch="md" className="p-6">
+                  <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+                    PROJECTS ({projects.length})
+                  </div>
 
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {projects.map((project) => (
                       <div
                         key={project.id}
-                        className="project-item p-3 bg-white/5 border border-gray-800 rounded-xl flex flex-col gap-2 transition-all hover:bg-gray-800/50"
+                        className="project-item p-3 bg-white/[0.03] border border-white/10 clip-notch-sm flex flex-col gap-2 transition-all duration-200 hover:border-neon-cyan/30 hover:bg-neon-cyan/5"
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <div className="font-bold text-white">
+                            <div className="font-display tracking-[2px] text-text-primary text-sm">
                               {project.title}
                             </div>
                             {project.short_title && (
-                              <div className="text-xs text-gray-400">
+                              <div className="text-xs text-text-muted font-body">
                                 {project.short_title}
                               </div>
                             )}
                             {project.client_name && (
-                              <div className="text-xs text-purple-400">
+                              <div className="text-xs text-neon-magenta font-body">
                                 Client: {project.client_name}
                               </div>
                             )}
                           </div>
                           <div className="flex gap-2">
                             {project.featured && (
-                              <span className="text-xs bg-purple-500/15 text-purple-300 border border-purple-500/30 px-2 py-1 rounded-lg">
-                                Featured
-                              </span>
+                              <NeonChip accent="magenta">FEATURED</NeonChip>
                             )}
                           </div>
                         </div>
@@ -253,282 +259,173 @@ const ProjectsPage = () => {
                       </div>
                     ))}
                   </div>
-                </div>
+                </HudPanel>
               ) : (
-                <div className="text-center text-gray-400 p-6 glass-deep rounded-xl">
-                  No projects yet.
-                </div>
+                <HudPanel
+                  accent="magenta"
+                  notch="md"
+                  className="p-6 text-center"
+                >
+                  <span className="font-body text-sm text-text-muted">
+                    No projects yet.
+                  </span>
+                </HudPanel>
               )}
             </div>
 
-            <div ref={formRef} className="glass-deep rounded-xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4">
-                {editingProjectId ? 'Edit' : 'Add'} Project
-              </h3>
-
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                    placeholder="Project title"
-                    value={projectDraft.title || ''}
-                    onChange={(e) =>
-                      setProjectDraft((prev) => ({
-                        ...prev,
-                        title: e.target.value,
-                      }))
-                    }
-                    disabled={isSaving}
-                  />
+            <HudPanel accent="magenta" notch="md" className="p-6">
+              <div ref={formRef}>
+                <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+                  {editingProjectId ? 'EDIT PROJECT' : 'ADD PROJECT'}
                 </div>
 
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Short Title
-                  </label>
-                  <input
-                    type="text"
-                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                    placeholder="Short title"
-                    value={projectDraft.short_title || ''}
-                    onChange={(e) =>
-                      setProjectDraft((prev) => ({
-                        ...prev,
-                        short_title: e.target.value,
-                      }))
-                    }
-                    disabled={isSaving}
-                  />
-                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      Title *
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      placeholder="Project title"
+                      value={projectDraft.title || ''}
+                      onChange={(e) =>
+                        setProjectDraft((prev) => ({
+                          ...prev,
+                          title: e.target.value,
+                        }))
+                      }
+                      disabled={isSaving}
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Description (Rich Text)
-                  </label>
-                  <RichTextEditor
-                    content={projectDraft.description_html || ''}
-                    onChange={(html) =>
-                      setProjectDraft((prev) => ({
-                        ...prev,
-                        description_html: html,
-                      }))
-                    }
-                  />
-                </div>
+                  <div>
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      Short Title
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      placeholder="Short title"
+                      value={projectDraft.short_title || ''}
+                      onChange={(e) =>
+                        setProjectDraft((prev) => ({
+                          ...prev,
+                          short_title: e.target.value,
+                        }))
+                      }
+                      disabled={isSaving}
+                    />
+                  </div>
 
-                <div className="border-t border-gray-800 pt-3">
-                  <h4 className="text-sm font-bold text-gray-400 mb-2">
-                    Client Information
-                  </h4>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-sm text-gray-400 mb-1">
-                        Client Name
-                      </label>
-                      <input
-                        type="text"
-                        className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                        placeholder="Client name"
-                        value={projectDraft.client_name || ''}
-                        onChange={(e) =>
-                          setProjectDraft((prev) => ({
-                            ...prev,
-                            client_name: e.target.value,
-                          }))
-                        }
-                        disabled={isSaving}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-400 mb-1">
-                        Client Location
-                      </label>
-                      <input
-                        type="text"
-                        className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                        placeholder="e.g., New York, USA"
-                        value={projectDraft.client_location || ''}
-                        onChange={(e) =>
-                          setProjectDraft((prev) => ({
-                            ...prev,
-                            client_location: e.target.value,
-                          }))
-                        }
-                        disabled={isSaving}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-400 mb-1">
-                        Client Logo URL
-                      </label>
-                      <input
-                        type="url"
-                        className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                        placeholder="https://..."
-                        value={projectDraft.client_logo || ''}
-                        onChange={(e) =>
-                          setProjectDraft((prev) => ({
-                            ...prev,
-                            client_logo: e.target.value,
-                          }))
-                        }
-                        disabled={isSaving}
-                      />
-                      {projectDraft.client_logo && (
-                        <div className="mt-2 flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-lg bg-white/10 overflow-hidden flex items-center justify-center">
-                            <img
-                              src={projectDraft.client_logo}
-                              alt="Client logo"
-                              className="w-full h-full object-contain"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display =
-                                  'none';
-                              }}
-                            />
+                  <div>
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      Description (Rich Text)
+                    </label>
+                    <RichTextEditor
+                      content={projectDraft.description_html || ''}
+                      onChange={(html) =>
+                        setProjectDraft((prev) => ({
+                          ...prev,
+                          description_html: html,
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div className="border-t border-white/10 pt-3">
+                    <h4 className="font-display tracking-[2px] text-sm text-text-muted mb-2">
+                      Client Information
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                          Client Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                          placeholder="Client name"
+                          value={projectDraft.client_name || ''}
+                          onChange={(e) =>
+                            setProjectDraft((prev) => ({
+                              ...prev,
+                              client_name: e.target.value,
+                            }))
+                          }
+                          disabled={isSaving}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                          Client Location
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                          placeholder="e.g., New York, USA"
+                          value={projectDraft.client_location || ''}
+                          onChange={(e) =>
+                            setProjectDraft((prev) => ({
+                              ...prev,
+                              client_location: e.target.value,
+                            }))
+                          }
+                          disabled={isSaving}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                          Client Logo URL
+                        </label>
+                        <input
+                          type="url"
+                          className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                          placeholder="https://..."
+                          value={projectDraft.client_logo || ''}
+                          onChange={(e) =>
+                            setProjectDraft((prev) => ({
+                              ...prev,
+                              client_logo: e.target.value,
+                            }))
+                          }
+                          disabled={isSaving}
+                        />
+                        {projectDraft.client_logo && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg bg-white/10 overflow-hidden flex items-center justify-center">
+                              <img
+                                src={projectDraft.client_logo}
+                                alt="Client logo"
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display =
+                                    'none';
+                                }}
+                              />
+                            </div>
+                            <span className="font-body text-xs text-text-muted">
+                              Logo preview
+                            </span>
                           </div>
-                          <span className="text-xs text-gray-400">
-                            Logo preview
-                          </span>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Thumbnail URL
-                  </label>
-                  <input
-                    type="url"
-                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                    placeholder="Thumbnail URL"
-                    value={projectDraft.thumbnail_url || ''}
-                    onChange={(e) =>
-                      setProjectDraft((prev) => ({
-                        ...prev,
-                        thumbnail_url: e.target.value,
-                      }))
-                    }
-                    disabled={isSaving}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Main Image URL
-                  </label>
-                  <input
-                    type="url"
-                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                    placeholder="Main image URL"
-                    value={projectDraft.image_url || ''}
-                    onChange={(e) =>
-                      setProjectDraft((prev) => ({
-                        ...prev,
-                        image_url: e.target.value,
-                      }))
-                    }
-                    disabled={isSaving}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Live URL
-                  </label>
-                  <input
-                    type="url"
-                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                    placeholder="Live project URL"
-                    value={projectDraft.project_url || ''}
-                    onChange={(e) =>
-                      setProjectDraft((prev) => ({
-                        ...prev,
-                        project_url: e.target.value,
-                      }))
-                    }
-                    disabled={isSaving}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Repo URL
-                  </label>
-                  <input
-                    type="url"
-                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                    placeholder="Repository URL"
-                    value={projectDraft.repo_url || ''}
-                    onChange={(e) =>
-                      setProjectDraft((prev) => ({
-                        ...prev,
-                        repo_url: e.target.value,
-                      }))
-                    }
-                    disabled={isSaving}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Languages (comma separated)
-                  </label>
-                  <input
-                    type="text"
-                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                    placeholder="e.g., JavaScript, Python, Go"
-                    value={(projectDraft.languages || []).join(', ')}
-                    onChange={(e) => setProjectLanguages(e.target.value)}
-                    disabled={isSaving}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Tags (comma separated)
-                  </label>
-                  <input
-                    type="text"
-                    className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                    placeholder="e.g., web, mobile, api (skills are auto-added)"
-                    value={(projectDraft.tags || []).join(', ')}
-                    onChange={(e) => setProjectTags(e.target.value)}
-                    disabled={isSaving}
-                  />
-                </div>
-
-                <div className="border-t border-gray-800 pt-3">
-                  <label className="block text-sm mb-2 font-bold text-gray-400">
-                    Skills Used
-                  </label>
-                  <SearchableMultiSelect
-                    options={skills.map((s) => ({ id: s.id, label: s.name }))}
-                    selectedIds={selectedSkillIds}
-                    onChange={setSelectedSkillIds}
-                    placeholder="Search skills..."
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm text-gray-400 mb-1">
-                      Featured Order
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      Thumbnail URL
                     </label>
                     <input
-                      type="number"
-                      className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                      value={projectDraft.featured_order || 0}
+                      type="url"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      placeholder="Thumbnail URL"
+                      value={projectDraft.thumbnail_url || ''}
                       onChange={(e) =>
                         setProjectDraft((prev) => ({
                           ...prev,
-                          featured_order: Number(e.target.value),
+                          thumbnail_url: e.target.value,
                         }))
                       }
                       disabled={isSaving}
@@ -536,62 +433,179 @@ const ProjectsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-400 mb-1">
-                      Sort Order
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      Main Image URL
                     </label>
                     <input
-                      type="number"
-                      className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                      value={projectDraft.sort_order || 0}
+                      type="url"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      placeholder="Main image URL"
+                      value={projectDraft.image_url || ''}
                       onChange={(e) =>
                         setProjectDraft((prev) => ({
                           ...prev,
-                          sort_order: Number(e.target.value),
+                          image_url: e.target.value,
                         }))
                       }
                       disabled={isSaving}
                     />
                   </div>
-                </div>
 
-                <label className="flex items-center gap-2 text-sm cursor-pointer text-gray-300">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(projectDraft.featured)}
-                    onChange={(e) =>
-                      setProjectDraft((prev) => ({
-                        ...prev,
-                        featured: e.target.checked,
-                      }))
-                    }
-                    disabled={isSaving}
-                    className="cursor-pointer"
-                  />
-                  Featured Project
-                </label>
+                  <div>
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      Live URL
+                    </label>
+                    <input
+                      type="url"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      placeholder="Live project URL"
+                      value={projectDraft.project_url || ''}
+                      onChange={(e) =>
+                        setProjectDraft((prev) => ({
+                          ...prev,
+                          project_url: e.target.value,
+                        }))
+                      }
+                      disabled={isSaving}
+                    />
+                  </div>
 
-                <div className="flex gap-2 pt-2">
-                  <NeonButton
-                    accent="cyan"
-                    onClick={handleProjectSubmit}
-                    disabled={isSaving}
-                    loading={isSaving}
-                  >
-                    {editingProjectId ? 'UPDATE' : 'ADD'}
-                  </NeonButton>
-                  {editingProjectId && (
+                  <div>
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      Repo URL
+                    </label>
+                    <input
+                      type="url"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      placeholder="Repository URL"
+                      value={projectDraft.repo_url || ''}
+                      onChange={(e) =>
+                        setProjectDraft((prev) => ({
+                          ...prev,
+                          repo_url: e.target.value,
+                        }))
+                      }
+                      disabled={isSaving}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      Languages (comma separated)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      placeholder="e.g., JavaScript, Python, Go"
+                      value={(projectDraft.languages || []).join(', ')}
+                      onChange={(e) => setProjectLanguages(e.target.value)}
+                      disabled={isSaving}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      Tags (comma separated)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      placeholder="e.g., web, mobile, api (skills are auto-added)"
+                      value={(projectDraft.tags || []).join(', ')}
+                      onChange={(e) => setProjectTags(e.target.value)}
+                      disabled={isSaving}
+                    />
+                  </div>
+
+                  <div className="border-t border-white/10 pt-3">
+                    <label className="block text-[10px] font-display tracking-[2px] mb-2 text-text-muted">
+                      Skills Used
+                    </label>
+                    <SearchableMultiSelect
+                      options={skills.map((s) => ({ id: s.id, label: s.name }))}
+                      selectedIds={selectedSkillIds}
+                      onChange={setSelectedSkillIds}
+                      placeholder="Search skills..."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                        Featured Order
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                        value={projectDraft.featured_order || 0}
+                        onChange={(e) =>
+                          setProjectDraft((prev) => ({
+                            ...prev,
+                            featured_order: Number(e.target.value),
+                          }))
+                        }
+                        disabled={isSaving}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                        Sort Order
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                        value={projectDraft.sort_order || 0}
+                        onChange={(e) =>
+                          setProjectDraft((prev) => ({
+                            ...prev,
+                            sort_order: Number(e.target.value),
+                          }))
+                        }
+                        disabled={isSaving}
+                      />
+                    </div>
+                  </div>
+
+                  <label className="flex items-center gap-2 font-body text-sm cursor-pointer text-text-secondary">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(projectDraft.featured)}
+                      onChange={(e) =>
+                        setProjectDraft((prev) => ({
+                          ...prev,
+                          featured: e.target.checked,
+                        }))
+                      }
+                      disabled={isSaving}
+                      className="cursor-pointer accent-neon-cyan"
+                    />
+                    Featured Project
+                  </label>
+
+                  <div className="flex gap-2 pt-2">
                     <NeonButton
-                      variant="ghost"
                       accent="cyan"
-                      onClick={handleCancel}
+                      onClick={handleProjectSubmit}
                       disabled={isSaving}
+                      loading={isSaving}
                     >
-                      CANCEL
+                      {editingProjectId ? 'UPDATE' : 'ADD'}
                     </NeonButton>
-                  )}
+                    {editingProjectId && (
+                      <NeonButton
+                        variant="ghost"
+                        accent="cyan"
+                        onClick={handleCancel}
+                        disabled={isSaving}
+                      >
+                        CANCEL
+                      </NeonButton>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            </HudPanel>
           </div>
         </div>
 

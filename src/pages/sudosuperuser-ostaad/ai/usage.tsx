@@ -2,6 +2,7 @@ import Head from 'next/head';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AdminLayout } from '../../../components/admin/AdminLayout';
 import { useAdminGuard } from '../../../utils/adminPageGuard';
+import { GlitchText, HudPanel, NeonButton } from '../../../components/ui';
 import {
   UsageData,
   UsageOverview,
@@ -20,7 +21,7 @@ const StatCard: React.FC<{
   color?: string;
   sub?: string;
 }> = ({ label, value, icon, color, sub }) => (
-  <div className="glass-panel rounded-xl p-4">
+  <HudPanel accent="cyan" notch="sm" className="p-4">
     <div className="flex items-center justify-between mb-2">
       <span className="text-2xl">{icon}</span>
       {color && (
@@ -30,10 +31,14 @@ const StatCard: React.FC<{
         />
       )}
     </div>
-    <div className="text-2xl font-bold text-white">{value}</div>
-    <div className="text-xs text-gray-400 mt-1">{label}</div>
-    {sub && <div className="text-xs text-gray-500 mt-0.5">{sub}</div>}
-  </div>
+    <div className="text-2xl font-display text-text-primary">{value}</div>
+    <div className="text-[10px] font-display tracking-[2px] text-text-muted mt-1">
+      {label.toUpperCase()}
+    </div>
+    {sub && (
+      <div className="font-mono text-xs text-text-muted mt-0.5">{sub}</div>
+    )}
+  </HudPanel>
 );
 
 // ─── Progress Bar ─────────────────────────────────────────────
@@ -43,18 +48,18 @@ const ProgressBar: React.FC<{
   max: number;
   label: string;
   color?: string;
-}> = ({ value, max, label, color = 'bg-purple-500' }) => {
+}> = ({ value, max, label, color = 'bg-neon-magenta' }) => {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <div className="flex items-center gap-2 text-xs">
-      <span className="w-20 text-gray-400">{label}</span>
-      <div className="flex-1 bg-gray-800 h-2 rounded-full overflow-hidden">
+    <div className="flex items-center gap-2 font-body text-xs">
+      <span className="w-20 text-text-muted">{label}</span>
+      <div className="flex-1 bg-white/[0.03] border border-white/10 h-2 clip-notch-sm overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${color}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-16 text-right text-white">
+      <span className="w-16 text-right font-mono text-text-primary">
         {value.toLocaleString()}
       </span>
     </div>
@@ -113,12 +118,24 @@ const AiUsagePage = () => {
 
       <AdminLayout user={user} isLoading={loading}>
         <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">Usage & Reports</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div>
+              <GlitchText
+                accent="cyan"
+                className="text-2xl font-display tracking-[2px]"
+              >
+                USAGE & REPORTS
+              </GlitchText>
+              <p className="text-[10px] font-mono text-text-muted mt-1">
+                {'>'} AI MODEL TELEMETRY
+              </p>
+            </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs text-gray-400">Period:</label>
+              <label className="font-display text-[10px] tracking-[2px] text-text-muted">
+                Period:
+              </label>
               <select
-                className="form-premium-input rounded-xl p-2 text-white text-sm focus:outline-none"
+                className="bg-bg-smoke border border-white/10 text-text-primary px-3 py-1.5 font-body text-sm focus:outline-none focus:border-neon-cyan clip-notch-sm transition-all duration-200 [color-scheme:dark]"
                 value={days}
                 onChange={(e) => setDays(Number(e.target.value))}
               >
@@ -127,13 +144,15 @@ const AiUsagePage = () => {
                 <option value={90}>Last 90 days</option>
                 <option value={365}>Last year</option>
               </select>
-              <button
+              <NeonButton
+                variant="outline"
+                accent="cyan"
                 onClick={loadData}
                 disabled={isLoading}
-                className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white text-sm font-medium rounded-xl transition-all shadow-lg disabled:opacity-50"
+                loading={isLoading}
               >
-                {isLoading ? '⟳' : 'Refresh'}
-              </button>
+                {isLoading ? 'LOADING…' : 'REFRESH'}
+              </NeonButton>
             </div>
           </div>
 
@@ -141,35 +160,39 @@ const AiUsagePage = () => {
             <div className="flex items-center justify-center min-h-[40vh]">
               <div className="text-center">
                 <div className="text-4xl mb-4 animate-pulse">⏳</div>
-                <div className="text-gray-400">Loading usage data...</div>
+                <div className="font-body text-sm text-text-muted">
+                  Loading usage data...
+                </div>
               </div>
             </div>
           ) : totalLogs === 0 ? (
-            <div className="text-center text-gray-400 p-12 glass-deep rounded-xl">
+            <HudPanel accent="cyan" notch="md" className="p-12 text-center">
               <div className="text-5xl mb-4">📭</div>
-              <p className="text-lg mb-2">No usage data yet</p>
-              <p className="text-sm">
+              <p className="font-display tracking-[2px] text-text-primary text-lg mb-2">
+                No usage data yet
+              </p>
+              <p className="font-body text-sm text-text-muted">
                 Usage data will appear here once AI models are used.
               </p>
-            </div>
+            </HudPanel>
           ) : (
             <>
               {/* ─── Tab Navigation ────────────────────────── */}
-              <div className="flex gap-1 mb-6 border-b border-gray-800 overflow-x-auto">
+              <div className="flex gap-1 mb-6 border-b border-white/10 overflow-x-auto">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${
+                    className={`px-4 py-2 font-display text-[11px] tracking-[2px] clip-notch-sm transition-all duration-200 whitespace-nowrap ${
                       activeTab === tab.id
-                        ? 'bg-purple-500/15 text-purple-300 border border-purple-500/30 border-b-transparent'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                        ? 'bg-neon-magenta/15 text-neon-magenta border border-neon-magenta/30 border-b-transparent'
+                        : 'text-text-muted hover:text-text-primary hover:bg-white/[0.03] border border-transparent'
                     }`}
                   >
                     <span className="mr-1">{tab.icon}</span>
-                    {tab.label}
+                    {tab.label.toUpperCase()}
                     {tab.count !== undefined && tab.count > 0 && (
-                      <span className="ml-1 bg-purple-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      <span className="ml-1 bg-neon-magenta text-black text-xs px-1.5 py-0.5 rounded-full">
                         {tab.count}
                       </span>
                     )}
@@ -216,25 +239,25 @@ const AiUsagePage = () => {
                     />
                   </div>
 
-                  <div className="glass-deep rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-white mb-4">
-                      Request Distribution
-                    </h3>
+                  <HudPanel accent="cyan" notch="md" className="p-6">
+                    <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-4">
+                      REQUEST DISTRIBUTION
+                    </div>
                     <div className="space-y-3">
                       <ProgressBar
                         label="Successful"
                         value={overview.successfulRequests}
                         max={overview.totalRequests}
-                        color="bg-lime-500"
+                        color="bg-neon-green"
                       />
                       <ProgressBar
                         label="Failed"
                         value={overview.failedRequests}
                         max={overview.totalRequests}
-                        color="bg-red-500"
+                        color="bg-neon-red"
                       />
                     </div>
-                  </div>
+                  </HudPanel>
                 </div>
               )}
 
@@ -242,29 +265,31 @@ const AiUsagePage = () => {
               {activeTab === 'per-model' && (
                 <div className="space-y-4">
                   {modelStats.length === 0 ? (
-                    <p className="text-gray-400">
+                    <p className="font-body text-sm text-text-muted">
                       No model-specific data available.
                     </p>
                   ) : (
                     modelStats.map((stat) => (
-                      <div
+                      <HudPanel
                         key={stat.modelIdentifier}
-                        className="glass-deep rounded-xl p-4"
+                        accent="cyan"
+                        notch="md"
+                        className="p-4"
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <h4 className="font-bold text-white">
+                            <h4 className="font-display tracking-[2px] text-text-primary text-sm">
                               {stat.modelIdentifier}
                             </h4>
-                            <p className="text-xs text-gray-400">
+                            <p className="font-body text-xs text-text-muted">
                               Provider: {stat.providerName}
                             </p>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm text-white">
+                            <div className="font-body text-sm text-text-primary">
                               {stat.totalRequests} requests
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="font-mono text-xs text-text-muted">
                               {stat.avgLatencyMs}ms avg
                             </div>
                           </div>
@@ -272,35 +297,43 @@ const AiUsagePage = () => {
 
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                           <div className="text-center">
-                            <div className="text-lg font-bold text-white">
+                            <div className="text-lg font-display text-text-primary">
                               {stat.totalRequests.toLocaleString()}
                             </div>
-                            <div className="text-xs text-gray-400">Total</div>
+                            <div className="font-display text-[10px] tracking-[2px] text-text-muted">
+                              Total
+                            </div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold text-lime-400">
+                            <div className="text-lg font-display text-neon-green">
                               {stat.successfulRequests.toLocaleString()}
                             </div>
-                            <div className="text-xs text-gray-400">Success</div>
+                            <div className="font-display text-[10px] tracking-[2px] text-text-muted">
+                              Success
+                            </div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold text-red-400">
+                            <div className="text-lg font-display text-neon-red">
                               {stat.failedRequests.toLocaleString()}
                             </div>
-                            <div className="text-xs text-gray-400">Failed</div>
+                            <div className="font-display text-[10px] tracking-[2px] text-text-muted">
+                              Failed
+                            </div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold text-white">
+                            <div className="text-lg font-display text-text-primary">
                               {stat.totalTokens.toLocaleString()}
                             </div>
-                            <div className="text-xs text-gray-400">Tokens</div>
+                            <div className="font-display text-[10px] tracking-[2px] text-text-muted">
+                              Tokens
+                            </div>
                           </div>
                         </div>
 
                         {stat.failedRequests > 0 && (
-                          <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
+                          <div className="w-full bg-white/[0.03] border border-white/10 h-2 clip-notch-sm overflow-hidden">
                             <div
-                              className="h-full bg-red-500 rounded-full"
+                              className="h-full bg-neon-red rounded-full"
                               style={{
                                 width: `${
                                   stat.totalRequests > 0
@@ -313,7 +346,7 @@ const AiUsagePage = () => {
                             />
                           </div>
                         )}
-                      </div>
+                      </HudPanel>
                     ))
                   )}
                 </div>
@@ -323,13 +356,15 @@ const AiUsagePage = () => {
               {activeTab === 'daily' && (
                 <div className="space-y-4">
                   {dailyStats.length === 0 ? (
-                    <p className="text-gray-400">No daily data available.</p>
+                    <p className="font-body text-sm text-text-muted">
+                      No daily data available.
+                    </p>
                   ) : (
                     <>
-                      <div className="glass-deep rounded-xl p-4">
-                        <h3 className="text-lg font-bold text-white mb-4">
-                          Daily Request Volume (last {dailyStats.length} days)
-                        </h3>
+                      <HudPanel accent="cyan" notch="md" className="p-4">
+                        <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-4">
+                          DAILY REQUEST VOLUME (LAST {dailyStats.length} DAYS)
+                        </div>
                         <div className="space-y-1">
                           {dailyStats.map((day) => {
                             const maxVal = Math.max(
@@ -338,14 +373,14 @@ const AiUsagePage = () => {
                             return (
                               <div
                                 key={day.date}
-                                className="flex items-center gap-2 text-xs"
+                                className="flex items-center gap-2 font-body text-xs"
                               >
-                                <span className="w-24 text-gray-400 font-mono">
+                                <span className="w-24 text-text-muted font-mono">
                                   {day.date}
                                 </span>
-                                <div className="flex-1 bg-gray-800 h-5 rounded overflow-hidden flex">
+                                <div className="flex-1 bg-white/[0.03] border border-white/10 h-5 clip-notch-sm overflow-hidden flex">
                                   <div
-                                    className="bg-purple-500 h-full transition-all"
+                                    className="bg-neon-magenta shadow-[0_0_8px_var(--glow-magenta)] h-full transition-all"
                                     style={{
                                       width: `${
                                         (day.totalRequests / maxVal) * 100
@@ -353,10 +388,10 @@ const AiUsagePage = () => {
                                     }}
                                   />
                                 </div>
-                                <span className="w-16 text-right text-white">
+                                <span className="w-16 text-right font-mono text-text-primary">
                                   {day.totalRequests}
                                 </span>
-                                <span className="w-12 text-right text-gray-500">
+                                <span className="w-12 text-right font-mono text-text-muted">
                                   {day.totalTokens > 0
                                     ? `${(day.totalTokens / 1000).toFixed(1)}k`
                                     : '—'}
@@ -365,42 +400,58 @@ const AiUsagePage = () => {
                             );
                           })}
                         </div>
-                      </div>
+                      </HudPanel>
 
-                      <div className="overflow-x-auto glass-deep rounded-xl">
-                        <table className="w-full text-sm">
+                      <HudPanel
+                        accent="cyan"
+                        notch="md"
+                        className="overflow-x-auto"
+                      >
+                        <table className="w-full font-body text-sm">
                           <thead>
-                            <tr className="border-b border-gray-800 text-gray-400">
-                              <th className="p-3 text-left">Date</th>
-                              <th className="p-3 text-right">Requests</th>
-                              <th className="p-3 text-right">Successful</th>
-                              <th className="p-3 text-right">Failed</th>
-                              <th className="p-3 text-right">Tokens</th>
-                              <th className="p-3 text-right">Success Rate</th>
+                            <tr className="border-b border-white/10 text-text-muted">
+                              <th className="p-3 text-left font-display text-[10px] tracking-[2px]">
+                                Date
+                              </th>
+                              <th className="p-3 text-right font-display text-[10px] tracking-[2px]">
+                                Requests
+                              </th>
+                              <th className="p-3 text-right font-display text-[10px] tracking-[2px]">
+                                Successful
+                              </th>
+                              <th className="p-3 text-right font-display text-[10px] tracking-[2px]">
+                                Failed
+                              </th>
+                              <th className="p-3 text-right font-display text-[10px] tracking-[2px]">
+                                Tokens
+                              </th>
+                              <th className="p-3 text-right font-display text-[10px] tracking-[2px]">
+                                Success Rate
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
                             {dailyStats.map((day) => (
                               <tr
                                 key={day.date}
-                                className="border-b border-gray-800 hover:bg-white/5"
+                                className="border-b border-white/5 hover:bg-white/[0.03]"
                               >
-                                <td className="p-3 font-mono text-gray-300">
+                                <td className="p-3 font-mono text-xs text-text-secondary">
                                   {day.date}
                                 </td>
-                                <td className="p-3 text-right text-gray-300">
+                                <td className="p-3 text-right font-mono text-text-secondary">
                                   {day.totalRequests}
                                 </td>
-                                <td className="p-3 text-right text-lime-400">
+                                <td className="p-3 text-right font-mono text-neon-green">
                                   {day.successfulRequests}
                                 </td>
-                                <td className="p-3 text-right text-red-400">
+                                <td className="p-3 text-right font-mono text-neon-red">
                                   {day.totalRequests - day.successfulRequests}
                                 </td>
-                                <td className="p-3 text-right text-gray-300">
+                                <td className="p-3 text-right font-mono text-text-secondary">
                                   {day.totalTokens.toLocaleString()}
                                 </td>
-                                <td className="p-3 text-right text-gray-300">
+                                <td className="p-3 text-right font-mono text-text-secondary">
                                   {day.totalRequests > 0
                                     ? `${Math.round(
                                         (day.successfulRequests /
@@ -413,7 +464,7 @@ const AiUsagePage = () => {
                             ))}
                           </tbody>
                         </table>
-                      </div>
+                      </HudPanel>
                     </>
                   )}
                 </div>
@@ -423,44 +474,64 @@ const AiUsagePage = () => {
               {activeTab === 'errors' && (
                 <div className="space-y-4">
                   {recentErrors.length === 0 ? (
-                    <div className="text-center text-gray-400 p-8 glass-deep rounded-xl">
+                    <HudPanel
+                      accent="green"
+                      notch="md"
+                      className="p-8 text-center"
+                    >
                       <div className="text-4xl mb-2">✨</div>
-                      <p>No errors recorded. Everything is running smoothly!</p>
-                    </div>
+                      <p className="font-body text-sm text-text-muted">
+                        No errors recorded. Everything is running smoothly!
+                      </p>
+                    </HudPanel>
                   ) : (
-                    <div className="overflow-x-auto glass-deep rounded-xl">
-                      <table className="w-full text-sm">
+                    <HudPanel
+                      accent="red"
+                      notch="md"
+                      className="overflow-x-auto"
+                    >
+                      <table className="w-full font-body text-sm">
                         <thead>
-                          <tr className="border-b border-gray-800 text-gray-400">
-                            <th className="p-3 text-left">Time</th>
-                            <th className="p-3 text-left">Model</th>
-                            <th className="p-3 text-left">Provider</th>
-                            <th className="p-3 text-left">Type</th>
-                            <th className="p-3 text-left">Error</th>
+                          <tr className="border-b border-white/10 text-text-muted">
+                            <th className="p-3 text-left font-display text-[10px] tracking-[2px]">
+                              Time
+                            </th>
+                            <th className="p-3 text-left font-display text-[10px] tracking-[2px]">
+                              Model
+                            </th>
+                            <th className="p-3 text-left font-display text-[10px] tracking-[2px]">
+                              Provider
+                            </th>
+                            <th className="p-3 text-left font-display text-[10px] tracking-[2px]">
+                              Type
+                            </th>
+                            <th className="p-3 text-left font-display text-[10px] tracking-[2px]">
+                              Error
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
                           {recentErrors.map((err) => (
                             <tr
                               key={err.id}
-                              className="border-b border-gray-800 hover:bg-white/5"
+                              className="border-b border-white/5 hover:bg-white/[0.03]"
                             >
-                              <td className="p-3 text-xs font-mono text-gray-500">
+                              <td className="p-3 font-mono text-xs text-text-muted">
                                 {new Date(err.createdAt).toLocaleString()}
                               </td>
-                              <td className="p-3 text-red-400">
+                              <td className="p-3 font-mono text-xs text-neon-red">
                                 {err.modelIdentifier}
                               </td>
-                              <td className="p-3 text-gray-300">
+                              <td className="p-3 text-text-secondary">
                                 {err.providerName}
                               </td>
                               <td className="p-3">
-                                <span className="text-xs bg-red-900/50 text-red-300 px-2 py-0.5 rounded">
+                                <span className="font-display text-[10px] tracking-[2px] bg-neon-red/15 text-neon-red border border-neon-red/30 px-2 py-0.5 clip-notch-sm">
                                   {err.requestType}
                                 </span>
                               </td>
                               <td
-                                className="p-3 text-xs text-red-400 max-w-xs truncate"
+                                className="p-3 font-mono text-xs text-neon-red max-w-xs truncate"
                                 title={err.errorMessage}
                               >
                                 {err.errorMessage}
@@ -469,7 +540,7 @@ const AiUsagePage = () => {
                           ))}
                         </tbody>
                       </table>
-                    </div>
+                    </HudPanel>
                   )}
                 </div>
               )}

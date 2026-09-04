@@ -6,7 +6,7 @@ import { useAdminGuard } from '../../utils/adminPageGuard';
 import { useToast } from '../../components/ui/Toast';
 import { useFormAnimation } from '../../hooks/useFormAnimation';
 import { useStagger } from '../../hooks/useStagger';
-import { NeonButton } from '../../components/ui';
+import { NeonButton, GlitchText, HudPanel } from '../../components/ui';
 import ConfirmDeleteModal from '../../components/admin/ConfirmDeleteModal';
 
 const SiteTextsPage = () => {
@@ -188,92 +188,99 @@ const SiteTextsPage = () => {
 
       <AdminLayout user={user} isLoading={loading}>
         <div className="max-w-4xl">
-          <h2 className="text-2xl font-bold mb-6">Site Texts Management</h2>
+          <GlitchText
+            accent="magenta"
+            className="text-2xl font-display tracking-[2px] mb-6"
+          >
+            SITE TEXTS MANAGEMENT
+          </GlitchText>
 
-          <div ref={formRef} className="glass-deep rounded-xl p-6 mb-8">
-            <h3 className="text-lg font-bold text-white mb-4">
-              Add New Site Text
-            </h3>
-
-            <div className="grid gap-4 mb-4 md:grid-cols-2">
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Key *:
-                </label>
-                <input
-                  type="text"
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                  placeholder="e.g., developer_profile_label"
-                  value={newKey}
-                  onChange={(e) => setNewKey(e.target.value)}
-                  disabled={isSaving}
-                />
+          <HudPanel accent="magenta" notch="md" className="p-6 mb-8">
+            <div ref={formRef}>
+              <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+                ADD NEW SITE TEXT
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Category:
-                </label>
-                <select
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none"
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  disabled={isSaving}
-                >
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
+              <div className="grid gap-4 mb-4 md:grid-cols-2">
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Key *:
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    placeholder="e.g., developer_profile_label"
+                    value={newKey}
+                    onChange={(e) => setNewKey(e.target.value)}
+                    disabled={isSaving}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Category:
+                  </label>
+                  <select
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    disabled={isSaving}
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Value *:
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    placeholder="e.g., DEVELOPER PROFILE"
+                    value={newValue}
+                    onChange={(e) => setNewValue(e.target.value)}
+                    disabled={isSaving}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Description:
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    placeholder="Description of this text"
+                    value={newDescription}
+                    onChange={(e) => setNewDescription(e.target.value)}
+                    disabled={isSaving}
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Value *:
-                </label>
-                <input
-                  type="text"
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                  placeholder="e.g., DEVELOPER PROFILE"
-                  value={newValue}
-                  onChange={(e) => setNewValue(e.target.value)}
-                  disabled={isSaving}
-                />
-              </div>
+              <NeonButton
+                accent="cyan"
+                onClick={handleAddSiteText}
+                disabled={isSaving || !newKey.trim() || !newValue.trim()}
+                loading={isSaving}
+              >
+                ADD SITE TEXT
+              </NeonButton>
+            </div>
+          </HudPanel>
 
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Description:
-                </label>
-                <input
-                  type="text"
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                  placeholder="Description of this text"
-                  value={newDescription}
-                  onChange={(e) => setNewDescription(e.target.value)}
-                  disabled={isSaving}
-                />
-              </div>
+          <HudPanel accent="magenta" notch="md" className="p-6">
+            <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+              EXISTING SITE TEXTS
             </div>
 
-            <NeonButton
-              accent="cyan"
-              onClick={handleAddSiteText}
-              disabled={isSaving || !newKey.trim() || !newValue.trim()}
-              loading={isSaving}
-            >
-              ADD SITE TEXT
-            </NeonButton>
-          </div>
-
-          <div className="glass-deep rounded-xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4">
-              Existing Site Texts
-            </h3>
-
             {siteTexts.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">
+              <p className="font-body text-sm text-text-muted text-center py-8">
                 No site texts found. Add your first site text above.
               </p>
             ) : (
@@ -281,16 +288,16 @@ const SiteTextsPage = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-white/10">
-                      <th className="text-left py-3 text-sm font-semibold text-gray-300">
+                      <th className="text-left py-3 font-display text-[10px] tracking-[2px] text-text-muted">
                         Key
                       </th>
-                      <th className="text-left py-3 text-sm font-semibold text-gray-300">
+                      <th className="text-left py-3 font-display text-[10px] tracking-[2px] text-text-muted">
                         Category
                       </th>
-                      <th className="text-left py-3 text-sm font-semibold text-gray-300">
+                      <th className="text-left py-3 font-display text-[10px] tracking-[2px] text-text-muted">
                         Value
                       </th>
-                      <th className="text-left py-3 text-sm font-semibold text-gray-300">
+                      <th className="text-left py-3 font-display text-[10px] tracking-[2px] text-text-muted">
                         Actions
                       </th>
                     </tr>
@@ -299,17 +306,19 @@ const SiteTextsPage = () => {
                     {siteTexts.map((text) => (
                       <tr
                         key={text.id}
-                        className="stext-item border-b border-white/5 hover:bg-white/5"
+                        className="stext-item border-b border-white/5 hover:bg-white/[0.03]"
                       >
-                        <td className="py-3 text-sm text-white">{text.key}</td>
-                        <td className="py-3 text-sm text-gray-400">
+                        <td className="py-3 font-mono text-xs text-neon-cyan">
+                          {text.key}
+                        </td>
+                        <td className="py-3 font-body text-sm text-text-muted">
                           {text.category}
                         </td>
-                        <td className="py-3 text-sm text-white">
+                        <td className="py-3 font-body text-sm text-text-primary">
                           {editingId === text.id ? (
                             <input
                               type="text"
-                              className="form-premium-input w-full rounded p-2 text-white text-sm"
+                              className="w-full bg-bg-smoke border border-white/10 text-text-primary px-2 py-1.5 font-body text-sm focus:outline-none focus:border-neon-cyan clip-notch-sm"
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}
                               onKeyDown={(e) => {
@@ -368,59 +377,99 @@ const SiteTextsPage = () => {
                 </table>
               </div>
             )}
-          </div>
+          </HudPanel>
 
-          <div className="mt-8 glass-deep rounded-xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4">
-              Default Site Texts
-            </h3>
-            <p className="text-gray-400 text-sm mb-4">
+          <HudPanel accent="magenta" notch="md" className="mt-8 p-6">
+            <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+              DEFAULT SITE TEXTS
+            </div>
+            <p className="font-body text-text-muted text-sm mb-4">
               These are the default development/programming themed texts that
               will be used if no custom texts are set:
             </p>
-            <div className="grid gap-4 text-sm">
+            <div className="grid gap-4 font-body text-sm">
               <div>
-                <span className="text-gray-500">developer_profile_label:</span>{' '}
-                <span className="text-white">DEVELOPER PROFILE</span>
+                <span className="font-mono text-xs text-text-muted">
+                  developer_profile_label:
+                </span>{' '}
+                <span className="font-display tracking-[2px] text-text-primary">
+                  DEVELOPER PROFILE
+                </span>
               </div>
               <div>
-                <span className="text-gray-500">quick_commands_label:</span>{' '}
-                <span className="text-white">QUICK COMMANDS</span>
+                <span className="font-mono text-xs text-text-muted">
+                  quick_commands_label:
+                </span>{' '}
+                <span className="font-display tracking-[2px] text-text-primary">
+                  QUICK COMMANDS
+                </span>
               </div>
               <div>
-                <span className="text-gray-500">terminal_version:</span>{' '}
-                <span className="text-white">TERMINAL v3.4.2</span>
+                <span className="font-mono text-xs text-text-muted">
+                  terminal_version:
+                </span>{' '}
+                <span className="font-display tracking-[2px] text-text-primary">
+                  TERMINAL v3.4.2
+                </span>
               </div>
               <div>
-                <span className="text-gray-500">status_ready:</span>{' '}
-                <span className="text-white">STATUS: READY</span>
+                <span className="font-mono text-xs text-text-muted">
+                  status_ready:
+                </span>{' '}
+                <span className="font-display tracking-[2px] text-text-primary">
+                  STATUS: READY
+                </span>
               </div>
               <div>
-                <span className="text-gray-500">compiling_label:</span>{' '}
-                <span className="text-white">COMPILING</span>
+                <span className="font-mono text-xs text-text-muted">
+                  compiling_label:
+                </span>{' '}
+                <span className="font-display tracking-[2px] text-text-primary">
+                  COMPILING
+                </span>
               </div>
               <div>
-                <span className="text-gray-500">linking_label:</span>{' '}
-                <span className="text-white">LINKING</span>
+                <span className="font-mono text-xs text-text-muted">
+                  linking_label:
+                </span>{' '}
+                <span className="font-display tracking-[2px] text-text-primary">
+                  LINKING
+                </span>
               </div>
               <div>
-                <span className="text-gray-500">executing_label:</span>{' '}
-                <span className="text-white">EXECUTING</span>
+                <span className="font-mono text-xs text-text-muted">
+                  executing_label:
+                </span>{' '}
+                <span className="font-display tracking-[2px] text-text-primary">
+                  EXECUTING
+                </span>
               </div>
               <div>
-                <span className="text-gray-500">last_command_label:</span>{' '}
-                <span className="text-white">LAST COMMAND</span>
+                <span className="font-mono text-xs text-text-muted">
+                  last_command_label:
+                </span>{' '}
+                <span className="font-display tracking-[2px] text-text-primary">
+                  LAST COMMAND
+                </span>
               </div>
               <div>
-                <span className="text-gray-500">developer_label:</span>{' '}
-                <span className="text-white">DEVELOPER</span>
+                <span className="font-mono text-xs text-text-muted">
+                  developer_label:
+                </span>{' '}
+                <span className="font-display tracking-[2px] text-text-primary">
+                  DEVELOPER
+                </span>
               </div>
               <div>
-                <span className="text-gray-500">active_label:</span>{' '}
-                <span className="text-white">ACTIVE</span>
+                <span className="font-mono text-xs text-text-muted">
+                  active_label:
+                </span>{' '}
+                <span className="font-display tracking-[2px] text-text-primary">
+                  ACTIVE
+                </span>
               </div>
             </div>
-          </div>
+          </HudPanel>
         </div>
 
         <ConfirmDeleteModal

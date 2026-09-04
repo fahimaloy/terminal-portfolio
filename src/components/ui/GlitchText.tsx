@@ -1,14 +1,23 @@
 // src/components/ui/GlitchText.tsx
 import React from 'react';
 
-export type GlitchAccent = 'yellow' | 'magenta' | 'cyan' | 'green' | 'red';
+export type GlitchAccent =
+  | 'yellow'
+  | 'magenta'
+  | 'cyan'
+  | 'green'
+  | 'red'
+  | 'purple'
+  | 'blue';
 
 const ACCENT_COLORS: Record<GlitchAccent, string> = {
-  yellow: '#ffaa00',
-  magenta: '#ff00aa',
-  cyan: '#00f0ff',
-  green: '#39ff14',
-  red: '#ff3355',
+  yellow: 'var(--neon-yellow)',
+  magenta: 'var(--neon-magenta)',
+  cyan: 'var(--neon-cyan)',
+  green: 'var(--neon-green)',
+  red: 'var(--neon-red)',
+  purple: 'var(--neon-purple)',
+  blue: 'var(--neon-blue)',
 };
 
 type Props = {
@@ -38,7 +47,7 @@ export default function GlitchText({
       } ${className}`}
       style={{
         textShadow: `${offset}px 0 0 ${color}, -${offset}px 0 0 var(--neon-cyan), 0 0 18px ${color}`,
-        color: '#fff',
+        color: 'var(--text-primary)',
       }}
     >
       {children}

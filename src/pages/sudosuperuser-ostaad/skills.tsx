@@ -12,7 +12,7 @@ import { useAdminGuard } from '../../utils/adminPageGuard';
 import { useToast } from '../../components/ui/Toast';
 import { useFormAnimation } from '../../hooks/useFormAnimation';
 import { useStagger } from '../../hooks/useStagger';
-import { NeonButton } from '../../components/ui';
+import { NeonButton, GlitchText, HudPanel } from '../../components/ui';
 import IconPicker from '../../components/ui/IconPicker';
 import ConfirmDeleteModal from '../../components/admin/ConfirmDeleteModal';
 
@@ -155,81 +155,90 @@ const SkillsPage = () => {
 
       <AdminLayout user={user} isLoading={loading}>
         <div className="max-w-2xl">
-          <h2 className="text-2xl font-bold text-white mb-6">Manage Skills</h2>
+          <GlitchText
+            accent="green"
+            className="text-2xl font-display tracking-[2px] mb-6"
+          >
+            MANAGE SKILLS
+          </GlitchText>
 
-          <div ref={formRef} className="glass-deep rounded-xl p-6 mb-8">
-            <h3 className="text-lg font-bold text-white mb-4">
-              {editingId ? 'Edit' : 'Add New'} Skill
-            </h3>
+          <HudPanel accent="green" notch="md" className="p-6 mb-8">
+            <div ref={formRef}>
+              <div className="text-[10px] font-display tracking-[3px] text-neon-green mb-4">
+                {editingId ? 'EDIT SKILL' : 'ADD NEW SKILL'}
+              </div>
 
-            <div className="grid gap-4 mb-4 md:grid-cols-2">
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Skill Name *
+              <div className="grid gap-4 mb-4 md:grid-cols-2">
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Skill Name *
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    placeholder="e.g., React, Python, TypeScript"
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    disabled={isSaving}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Duration
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    placeholder="e.g., 5 years, 2+ years"
+                    value={newSkillDuration}
+                    onChange={(e) => setNewSkillDuration(e.target.value)}
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-2">
+                  Icon
                 </label>
-                <input
-                  type="text"
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                  placeholder="e.g., React, Python, TypeScript"
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
+                <IconPicker
+                  value={newSkillIcon}
+                  onChange={(iconName) => setNewSkillIcon(iconName ?? '')}
                   disabled={isSaving}
                 />
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Duration
-                </label>
-                <input
-                  type="text"
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                  placeholder="e.g., 5 years, 2+ years"
-                  value={newSkillDuration}
-                  onChange={(e) => setNewSkillDuration(e.target.value)}
-                  disabled={isSaving}
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm text-gray-400 mb-2">Icon</label>
-              <IconPicker
-                value={newSkillIcon}
-                onChange={(iconName) => setNewSkillIcon(iconName ?? '')}
-                disabled={isSaving}
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <NeonButton
-                accent="cyan"
-                onClick={handleSubmit}
-                disabled={isSaving}
-                loading={isSaving}
-              >
-                {editingId ? 'UPDATE' : 'ADD SKILL'}
-              </NeonButton>
-              {editingId && (
+              <div className="flex gap-2">
                 <NeonButton
-                  variant="ghost"
                   accent="cyan"
-                  onClick={resetForm}
+                  onClick={handleSubmit}
                   disabled={isSaving}
+                  loading={isSaving}
                 >
-                  CANCEL
+                  {editingId ? 'UPDATE' : 'ADD SKILL'}
                 </NeonButton>
-              )}
+                {editingId && (
+                  <NeonButton
+                    variant="ghost"
+                    accent="cyan"
+                    onClick={resetForm}
+                    disabled={isSaving}
+                  >
+                    CANCEL
+                  </NeonButton>
+                )}
+              </div>
             </div>
-          </div>
+          </HudPanel>
 
           {skills.length > 0 ? (
-            <div className="glass-deep rounded-xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4">
-                Skills ({skills.length})
-              </h3>
+            <HudPanel accent="green" notch="md" className="p-6">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-green mb-4">
+                SKILLS ({skills.length})
+              </div>
 
-              <p className="text-sm text-gray-400 mb-4">
+              <p className="font-body text-sm text-text-muted mb-4">
                 Drag to reorder skills
               </p>
 
@@ -241,17 +250,19 @@ const SkillsPage = () => {
                     onDragStart={() => setDragSkillId(skill.id)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleSkillDrop(skill.id)}
-                    className="skill-item p-3 bg-white/5 border border-gray-800 rounded-xl flex justify-between items-center cursor-move hover:bg-gray-800 transition-all"
+                    className="skill-item p-3 bg-white/[0.03] border border-white/10 clip-notch-sm flex justify-between items-center cursor-move hover:border-neon-cyan/30 hover:bg-neon-cyan/5 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3 flex-1">
                       {skill.icon_key && (
-                        <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-purple-400 text-sm">
+                        <div className="w-8 h-8 clip-notch-sm bg-neon-green/10 border border-neon-green/20 flex items-center justify-center text-neon-green font-display text-[10px]">
                           {skill.icon_key.slice(0, 2).toUpperCase()}
                         </div>
                       )}
                       <div>
-                        <div className="font-bold text-white">{skill.name}</div>
-                        <div className="text-xs text-gray-400">
+                        <div className="font-display tracking-[2px] text-text-primary text-sm">
+                          {skill.name}
+                        </div>
+                        <div className="text-xs text-text-muted font-body">
                           {skill.duration && `${skill.duration} · `}
                           Order: {skill.sort_order}
                         </div>
@@ -278,11 +289,13 @@ const SkillsPage = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </HudPanel>
           ) : (
-            <div className="text-center text-gray-400 p-6 glass-deep rounded-xl">
-              No skills yet. Add one to get started.
-            </div>
+            <HudPanel accent="green" notch="md" className="p-6 text-center">
+              <span className="font-body text-sm text-text-muted">
+                No skills yet. Add one to get started.
+              </span>
+            </HudPanel>
           )}
         </div>
 

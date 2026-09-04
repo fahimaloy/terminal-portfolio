@@ -13,7 +13,7 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { useAdminGuard } from '../../utils/adminPageGuard';
 import { useToast } from '../../components/ui/Toast';
 import { useStagger } from '../../hooks/useStagger';
-import { NeonButton } from '../../components/ui';
+import { NeonButton, GlitchText, HudPanel } from '../../components/ui';
 import ConfirmDeleteModal from '../../components/admin/ConfirmDeleteModal';
 
 const MediaPage = () => {
@@ -188,19 +188,24 @@ const MediaPage = () => {
 
       <AdminLayout user={user} isLoading={loading}>
         <div>
-          <h2 className="text-2xl font-bold mb-6">Manage Project Media</h2>
+          <GlitchText
+            accent="cyan"
+            className="text-2xl font-display tracking-[2px] mb-6"
+          >
+            MANAGE PROJECT MEDIA
+          </GlitchText>
 
-          <div className="glass-deep rounded-xl p-6 mb-8">
-            <h3 className="text-lg font-bold text-white mb-4">
-              Select Project
-            </h3>
+          <HudPanel accent="cyan" notch="md" className="p-6 mb-8">
+            <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-4">
+              SELECT PROJECT
+            </div>
 
             {projects.length > 0 ? (
               <select
                 value={selectedProjectId || ''}
                 onChange={(e) => setSelectedProjectId(Number(e.target.value))}
                 disabled={isSaving}
-                className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none"
+                className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
               >
                 {projects.map((project) => (
                   <option key={project.id} value={project.id}>
@@ -209,18 +214,22 @@ const MediaPage = () => {
                 ))}
               </select>
             ) : (
-              <p className="text-gray-400">No projects available</p>
+              <p className="font-body text-sm text-text-muted">
+                No projects available
+              </p>
             )}
-          </div>
+          </HudPanel>
 
           {selectedProjectId && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="glass-deep rounded-xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4">Add Media</h3>
+              <HudPanel accent="cyan" notch="md" className="p-6">
+                <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-4">
+                  ADD MEDIA
+                </div>
 
                 <div className="space-y-3 mb-4">
                   <div>
-                    <label className="block text-sm text-gray-400 mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
                       Media Type:
                     </label>
                     <select
@@ -229,7 +238,7 @@ const MediaPage = () => {
                         setMediaType(e.target.value as 'image' | 'video')
                       }
                       disabled={isSaving}
-                      className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
                     >
                       <option value="image">Image</option>
                       <option value="video">Video</option>
@@ -238,7 +247,7 @@ const MediaPage = () => {
 
                   {mediaType === 'video' && (
                     <div>
-                      <label className="block text-sm text-gray-400 mb-1">
+                      <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
                         Video Provider:
                       </label>
                       <select
@@ -249,7 +258,7 @@ const MediaPage = () => {
                           )
                         }
                         disabled={isSaving}
-                        className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none"
+                        className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
                       >
                         <option value="direct">Direct Upload</option>
                         <option value="youtube">YouTube</option>
@@ -259,7 +268,7 @@ const MediaPage = () => {
                   )}
 
                   <div>
-                    <label className="block text-sm text-gray-400 mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
                       Media URL:
                     </label>
                     <input
@@ -267,7 +276,7 @@ const MediaPage = () => {
                       value={mediaUrl}
                       onChange={(e) => setMediaUrl(e.target.value)}
                       disabled={isSaving}
-                      className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
+                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                       placeholder="Enter media URL"
                     />
                   </div>
@@ -282,8 +291,8 @@ const MediaPage = () => {
                   </NeonButton>
                 </div>
 
-                <div className="border-t border-gray-700 pt-4">
-                  <h4 className="text-sm font-bold text-gray-400 mb-2">
+                <div className="border-t border-white/10 pt-4">
+                  <h4 className="font-display tracking-[2px] text-sm text-text-muted mb-2">
                     Or Upload File
                   </h4>
                   <input
@@ -291,34 +300,34 @@ const MediaPage = () => {
                     onChange={handleMediaUpload}
                     disabled={isSaving}
                     accept="image/*,video/*"
-                    className="w-full text-gray-300"
+                    className="w-full font-body text-sm text-text-secondary file:mr-3 file:px-3 file:py-1.5 file:bg-transparent file:border file:border-neon-cyan/30 file:text-neon-cyan file:font-display file:text-[10px] file:tracking-[2px] file:clip-notch-sm hover:file:bg-neon-cyan/10 file:transition-all file:duration-200 file:cursor-pointer"
                   />
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="font-body text-xs text-text-muted mt-2">
                     Accepts images and videos
                   </p>
 
                   {/* Upload progress bar */}
                   {uploadProgress > 0 && (
                     <div className="mt-3">
-                      <div className="flex justify-between text-xs text-gray-400 mb-1">
+                      <div className="flex justify-between font-body text-xs text-text-muted mb-1">
                         <span>Uploading...</span>
-                        <span>{uploadProgress}%</span>
+                        <span className="font-mono">{uploadProgress}%</span>
                       </div>
-                    <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-purple-500 to-cyan-400 transition-all duration-300"
-                        style={{ width: `${uploadProgress}%` }}
-                      />
-                    </div>
+                      <div className="w-full h-2 bg-white/[0.03] border border-white/10 clip-notch-sm overflow-hidden">
+                        <div
+                          className="h-full bg-neon-cyan shadow-[0_0_8px_var(--glow-cyan)] transition-all duration-300"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
-              </div>
+              </HudPanel>
 
-              <div className="glass-deep rounded-xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4">
-                  Media ({filteredMedia.length})
-                </h3>
+              <HudPanel accent="magenta" notch="md" className="p-6">
+                <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+                  MEDIA ({filteredMedia.length})
+                </div>
 
                 {filteredMedia.length > 0 ? (
                   <div
@@ -328,7 +337,7 @@ const MediaPage = () => {
                     {filteredMedia.map((media) => (
                       <div
                         key={media.id}
-                        className="media-item relative group rounded-xl overflow-hidden border border-gray-800 bg-white/5"
+                        className="media-item relative group clip-notch-sm overflow-hidden border border-white/10 bg-white/[0.03] hover:border-neon-cyan/30 transition-all duration-200"
                       >
                         {/* Thumbnail with zoom on hover */}
                         <div className="aspect-video overflow-hidden">
@@ -360,7 +369,7 @@ const MediaPage = () => {
                         </div>
 
                         <div className="p-2">
-                          <div className="text-xs text-gray-400 truncate">
+                          <div className="font-mono text-[10px] text-text-muted truncate">
                             {media.media_type.toUpperCase()}
                             {media.video_provider &&
                               ` (${media.video_provider})`}
@@ -370,11 +379,11 @@ const MediaPage = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center text-gray-400">
+                  <div className="text-center font-body text-sm text-text-muted">
                     No media for this project yet
                   </div>
                 )}
-              </div>
+              </HudPanel>
             </div>
           )}
         </div>
