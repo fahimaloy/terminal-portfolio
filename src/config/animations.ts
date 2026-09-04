@@ -5,10 +5,7 @@
    Uses Anime.js v4 under the hood.
 ═══════════════════════════════════════════════════════════════════════════════ */
 
-import {
-  createScope,
-  spring,
-} from 'animejs';
+import { createScope, spring } from 'animejs';
 
 // Type aliases for Anime.js options (avoids importing internal types)
 type StaggerOptions = Record<string, unknown>;
@@ -26,21 +23,21 @@ export type AccentColor =
 
 // ── Duration Tokens (mirrors CSS --dur-* tokens) ────────────────────────────
 export const durations = {
-  tap: 0.12,          // 120ms
-  hover: 0.24,        // 240ms
-  enter: 0.48,        // 480ms
-  exit: 0.32,         // 320ms
-  stagger: 0.08,      // 80ms between items
-  slide: 0.32,        // 320ms
-  pulse: 1.2,         // 1200ms
-  typing: 2.0,        // 2000ms
-  scramble: 1.5,      // 1500ms
-  draw: 1.2,          // 1200ms
-  morph: 2.0,         // 2000ms
-  transition: 0.3,    // 300ms
-  spring: 0.8,        // 800ms
-  scroll: 0.6,        // 600ms
-  counter: 2.0,       // 2000ms
+  tap: 0.12, // 120ms
+  hover: 0.24, // 240ms
+  enter: 0.48, // 480ms
+  exit: 0.32, // 320ms
+  stagger: 0.08, // 80ms between items
+  slide: 0.32, // 320ms
+  pulse: 1.2, // 1200ms
+  typing: 2.0, // 2000ms
+  scramble: 1.5, // 1500ms
+  draw: 1.2, // 1200ms
+  morph: 2.0, // 2000ms
+  transition: 0.3, // 300ms
+  spring: 0.8, // 800ms
+  scroll: 0.6, // 600ms
+  counter: 2.0, // 2000ms
 } as const;
 
 // ── Easing Presets ───────────────────────────────────────────────────────────
@@ -68,11 +65,11 @@ export const easings = {
 
 // ── Spring Presets (Anime.js v4 spring() parameters) ───────────────────────
 export const springs = {
-  stiff: { stiffness: 200, damping: 15 },     // snappy
-  soft: { stiffness: 100, damping: 10 },       // soft
-  bouncy: { stiffness: 120, damping: 6 },      // bouncy
-  gentle: { stiffness: 80, damping: 12 },     // gentle
-  hard: { stiffness: 300, damping: 20 },       // hard stop
+  stiff: { stiffness: 200, damping: 15 }, // snappy
+  soft: { stiffness: 100, damping: 10 }, // soft
+  bouncy: { stiffness: 120, damping: 6 }, // bouncy
+  gentle: { stiffness: 80, damping: 12 }, // gentle
+  hard: { stiffness: 300, damping: 20 }, // hard stop
 } as const;
 
 // ── Default Options ──────────────────────────────────────────────────────────
@@ -298,7 +295,12 @@ export const gridStagger = (
 });
 
 // ── Accent Helpers ───────────────────────────────────────────────────────────
-export const accentConfig: Record<AccentColor, { color: string; glow: string; shadow: string }> = {
+// Mirrors src/styles/tokens.css (--neon-*, --glow-*). Keep hex values identical
+// to tokens.css; tokens.css remains the single source of truth for color.
+export const accentConfig: Record<
+  AccentColor,
+  { color: string; glow: string; shadow: string }
+> = {
   yellow: {
     color: '#ffaa00',
     glow: 'rgba(255, 170, 0, 0.5)',

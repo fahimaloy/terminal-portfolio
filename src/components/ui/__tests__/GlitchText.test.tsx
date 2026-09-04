@@ -22,6 +22,6 @@ describe('GlitchText', () => {
       </GlitchText>,
     );
     const el = screen.getByTestId('g');
-    expect(el.style.textShadow).toContain('#ff00aa');
+    expect(el.style.textShadow).toContain('var(--neon-magenta)');
   });
 });

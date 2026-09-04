@@ -37,8 +37,8 @@ const App = ({ Component, pageProps }: AppProps) => {
           style={{
             position: 'fixed',
             inset: 0,
-            background: '#0a0a0a',
-            color: '#00f0ff',
+            background: 'var(--bg-void)',
+            color: 'var(--neon-cyan)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -58,7 +58,7 @@ const App = ({ Component, pageProps }: AppProps) => {
             >
               {'// JAVASCRIPT_REQUIRED'}
             </div>
-            <div style={{ fontSize: '0.875rem', color: '#ffaa00' }}>
+            <div style={{ fontSize: '0.875rem', color: 'var(--neon-yellow)' }}>
               This portfolio requires JavaScript to render the neural HUD
               interface. The site is a Next.js application — please enable JS
               and reload.

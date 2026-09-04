@@ -10,18 +10,31 @@
 ═══════════════════════════════════════════════════════════════════════════════ */
 
 import React, { useEffect, useRef } from 'react';
-import { onScroll, createScope } from 'animejs';
-import { isReducedMotion } from '../../config/animations';
+import {
+  animate,
+  onScroll,
+  createScope,
+  createDrawable,
+  morphTo,
+  stagger,
+} from 'animejs';
+import {
+  isReducedMotion,
+  canAnimate,
+  drawPreset,
+  morphPreset,
+  durations,
+} from '../../config/animations';
 import TronGrid from './TronGrid';
 import ScanlineOverlay from './ScanlineOverlay';
 import ParticleField from './ParticleField';
 
 // Background zone colors (subtle hue shifts per section)
 const ZONES = [
-  { start: 0, end: 0.25, color: 'rgba(0, 240, 255, 0.06)' },    // cyan
-  { start: 0.25, end: 0.5, color: 'rgba(255, 0, 170, 0.06)' },  // magenta
-  { start: 0.5, end: 0.75, color: 'rgba(255, 170, 0, 0.06)' },  // yellow
-  { start: 0.75, end: 1, color: 'rgba(57, 255, 20, 0.06)' },    // green
+  { start: 0, end: 0.25, color: 'rgba(0, 240, 255, 0.06)' }, // cyan
+  { start: 0.25, end: 0.5, color: 'rgba(255, 0, 170, 0.06)' }, // magenta
+  { start: 0.5, end: 0.75, color: 'rgba(255, 170, 0, 0.06)' }, // yellow
+  { start: 0.75, end: 1, color: 'rgba(57, 255, 20, 0.06)' }, // green
 ];
 
 // Morphing SVG shape paths (for background decoration)
@@ -34,37 +47,45 @@ const MORPH_PATHS = [
 export default function Background() {
   const bgRef = useRef<HTMLDivElement>(null);
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
-  const intervalsRef = useRef<ReturnType<typeof setInterval>[]>([]);
 
   useEffect(() => {
     if (!bgRef.current) return;
+    // Reduced-motion: render shapes statically at their final path (no animation).
+    if (isReducedMotion() || !canAnimate()) return;
 
     const scope = createScope({ root: bgRef.current });
     scopeRef.current = scope;
 
-    if (!isReducedMotion()) {
-      scope.add(() => {
-        // Morphing SVG background shapes
-        const shapes = bgRef.current!.querySelectorAll('.bg-morph-shape');
-        if (shapes.length > 0) {
-          // Animate each shape through the morph paths
-          shapes.forEach((shape, i) => {
-            const pathEl = shape as SVGPathElement;
-            let pathIndex = 0;
-            const interval = setInterval(() => {
-              pathIndex = (pathIndex + 1) % MORPH_PATHS.length;
-              pathEl.setAttribute('d', MORPH_PATHS[pathIndex]);
-            }, 4000 + i * 800);
-            intervalsRef.current.push(interval);
-          });
-        }
+    scope.add(() => {
+      const shapes =
+        bgRef.current!.querySelectorAll<SVGPathElement>('.bg-morph-shape');
+      if (shapes.length === 0) return;
+
+      // 1. Boot-time draw-in (animejs.com-style line draw).
+      // Durations come from tokens (--dur-draw via drawPreset/durations); animejs takes ms.
+      const drawables = createDrawable('.bg-morph-shape');
+      animate(drawables, {
+        draw: ['0 0', drawPreset.draw],
+        duration: durations.draw * 1000,
+        ease: drawPreset.ease,
+        delay: stagger(durations.stagger * 1000, { from: 'first' }),
       });
-    }
+
+      // 2. Scroll-synced morph (scrubbed, matching useScrollAnimation sync pattern).
+      // Each visible shape morphs toward its hidden reference target as the page scrolls.
+      shapes.forEach((shape, i) => {
+        animate(shape, {
+          d: morphTo(`#bg-morph-target-${(i + 1) % MORPH_PATHS.length}`),
+          duration: durations.morph * 1000,
+          ease: morphPreset.ease,
+          autoplay: onScroll({ sync: true }),
+        } as any);
+      });
+    });
 
     return () => {
-      intervalsRef.current.forEach(clearInterval);
-      intervalsRef.current = [];
       scope.revert();
+      scopeRef.current = null;
     };
   }, []);
 
@@ -75,7 +96,7 @@ export default function Background() {
         className="absolute inset-0 transition-colors duration-700"
         style={{
           background:
-            'radial-gradient(ellipse at center, #15151a 0%, #0a0a0a 60%, #000 100%)',
+            'radial-gradient(ellipse at center, var(--bg-smoke) 0%, var(--bg-void) 60%, black 100%)',
         }}
       />
 
@@ -85,10 +106,26 @@ export default function Background() {
         preserveAspectRatio="xMidYMid slice"
       >
         <defs>
-          <linearGradient id="bg-shape-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient
+            id="bg-shape-grad"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
             <stop offset="0%" stopColor="var(--neon-cyan)" />
             <stop offset="100%" stopColor="var(--neon-magenta)" />
           </linearGradient>
+          {/* Hidden morph targets for morphTo() — never rendered */}
+          {MORPH_PATHS.map((d, i) => (
+            <path
+              key={`bg-morph-target-${i}`}
+              id={`bg-morph-target-${i}`}
+              d={d}
+              fill="none"
+              stroke="none"
+            />
+          ))}
         </defs>
         <path
           className="bg-morph-shape"

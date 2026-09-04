@@ -11,7 +11,7 @@ import { useAdminGuard } from '../../utils/adminPageGuard';
 import { useToast } from '../../components/ui/Toast';
 import { useFormAnimation } from '../../hooks/useFormAnimation';
 import { useStagger } from '../../hooks/useStagger';
-import { NeonButton } from '../../components/ui';
+import { NeonButton, GlitchText, HudPanel } from '../../components/ui';
 import ConfirmDeleteModal from '../../components/admin/ConfirmDeleteModal';
 
 const KnowledgePage = () => {
@@ -96,68 +96,75 @@ const KnowledgePage = () => {
 
       <AdminLayout user={user} isLoading={loading}>
         <div className="max-w-2xl">
-          <h2 className="text-2xl font-bold mb-6">Manage Knowledge Base</h2>
+          <GlitchText
+            accent="green"
+            className="text-2xl font-display tracking-[2px] mb-6"
+          >
+            MANAGE KNOWLEDGE BASE
+          </GlitchText>
 
-          <div ref={formRef} className="glass-deep rounded-xl p-6 mb-8">
-            <h3 className="text-lg font-bold text-white mb-4">
-              Add New Context
-            </h3>
-
-            <div className="grid gap-3 mb-4">
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Category / Topic:
-                </label>
-                <input
-                  type="text"
-                  className="form-premium-input w-full rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500"
-                  placeholder="e.g., Professional Background, Work Setup, Salary Expectations"
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  disabled={isSaving}
-                />
+          <HudPanel accent="green" notch="md" className="p-6 mb-8">
+            <div ref={formRef}>
+              <div className="text-[10px] font-display tracking-[3px] text-neon-green mb-4">
+                ADD NEW CONTEXT
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Content / Details:
-                </label>
-                <textarea
-                  className="form-premium-input w-full h-32 rounded-xl p-3 text-white text-sm focus:outline-none placeholder-gray-500 resize-none"
-                  placeholder="The text that AI will use to answer user questions..."
-                  value={newContent}
-                  onChange={(e) => setNewContent(e.target.value)}
-                  disabled={isSaving}
-                />
+              <div className="grid gap-3 mb-4">
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Category / Topic:
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    placeholder="e.g., Professional Background, Work Setup, Salary Expectations"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    disabled={isSaving}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    Content / Details:
+                  </label>
+                  <textarea
+                    className="w-full h-32 bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200 resize-none"
+                    placeholder="The text that AI will use to answer user questions..."
+                    value={newContent}
+                    onChange={(e) => setNewContent(e.target.value)}
+                    disabled={isSaving}
+                  />
+                </div>
               </div>
+
+              <NeonButton
+                accent="cyan"
+                onClick={handleAddKnowledge}
+                disabled={isSaving}
+                loading={isSaving}
+              >
+                ADD KNOWLEDGE
+              </NeonButton>
             </div>
-
-            <NeonButton
-              accent="cyan"
-              onClick={handleAddKnowledge}
-              disabled={isSaving}
-              loading={isSaving}
-            >
-              ADD KNOWLEDGE
-            </NeonButton>
-          </div>
+          </HudPanel>
 
           {knowledges.length > 0 ? (
-            <div className="glass-deep rounded-xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4">
-                Saved Contexts ({knowledges.length})
-              </h3>
+            <HudPanel accent="green" notch="md" className="p-6">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-green mb-4">
+                SAVED CONTEXTS ({knowledges.length})
+              </div>
               <div ref={listRef} className="space-y-4">
                 {knowledges.map((kb) => (
                   <div
                     key={kb.id}
-                    className="kb-item p-3 bg-white/5 border border-gray-800 rounded-xl flex flex-col justify-between"
+                    className="kb-item p-3 bg-white/[0.03] border border-white/10 clip-notch-sm flex flex-col justify-between hover:border-neon-cyan/30 transition-all duration-200"
                   >
                     <div className="flex-1 mb-2">
-                      <div className="font-bold text-white mb-1">
+                      <div className="font-display tracking-[2px] text-text-primary text-sm mb-1">
                         Category: {kb.category}
                       </div>
-                      <div className="text-sm text-gray-400 whitespace-pre-wrap">
+                      <div className="font-body text-sm text-text-muted whitespace-pre-wrap">
                         {kb.content}
                       </div>
                     </div>
@@ -172,11 +179,13 @@ const KnowledgePage = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </HudPanel>
           ) : (
-            <div className="text-center text-gray-400 p-6 glass-deep rounded-xl">
-              No knowledge base entries yet.
-            </div>
+            <HudPanel accent="green" notch="md" className="p-6 text-center">
+              <span className="font-body text-sm text-text-muted">
+                No knowledge base entries yet.
+              </span>
+            </HudPanel>
           )}
         </div>
 

@@ -1,4 +1,14 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-yarn lint
+# Run lint-staged (eslint --fix, prettier --write, token-lint on staged files)
+npx lint-staged
+
+# Regenerate tokens if tokens.css was touched — lint-staged already runs
+# `prettier --write` then `generate-tokens` on that file, so this is just a
+# fallback for `git commit --no-verify` / direct edits outside lint-staged.
+if git diff --cached --name-only | grep -q "src/styles/tokens.css"; then
+  echo "[pre-commit] tokens.css changed — regenerating tokens…"
+  node scripts/generate-tokens.mjs
+  git add src/config/generated/tokens.generated.ts tailwind.tokens.generated.js 2>/dev/null || true
+fi

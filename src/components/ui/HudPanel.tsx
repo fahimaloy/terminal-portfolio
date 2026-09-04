@@ -14,6 +14,8 @@ const GLOW_CLASS: Record<GlitchAccent, string> = {
   cyan: 'hud-glow-cyan',
   green: 'hud-glow-green',
   red: 'hud-glow-red',
+  purple: 'hud-glow-purple',
+  blue: 'hud-glow-blue',
 };
 const ACCENT_TITLE: Record<GlitchAccent, string> = {
   yellow: 'text-neon-yellow',
@@ -21,6 +23,8 @@ const ACCENT_TITLE: Record<GlitchAccent, string> = {
   cyan: 'text-neon-cyan',
   green: 'text-neon-green',
   red: 'text-neon-red',
+  purple: 'text-neon-purple',
+  blue: 'text-neon-blue',
 };
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {

@@ -11,6 +11,8 @@ const VARIANT_BG: Record<Variant, Record<GlitchAccent, string>> = {
     cyan: 'bg-neon-cyan text-black',
     green: 'bg-neon-green text-black',
     red: 'bg-neon-red text-white',
+    purple: 'bg-neon-purple text-white',
+    blue: 'bg-neon-blue text-black',
   },
   outline: {
     yellow: 'bg-transparent text-neon-yellow',
@@ -18,6 +20,8 @@ const VARIANT_BG: Record<Variant, Record<GlitchAccent, string>> = {
     cyan: 'bg-transparent text-neon-cyan',
     green: 'bg-transparent text-neon-green',
     red: 'bg-transparent text-neon-red',
+    purple: 'bg-transparent text-neon-purple',
+    blue: 'bg-transparent text-neon-blue',
   },
   ghost: {
     yellow: 'bg-transparent text-text-secondary',
@@ -25,6 +29,8 @@ const VARIANT_BG: Record<Variant, Record<GlitchAccent, string>> = {
     cyan: 'bg-transparent text-text-secondary',
     green: 'bg-transparent text-text-secondary',
     red: 'bg-transparent text-text-secondary',
+    purple: 'bg-transparent text-text-secondary',
+    blue: 'bg-transparent text-text-secondary',
   },
 };
 
@@ -34,6 +40,8 @@ const GLOW: Record<GlitchAccent, string> = {
   cyan: 'hud-glow-cyan',
   green: 'hud-glow-green',
   red: 'hud-glow-red',
+  purple: 'hud-glow-purple',
+  blue: 'hud-glow-blue',
 };
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
