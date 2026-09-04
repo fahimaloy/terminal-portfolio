@@ -1,11 +1,15 @@
 // src/components/ui/motionConfig.ts
-export const motionTokens = {
-  ease: [0.16, 1, 0.3, 1] as const,
-  dur: { tap: 0.12, hover: 0.24, enter: 0.48, pulse: 1.2 },
-};
+// Thin adapter: re-exports from config/animations.ts in framer-motion-compatible format.
+// Prefer importing directly from config/animations.ts for new code.
+import { durations, easings } from '../../config/animations';
 
-export const tiltHover = {
-  rotateX: 2,
-  rotateY: 2,
-  transition: { duration: motionTokens.dur.hover, ease: motionTokens.ease },
+export const motionTokens = {
+  // framer-motion expects easing as a cubic-bezier array, not a CSS string
+  ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+  dur: {
+    tap: durations.tap,
+    hover: durations.hover,
+    enter: durations.enter,
+    pulse: durations.pulse,
+  },
 };

@@ -31,9 +31,11 @@ export default function AnimatedCounter({
       return;
     }
 
+    let animController: ReturnType<typeof animate> | null = null;
+
     const timer = setTimeout(() => {
       proxy.current.val = 0;
-      animate(proxy.current, {
+      animController = animate(proxy.current, {
         val: [0, value],
         duration,
         ease: 'outExpo',
@@ -41,7 +43,10 @@ export default function AnimatedCounter({
       });
     }, delay);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      animController?.cancel();
+    };
   }, [value, duration, delay]);
 
   return (

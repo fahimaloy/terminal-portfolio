@@ -1,8 +1,9 @@
 // src/components/ui/TypeaheadSuggestions.tsx
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useRef, useEffect } from 'react';
+import { animate } from 'animejs';
 import { Suggestion } from './useTypeaheadSuggestions';
-import { motionTokens } from './motionConfig';
+import { isReducedMotion } from '../../config/animations';
+import { durations, easings } from '../../config/animations';
 
 type Props = {
   query: string;
@@ -21,48 +22,72 @@ export default function TypeaheadSuggestions({
   emptyHint = 'NO MATCHES',
   className = '',
 }: Props) {
+  const listRef = useRef<HTMLUListElement>(null);
+  const prevOpen = useRef(open);
+
+  useEffect(() => {
+    if (!listRef.current) return;
+
+    // Open: animate in
+    if (open && !prevOpen.current) {
+      if (isReducedMotion()) return;
+      animate(listRef.current, {
+        opacity: [0, 1],
+        y: [-4, 0],
+        duration: durations.tap,
+        ease: easings.smooth,
+      });
+    }
+
+    // Close: animate out
+    if (!open && prevOpen.current) {
+      if (isReducedMotion()) return;
+      animate(listRef.current, {
+        opacity: [1, 0],
+        y: [0, -4],
+        duration: durations.tap,
+        ease: easings.smooth,
+      });
+    }
+
+    prevOpen.current = open;
+  }, [open]);
+
+  if (!open) return null;
+
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.ul
-          role="listbox"
-          aria-label="Suggestions"
-          initial={{ opacity: 0, y: -4 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{
-            duration: motionTokens.dur.tap,
-            ease: motionTokens.ease,
-          }}
-          className={`font-body text-sm ${className}`}
-        >
-          {suggestions.length === 0 ? (
-            <li className="px-3 py-2 text-text-muted uppercase tracking-widest text-xs">
-              {emptyHint}
-            </li>
-          ) : (
-            suggestions.map((s) => (
-              <li
-                key={s.id}
-                role="option"
-                aria-selected="false"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  onSelect(s);
-                }}
-                className="px-3 py-2 cursor-pointer flex justify-between items-center hover:bg-white/5 text-text-primary"
-              >
-                <span className="truncate">{s.label}</span>
-                {s.hint && (
-                  <span className="ml-3 text-[10px] uppercase tracking-widest text-text-muted">
-                    {s.hint}
-                  </span>
-                )}
-              </li>
-            ))
-          )}
-        </motion.ul>
+    <ul
+      ref={listRef}
+      role="listbox"
+      aria-label="Suggestions"
+      style={{ opacity: 1 }}
+      className={`font-body text-sm ${className}`}
+    >
+      {suggestions.length === 0 ? (
+        <li className="px-3 py-2 text-text-muted uppercase tracking-widest text-xs">
+          {emptyHint}
+        </li>
+      ) : (
+        suggestions.map((s) => (
+          <li
+            key={s.id}
+            role="option"
+            aria-selected="false"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              onSelect(s);
+            }}
+            className="px-3 py-2 cursor-pointer flex justify-between items-center hover:bg-white/5 text-text-primary"
+          >
+            <span className="truncate">{s.label}</span>
+            {s.hint && (
+              <span className="ml-3 text-[10px] uppercase tracking-widest text-text-muted">
+                {s.hint}
+              </span>
+            )}
+          </li>
+        ))
       )}
-    </AnimatePresence>
+    </ul>
   );
 }

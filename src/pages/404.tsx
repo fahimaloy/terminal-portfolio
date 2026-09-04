@@ -18,12 +18,27 @@ export default function NotFoundPage() {
   const router = useRouter();
   const [glitchText, setGlitchText] = useState('404');
   const [scrambledMsg, setScrambledMsg] = useState('');
+  const [particles, setParticles] = useState<{ x: number; y: number; dur: number; delay: number; color: string }[]>([]);
   const pageRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<HTMLDivElement>(null);
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
   const targetMsg = "THE PAGE YOU'RE LOOKING FOR ISN'T IN THE LOCAL NETWORK. THE ROUTE MAY HAVE BEEN DECOMMISSIONED OR NEVER EXISTED.";
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+
+  // Generate particle positions after mount to avoid hydration mismatch
+  useEffect(() => {
+    const colors = ['#ffaa00', '#ff00aa', '#00f0ff', '#39ff14'];
+    setParticles(
+      Array.from({ length: 20 }, (_, i) => ({
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        dur: 3 + Math.random() * 4,
+        delay: Math.random() * 3,
+        color: colors[i % 4],
+      })),
+    );
+  }, []);
 
   useEffect(() => {
     if (!pageRef.current || isReducedMotion()) {
@@ -116,16 +131,16 @@ export default function NotFoundPage() {
       <div ref={pageRef} className="min-h-screen flex items-center justify-center px-4 py-10 relative overflow-hidden">
         {/* Floating particles */}
         <div ref={particlesRef} className="absolute inset-0 pointer-events-none">
-          {Array.from({ length: 20 }).map((_, i) => (
+          {particles.map((p, i) => (
             <div
               key={i}
               className="absolute w-1 h-1 rounded-full opacity-40"
               style={{
-                background: ['#ffaa00', '#ff00aa', '#00f0ff', '#39ff14'][i % 4],
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${3 + Math.random() * 4}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 3}s`,
+                background: p.color,
+                left: `${p.x}%`,
+                top: `${p.y}%`,
+                animation: `float ${p.dur}s ease-in-out infinite`,
+                animationDelay: `${p.delay}s`,
               }}
             />
           ))}

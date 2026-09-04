@@ -1,18 +1,13 @@
 // src/components/MessageOverlay.tsx
 /* ═══════════════════════════════════════════════════════════════════════════════
-   MESSAGE OVERLAY — Enhanced with Anime.js v4 animations
-   - Spring entrance for quick suggestion chips
-   - Stagger message entrance
-   - Animated typing dots (pulsing with stagger)
-   - Smooth close animation
-═══════════════════════════════════════════════════════════════════════════════ */
+   MESSAGE OVERLAY — Anime.js v4 animations
+   Spring entrance for quick suggestion chips, animated typing dots.
+══════════════════════════════════════════════════════════════════════════════ */
 
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { FiSend, FiX, FiSliders, FiZap, FiBriefcase, FiCode, FiUser, FiClock, FiMail, FiLayers } from 'react-icons/fi';
+import { FiSend, FiX, FiSliders } from 'react-icons/fi';
 import * as LucideIcons from 'lucide-react';
 import {
-  createTimeline,
   createScope,
   animate,
   stagger,
@@ -30,7 +25,6 @@ import {
   Ripple,
   TypeaheadSuggestions,
   useTypeaheadSuggestions,
-  NeonChip,
 } from './ui';
 import { isReducedMotion } from '../config/animations';
 import { useEnhancedTypeaheadSuggestions } from '../hooks/useEnhancedSuggestions';
@@ -65,16 +59,13 @@ type MessageOverlayProps = {
   useEnhancedSuggestions?: boolean;
 };
 
-// Animated typing dots component
 function TypingDots() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!containerRef.current || isReducedMotion()) return;
-
     const dots = containerRef.current.querySelectorAll('.typing-dot');
     if (!dots.length) return;
-
     animate(dots, {
       scale: [1, 1.4, 1],
       opacity: [0.4, 1, 0.4],
@@ -113,6 +104,8 @@ export default function MessageOverlay({
   const [skillFilter, setSkillFilter] = useState<number[]>([]);
   const [showSkillFilter, setShowSkillFilter] = useState(false);
   const chipsRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
   const enhancedSuggestions = useEnhancedTypeaheadSuggestions(
@@ -136,6 +129,23 @@ export default function MessageOverlay({
 
   const filtered = useTypeaheadSuggestions(inputValue, suggestionPool, 8);
 
+  // Entrance animation for backdrop + panel
+  useEffect(() => {
+    if (!isOpen) return;
+    if (isReducedMotion()) return;
+    if (backdropRef.current) {
+      animate(backdropRef.current, { opacity: [0, 1], duration: 200, ease: 'outExpo' });
+    }
+    if (panelRef.current) {
+      animate(panelRef.current, {
+        y: [60, 0],
+        opacity: [0, 1],
+        duration: 320,
+        ease: 'outExpo',
+      });
+    }
+  }, [isOpen]);
+
   // Stagger entrance for quick suggestion chips
   useEffect(() => {
     if (isReducedMotion() || !chipsRef.current || inputValue.length > 0) return;
@@ -146,7 +156,6 @@ export default function MessageOverlay({
     scope.add(() => {
       const chips = chipsRef.current!.querySelectorAll('.suggestion-chip');
       if (!chips.length) return;
-
       animate(chips, {
         opacity: [0, 1],
         y: [16, 0],
@@ -177,9 +186,7 @@ export default function MessageOverlay({
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
-    return () => {
-      document.body.style.overflow = '';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -210,20 +217,14 @@ export default function MessageOverlay({
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
+      <div
+        ref={backdropRef}
         onClick={onClose}
-        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-md"
+        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-md opacity-0"
       />
-      <motion.div
-        initial={{ y: 60, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 60, opacity: 0 }}
-        transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed left-0 right-0 bottom-0 z-50 flex flex-col"
+      <div
+        ref={panelRef}
+        className="fixed left-0 right-0 bottom-0 z-50 flex flex-col opacity-0"
         style={{ maxHeight: '85vh' }}
       >
         <div
@@ -231,39 +232,20 @@ export default function MessageOverlay({
           style={{ maxHeight: '85vh' }}
         >
           <div className="flex justify-end mb-2">
-            <NeonButton
-              variant="ghost"
-              accent="magenta"
-              onClick={onClose}
-              iconLeft={<FiX />}
-            >
+            <NeonButton variant="ghost" accent="magenta" onClick={onClose} iconLeft={<FiX />}>
               CLOSE
             </NeonButton>
           </div>
 
-          {mode === 'contact' && (
-            <ContactForm onBackToChat={handleBackToChat} />
-          )}
-          {mode === 'meeting' && (
-            <MeetingForm onBackToChat={handleBackToChat} />
-          )}
-          {mode === 'project_match' && (
-            <ProjectMatchForm
-              onBackToChat={handleBackToChat}
-              projects={projects}
-            />
-          )}
+          {mode === 'contact' && <ContactForm onBackToChat={handleBackToChat} />}
+          {mode === 'meeting' && <MeetingForm onBackToChat={handleBackToChat} />}
+          {mode === 'project_match' && <ProjectMatchForm onBackToChat={handleBackToChat} projects={projects} />}
 
           {mode === 'chat' && (
             <Ripple color="rgba(255,170,0,0.4)">
-              <HudPanel
-                accent="yellow"
-                notch="md"
-                className="overflow-hidden hud-glow-yellow"
-              >
+              <HudPanel accent="yellow" notch="md" className="overflow-hidden hud-glow-yellow">
                 <AdvancedFeaturesBar activeMode={mode} onModeChange={setMode} />
 
-                {/* Quick suggestion cards - shown when input is empty */}
                 {inputValue.length === 0 && (
                   <div className="p-3 border-t border-white/5">
                     <div className="text-[9px] font-display tracking-[2px] text-text-muted mb-2">
@@ -292,34 +274,21 @@ export default function MessageOverlay({
                   </div>
                 )}
 
-                {/* Typeahead suggestions */}
-                {suggestions &&
-                  suggestions.length > 0 &&
-                  inputValue.length > 0 && (
-                    <div className="px-4 py-2 border-t border-white/5">
-                      <TypeaheadSuggestions
-                        query={inputValue}
-                        suggestions={filtered}
-                        onSelect={(s) =>
-                          onSuggestionClick?.(
-                            (s.payload as SuggestionShape)?.label ?? s.label,
-                          )
-                        }
-                        open
-                      />
-                    </div>
-                  )}
-
-                {/* Skill filter panel */}
-                {showSkillFilter && skills.length > 0 && (
-                  <SkillFilterPanel
-                    skills={skills}
-                    selectedIds={skillFilter}
-                    onChange={setSkillFilter}
-                  />
+                {suggestions && suggestions.length > 0 && inputValue.length > 0 && (
+                  <div className="px-4 py-2 border-t border-white/5">
+                    <TypeaheadSuggestions
+                      query={inputValue}
+                      suggestions={filtered}
+                      onSelect={(s) => onSuggestionClick?.((s.payload as SuggestionShape)?.label ?? s.label)}
+                      open
+                    />
+                  </div>
                 )}
 
-                {/* Active skill filter chips */}
+                {showSkillFilter && skills.length > 0 && (
+                  <SkillFilterPanel skills={skills} selectedIds={skillFilter} onChange={setSkillFilter} />
+                )}
+
                 {skillFilter.length > 0 && (
                   <div className="px-4 py-2 border-t border-white/5 flex items-center gap-2 flex-wrap">
                     <span className="text-[9px] text-text-muted">FILTERED BY:</span>
@@ -327,15 +296,9 @@ export default function MessageOverlay({
                       const skill = skills.find((s) => s.id === id);
                       if (!skill) return null;
                       return (
-                        <span
-                          key={id}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-neon-cyan/10 border border-neon-cyan/20 rounded-lg text-[10px] text-neon-cyan"
-                        >
+                        <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 bg-neon-cyan/10 border border-neon-cyan/20 rounded-lg text-[10px] text-neon-cyan">
                           {skill.name}
-                          <button
-                            onClick={() => setSkillFilter((prev) => prev.filter((i) => i !== id))}
-                            className="hover:text-red-400"
-                          >
+                          <button onClick={() => setSkillFilter((prev) => prev.filter((i) => i !== id))} className="hover:text-red-400">
                             <FiX size={10} />
                           </button>
                         </span>
@@ -344,22 +307,16 @@ export default function MessageOverlay({
                   </div>
                 )}
 
-                {/* Input area */}
                 <div className="flex items-end p-3 border-t border-white/5">
                   {skills.length > 0 && (
                     <button
                       onClick={() => setShowSkillFilter(!showSkillFilter)}
-                      className={`p-2 rounded-lg mr-2 transition-all ${
-                        showSkillFilter
-                          ? 'bg-neon-cyan/20 text-neon-cyan'
-                          : 'text-text-muted hover:text-white'
-                      }`}
+                      className={`p-2 rounded-lg mr-2 transition-all ${showSkillFilter ? 'bg-neon-cyan/20 text-neon-cyan' : 'text-text-muted hover:text-white'}`}
                       title="Filter by skills"
                     >
                       <FiSliders size={16} />
                     </button>
                   )}
-
                   <textarea
                     ref={inputRef}
                     value={inputValue}
@@ -372,22 +329,13 @@ export default function MessageOverlay({
                     disabled={isLoading}
                   />
                   <div className="flex items-center gap-2 ml-2">
-                    <span className="text-[10px] font-mono text-text-muted">
-                      {inputValue.length}/2000
-                    </span>
-                    <NeonButton
-                      accent="yellow"
-                      iconRight={isLoading ? undefined : <FiSend />}
-                      loading={isLoading}
-                      onClick={handleSend}
-                      disabled={!inputValue.trim()}
-                    >
+                    <span className="text-[10px] font-mono text-text-muted">{inputValue.length}/2000</span>
+                    <NeonButton accent="yellow" iconRight={isLoading ? undefined : <FiSend />} loading={isLoading} onClick={handleSend} disabled={!inputValue.trim()}>
                       SEND
                     </NeonButton>
                   </div>
                 </div>
 
-                {/* Animated typing indicator (shown when loading) */}
                 {isLoading && (
                   <div className="px-4 py-2 border-t border-white/5">
                     <HudPanel accent="cyan" notch="sm" className="inline-flex items-center gap-2">
@@ -400,7 +348,7 @@ export default function MessageOverlay({
             </Ripple>
           )}
         </div>
-      </motion.div>
+      </div>
     </>
   );
 }

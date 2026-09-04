@@ -1,9 +1,11 @@
 // src/components/ui/TypewriterText.tsx
 import React, { useEffect, useRef, useState } from 'react';
+import { animate } from 'animejs';
+import { isReducedMotion } from '../../config/animations';
 
 type Props = {
   text: string;
-  speed?: number; // ms per char
+  speed?: number; // ms per char (used to derive total duration)
   startDelay?: number;
   showCursor?: boolean;
   onDone?: () => void;
@@ -20,48 +22,56 @@ export default function TypewriterText({
 }: Props) {
   const [shown, setShown] = useState('');
   const [done, setDone] = useState(false);
-  const cancelledRef = useRef(false);
   const onDoneRef = useRef(onDone);
   const [cursorOn, setCursorOn] = useState(true);
+  const animRef = useRef<ReturnType<typeof animate> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Keep ref in sync with latest callback without triggering effect re-run
   useEffect(() => {
     onDoneRef.current = onDone;
   });
 
   useEffect(() => {
-    cancelledRef.current = false;
+    // SSR / reduced motion: show full text immediately
+    if (isReducedMotion()) {
+      setShown(text);
+      setDone(true);
+      onDoneRef.current?.();
+      return;
+    }
+
     setDone(false);
     setShown('');
-    let timeout: ReturnType<typeof setTimeout> | undefined;
-    let interval: ReturnType<typeof setInterval> | undefined;
 
-    const start = () => {
-      let i = 0;
-      interval = setInterval(() => {
-        if (cancelledRef.current) {
-          if (interval) clearInterval(interval);
-          return;
-        }
-        i += 1;
-        setShown(text.slice(0, i));
-        if (i >= text.length) {
-          if (interval) clearInterval(interval);
+    const proxy = { val: 0 };
+    const totalDuration = text.length * speed;
+
+    const startAnim = () => {
+      animRef.current = animate(proxy, {
+        val: [0, text.length],
+        duration: totalDuration,
+        ease: 'linear',
+        onUpdate: () => {
+          setShown(text.slice(0, Math.floor(proxy.val)));
+        },
+        onComplete: () => {
+          setShown(text);
           setDone(true);
           onDoneRef.current?.();
-        }
-      }, speed);
+        },
+      });
     };
 
     if (startDelay > 0) {
-      timeout = setTimeout(start, startDelay);
+      timerRef.current = setTimeout(startAnim, startDelay);
     } else {
-      start();
+      startAnim();
     }
+
     return () => {
-      cancelledRef.current = true;
-      if (interval) clearInterval(interval);
-      if (timeout) clearTimeout(timeout);
+      animRef.current?.cancel();
+      animRef.current = null;
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [text, speed, startDelay]);
 

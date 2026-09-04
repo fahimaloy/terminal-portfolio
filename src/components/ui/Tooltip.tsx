@@ -21,13 +21,20 @@ export default function Tooltip({
   const [show, setShow] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const animRef = useRef<ReturnType<typeof animate> | null>(null);
+
+  const cancelAnim = useCallback(() => {
+    animRef.current?.cancel();
+    animRef.current = null;
+  }, []);
 
   const handleEnter = useCallback(() => {
     timeoutRef.current = setTimeout(() => {
       setIsVisible(true);
       setShow(true);
       if (tooltipRef.current && !isReducedMotion()) {
-        animate(tooltipRef.current, {
+        cancelAnim();
+        animRef.current = animate(tooltipRef.current, {
           opacity: [0, 1],
           y: position === 'top' ? [4, 0] : position === 'bottom' ? [-4, 0] : [0, 0],
           x: position === 'left' ? [4, 0] : position === 'right' ? [-4, 0] : [0, 0],
@@ -36,26 +43,28 @@ export default function Tooltip({
         });
       }
     }, delay);
-  }, [delay, position]);
+  }, [delay, position, cancelAnim]);
 
   const handleLeave = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setShow(false);
     if (tooltipRef.current && !isReducedMotion()) {
-      animate(tooltipRef.current, {
+      cancelAnim();
+      animRef.current = animate(tooltipRef.current, {
         opacity: 0,
         duration: 150,
         ease: 'outQuad',
       });
     }
     setTimeout(() => setIsVisible(false), 150);
-  }, []);
+  }, [cancelAnim]);
 
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      cancelAnim();
     };
-  }, []);
+  }, [cancelAnim]);
 
   const positionClasses = {
     top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',

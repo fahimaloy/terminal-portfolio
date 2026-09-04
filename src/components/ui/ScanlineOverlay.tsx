@@ -5,21 +5,32 @@
 ═══════════════════════════════════════════════════════════════════════════════ */
 
 import React, { useEffect, useRef } from 'react';
-import { animate } from 'animejs';
+import { animate, createScope } from 'animejs';
 import { isReducedMotion } from '../../config/animations';
 
 export default function ScanlineOverlay() {
   const scanlineRef = useRef<HTMLDivElement>(null);
+  const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
   useEffect(() => {
     if (!scanlineRef.current || isReducedMotion()) return;
 
-    animate(scanlineRef.current, {
-      translateY: ['-100vh', '100vh'],
-      duration: 6000,
-      loop: true,
-      ease: 'linear',
+    const scope = createScope({ root: scanlineRef.current });
+    scopeRef.current = scope;
+
+    scope.add(() => {
+      animate(scanlineRef.current!, {
+        translateY: ['-100vh', '100vh'],
+        duration: 6000,
+        loop: true,
+        ease: 'linear',
+      });
     });
+
+    return () => {
+      scope.revert();
+      scopeRef.current = null;
+    };
   }, []);
 
   return (

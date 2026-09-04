@@ -1,8 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { motion } from 'framer-motion';
 import { FiAlertTriangle, FiRefreshCw } from 'react-icons/fi';
 import { GlitchText, HudPanel, NeonButton, NeonChip } from './ui';
-import { motionTokens } from './ui/motionConfig';
 
 interface Props {
   children: ReactNode;
@@ -32,7 +30,6 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // eslint-disable-next-line no-console
     console.error('ErrorBoundary caught:', error, errorInfo);
     this.props.onError?.(error, errorInfo);
   }
@@ -49,18 +46,9 @@ export default class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="flex flex-col items-center justify-center p-6">
-          <motion.div
-            animate={
-              this.reducedMotion
-                ? {}
-                : { x: [0, -1, 1, 0] }
-            }
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
+          <div
             className="w-full max-w-md"
+            style={this.reducedMotion ? {} : { animation: 'errorShake 4s linear infinite' }}
           >
             <HudPanel
               accent="red"
@@ -97,7 +85,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                 </NeonButton>
               </div>
             </HudPanel>
-          </motion.div>
+          </div>
         </div>
       );
     }

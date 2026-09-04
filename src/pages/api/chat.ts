@@ -148,6 +148,13 @@ export default async function handler(
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
+  // CSRF: verify Origin or Referer header matches host
+  const origin = req.headers.origin || req.headers.referer || '';
+  const host = req.headers.host || '';
+  if (origin && !origin.includes(host)) {
+    return res.status(403).json({ message: 'Invalid origin.' });
+  }
+
   // Rate limiting: 15 requests per 60 seconds per IP
   const clientIp = getClientIp(req);
   const rateLimit = checkRateLimit(`chat:${clientIp}`, {
