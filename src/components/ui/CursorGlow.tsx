@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef, useCallback } from 'react';
-import { createAnimatable } from 'animejs';
+import React, { useEffect, useRef } from 'react';
+import { createSafeAnimatable } from '../../utils/animatable';
 import { isReducedMotion } from '../../config/animations';
 
 interface CursorGlowProps {
@@ -16,34 +16,76 @@ export default function CursorGlow({
   intensity = 1,
 }: CursorGlowProps) {
   const glowRef = useRef<HTMLDivElement>(null);
-  const animatableRef = useRef<ReturnType<typeof createAnimatable> | null>(null);
-
-  useEffect(() => {
-    if (!glowRef.current || isReducedMotion()) return;
-    animatableRef.current = createAnimatable(glowRef.current, {
-      duration: 400,
-      ease: 'outExpo',
-    });
-    return () => {
-      animatableRef.current?.cancel();
-      animatableRef.current = null;
-    };
-  }, []);
-
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (!animatableRef.current || isReducedMotion()) return;
-      animatableRef.current.x(e.clientX - size / 2);
-      animatableRef.current.y(e.clientY - size / 2);
-    },
-    [size],
-  );
+  const animatableRef = useRef<ReturnType<typeof createSafeAnimatable> | null>(null);
 
   useEffect(() => {
     if (isReducedMotion()) return;
+
+    const glowEl = glowRef.current;
+    if (!glowEl) return;
+
+    // Create animatable with x:0 y:0 so the instance exposes .x() and .y()
+    animatableRef.current = createSafeAnimatable(glowEl, {
+      x: 0,
+      y: 0,
+      duration: 400,
+      ease: 'outExpo',
+    });
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!animatableRef.current || typeof animatableRef.current.x !== 'function') return;
+      animatableRef.current.x(e.clientX - size / 2);
+      animatableRef.current.y(e.clientY - size / 2);
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [handleMouseMove]);
+
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = () => {
+      // Re-evaluate: if reduced motion is now preferred, teardown animatable
+      if (mq.matches) {
+        window.removeEventListener('mousemove', handleMouseMove);
+        animatableRef.current?.revert();
+        animatableRef.current = null;
+      } else {
+        // Recreate if needed
+        if (!animatableRef.current && glowRef.current) {
+          animatableRef.current = createSafeAnimatable(glowRef.current, {
+            x: 0,
+            y: 0,
+            duration: 400,
+            ease: 'outExpo',
+          });
+          window.addEventListener('mousemove', handleMouseMove);
+        }
+      }
+    };
+
+    // Modern browsers
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', handleChange);
+    } else if (typeof mq.addListener === 'function') {
+      mq.addListener(handleChange);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (typeof mq.removeEventListener === 'function') {
+        mq.removeEventListener('change', handleChange);
+      } else if (typeof mq.removeListener === 'function') {
+        mq.removeListener(handleChange);
+      }
+      animatableRef.current?.revert();
+      // Fallback if animejs version exposes cancel but not revert
+      const cancellable = animatableRef.current as unknown as { cancel?: () => void } | null;
+      if (cancellable && typeof cancellable.cancel === 'function') {
+        try {
+          cancellable.cancel();
+        } catch {}
+      }
+      animatableRef.current = null;
+    };
+  }, [size]);
 
   if (isReducedMotion()) return null;
 

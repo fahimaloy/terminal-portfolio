@@ -1,6 +1,6 @@
 import axios from 'axios';
 import config from '../../config.json';
-import { supabase } from './supabase';
+import { supabase, hasSupabaseConfig as hasSupabaseClientConfig } from './supabase';
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const CACHE_PREFIX = 'portfolio_cache:';
@@ -76,18 +76,29 @@ const clearPortfolioCache = (): void => {
   }
 
   try {
-    const keysToDelete: string[] = [];
-    for (let i = 0; i < localStorage.length; i += 1) {
-      const key = localStorage.key(i);
-      if (key?.startsWith(CACHE_PREFIX)) {
-        keysToDelete.push(key);
-      }
-    }
+    const keysToDelete = Array.from(
+      { length: localStorage.length },
+      (_, i) => localStorage.key(i),
+    ).filter((k): k is string => Boolean(k && k.startsWith(CACHE_PREFIX)));
 
     keysToDelete.forEach((key) => localStorage.removeItem(key));
   } catch (error) {
     // Ignore storage availability errors.
   }
+};
+
+const isNetworkError = (err: unknown): boolean => {
+  if (!err) return false;
+  const msg = err instanceof Error ? err.message : String(err);
+  return (
+    err instanceof TypeError ||
+    /Failed to fetch/i.test(msg) ||
+    /fetch failed/i.test(msg) ||
+    /NetworkError/i.test(msg) ||
+    /Load failed/i.test(msg) ||
+    /ECONNREFUSED/i.test(msg) ||
+    /CORS/i.test(msg)
+  );
 };
 
 const getCachedOrFetch = async <T>(
@@ -108,6 +119,12 @@ const getCachedOrFetch = async <T>(
     .then((result) => {
       writeCache(key, result);
       return result;
+    })
+    .catch((err) => {
+      if (isNetworkError(err)) {
+        console.warn(`[getCachedOrFetch] ${key} network error — not caching:`, (err as Error).message || err);
+      }
+      throw err;
     })
     .finally(() => {
       inFlight.delete(key);
@@ -232,10 +249,12 @@ export type ExperienceProject = {
   project_id: number;
 };
 
-const hasSupabaseConfig = () =>
+const hasSupabaseConfig = (): boolean =>
   Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) &&
+      hasSupabaseClientConfig(),
   );
 
 // Mutating actions that should invalidate the public cache
@@ -292,20 +311,34 @@ export const getPortfolioSkills = async (): Promise<PortfolioSkill[]> => {
     return [];
   }
 
-  return getCachedOrFetch('skills', async () => {
-    const { data, error } = await supabase!
-      .from('skills')
-      .select('*')
-      .eq('is_visible', true)
-      .order('sort_order', { ascending: true })
-      .order('id', { ascending: true });
+  try {
+    return await getCachedOrFetch('skills', async () => {
+      try {
+        const { data, error } = await supabase!
+          .from('skills')
+          .select('*')
+          .eq('is_visible', true)
+          .order('sort_order', { ascending: true })
+          .order('id', { ascending: true });
 
-    if (error || !data) {
+        if (error || !data) {
+          return [];
+        }
+
+        return data as PortfolioSkill[];
+      } catch (e) {
+        if (isNetworkError(e)) throw e;
+        console.warn('[getPortfolioSkills] query failed', (e as Error).message || e);
+        return [];
+      }
+    });
+  } catch (e) {
+    if (isNetworkError(e)) {
+      console.warn('[getPortfolioSkills] Supabase unavailable — returning empty:', (e as Error).message || e);
       return [];
     }
-
-    return data as PortfolioSkill[];
-  });
+    throw e;
+  }
 };
 
 export const getKnowledgeBases = async (): Promise<PortfolioKnowledgeBase[]> => {
@@ -313,18 +346,32 @@ export const getKnowledgeBases = async (): Promise<PortfolioKnowledgeBase[]> => 
     return [];
   }
 
-  return getCachedOrFetch('knowledge_bases', async () => {
-    const { data, error } = await supabase!
-      .from('knowledge_bases')
-      .select('*')
-      .order('id', { ascending: true });
+  try {
+    return await getCachedOrFetch('knowledge_bases', async () => {
+      try {
+        const { data, error } = await supabase!
+          .from('knowledge_bases')
+          .select('*')
+          .order('id', { ascending: true });
 
-    if (error || !data) {
+        if (error || !data) {
+          return [];
+        }
+
+        return data as PortfolioKnowledgeBase[];
+      } catch (e) {
+        if (isNetworkError(e)) throw e;
+        console.warn('[getKnowledgeBases] query failed', (e as Error).message || e);
+        return [];
+      }
+    });
+  } catch (e) {
+    if (isNetworkError(e)) {
+      console.warn('[getKnowledgeBases] Supabase unavailable — returning empty:', (e as Error).message || e);
       return [];
     }
-
-    return data as PortfolioKnowledgeBase[];
-  });
+    throw e;
+  }
 };
 
 export const getMeetings = async (): Promise<PortfolioMeeting[]> => {
@@ -332,18 +379,32 @@ export const getMeetings = async (): Promise<PortfolioMeeting[]> => {
     return [];
   }
 
-  return getCachedOrFetch('meetings', async () => {
-    const { data, error } = await supabase!
-      .from('meetings')
-      .select('*')
-      .order('created_at', { ascending: false });
+  try {
+    return await getCachedOrFetch('meetings', async () => {
+      try {
+        const { data, error } = await supabase!
+          .from('meetings')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-    if (error || !data) {
+        if (error || !data) {
+          return [];
+        }
+
+        return data as PortfolioMeeting[];
+      } catch (e) {
+        if (isNetworkError(e)) throw e;
+        console.warn('[getMeetings] query failed', (e as Error).message || e);
+        return [];
+      }
+    });
+  } catch (e) {
+    if (isNetworkError(e)) {
+      console.warn('[getMeetings] Supabase unavailable — returning empty:', (e as Error).message || e);
       return [];
     }
-
-    return data as PortfolioMeeting[];
-  });
+    throw e;
+  }
 };
 
 export const getPortfolioProjects = async (): Promise<PortfolioProject[]> => {
@@ -351,21 +412,35 @@ export const getPortfolioProjects = async (): Promise<PortfolioProject[]> => {
     return [];
   }
 
-  return getCachedOrFetch('projects', async () => {
-    const { data, error } = await supabase!
-      .from('projects')
-      .select('*')
-      .eq('is_visible', true)
-      .order('featured', { ascending: false })
-      .order('sort_order', { ascending: true })
-      .order('id', { ascending: true });
+  try {
+    return await getCachedOrFetch('projects', async () => {
+      try {
+        const { data, error } = await supabase!
+          .from('projects')
+          .select('*')
+          .eq('is_visible', true)
+          .order('featured', { ascending: false })
+          .order('sort_order', { ascending: true })
+          .order('id', { ascending: true });
 
-    if (error || !data) {
+        if (error || !data) {
+          return [];
+        }
+
+        return data as PortfolioProject[];
+      } catch (e) {
+        if (isNetworkError(e)) throw e;
+        console.warn('[getPortfolioProjects] query failed', (e as Error).message || e);
+        return [];
+      }
+    });
+  } catch (e) {
+    if (isNetworkError(e)) {
+      console.warn('[getPortfolioProjects] Supabase unavailable — returning empty:', (e as Error).message || e);
       return [];
     }
-
-    return data as PortfolioProject[];
-  });
+    throw e;
+  }
 };
 
 export const getFeaturedPortfolioProjects = async (): Promise<
@@ -375,22 +450,36 @@ export const getFeaturedPortfolioProjects = async (): Promise<
     return [];
   }
 
-  return getCachedOrFetch('projects:featured', async () => {
-    const { data, error } = await supabase!
-      .from('projects')
-      .select('*')
-      .eq('is_visible', true)
-      .eq('featured', true)
-      .order('featured_order', { ascending: true })
-      .order('sort_order', { ascending: true })
-      .order('id', { ascending: true });
+  try {
+    return await getCachedOrFetch('projects:featured', async () => {
+      try {
+        const { data, error } = await supabase!
+          .from('projects')
+          .select('*')
+          .eq('is_visible', true)
+          .eq('featured', true)
+          .order('featured_order', { ascending: true })
+          .order('sort_order', { ascending: true })
+          .order('id', { ascending: true });
 
-    if (error || !data) {
+        if (error || !data) {
+          return [];
+        }
+
+        return data as PortfolioProject[];
+      } catch (e) {
+        if (isNetworkError(e)) throw e;
+        console.warn('[getFeaturedPortfolioProjects] query failed', (e as Error).message || e);
+        return [];
+      }
+    });
+  } catch (e) {
+    if (isNetworkError(e)) {
+      console.warn('[getFeaturedPortfolioProjects] Supabase unavailable — returning empty:', (e as Error).message || e);
       return [];
     }
-
-    return data as PortfolioProject[];
-  });
+    throw e;
+  }
 };
 
 export const getProjectMedia = async (
@@ -404,21 +493,35 @@ export const getProjectMedia = async (
     .sort((a, b) => a - b)
     .join(',')}`;
 
-  return getCachedOrFetch(key, async () => {
-    const { data, error } = await supabase!
-      .from('project_media')
-      .select('*')
-      .in('project_id', projectIds)
-      .eq('is_visible', true)
-      .order('media_order', { ascending: true })
-      .order('id', { ascending: true });
+  try {
+    return await getCachedOrFetch(key, async () => {
+      try {
+        const { data, error } = await supabase!
+          .from('project_media')
+          .select('*')
+          .in('project_id', projectIds)
+          .eq('is_visible', true)
+          .order('media_order', { ascending: true })
+          .order('id', { ascending: true });
 
-    if (error || !data) {
+        if (error || !data) {
+          return [];
+        }
+
+        return data as PortfolioProjectMedia[];
+      } catch (e) {
+        if (isNetworkError(e)) throw e;
+        console.warn('[getProjectMedia] query failed', (e as Error).message || e);
+        return [];
+      }
+    });
+  } catch (e) {
+    if (isNetworkError(e)) {
+      console.warn('[getProjectMedia] Supabase unavailable — returning empty:', (e as Error).message || e);
       return [];
     }
-
-    return data as PortfolioProjectMedia[];
-  });
+    throw e;
+  }
 };
 
 export const getPortfolioProfile =
@@ -427,20 +530,34 @@ export const getPortfolioProfile =
       return null;
     }
 
-    return getCachedOrFetch('profile:active', async () => {
-      const { data, error } = await supabase!
-        .from('profiles')
-        .select('*')
-        .eq('is_active', true)
-        .limit(1)
-        .maybeSingle();
+    try {
+      return await getCachedOrFetch('profile:active', async () => {
+        try {
+          const { data, error } = await supabase!
+            .from('profiles')
+            .select('*')
+            .eq('is_active', true)
+            .limit(1)
+            .maybeSingle();
 
-      if (error || !data) {
+          if (error || !data) {
+            return null;
+          }
+
+          return data as PortfolioProfile;
+        } catch (e) {
+          if (isNetworkError(e)) throw e;
+          console.warn('[getPortfolioProfile] query failed', (e as Error).message || e);
+          return null;
+        }
+      });
+    } catch (e) {
+      if (isNetworkError(e)) {
+        console.warn('[getPortfolioProfile] Supabase unavailable — returning empty:', (e as Error).message || e);
         return null;
       }
-
-      return data as PortfolioProfile;
-    });
+      throw e;
+    }
   };
 
 export const getSiteTexts = async (): Promise<Record<string, string>> => {
@@ -448,24 +565,38 @@ export const getSiteTexts = async (): Promise<Record<string, string>> => {
     return {};
   }
 
-  return getCachedOrFetch('site_texts', async () => {
-    const { data, error } = await supabase!
-      .from('site_texts')
-      .select('*')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true });
+  try {
+    return await getCachedOrFetch('site_texts', async () => {
+      try {
+        const { data, error } = await supabase!
+          .from('site_texts')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
 
-    if (error || !data) {
+        if (error || !data) {
+          return {};
+        }
+
+        const texts = data as SiteText[];
+        const result: Record<string, string> = {};
+        texts.forEach((t) => {
+          result[t.key] = t.value;
+        });
+        return result;
+      } catch (e) {
+        if (isNetworkError(e)) throw e;
+        console.warn('[getSiteTexts] query failed', (e as Error).message || e);
+        return {};
+      }
+    });
+  } catch (e) {
+    if (isNetworkError(e)) {
+      console.warn('[getSiteTexts] Supabase unavailable — returning empty:', (e as Error).message || e);
       return {};
     }
-
-    const texts = data as SiteText[];
-    const result: Record<string, string> = {};
-    texts.forEach((t) => {
-      result[t.key] = t.value;
-    });
-    return result;
-  });
+    throw e;
+  }
 };
 
 export const getSiteTextByKey = async (key: string): Promise<string | null> => {
@@ -473,20 +604,34 @@ export const getSiteTextByKey = async (key: string): Promise<string | null> => {
     return null;
   }
 
-  return getCachedOrFetch(`site_texts:${key}`, async () => {
-    const { data, error } = await supabase!
-      .from('site_texts')
-      .select('value')
-      .eq('key', key)
-      .eq('is_active', true)
-      .maybeSingle();
+  try {
+    return await getCachedOrFetch(`site_texts:${key}`, async () => {
+      try {
+        const { data, error } = await supabase!
+          .from('site_texts')
+          .select('value')
+          .eq('key', key)
+          .eq('is_active', true)
+          .maybeSingle();
 
-    if (error || !data) {
+        if (error || !data) {
+          return null;
+        }
+
+        return (data as { value: string }).value;
+      } catch (e) {
+        if (isNetworkError(e)) throw e;
+        console.warn('[getSiteTextByKey] query failed', (e as Error).message || e);
+        return null;
+      }
+    });
+  } catch (e) {
+    if (isNetworkError(e)) {
+      console.warn('[getSiteTextByKey] Supabase unavailable — returning empty:', (e as Error).message || e);
       return null;
     }
-
-    return (data as { value: string }).value;
-  });
+    throw e;
+  }
 };
 
 export const upsertPortfolioProfile = async (
@@ -746,15 +891,29 @@ export const uploadProjectAsset = async (
 
 export const getPortfolioExperiences = async (): Promise<PortfolioExperience[]> => {
   if (!hasSupabaseConfig() || !supabase) return [];
-  return getCachedOrFetch('experiences', async () => {
-    const { data, error } = await supabase!
-      .from('experiences')
-      .select('*')
-      .eq('is_visible', true)
-      .order('sort_order', { ascending: true });
-    if (error || !data) return [];
-    return data as PortfolioExperience[];
-  });
+  try {
+    return await getCachedOrFetch('experiences', async () => {
+      try {
+        const { data, error } = await supabase!
+          .from('experiences')
+          .select('*')
+          .eq('is_visible', true)
+          .order('sort_order', { ascending: true });
+        if (error || !data) return [];
+        return data as PortfolioExperience[];
+      } catch (e) {
+        if (isNetworkError(e)) throw e;
+        console.warn('[getPortfolioExperiences] query failed', (e as Error).message || e);
+        return [];
+      }
+    });
+  } catch (e) {
+    if (isNetworkError(e)) {
+      console.warn('[getPortfolioExperiences] Supabase unavailable — returning empty:', (e as Error).message || e);
+      return [];
+    }
+    throw e;
+  }
 };
 
 export const getAllExperiences = async (): Promise<PortfolioExperience[]> => {
