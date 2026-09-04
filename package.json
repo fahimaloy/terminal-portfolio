@@ -42,7 +42,6 @@
     "animejs": "^4.5.0",
     "axios": "^1.20.0",
     "dompurify": "^3.4.11",
-    "framer-motion": "^11.18.2",
     "lowlight": "^3.3.0",
     "lucide-react": "^1.23.0",
     "markdown-to-jsx": "^7.1.7",
