@@ -4,15 +4,16 @@
    Spring entrance for quick suggestion chips, animated typing dots.
 ══════════════════════════════════════════════════════════════════════════════ */
 
-import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react';
 import { FiSend, FiX, FiSliders } from 'react-icons/fi';
 import * as LucideIcons from 'lucide-react';
-import {
-  createScope,
-  animate,
-  stagger,
-  spring,
-} from 'animejs';
+import { createScope, animate, stagger, spring } from 'animejs';
 import AdvancedFeaturesBar, { FeatureMode } from './AdvancedFeaturesBar';
 import ContactForm from './ContactForm';
 import MeetingForm from './MeetingForm';
@@ -36,12 +37,36 @@ type SuggestionShape = {
 };
 
 const QUICK_SUGGESTIONS: SuggestionShape[] = [
-  { label: 'Show me your projects', icon: <LucideIcons.Briefcase size={18} />, match: ['projects', 'work'] },
-  { label: 'What are your skills?', icon: <LucideIcons.Code size={18} />, match: ['skills', 'tech'] },
-  { label: 'Which frameworks do you use?', icon: <LucideIcons.Layers size={18} />, match: ['frameworks', 'tools'] },
-  { label: 'Tell me about yourself', icon: <LucideIcons.User size={18} />, match: ['about', 'bio'] },
-  { label: 'Show your experience', icon: <LucideIcons.Clock size={18} />, match: ['experience', 'work'] },
-  { label: 'How can I contact you?', icon: <LucideIcons.Mail size={18} />, match: ['contact', 'email'] },
+  {
+    label: 'Show me your projects',
+    icon: <LucideIcons.Briefcase size={18} />,
+    match: ['projects', 'work'],
+  },
+  {
+    label: 'What are your skills?',
+    icon: <LucideIcons.Code size={18} />,
+    match: ['skills', 'tech'],
+  },
+  {
+    label: 'Which frameworks do you use?',
+    icon: <LucideIcons.Layers size={18} />,
+    match: ['frameworks', 'tools'],
+  },
+  {
+    label: 'Tell me about yourself',
+    icon: <LucideIcons.User size={18} />,
+    match: ['about', 'bio'],
+  },
+  {
+    label: 'Show your experience',
+    icon: <LucideIcons.Clock size={18} />,
+    match: ['experience', 'work'],
+  },
+  {
+    label: 'How can I contact you?',
+    icon: <LucideIcons.Mail size={18} />,
+    match: ['contact', 'email'],
+  },
 ];
 
 type MessageOverlayProps = {
@@ -134,7 +159,11 @@ export default function MessageOverlay({
     if (!isOpen) return;
     if (isReducedMotion()) return;
     if (backdropRef.current) {
-      animate(backdropRef.current, { opacity: [0, 1], duration: 200, ease: 'outExpo' });
+      animate(backdropRef.current, {
+        opacity: [0, 1],
+        duration: 200,
+        ease: 'outExpo',
+      });
     }
     if (panelRef.current) {
       animate(panelRef.current, {
@@ -186,7 +215,9 @@ export default function MessageOverlay({
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -232,18 +263,36 @@ export default function MessageOverlay({
           style={{ maxHeight: '85vh' }}
         >
           <div className="flex justify-end mb-2">
-            <NeonButton variant="ghost" accent="magenta" onClick={onClose} iconLeft={<FiX />}>
+            <NeonButton
+              variant="ghost"
+              accent="magenta"
+              onClick={onClose}
+              iconLeft={<FiX />}
+            >
               CLOSE
             </NeonButton>
           </div>
 
-          {mode === 'contact' && <ContactForm onBackToChat={handleBackToChat} />}
-          {mode === 'meeting' && <MeetingForm onBackToChat={handleBackToChat} />}
-          {mode === 'project_match' && <ProjectMatchForm onBackToChat={handleBackToChat} projects={projects} />}
+          {mode === 'contact' && (
+            <ContactForm onBackToChat={handleBackToChat} />
+          )}
+          {mode === 'meeting' && (
+            <MeetingForm onBackToChat={handleBackToChat} />
+          )}
+          {mode === 'project_match' && (
+            <ProjectMatchForm
+              onBackToChat={handleBackToChat}
+              projects={projects}
+            />
+          )}
 
           {mode === 'chat' && (
-            <Ripple color="rgba(255,170,0,0.4)">
-              <HudPanel accent="yellow" notch="md" className="overflow-hidden hud-glow-yellow">
+            <Ripple color="var(--glow-yellow-soft)">
+              <HudPanel
+                accent="yellow"
+                notch="md"
+                className="overflow-hidden hud-glow-yellow"
+              >
                 <AdvancedFeaturesBar activeMode={mode} onModeChange={setMode} />
 
                 {inputValue.length === 0 && (
@@ -251,7 +300,10 @@ export default function MessageOverlay({
                     <div className="text-[9px] font-display tracking-[2px] text-text-muted mb-2">
                       {'// QUICK COMMANDS'}
                     </div>
-                    <div ref={chipsRef} className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <div
+                      ref={chipsRef}
+                      className="grid grid-cols-2 md:grid-cols-3 gap-2"
+                    >
                       {QUICK_SUGGESTIONS.map((s, i) => {
                         const accents = ['cyan', 'magenta', 'yellow'] as const;
                         const accent = accents[i % accents.length];
@@ -262,9 +314,15 @@ export default function MessageOverlay({
                             className={`suggestion-chip p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-neon-${accent}/10 hover:border-neon-${accent}/30 transition-colors text-left opacity-0`}
                           >
                             <div className="flex items-center gap-2">
-                              <span className={`text-neon-${accent}`}>{s.icon}</span>
+                              <span className={`text-neon-${accent}`}>
+                                {s.icon}
+                              </span>
                               <span className="text-[10px] font-display tracking-wider text-text-primary leading-tight">
-                                {s.label.split(' ').slice(0, 3).join(' ').toUpperCase()}
+                                {s.label
+                                  .split(' ')
+                                  .slice(0, 3)
+                                  .join(' ')
+                                  .toUpperCase()}
                               </span>
                             </div>
                           </button>
@@ -274,31 +332,53 @@ export default function MessageOverlay({
                   </div>
                 )}
 
-                {suggestions && suggestions.length > 0 && inputValue.length > 0 && (
-                  <div className="px-4 py-2 border-t border-white/5">
-                    <TypeaheadSuggestions
-                      query={inputValue}
-                      suggestions={filtered}
-                      onSelect={(s) => onSuggestionClick?.((s.payload as SuggestionShape)?.label ?? s.label)}
-                      open
-                    />
-                  </div>
-                )}
+                {suggestions &&
+                  suggestions.length > 0 &&
+                  inputValue.length > 0 && (
+                    <div className="px-4 py-2 border-t border-white/5">
+                      <TypeaheadSuggestions
+                        query={inputValue}
+                        suggestions={filtered}
+                        onSelect={(s) =>
+                          onSuggestionClick?.(
+                            (s.payload as SuggestionShape)?.label ?? s.label,
+                          )
+                        }
+                        open
+                      />
+                    </div>
+                  )}
 
                 {showSkillFilter && skills.length > 0 && (
-                  <SkillFilterPanel skills={skills} selectedIds={skillFilter} onChange={setSkillFilter} />
+                  <SkillFilterPanel
+                    skills={skills}
+                    selectedIds={skillFilter}
+                    onChange={setSkillFilter}
+                  />
                 )}
 
                 {skillFilter.length > 0 && (
                   <div className="px-4 py-2 border-t border-white/5 flex items-center gap-2 flex-wrap">
-                    <span className="text-[9px] text-text-muted">FILTERED BY:</span>
+                    <span className="text-[9px] text-text-muted">
+                      FILTERED BY:
+                    </span>
                     {skillFilter.map((id) => {
                       const skill = skills.find((s) => s.id === id);
                       if (!skill) return null;
                       return (
-                        <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 bg-neon-cyan/10 border border-neon-cyan/20 rounded-lg text-[10px] text-neon-cyan">
+                        <span
+                          key={id}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-neon-cyan/10 border border-neon-cyan/20 rounded-lg text-[10px] text-neon-cyan"
+                        >
                           {skill.name}
-                          <button onClick={() => setSkillFilter((prev) => prev.filter((i) => i !== id))} className="hover:text-red-400">
+                          <button
+                            onClick={() =>
+                              setSkillFilter((prev) =>
+                                prev.filter((i) => i !== id),
+                              )
+                            }
+                            className="hover:text-red-400"
+                          >
                             <FiX size={10} />
                           </button>
                         </span>
@@ -311,7 +391,11 @@ export default function MessageOverlay({
                   {skills.length > 0 && (
                     <button
                       onClick={() => setShowSkillFilter(!showSkillFilter)}
-                      className={`p-2 rounded-lg mr-2 transition-all ${showSkillFilter ? 'bg-neon-cyan/20 text-neon-cyan' : 'text-text-muted hover:text-white'}`}
+                      className={`p-2 rounded-lg mr-2 transition-all ${
+                        showSkillFilter
+                          ? 'bg-neon-cyan/20 text-neon-cyan'
+                          : 'text-text-muted hover:text-white'
+                      }`}
                       title="Filter by skills"
                     >
                       <FiSliders size={16} />
@@ -329,8 +413,16 @@ export default function MessageOverlay({
                     disabled={isLoading}
                   />
                   <div className="flex items-center gap-2 ml-2">
-                    <span className="text-[10px] font-mono text-text-muted">{inputValue.length}/2000</span>
-                    <NeonButton accent="yellow" iconRight={isLoading ? undefined : <FiSend />} loading={isLoading} onClick={handleSend} disabled={!inputValue.trim()}>
+                    <span className="text-[10px] font-mono text-text-muted">
+                      {inputValue.length}/2000
+                    </span>
+                    <NeonButton
+                      accent="yellow"
+                      iconRight={isLoading ? undefined : <FiSend />}
+                      loading={isLoading}
+                      onClick={handleSend}
+                      disabled={!inputValue.trim()}
+                    >
                       SEND
                     </NeonButton>
                   </div>
@@ -338,8 +430,14 @@ export default function MessageOverlay({
 
                 {isLoading && (
                   <div className="px-4 py-2 border-t border-white/5">
-                    <HudPanel accent="cyan" notch="sm" className="inline-flex items-center gap-2">
-                      <span className="text-[9px] font-mono text-text-muted mr-2">PROCESSING:</span>
+                    <HudPanel
+                      accent="cyan"
+                      notch="sm"
+                      className="inline-flex items-center gap-2"
+                    >
+                      <span className="text-[9px] font-mono text-text-muted mr-2">
+                        PROCESSING:
+                      </span>
                       <TypingDots />
                     </HudPanel>
                   </div>

@@ -23,7 +23,7 @@ export default function ChatInputBar({
 }: ChatInputBarProps) {
   return (
     <div className="w-full relative z-30 mt-8 mb-4">
-      <Ripple className="clip-notch-md w-full" color="rgba(255,170,0,0.4)">
+      <Ripple className="clip-notch-md w-full" color="var(--glow-yellow-soft)">
         <HudPanel
           accent="yellow"
           notch="md"
@@ -51,7 +51,10 @@ export default function ChatInputBar({
               variant="ghost"
               accent="cyan"
               iconLeft={<FiRotateCcw />}
-              onClick={(e) => { e.stopPropagation(); onReset(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onReset();
+              }}
             >
               CLEAR
             </NeonButton>

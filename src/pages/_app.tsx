@@ -27,7 +27,7 @@ const App = ({ Component, pageProps }: AppProps) => {
           key="viewport"
           maximum-scale="1"
         />
-        <meta name="theme-color" content="#0a0a0a" key="theme-color" />
+        <meta name="theme-color" content="#0a0a0a" key="theme-color" /> {/* token-lint-ignore — browser meta, not style */}
         {noindex && (
           <meta name="robots" content="noindex, nofollow" key="robots" />
         )}

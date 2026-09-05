@@ -25,7 +25,9 @@ export default function BootSequence() {
     scopeRef.current?.revert();
     if (rootRef.current) rootRef.current.style.opacity = '';
     setShow(false);
-    try { window.sessionStorage.setItem(STORAGE_KEY, '1'); } catch {}
+    try {
+      window.sessionStorage.setItem(STORAGE_KEY, '1');
+    } catch {}
   }, [show]);
 
   useEffect(() => {
@@ -39,7 +41,9 @@ export default function BootSequence() {
     if (reduced) {
       const t = setTimeout(() => {
         setShow(false);
-        try { window.sessionStorage.setItem(STORAGE_KEY, '1'); } catch {}
+        try {
+          window.sessionStorage.setItem(STORAGE_KEY, '1');
+        } catch {}
       }, 200);
       return () => clearTimeout(t);
     }
@@ -54,63 +58,85 @@ export default function BootSequence() {
         defaults: { ease: 'outExpo' },
         onComplete: () => {
           setShow(false);
-          try { window.sessionStorage.setItem(STORAGE_KEY, '1'); } catch {}
+          try {
+            window.sessionStorage.setItem(STORAGE_KEY, '1');
+          } catch {}
         },
       });
 
       // 1. Wordmark letters stagger in with spring
       const letters = rootRef.current!.querySelectorAll('.boot-letter');
       if (letters.length) {
-        tl.add(letters, {
-          opacity: [0, 1],
-          y: [30, 0],
-          rotateX: [-40, 0],
-          ...spring({ stiffness: 120, damping: 14 }),
-          delay: (i: number) => i * 60,
-        }, 0);
+        tl.add(
+          letters,
+          {
+            opacity: [0, 1],
+            y: [30, 0],
+            rotateX: [-40, 0],
+            ...spring({ stiffness: 120, damping: 14 }),
+            delay: (i: number) => i * 60,
+          },
+          0,
+        );
       }
 
       // 2. Underline draws in
       const underline = rootRef.current!.querySelector('.boot-underline');
       if (underline) {
-        tl.add(underline, {
-          scaleX: [0, 1],
-          opacity: [0, 0.8],
-          duration: 600,
-          ease: 'outExpo',
-        }, 400);
+        tl.add(
+          underline,
+          {
+            scaleX: [0, 1],
+            opacity: [0, 0.8],
+            duration: 600,
+            ease: 'outExpo',
+          },
+          400,
+        );
       }
 
       // 3. Tagline fades up
       const tagline = rootRef.current!.querySelector('.boot-tagline');
       if (tagline) {
-        tl.add(tagline, {
-          opacity: [0, 1],
-          y: [12, 0],
-          duration: 500,
-        }, 700);
+        tl.add(
+          tagline,
+          {
+            opacity: [0, 1],
+            y: [12, 0],
+            duration: 500,
+          },
+          700,
+        );
       }
 
       // 4. Subtle dot pulse
       const dot = rootRef.current!.querySelector('.boot-dot');
       if (dot) {
-        tl.add(dot, {
-          opacity: [0, 0.6, 0.3],
-          scale: [0.5, 1.2, 1],
-          ...spring({ stiffness: 80, damping: 10 }),
-        }, 900);
+        tl.add(
+          dot,
+          {
+            opacity: [0, 0.6, 0.3],
+            scale: [0.5, 1.2, 1],
+            ...spring({ stiffness: 80, damping: 10 }),
+          },
+          900,
+        );
       }
 
       // 5. Exit fade
-      tl.add({}, {
-        duration: 400,
-        ease: 'inExpo',
-        onUpdate: (self: any) => {
-          if (rootRef.current) {
-            rootRef.current.style.opacity = String(1 - (self.progress ?? 0));
-          }
+      tl.add(
+        {},
+        {
+          duration: 400,
+          ease: 'inExpo',
+          onUpdate: (self: any) => {
+            if (rootRef.current) {
+              rootRef.current.style.opacity = String(1 - (self.progress ?? 0));
+            }
+          },
         },
-      }, TOTAL_MS - 400);
+        TOTAL_MS - 400,
+      );
     });
 
     return () => {
@@ -123,7 +149,11 @@ export default function BootSequence() {
   useEffect(() => {
     if (!show) return;
     const handler = (e: KeyboardEvent | MouseEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
       skip();
     };
     document.addEventListener('keydown', handler);
@@ -152,7 +182,10 @@ export default function BootSequence() {
       <div
         aria-hidden="true"
         className="absolute w-[300px] h-[300px] rounded-full blur-[120px] opacity-[0.07]"
-        style={{ background: 'radial-gradient(circle, var(--neon-cyan), transparent 70%)' }}
+        style={{
+          background:
+            'radial-gradient(circle, var(--neon-cyan), transparent 70%)',
+        }}
       />
 
       {/* Wordmark */}
@@ -161,7 +194,10 @@ export default function BootSequence() {
           <span
             key={i}
             className="boot-letter font-display text-5xl md:text-7xl tracking-[0.15em] text-neon-cyan opacity-0"
-            style={{ textShadow: '0 0 30px var(--neon-cyan), 0 0 60px rgba(0,240,255,0.2)' }}
+            style={{
+              textShadow:
+                '0 0 30px var(--neon-cyan), 0 0 60px var(--glow-cyan-faint)',
+            }}
           >
             {ch}
           </span>
@@ -172,7 +208,8 @@ export default function BootSequence() {
       <div
         className="boot-underline mt-3 h-px w-40 opacity-0"
         style={{
-          background: 'linear-gradient(90deg, transparent, var(--neon-cyan), transparent)',
+          background:
+            'linear-gradient(90deg, transparent, var(--neon-cyan), transparent)',
           transformOrigin: 'center',
         }}
       />

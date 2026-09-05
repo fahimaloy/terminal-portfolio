@@ -6,6 +6,11 @@
 ═══════════════════════════════════════════════════════════════════════════════ */
 
 import { createScope, spring } from 'animejs';
+import {
+  accentConfig as generatedAccentConfig,
+  generatedDurations as _generatedDurations,
+  generatedEasings as _generatedEasings,
+} from './generated/tokens.generated';
 
 // Type aliases for Anime.js options (avoids importing internal types)
 type StaggerOptions = Record<string, unknown>;
@@ -21,47 +26,20 @@ export type AccentColor =
   | 'purple'
   | 'blue';
 
-// ── Duration Tokens (mirrors CSS --dur-* tokens) ────────────────────────────
-export const durations = {
-  tap: 0.12, // 120ms
-  hover: 0.24, // 240ms
-  enter: 0.48, // 480ms
-  exit: 0.32, // 320ms
-  stagger: 0.08, // 80ms between items
-  slide: 0.32, // 320ms
-  pulse: 1.2, // 1200ms
-  typing: 2.0, // 2000ms
-  scramble: 1.5, // 1500ms
-  draw: 1.2, // 1200ms
-  morph: 2.0, // 2000ms
-  transition: 0.3, // 300ms
-  spring: 0.8, // 800ms
-  scroll: 0.6, // 600ms
-  counter: 2.0, // 2000ms
-} as const;
+// ── Duration Tokens — derived from tokens.css via generated file ───────────
+// tokens.css is single source of truth (AGENTS.md: Design-token contract).
+// generatedDurations/generatedEasings are produced by scripts/generate-tokens.mjs.
+import {
+  generatedDurations,
+  generatedEasings,
+} from './generated/tokens.generated';
 
-// ── Easing Presets ───────────────────────────────────────────────────────────
-export const easings = {
-  smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',
-  in: 'cubic-bezier(0.4, 0, 1, 1)',
-  out: 'cubic-bezier(0, 0, 0.2, 1)',
-  inOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  expoIn: 'inExpo',
-  expoOut: 'outExpo',
-  expoInOut: 'inOutExpo',
-  circIn: 'inCirc',
-  circOut: 'outCirc',
-  circInOut: 'inOutCirc',
-  quadIn: 'inQuad',
-  quadOut: 'outQuad',
-  quadInOut: 'inOutQuad',
-  sineIn: 'inSine',
-  sineOut: 'outSine',
-  sineInOut: 'inOutSine',
-  bounceOut: 'outBounce',
-  backOut: 'outBack',
-  elasticOut: 'outElastic',
-} as const;
+// Re-export under legacy names so existing imports keep working; values are
+// validated by `npm run tokens:check` so drift fails CI rather than silently.
+export const durations: Record<string, number> =
+  generatedDurations as unknown as Record<string, number>;
+export const easings: Record<string, string> =
+  generatedEasings as unknown as Record<string, string>;
 
 // ── Spring Presets (Anime.js v4 spring() parameters) ───────────────────────
 export const springs = {
@@ -229,9 +207,9 @@ export const exitAnim = {
  */
 export const pulseGlow = {
   boxShadow: [
-    '0 0 10px rgba(0, 240, 255, 0.3)',
-    '0 0 20px rgba(0, 240, 255, 0.6)',
-    '0 0 10px rgba(0, 240, 255, 0.3)',
+    '0 0 10px var(--glow-cyan-30)',
+    '0 0 20px var(--glow-cyan-60)',
+    '0 0 10px var(--glow-cyan-30)',
   ],
   duration: durations.pulse,
   loop: true,
@@ -295,48 +273,8 @@ export const gridStagger = (
 });
 
 // ── Accent Helpers ───────────────────────────────────────────────────────────
-// Mirrors src/styles/tokens.css (--neon-*, --glow-*). Keep hex values identical
-// to tokens.css; tokens.css remains the single source of truth for color.
-export const accentConfig: Record<
-  AccentColor,
-  { color: string; glow: string; shadow: string }
-> = {
-  yellow: {
-    color: '#ffaa00',
-    glow: 'rgba(255, 170, 0, 0.5)',
-    shadow: '0 0 18px #ffaa00',
-  },
-  magenta: {
-    color: '#ff00aa',
-    glow: 'rgba(255, 0, 170, 0.5)',
-    shadow: '0 0 18px #ff00aa',
-  },
-  cyan: {
-    color: '#00f0ff',
-    glow: 'rgba(0, 240, 255, 0.5)',
-    shadow: '0 0 18px #00f0ff',
-  },
-  green: {
-    color: '#39ff14',
-    glow: 'rgba(57, 255, 20, 0.5)',
-    shadow: '0 0 18px #39ff14',
-  },
-  red: {
-    color: '#ff3355',
-    glow: 'rgba(255, 51, 85, 0.5)',
-    shadow: '0 0 18px #ff3355',
-  },
-  purple: {
-    color: '#8a2be2',
-    glow: 'rgba(138, 43, 226, 0.5)',
-    shadow: '0 0 18px #8a2be2',
-  },
-  blue: {
-    color: '#00aaff',
-    glow: 'rgba(0, 170, 255, 0.5)',
-    shadow: '0 0 18px #00aaff',
-  },
-};
+// Re-export generated tokens — single source of truth is src/styles/tokens.css
+export const accentConfig = generatedAccentConfig;
 
 // ── Media Query Helpers ──────────────────────────────────────────────────────
 export function isReducedMotion(): boolean {

@@ -50,7 +50,7 @@ export default function HudPanel({
     ? { background: 'var(--bg-smoke)' }
     : {
         background:
-          'linear-gradient(135deg, rgba(255,255,255,0.02), rgba(0,0,0,0.4))',
+          'linear-gradient(135deg, var(--overlay-white-02), var(--overlay-black-40))',
       };
   return (
     <div

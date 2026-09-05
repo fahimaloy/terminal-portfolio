@@ -267,8 +267,8 @@ ${colorLines},
 // ---------------------------------------------------------------------------
 
 function toJsKey(cssKey) {
-  // "in-out" → "inOut", "expo-in" → "expoIn" etc.
-  return cssKey.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+  // "in-out" → "inOut", "expo-in" → "expoIn", "cyan-30" → "cyan30" etc.
+  return cssKey.replace(/-([a-z0-9])/g, (_, c) => (/[0-9]/.test(c) ? c : c.toUpperCase()));
 }
 
 function escapeSingle(s) {

@@ -11,12 +11,14 @@ interface CursorGlowProps {
 }
 
 export default function CursorGlow({
-  color = 'rgba(0, 240, 255, 0.15)',
+  color = 'var(--glow-cyan-sm)',
   size = 400,
   intensity = 1,
 }: CursorGlowProps) {
   const glowRef = useRef<HTMLDivElement>(null);
-  const animatableRef = useRef<ReturnType<typeof createSafeAnimatable> | null>(null);
+  const animatableRef = useRef<ReturnType<typeof createSafeAnimatable> | null>(
+    null,
+  );
 
   useEffect(() => {
     if (isReducedMotion()) return;
@@ -33,7 +35,11 @@ export default function CursorGlow({
     });
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!animatableRef.current || typeof animatableRef.current.x !== 'function') return;
+      if (
+        !animatableRef.current ||
+        typeof animatableRef.current.x !== 'function'
+      )
+        return;
       animatableRef.current.x(e.clientX - size / 2);
       animatableRef.current.y(e.clientY - size / 2);
     };
@@ -77,7 +83,9 @@ export default function CursorGlow({
       }
       animatableRef.current?.revert();
       // Fallback if animejs version exposes cancel but not revert
-      const cancellable = animatableRef.current as unknown as { cancel?: () => void } | null;
+      const cancellable = animatableRef.current as unknown as {
+        cancel?: () => void;
+      } | null;
       if (cancellable && typeof cancellable.cancel === 'function') {
         try {
           cancellable.cancel();

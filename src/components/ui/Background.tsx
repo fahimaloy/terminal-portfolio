@@ -14,6 +14,7 @@ import {
   animate,
   onScroll,
   createScope,
+  createTimeline,
   createDrawable,
   morphTo,
   stagger,
@@ -31,10 +32,10 @@ import ParticleField from './ParticleField';
 
 // Background zone colors (subtle hue shifts per section)
 const ZONES = [
-  { start: 0, end: 0.25, color: 'rgba(0, 240, 255, 0.06)' }, // cyan
-  { start: 0.25, end: 0.5, color: 'rgba(255, 0, 170, 0.06)' }, // magenta
-  { start: 0.5, end: 0.75, color: 'rgba(255, 170, 0, 0.06)' }, // yellow
-  { start: 0.75, end: 1, color: 'rgba(57, 255, 20, 0.06)' }, // green
+  { start: 0, end: 0.25, color: 'var(--glow-cyan-zone)' },
+  { start: 0.25, end: 0.5, color: 'var(--glow-magenta-zone)' },
+  { start: 0.5, end: 0.75, color: 'var(--glow-yellow-zone)' },
+  { start: 0.75, end: 1, color: 'var(--glow-green-zone)' },
 ];
 
 // Morphing SVG shape paths (for background decoration)
@@ -61,25 +62,41 @@ export default function Background() {
         bgRef.current!.querySelectorAll<SVGPathElement>('.bg-morph-shape');
       if (shapes.length === 0) return;
 
-      // 1. Boot-time draw-in (animejs.com-style line draw).
-      // Durations come from tokens (--dur-draw via drawPreset/durations); animejs takes ms.
-      const drawables = createDrawable('.bg-morph-shape');
-      animate(drawables, {
-        draw: ['0 0', drawPreset.draw],
-        duration: durations.draw * 1000,
-        ease: drawPreset.ease,
-        delay: stagger(durations.stagger * 1000, { from: 'first' }),
+      // One continuous timeline: boot draw-in → scroll-scrubbed morph.
+      // Animation contract: createTimeline for sequences, onScroll sync for
+      // scroll-driven scrub, stagger for grids — matches BootSequence.ts +
+      // useTimeline.ts + useScrollAnimation.ts conventions.
+      const tl = createTimeline({
+        defaults: { ease: drawPreset.ease },
       });
 
-      // 2. Scroll-synced morph (scrubbed, matching useScrollAnimation sync pattern).
-      // Each visible shape morphs toward its hidden reference target as the page scrolls.
+      const drawables = createDrawable('.bg-morph-shape');
+      tl.add(
+        drawables,
+        {
+          draw: ['0 0', drawPreset.draw],
+          duration: durations.draw * 1000,
+          ease: drawPreset.ease,
+          delay: stagger(durations.stagger * 1000, { from: 'first' }),
+        },
+        0,
+      );
+
+      // Scroll-linked morph stays in the same timeline so boot completion →
+      // scroll scrub is one unified animation lifecycle, not two bolted
+      // animates sharing only a scope. Each morph is scroll-synced independently
+      // so the scrub tracks scroll position per shape.
       shapes.forEach((shape, i) => {
-        animate(shape, {
-          d: morphTo(`#bg-morph-target-${(i + 1) % MORPH_PATHS.length}`),
-          duration: durations.morph * 1000,
-          ease: morphPreset.ease,
-          autoplay: onScroll({ sync: true }),
-        } as any);
+        tl.add(
+          shape,
+          {
+            d: morphTo(`#bg-morph-target-${(i + 1) % MORPH_PATHS.length}`),
+            duration: durations.morph * 1000,
+            ease: morphPreset.ease,
+            autoplay: onScroll({ sync: true }),
+          } as any,
+          0,
+        );
       });
     });
 
@@ -167,7 +184,7 @@ export default function Background() {
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.6) 90%)',
+            'radial-gradient(ellipse at center, transparent 30%, var(--overlay-60) 90%)',
         }}
       />
     </div>

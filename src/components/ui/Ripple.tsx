@@ -10,7 +10,7 @@ type Props = React.HTMLAttributes<HTMLDivElement> & {
 };
 
 export default function Ripple({
-  color = 'rgba(255,255,255,0.4)',
+  color = 'var(--overlay-white-40)',
   duration = 500,
   className = '',
   children,
