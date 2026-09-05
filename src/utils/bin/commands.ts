@@ -77,7 +77,7 @@ const escapeHtml = (value: string): string =>
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/'/g, '&#039;'); // token-lint-ignore — HTML entity, not a color
 
 const normalizeSkillKey = (value: string): string => {
   const cleaned = value

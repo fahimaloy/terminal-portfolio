@@ -35,6 +35,8 @@
   --glow-magenta-sm: rgba(255, 0, 170, 0.15);
   --glow-cyan: rgba(0, 240, 255, 0.5);
   --glow-cyan-sm: rgba(0, 240, 255, 0.15);
+  --glow-cyan-30: rgba(0, 240, 255, 0.3);
+  --glow-cyan-60: rgba(0, 240, 255, 0.6);
   --glow-green: rgba(57, 255, 20, 0.5);
   --glow-green-sm: rgba(57, 255, 20, 0.15);
   --glow-red: rgba(255, 51, 85, 0.5);
@@ -43,6 +45,30 @@
   --glow-purple-sm: rgba(138, 43, 226, 0.15);
   --glow-blue: rgba(0, 170, 255, 0.5);
   --glow-blue-sm: rgba(0, 170, 255, 0.15);
+  --glow-yellow-zone: rgba(255, 170, 0, 0.06);
+  --glow-magenta-zone: rgba(255, 0, 170, 0.06);
+  --glow-cyan-zone: rgba(0, 240, 255, 0.06);
+  --glow-green-zone: rgba(57, 255, 20, 0.06);
+  --glow-yellow-soft: rgba(255, 170, 0, 0.4);
+  --glow-magenta-soft: rgba(255, 0, 170, 0.4);
+  --glow-cyan-soft: rgba(0, 240, 255, 0.4);
+  --glow-green-soft: rgba(57, 255, 20, 0.4);
+  --glow-cyan-faint: rgba(0, 240, 255, 0.2);
+  --glow-cyan-mid: rgba(0, 240, 255, 0.14);
+  --glow-magenta-mid: rgba(255, 0, 170, 0.14);
+  --glow-cyan-grid: rgba(0, 240, 255, 0.07);
+  --overlay-white-015: rgba(255, 255, 255, 0.015);
+  --overlay-white-02: rgba(255, 255, 255, 0.02);
+  --overlay-white-05: rgba(255, 255, 255, 0.05);
+  --overlay-white-40: rgba(255, 255, 255, 0.4);
+  --overlay-white-90: rgba(255, 255, 255, 0.9);
+  --overlay-black-40: rgba(0, 0, 0, 0.4);
+  --overlay-void-50: rgba(10, 10, 10, 0.5);
+  --overlay-void-75: rgba(10, 10, 10, 0.75);
+  --overlay-void-96: rgba(10, 10, 10, 0.96);
+  --overlay-void-97: rgba(10, 10, 10, 0.97);
+  --status-success: #22c55e;
+  --status-error: #ef4444;
 
   /* ── GRADIENTS ────────────────────────────────────────────────────────────── */
   --gradient-cyan-magenta: linear-gradient(
@@ -182,6 +208,14 @@
   --dur-spring: 800ms; /* Spring physics */
   --dur-scroll: 600ms; /* Scroll-triggered */
   --dur-counter: 2000ms; /* Number counter animation */
+  /* Fine-grained steps for Tailwind duration-* classes — keep Tailwind's
+     numeric API usable without falling back to raw ms. Re-exported as
+     tailwind transitionDuration + animation durations below. */
+  --dur-150: 150ms;
+  --dur-200: 200ms;
+  --dur-300: 300ms;
+  --dur-500: 500ms;
+  --dur-700: 700ms;
 
   /* ── MOTION EASINGS ───────────────────────────────────────────────────────── */
   --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
@@ -195,6 +229,11 @@
   --ease-back-in: cubic-bezier(0.36, 0, 0.66, -0.56);
   --ease-back-out: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-back-in-out: cubic-bezier(0.76, 0, 0.25, 1);
+  /* Tailwind-compatible easings (linear + named) — covers Tailwind ease-* */
+  --ease-linear: linear;
+  --ease-in-quad: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+  --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-in-out-quad: cubic-bezier(0.455, 0.03, 0.515, 0.955);
 
   /* Spring presets — passed to animejs spring() */
   --spring-stiff: '{"stiffness":200,"damping":15}';

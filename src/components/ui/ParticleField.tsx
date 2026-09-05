@@ -23,7 +23,13 @@ type Particle = {
   animatable: ReturnType<typeof createSafeAnimatable>;
 };
 
-const COLORS = ['#ffaa00', '#ff00aa', '#00f0ff', '#39ff14', '#8a2be2'];
+const COLORS = [
+  'var(--neon-yellow)',
+  'var(--neon-magenta)',
+  'var(--neon-cyan)',
+  'var(--neon-green)',
+  'var(--neon-purple)',
+];
 const COUNT = 30;
 
 function rand(min: number, max: number) {
@@ -108,7 +114,10 @@ export default function ParticleField() {
 
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length > 0) {
-        cursorRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        cursorRef.current = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY,
+        };
       }
     };
 
@@ -145,15 +154,20 @@ export default function ParticleField() {
         p.vy = damp(p.vy, 0, 0.92, 0.08);
 
         // Wrap around screen
-        if (p.y < -10) { p.y = h + 10; p.x = rand(0, w); }
-        if (p.y > h + 10) { p.y = -10; p.x = rand(0, w); }
+        if (p.y < -10) {
+          p.y = h + 10;
+          p.x = rand(0, w);
+        }
+        if (p.y > h + 10) {
+          p.y = -10;
+          p.x = rand(0, w);
+        }
         if (p.x < -10) p.x = w + 10;
         if (p.x > w + 10) p.x = -10;
 
         // Opacity based on proximity to cursor
-        const proximityOpacity = dist < maxDist
-          ? mapRange(dist, 0, maxDist, 0.9, 0.3)
-          : 0.4;
+        const proximityOpacity =
+          dist < maxDist ? mapRange(dist, 0, maxDist, 0.9, 0.3) : 0.4;
 
         p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
         p.el.style.opacity = String(proximityOpacity);

@@ -41,7 +41,7 @@ export default function ScanlineOverlay() {
         className="pointer-events-none fixed inset-0 z-[1]"
         style={{
           backgroundImage:
-            'linear-gradient(180deg, transparent 50%, rgba(255,255,255,0.015) 50.5%, rgba(255,255,255,0.015) 51%, transparent 51.5%)',
+            'linear-gradient(180deg, transparent 50%, var(--overlay-white-015) 50.5%, var(--overlay-white-015) 51%, transparent 51.5%)',
           backgroundSize: '100% 3px',
         }}
       />
@@ -51,7 +51,8 @@ export default function ScanlineOverlay() {
         aria-hidden="true"
         className="pointer-events-none fixed inset-x-0 z-[1] h-8 opacity-[0.04]"
         style={{
-          background: 'linear-gradient(180deg, transparent, var(--neon-cyan), transparent)',
+          background:
+            'linear-gradient(180deg, transparent, var(--neon-cyan), transparent)',
           top: '-32px',
         }}
       />

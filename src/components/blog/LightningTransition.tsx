@@ -95,12 +95,12 @@ export default function LightningTransition({
         className="lt-sheet absolute inset-0 origin-top opacity-0"
         style={{
           background:
-            'linear-gradient(180deg, rgba(0,240,255,0.14), rgba(10,10,10,0.96) 45%, rgba(255,0,170,0.14))',
+            'linear-gradient(180deg, var(--glow-cyan-mid), var(--overlay-void-96) 45%, var(--glow-magenta-mid))',
         }}
       />
       <div
         className="lt-flash absolute inset-0 opacity-0"
-        style={{ background: 'rgba(255,255,255,0.9)' }}
+        style={{ background: 'var(--overlay-white-90)' }}
       />
       <svg
         className="absolute inset-0 w-full h-full"
@@ -112,7 +112,11 @@ export default function LightningTransition({
             key={i}
             className="lt-bolt"
             d={d}
-            fill={['#00f0ff', '#ffaa00', '#ff00aa'][i % 3]}
+            fill={
+              ['var(--neon-cyan)', 'var(--neon-yellow)', 'var(--neon-magenta)'][
+                i % 3
+              ]
+            }
             opacity="0"
             style={{ filter: 'drop-shadow(0 0 6px currentColor)' }}
           />

@@ -144,7 +144,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             className="absolute inset-0"
             style={{
               background:
-                'linear-gradient(180deg, rgba(10,10,10,0.75) 0%, rgba(10,10,10,0.5) 45%, rgba(10,10,10,0.97) 100%)',
+                'linear-gradient(180deg, var(--overlay-void-75) 0%, var(--overlay-void-50) 45%, var(--overlay-void-97) 100%)',
             }}
           />
 

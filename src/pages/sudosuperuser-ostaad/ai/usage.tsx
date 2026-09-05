@@ -213,14 +213,14 @@ const AiUsagePage = () => {
                       label="Successful"
                       value={overview.successfulRequests.toLocaleString()}
                       icon="✅"
-                      color="#22c55e"
+                      color="var(--status-success)"
                       sub={`${overview.successRate}% success rate`}
                     />
                     <StatCard
                       label="Failed"
                       value={overview.failedRequests.toLocaleString()}
                       icon="❌"
-                      color="#ef4444"
+                      color="var(--status-error)"
                     />
                     <StatCard
                       label="Total Tokens"
