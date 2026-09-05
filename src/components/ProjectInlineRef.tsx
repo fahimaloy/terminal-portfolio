@@ -1,5 +1,6 @@
 // src/components/ProjectInlineRef.tsx
 import React from 'react';
+import Image from 'next/image';
 import { PortfolioProject } from '../utils/api';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
@@ -46,10 +47,11 @@ export default function ProjectInlineRef({ project, onOpen, isOpen }: Props) {
       title={`Click to view ${project.title} details`}
     >
       {project.thumbnail_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={project.thumbnail_url}
           alt=""
+          width={14}
+          height={14}
           className="w-3.5 h-3.5 rounded-full object-cover"
         />
       ) : (

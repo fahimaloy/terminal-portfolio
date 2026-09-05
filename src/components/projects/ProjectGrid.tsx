@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import React from 'react';
+import Image from 'next/image';
 import { PortfolioProject } from '../../utils/api';
 import { HudPanel, NeonChip, StatBar, Tilt3D } from '../ui';
 import { getProjectMetric } from '../../types/project';
@@ -77,12 +78,13 @@ export default function ProjectGrid({
                       )}`}
                       className="overflow-hidden transition-all duration-200 hover:scale-[1.02]"
                     >
-                      <div className="relative aspect-video">
+                      <div className="relative aspect-video overflow-hidden">
                         {project.thumbnail_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <Image
                             src={project.thumbnail_url}
                             alt={`${project.title} thumbnail`}
+                            width={400}
+                            height={225}
                             className="w-full h-full object-cover transition-all"
                             style={{
                               filter: 'saturate(1.2) contrast(1.1)',

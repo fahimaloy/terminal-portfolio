@@ -1,5 +1,6 @@
 // src/components/InlineProjectCard.tsx
 import React from 'react';
+import Image from 'next/image';
 import { PortfolioProject, PortfolioSkill } from '../utils/api';
 
 const GRADIENTS = [
@@ -16,7 +17,11 @@ type InlineProjectCardProps = {
   onClick?: () => void;
 };
 
-export default function InlineProjectCard({ project, skills, onClick }: InlineProjectCardProps) {
+export default function InlineProjectCard({
+  project,
+  skills,
+  onClick,
+}: InlineProjectCardProps) {
   const gradient = GRADIENTS[project.id % GRADIENTS.length];
   const projectSkills = skills.filter((s) => project.tags?.includes(s.name));
 
@@ -26,9 +31,11 @@ export default function InlineProjectCard({ project, skills, onClick }: InlinePr
       className={`bg-gradient-to-br ${gradient} border border-white/10 rounded-xl p-3 cursor-pointer hover:border-neon-cyan/30 transition-all inline-block max-w-xs`}
     >
       {project.thumbnail_url && (
-        <img
+        <Image
           src={project.thumbnail_url}
           alt={project.title}
+          width={300}
+          height={96}
           className="w-full h-24 object-cover rounded-lg mb-2"
         />
       )}
@@ -36,7 +43,9 @@ export default function InlineProjectCard({ project, skills, onClick }: InlinePr
         {project.title}
       </div>
       {project.short_title && (
-        <div className="text-[10px] text-text-muted mt-0.5">{project.short_title}</div>
+        <div className="text-[10px] text-text-muted mt-0.5">
+          {project.short_title}
+        </div>
       )}
       {projectSkills.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2">

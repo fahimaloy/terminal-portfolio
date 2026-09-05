@@ -8,10 +8,15 @@ module.exports = {
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'supabase-200880.appspot.com',
-      },
+      { protocol: 'https', hostname: 'supabase-200880.appspot.com' },
+      { protocol: 'https', hostname: '*.supabase.co' },
+      { protocol: 'https', hostname: '*.supabase.in' },
+    ],
+    // Fallback allowlist for Next 12 image loader (remotePatterns is 13+).
+    // Keep both so unoptimized:false works whichever loader checks.
+    domains: [
+      'supabase-200880.appspot.com',
+      'ztuoepusomprvmbzwdkg.supabase.co',
     ],
   },
   compress: true,
@@ -35,8 +40,14 @@ module.exports = {
     return [
       { source: '/rest/v1/:path*', destination: `${origin}/rest/v1/:path*` },
       { source: '/auth/v1/:path*', destination: `${origin}/auth/v1/:path*` },
-      { source: '/storage/v1/:path*', destination: `${origin}/storage/v1/:path*` },
-      { source: '/realtime/v1/:path*', destination: `${origin}/realtime/v1/:path*` },
+      {
+        source: '/storage/v1/:path*',
+        destination: `${origin}/storage/v1/:path*`,
+      },
+      {
+        source: '/realtime/v1/:path*',
+        destination: `${origin}/realtime/v1/:path*`,
+      },
     ];
   },
   // Fallback CORS headers for same-origin API routes; real CORS is handled by Kong.
@@ -46,10 +57,14 @@ module.exports = {
         source: '/api/:path*',
         headers: [
           { key: 'Access-Control-Allow-Credentials', value: 'true' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,PATCH,DELETE,OPTIONS' },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+          },
           {
             key: 'Access-Control-Allow-Headers',
-            value: 'apikey, authorization, content-type, prefer, accept, x-client-info, x-upsert',
+            value:
+              'apikey, authorization, content-type, prefer, accept, x-client-info, x-upsert',
           },
         ],
       },

@@ -8,8 +8,8 @@
 import { createScope, spring } from 'animejs';
 import {
   accentConfig as generatedAccentConfig,
-  generatedDurations as _generatedDurations,
-  generatedEasings as _generatedEasings,
+  generatedDurations,
+  generatedEasings,
 } from './generated/tokens.generated';
 
 // Type aliases for Anime.js options (avoids importing internal types)
@@ -29,11 +29,6 @@ export type AccentColor =
 // ── Duration Tokens — derived from tokens.css via generated file ───────────
 // tokens.css is single source of truth (AGENTS.md: Design-token contract).
 // generatedDurations/generatedEasings are produced by scripts/generate-tokens.mjs.
-import {
-  generatedDurations,
-  generatedEasings,
-} from './generated/tokens.generated';
-
 // Re-export under legacy names so existing imports keep working; values are
 // validated by `npm run tokens:check` so drift fails CI rather than silently.
 export const durations: Record<string, number> =
@@ -48,6 +43,7 @@ export const springs = {
   bouncy: { stiffness: 120, damping: 6 }, // bouncy
   gentle: { stiffness: 80, damping: 12 }, // gentle
   hard: { stiffness: 300, damping: 20 }, // hard stop
+  card: { stiffness: 150, damping: 14 }, // HUD card — canonical InlineProjectCard → Detail spring
 } as const;
 
 // ── Default Options ──────────────────────────────────────────────────────────

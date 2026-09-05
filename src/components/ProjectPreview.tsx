@@ -1,5 +1,6 @@
 // src/components/ProjectPreview.tsx
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   PortfolioProject,
   PortfolioProjectMedia,
@@ -138,14 +139,14 @@ export default function ProjectPreview({
                         c.accent.replace('neon-', '')
                   }`}
                 >
-                  <div className="w-full h-16 overflow-hidden bg-black/30 mb-2">
+                  <div className="w-full h-16 overflow-hidden bg-black/30 mb-2 relative">
                     {project.thumbnail_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={project.thumbnail_url}
                         alt={project.title}
+                        width={150}
+                        height={64}
                         className="w-full h-full object-cover"
-                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -198,12 +199,12 @@ export default function ProjectPreview({
                   />
                 )
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={activeMedia[selectedMediaIndex].url}
                   alt={activeProject.title}
+                  width={800}
+                  height={450}
                   className="w-full h-full object-cover"
-                  loading="lazy"
                 />
               )}
             </>
@@ -211,12 +212,12 @@ export default function ProjectPreview({
           {!mediaLoading && activeMedia.length === 0 && (
             <>
               {activeProject.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={activeProject.image_url}
                   alt={activeProject.title}
+                  width={800}
+                  height={450}
                   className="w-full h-full object-cover"
-                  loading="lazy"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-text-muted">
@@ -277,22 +278,23 @@ export default function ProjectPreview({
                 {m.media_type === 'video' ? (
                   <div className="relative w-full h-full bg-bg-ash flex items-center justify-center">
                     {m.thumbnail_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={m.thumbnail_url}
                         alt=""
+                        width={80}
+                        height={56}
                         className="w-full h-full object-cover"
                       />
                     ) : null}
                     <FiVideo className="w-4 h-4 absolute text-text-primary" />
                   </div>
                 ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={m.url}
                     alt=""
+                    width={80}
+                    height={56}
                     className="w-full h-full object-cover"
-                    loading="lazy"
                   />
                 )}
               </button>
