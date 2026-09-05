@@ -1,28 +1,25 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { createScope, animate, stagger } from 'animejs';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SEOMeta from '../../components/SEOMeta';
-import BlogCard from '../../components/blog/BlogCard';
 import BlogSearch from '../../components/blog/BlogSearch';
-import { GlitchText, NeonButton, HudPanel } from '../../components/ui';
+import BlogReels from '../../components/blog/BlogReels';
+import { GlitchText, HudPanel, NeonButton } from '../../components/ui';
 import { getBlogPosts } from '../../utils/blogApi';
 import type { BlogListItem } from '../../types/blog';
-import { isReducedMotion } from '../../config/animations';
 
-const PAGE_SIZE = 9;
+const REELS_PAGE_SIZE = 5;
 
 export default function BlogIndexPage() {
   const [items, setItems] = useState<BlogListItem[]>([]);
   const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [tag, setTag] = useState('');
   const [sort, setSort] = useState<'recent' | 'popular'>('recent');
   const [loading, setLoading] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const gridRef = useRef<HTMLDivElement>(null);
-  const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
-
-  // Reset to page 1 whenever filters change.
+  // Filters reset pagination + replace buffer — preserves existing invariant.
   useEffect(() => {
     setPage(1);
   }, [search, tag, sort]);
@@ -30,43 +27,30 @@ export default function BlogIndexPage() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-
-    getBlogPosts({ page, pageSize: PAGE_SIZE, search, tag, sort }).then(
+    getBlogPosts({ page, pageSize: REELS_PAGE_SIZE, search, tag, sort }).then(
       (res) => {
         if (cancelled) return;
-        setItems(res.items);
         setTotal(res.total);
+        setHasMore(res.hasMore);
+        if (page === 1) setItems(res.items);
+        else {
+          setItems((prev) => {
+            const seen = new Set(prev.map((p) => p.id));
+            return [...prev, ...res.items.filter((p) => !seen.has(p.id))];
+          });
+        }
         setLoading(false);
       },
     );
-
     return () => {
       cancelled = true;
     };
   }, [page, search, tag, sort]);
 
-  // Stagger the grid in whenever results change.
-  useEffect(() => {
-    if (loading || !gridRef.current || isReducedMotion()) return;
-
-    const scope = createScope({ root: gridRef.current });
-    scopeRef.current = scope;
-
-    scope.add(() => {
-      const cards = gridRef.current!.querySelectorAll('.blog-grid-item');
-      if (!cards.length) return;
-      animate(cards, {
-        opacity: [0, 1],
-        y: [24, 0],
-        scale: [0.94, 1],
-        duration: 460,
-        ease: 'outExpo',
-        delay: stagger(70, { from: 'first' }),
-      });
-    });
-
-    return () => scope.revert();
-  }, [items, loading]);
+  const onLoadMore = useCallback(() => {
+    if (!hasMore || loading) return;
+    setPage((p) => p + 1);
+  }, [hasMore, loading]);
 
   const tags = useMemo(() => {
     const set = new Set<string>();
@@ -74,7 +58,8 @@ export default function BlogIndexPage() {
     return Array.from(set).sort();
   }, [items]);
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const isEmpty = !loading && items.length === 0;
+  const showReels = !isEmpty && (items.length > 0 || loading);
 
   return (
     <>
@@ -84,9 +69,8 @@ export default function BlogIndexPage() {
         path="/blog"
       />
 
-      <main className="min-h-screen relative z-10 px-4 pt-24 pb-20 max-w-6xl mx-auto">
-        {/* Header */}
-        <header className="text-center mb-10">
+      <main className="min-h-screen relative z-10 px-4 pt-24 pb-10 max-w-6xl mx-auto">
+        <header className="text-center mb-6">
           <div className="text-[10px] font-display tracking-[6px] text-neon-cyan text-shadow-neon-cyan mb-2">
             {'// TRANSMISSION_LOG'}
           </div>
@@ -98,31 +82,54 @@ export default function BlogIndexPage() {
           </p>
         </header>
 
-        {/* Controls */}
-        <div className="mb-8">
-          <BlogSearch
-            value={search}
-            onChange={setSearch}
-            tags={tags}
-            activeTag={tag}
-            onTagChange={setTag}
-            sort={sort}
-            onSortChange={setSort}
-            resultCount={total}
-          />
+        {/* Filter drawer affordance — keeps search/tag/sort without a second route */}
+        <div className="flex justify-end mb-4">
+          <NeonButton
+            accent="cyan"
+            variant={drawerOpen ? 'outline' : 'ghost'}
+            onClick={() => setDrawerOpen((v) => !v)}
+          >
+            {drawerOpen
+              ? 'CLOSE FILTERS'
+              : `FILTER${tag || search ? ' • ACTIVE' : ''}`}
+          </NeonButton>
         </div>
 
-        {/* Grid */}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
+        {drawerOpen && (
+          <div className="mb-6">
+            <HudPanel accent="cyan" notch="md" className="p-4">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-3">
+                {'// FILTER_DRAWER'}
+              </div>
+              <BlogSearch
+                value={search}
+                onChange={setSearch}
+                tags={tags}
+                activeTag={tag}
+                onTagChange={setTag}
+                sort={sort}
+                onSortChange={setSort}
+                resultCount={total}
+              />
+              <p className="font-mono text-[10px] text-text-muted mt-3">
+                Filters apply in-place to the reels buffer (page resets to 1).
+                No secondary list route.
+              </p>
+            </HudPanel>
+          </div>
+        )}
+
+        {/* Loading skeleton — initial buffer only */}
+        {loading && items.length === 0 ? (
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="aspect-[4/3] bg-white/[0.03] border border-white/5 clip-notch-md animate-pulse-glow"
+                className="h-[56dvh] bg-white/[0.03] border border-white/5 clip-notch-md animate-pulse-glow"
               />
             ))}
           </div>
-        ) : items.length === 0 ? (
+        ) : isEmpty ? (
           <HudPanel accent="magenta" notch="md" className="p-8 text-center">
             <div className="font-display text-sm text-neon-magenta tracking-[3px]">
               NO TRANSMISSIONS FOUND
@@ -130,47 +137,39 @@ export default function BlogIndexPage() {
             <p className="font-mono text-[11px] text-text-muted mt-2">
               {'>'} Adjust your search parameters and retry.
             </p>
-          </HudPanel>
-        ) : (
-          <div
-            ref={gridRef}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {items.map((post, i) => (
-              <div key={post.id} className="blog-grid-item opacity-0">
-                <BlogCard post={post} index={i} />
+            {search || tag ? (
+              <div className="mt-4 flex justify-center gap-2">
+                <NeonButton
+                  accent="cyan"
+                  variant="outline"
+                  onClick={() => {
+                    setSearch('');
+                    setTag('');
+                  }}
+                >
+                  CLEAR FILTERS
+                </NeonButton>
               </div>
-            ))}
-          </div>
-        )}
+            ) : null}
+          </HudPanel>
+        ) : showReels ? (
+          <BlogReels
+            items={items}
+            total={total}
+            hasMore={hasMore}
+            loading={loading}
+            onLoadMore={onLoadMore}
+            activeTag={tag}
+          />
+        ) : null}
 
-        {/* Pagination */}
-        {!loading && totalPages > 1 && (
-          <nav
-            className="flex items-center justify-center gap-4 mt-10"
-            aria-label="Pagination"
-          >
-            <NeonButton
-              accent="cyan"
-              variant="outline"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              PREV
-            </NeonButton>
-            <span className="font-mono text-[10px] text-text-muted">
-              {String(page).padStart(2, '0')} /{' '}
-              {String(totalPages).padStart(2, '0')}
-            </span>
-            <NeonButton
-              accent="cyan"
-              variant="outline"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              NEXT
-            </NeonButton>
-          </nav>
+        {/* Deep-link hint — reels overlay uses in-place expand; /blog/[slug] preserved for SEO/share */}
+        {!isEmpty && !loading && (
+          <p className="font-mono text-[10px] text-text-muted text-center mt-6">
+            Tip: each card exposes a Permalink to{' '}
+            <span className="text-neon-cyan">/blog/[slug]</span> for sharing —
+            reels view does not swap routes per swipe.
+          </p>
         )}
       </main>
     </>
