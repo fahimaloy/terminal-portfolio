@@ -47,8 +47,23 @@ interface RichTextEditorProps {
 }
 
 const LANGS = [
-  'javascript', 'typescript', 'python', 'go', 'rust', 'java', 'c', 'cpp',
-  'css', 'html', 'sql', 'bash', 'json', 'yaml', 'markdown', 'jsx', 'tsx',
+  'javascript',
+  'typescript',
+  'python',
+  'go',
+  'rust',
+  'java',
+  'c',
+  'cpp',
+  'css',
+  'html',
+  'sql',
+  'bash',
+  'json',
+  'yaml',
+  'markdown',
+  'jsx',
+  'tsx',
 ];
 
 function MenuButton({
@@ -83,10 +98,10 @@ function MenuButton({
       type="button"
       onClick={handleClick}
       disabled={disabled}
-      className={`p-1.5 rounded-lg transition-all duration-150 ${
+      className={`p-1.5 clip-notch-sm transition-all duration-150 focus-visible:outline-none focus-visible:border focus-visible:border-neon-cyan focus-visible:shadow-[0_0_12px_var(--glow-cyan-sm)] ${
         active
-          ? 'bg-purple-500/30 text-purple-300'
-          : 'text-gray-400 hover:text-white hover:bg-white/10'
+          ? 'bg-neon-purple/25 text-neon-purple border border-neon-purple/30'
+          : 'text-text-muted hover:text-text-primary hover:bg-white/[0.04] border border-transparent'
       } ${disabled ? 'opacity-30 cursor-not-allowed' : ''}`}
       title={title}
     >
@@ -124,7 +139,11 @@ const MenuBar = ({
   };
 
   const addTable = () => {
-    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+    editor
+      .chain()
+      .focus()
+      .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+      .run();
   };
 
   const setCodeLang = (lang: string) => {
@@ -147,33 +166,115 @@ const MenuBar = ({
       }
     | { divider: true }
   > = [
-    { icon: <Bold size={14} />, action: () => editor.chain().focus().toggleBold().run(), active: editor.isActive('bold'), title: 'Bold' },
-    { icon: <Italic size={14} />, action: () => editor.chain().focus().toggleItalic().run(), active: editor.isActive('italic'), title: 'Italic' },
-    { icon: <UnderlineIcon size={14} />, action: () => editor.chain().focus().toggleUnderline().run(), active: editor.isActive('underline'), title: 'Underline' },
-    { icon: <Strikethrough size={14} />, action: () => editor.chain().focus().toggleStrike().run(), active: editor.isActive('strike'), title: 'Strikethrough' },
-    { icon: <Code size={14} />, action: () => editor.chain().focus().toggleCode().run(), active: editor.isActive('code'), title: 'Inline Code' },
+    {
+      icon: <Bold size={14} />,
+      action: () => editor.chain().focus().toggleBold().run(),
+      active: editor.isActive('bold'),
+      title: 'Bold',
+    },
+    {
+      icon: <Italic size={14} />,
+      action: () => editor.chain().focus().toggleItalic().run(),
+      active: editor.isActive('italic'),
+      title: 'Italic',
+    },
+    {
+      icon: <UnderlineIcon size={14} />,
+      action: () => editor.chain().focus().toggleUnderline().run(),
+      active: editor.isActive('underline'),
+      title: 'Underline',
+    },
+    {
+      icon: <Strikethrough size={14} />,
+      action: () => editor.chain().focus().toggleStrike().run(),
+      active: editor.isActive('strike'),
+      title: 'Strikethrough',
+    },
+    {
+      icon: <Code size={14} />,
+      action: () => editor.chain().focus().toggleCode().run(),
+      active: editor.isActive('code'),
+      title: 'Inline Code',
+    },
     { divider: true },
-    { icon: <List size={14} />, action: () => editor.chain().focus().toggleBulletList().run(), active: editor.isActive('bulletList'), title: 'Bullet List' },
-    { icon: <ListOrdered size={14} />, action: () => editor.chain().focus().toggleOrderedList().run(), active: editor.isActive('orderedList'), title: 'Ordered List' },
+    {
+      icon: <List size={14} />,
+      action: () => editor.chain().focus().toggleBulletList().run(),
+      active: editor.isActive('bulletList'),
+      title: 'Bullet List',
+    },
+    {
+      icon: <ListOrdered size={14} />,
+      action: () => editor.chain().focus().toggleOrderedList().run(),
+      active: editor.isActive('orderedList'),
+      title: 'Ordered List',
+    },
     { divider: true },
-    { icon: <AlignLeft size={14} />, action: () => editor.chain().focus().setTextAlign('left').run(), active: editor.isActive({ textAlign: 'left' }), title: 'Align Left' },
-    { icon: <AlignCenter size={14} />, action: () => editor.chain().focus().setTextAlign('center').run(), active: editor.isActive({ textAlign: 'center' }), title: 'Align Center' },
-    { icon: <AlignRight size={14} />, action: () => editor.chain().focus().setTextAlign('right').run(), active: editor.isActive({ textAlign: 'right' }), title: 'Align Right' },
+    {
+      icon: <AlignLeft size={14} />,
+      action: () => editor.chain().focus().setTextAlign('left').run(),
+      active: editor.isActive({ textAlign: 'left' }),
+      title: 'Align Left',
+    },
+    {
+      icon: <AlignCenter size={14} />,
+      action: () => editor.chain().focus().setTextAlign('center').run(),
+      active: editor.isActive({ textAlign: 'center' }),
+      title: 'Align Center',
+    },
+    {
+      icon: <AlignRight size={14} />,
+      action: () => editor.chain().focus().setTextAlign('right').run(),
+      active: editor.isActive({ textAlign: 'right' }),
+      title: 'Align Right',
+    },
     { divider: true },
-    { icon: <LinkIcon size={14} />, action: addLink, active: editor.isActive('link'), title: 'Add Link' },
-    { icon: <ImageIcon size={14} />, action: addImage, active: false, title: 'Add Image' },
-    { icon: <TableIcon size={14} />, action: addTable, active: editor.isActive('table'), title: 'Add Table' },
+    {
+      icon: <LinkIcon size={14} />,
+      action: addLink,
+      active: editor.isActive('link'),
+      title: 'Add Link',
+    },
+    {
+      icon: <ImageIcon size={14} />,
+      action: addImage,
+      active: false,
+      title: 'Add Image',
+    },
+    {
+      icon: <TableIcon size={14} />,
+      action: addTable,
+      active: editor.isActive('table'),
+      title: 'Add Table',
+    },
     { divider: true },
-    { icon: <RemoveFormatting size={14} />, action: () => editor.chain().focus().clearNodes().unsetAllMarks().run(), active: false, title: 'Clear Formatting' },
-    { icon: <Undo size={14} />, action: () => editor.chain().focus().undo().run(), active: false, disabled: !editor.can().undo(), title: 'Undo' },
-    { icon: <Redo size={14} />, action: () => editor.chain().focus().redo().run(), active: false, disabled: !editor.can().redo(), title: 'Redo' },
+    {
+      icon: <RemoveFormatting size={14} />,
+      action: () => editor.chain().focus().clearNodes().unsetAllMarks().run(),
+      active: false,
+      title: 'Clear Formatting',
+    },
+    {
+      icon: <Undo size={14} />,
+      action: () => editor.chain().focus().undo().run(),
+      active: false,
+      disabled: !editor.can().undo(),
+      title: 'Undo',
+    },
+    {
+      icon: <Redo size={14} />,
+      action: () => editor.chain().focus().redo().run(),
+      active: false,
+      disabled: !editor.can().redo(),
+      title: 'Redo',
+    },
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-700 bg-white/5 rounded-t-xl relative">
+    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-white/10 bg-white/[0.03] relative">
       {buttons.map((btn, i) => {
         if ('divider' in btn) {
-          return <div key={i} className="w-px h-6 bg-gray-700 mx-1" />;
+          return <div key={i} className="w-px h-6 bg-white/10 mx-1" />;
         }
         return (
           <MenuButton
@@ -192,27 +293,29 @@ const MenuBar = ({
         <button
           type="button"
           onClick={() => setLangPickerOpen(!langPickerOpen)}
-          className={`p-1.5 rounded-lg transition-all flex items-center gap-1 text-xs ${
+          className={`p-1.5 clip-notch-sm transition-all flex items-center gap-1 text-xs focus-visible:outline-none focus-visible:border focus-visible:border-neon-cyan ${
             editor.isActive('codeBlock')
-              ? 'bg-purple-500/30 text-purple-300'
-              : 'text-gray-400 hover:text-white hover:bg-white/10'
+              ? 'bg-neon-purple/25 text-neon-purple border border-neon-purple/30'
+              : 'text-text-muted hover:text-text-primary hover:bg-white/[0.04] border border-transparent'
           }`}
           title="Code Block Language"
         >
           <Hash size={14} />
-          <span className="text-[10px] uppercase">{editor.isActive('codeBlock') ? activeLang : 'code'}</span>
+          <span className="text-[10px] uppercase">
+            {editor.isActive('codeBlock') ? activeLang : 'code'}
+          </span>
         </button>
         {langPickerOpen && (
-          <div className="absolute top-full left-0 mt-1 z-50 bg-bg-smoke border border-gray-700 rounded-lg p-2 max-h-48 overflow-y-auto min-w-[140px] shadow-xl">
+          <div className="absolute top-full left-0 mt-1 z-50 bg-bg-smoke border border-white/10 clip-notch-sm p-2 max-h-48 overflow-y-auto min-w-[140px] shadow-xl">
             {LANGS.map((lang) => (
               <button
                 key={lang}
                 type="button"
                 onClick={() => setCodeLang(lang)}
-                className={`block w-full text-left px-2 py-1 text-xs rounded transition-colors ${
+                className={`block w-full text-left px-2 py-1 text-xs clip-notch-sm transition-colors focus-visible:outline-none focus-visible:border-neon-cyan ${
                   activeLang === lang
-                    ? 'bg-purple-500/20 text-purple-300'
-                    : 'text-gray-300 hover:bg-white/10'
+                    ? 'bg-neon-purple/15 text-neon-purple'
+                    : 'text-text-secondary hover:bg-white/[0.04]'
                 }`}
               >
                 {lang}
@@ -226,7 +329,7 @@ const MenuBar = ({
       <button
         type="button"
         onClick={onToggleFullscreen}
-        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all ml-auto"
+        className="p-1.5 clip-notch-sm text-text-muted hover:text-text-primary hover:bg-white/[0.04] transition-all ml-auto focus-visible:outline-none focus-visible:border focus-visible:border-neon-cyan"
         title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
       >
         {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
@@ -235,7 +338,11 @@ const MenuBar = ({
   );
 };
 
-export default function RichTextEditor({ content, onChange, placeholder }: RichTextEditorProps) {
+export default function RichTextEditor({
+  content,
+  onChange,
+  placeholder,
+}: RichTextEditorProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
@@ -314,9 +421,9 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
     <>
       <div
         ref={containerRef}
-        className={`border border-gray-700 rounded-xl overflow-hidden bg-white/5 ${
+        className={`border border-white/10 clip-notch-sm overflow-hidden bg-white/[0.03] ${
           isFullscreen
-            ? 'fixed inset-4 z-50 flex flex-col shadow-2xl shadow-purple-500/20'
+            ? 'fixed inset-4 z-50 flex flex-col shadow-2xl shadow-[0_0_24px_var(--glow-purple-sm)]'
             : ''
         }`}
       >
@@ -329,14 +436,14 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
         </div>
         <EditorContent
           editor={editor}
-          className={`prose prose-invert max-w-none p-3 focus:outline-none [&_.ProseMirror]:outline-none ${
+          className={`prose prose-invert max-w-none p-3 focus:outline-none focus-visible:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:focus-visible:outline-none ${
             isFullscreen ? 'flex-1 min-h-0' : 'min-h-[150px]'
-          } [&_.ProseMirror]:min-h-[130px] [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-gray-500 [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)]`}
+          } [&_.ProseMirror]:min-h-[130px] [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-text-muted [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)]`}
           data-placeholder={placeholder || 'Write your description...'}
         />
 
         {/* Footer: word count */}
-        <div className="flex items-center justify-between px-3 py-2 border-t border-gray-700 bg-white/5 text-xs text-gray-400">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-white/10 bg-white/[0.03] text-xs text-text-muted">
           <div className="flex gap-4">
             <span>
               <AnimatedCounter value={wordCount} /> words
@@ -344,7 +451,9 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
             <span>{charCount} chars</span>
           </div>
           {isFullscreen && (
-            <span className="text-[10px] text-gray-500">ESC to exit fullscreen</span>
+            <span className="text-[10px] text-text-muted">
+              ESC to exit fullscreen
+            </span>
           )}
         </div>
       </div>

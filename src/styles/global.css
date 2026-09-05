@@ -350,9 +350,34 @@
   /* HUD Panel base */
   .hud-panel {
     @apply relative bg-bg-panel border text-text-primary font-body;
-    border-color: rgba(0, 240, 255, 0.2);
+    border-color: var(--glow-cyan-faint);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* ── FORM PREMIUM INPUT — actual CSS for .form-premium-input ─────────────── */
+  .form-premium-input {
+    @apply bg-bg-smoke border border-white/10 text-text-primary placeholder:text-text-muted;
+    clip-path: polygon(
+      var(--clip-notch-sm) 0,
+      100% 0,
+      100% calc(100% - var(--clip-notch-sm)),
+      calc(100% - var(--clip-notch-sm)) 100%,
+      0 100%,
+      0 var(--clip-notch-sm)
+    );
+    transition: border-color var(--dur-transition) var(--ease-out),
+      box-shadow var(--dur-transition) var(--ease-out);
+  }
+  .form-premium-input:focus {
+    outline: none;
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 12px var(--glow-cyan-sm);
+  }
+  .form-premium-input:focus-visible {
+    outline: none;
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 14px var(--glow-cyan), 0 0 0 2px var(--glow-cyan-sm);
   }
 
   /* Neon Button base */
