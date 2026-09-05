@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { FiArrowLeft, FiExternalLink, FiGithub } from 'react-icons/fi';
 import {
   PortfolioProject,
@@ -123,10 +124,11 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
             </div>
           )}
           {currentMedia && currentMedia.media_type === 'image' && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={currentMedia.url}
               alt={`${project.title} media ${currentMediaIndex + 1}`}
+              width={800}
+              height={450}
               className="w-full h-full object-cover"
             />
           )}
@@ -241,10 +243,11 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                 }`}
               >
                 {m.media_type === 'image' ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={m.thumbnail_url || m.url}
                     alt=""
+                    width={96}
+                    height={64}
                     className="w-full h-full object-cover"
                   />
                 ) : (

@@ -1,5 +1,6 @@
 // src/components/ProjectTableView.tsx
 import React, { useState, useMemo } from 'react';
+import Image from 'next/image';
 import { PortfolioProject, PortfolioSkill } from '../utils/api';
 import RichTextRenderer from './RichTextRenderer';
 import { ArrowLeft, ExternalLink, Code } from 'lucide-react';
@@ -56,7 +57,11 @@ export default function ProjectTableView({
   return (
     <div className="flex flex-col md:flex-row gap-4">
       {/* Project list */}
-      <div className={`w-full md:w-1/3 space-y-2 ${isMobileDetail ? 'hidden md:block' : ''}`}>
+      <div
+        className={`w-full md:w-1/3 space-y-2 ${
+          isMobileDetail ? 'hidden md:block' : ''
+        }`}
+      >
         {filteredProjects.map((project, idx) => (
           <button
             key={project.id}
@@ -90,12 +95,23 @@ export default function ProjectTableView({
   );
 }
 
-function ProjectDetail({ project, skills }: { project: PortfolioProject; skills: PortfolioSkill[] }) {
+function ProjectDetail({
+  project,
+  skills,
+}: {
+  project: PortfolioProject;
+  skills: PortfolioSkill[];
+}) {
   const [mainMediaIndex, setMainMediaIndex] = useState(0);
 
   const allMedia = useMemo(() => {
-    const items: { type: 'image' | 'video'; url: string; thumbnail?: string }[] = [];
-    if (project.thumbnail_url) items.push({ type: 'image', url: project.thumbnail_url });
+    const items: {
+      type: 'image' | 'video';
+      url: string;
+      thumbnail?: string;
+    }[] = [];
+    if (project.thumbnail_url)
+      items.push({ type: 'image', url: project.thumbnail_url });
     if (project.image_url && project.image_url !== project.thumbnail_url) {
       items.push({ type: 'image', url: project.image_url });
     }
@@ -112,10 +128,12 @@ function ProjectDetail({ project, skills }: { project: PortfolioProject; skills:
     <div className="space-y-4">
       {/* Main media preview */}
       {mainMedia && (
-        <div className="w-full aspect-video rounded-xl overflow-hidden bg-black/40">
-          <img
+        <div className="w-full aspect-video rounded-xl overflow-hidden bg-black/40 relative">
+          <Image
             src={mainMedia.url}
             alt={project.title}
+            width={480}
+            height={270}
             className="w-full h-full object-contain"
           />
         </div>
@@ -129,10 +147,18 @@ function ProjectDetail({ project, skills }: { project: PortfolioProject; skills:
               key={idx}
               onClick={() => setMainMediaIndex(idx)}
               className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                idx === mainMediaIndex ? 'border-neon-cyan' : 'border-transparent opacity-60'
+                idx === mainMediaIndex
+                  ? 'border-neon-cyan'
+                  : 'border-transparent opacity-60'
               }`}
             >
-              <img src={media.thumbnail || media.url} alt="" className="w-full h-full object-cover" />
+              <Image
+                src={media.thumbnail || media.url}
+                alt=""
+                width={64}
+                height={64}
+                className="w-full h-full object-cover"
+              />
             </button>
           ))}
         </div>
@@ -148,16 +174,28 @@ function ProjectDetail({ project, skills }: { project: PortfolioProject; skills:
         {project.client_name && (
           <div className="flex items-center gap-3 mt-2 p-2 bg-white/5 rounded-xl">
             {project.client_logo ? (
-              <img src={project.client_logo} alt="" className="w-8 h-8 rounded-full object-cover" />
+              <Image
+                src={project.client_logo}
+                alt={project.client_name || ''}
+                width={32}
+                height={32}
+                className="w-8 h-8 rounded-full object-cover"
+              />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white">
-                {project.client_name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center text-xs font-bold text-white">
+                {project.client_name
+                  .split(' ')
+                  .map((w) => w[0])
+                  .join('')
+                  .slice(0, 2)}
               </div>
             )}
             <div>
               <div className="text-sm text-white">{project.client_name}</div>
               {project.client_location && (
-                <div className="text-[10px] text-text-muted">{project.client_location}</div>
+                <div className="text-[10px] text-text-muted">
+                  {project.client_location}
+                </div>
               )}
             </div>
           </div>

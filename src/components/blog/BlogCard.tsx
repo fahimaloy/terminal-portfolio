@@ -3,6 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Clock, Eye, Star } from 'lucide-react';
 import type { BlogListItem } from '../../types/blog';
 import { HudPanel, NeonChip, Tilt3D } from '../ui';
@@ -44,11 +45,11 @@ export default function BlogCard({ post, index = 0 }: Props) {
             {/* Cover */}
             <div className="relative aspect-video overflow-hidden bg-black/40">
               {post.cover_image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={post.cover_image_url}
                   alt={post.cover_image_alt || post.title}
-                  loading="lazy"
+                  width={400}
+                  height={225}
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                 />
               ) : (

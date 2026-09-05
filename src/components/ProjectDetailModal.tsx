@@ -11,7 +11,7 @@ import { PortfolioProject, PortfolioSkill } from '../utils/api';
 import ProjectTableView from './ProjectTableView';
 import { X } from 'lucide-react';
 import { animate, createScope, spring } from 'animejs';
-import { isReducedMotion } from '../config/animations';
+import { isReducedMotion, springs } from '../config/animations';
 
 type ProjectDetailModalProps = {
   isOpen: boolean;
@@ -50,7 +50,7 @@ export default function ProjectDetailModal({
         opacity: [0, 1],
         scale: [0.9, 1],
         y: [30, 0],
-        ...spring({ stiffness: 150, damping: 16 }),
+        ...spring(springs.card),
       });
 
       setIsVisible(true);
