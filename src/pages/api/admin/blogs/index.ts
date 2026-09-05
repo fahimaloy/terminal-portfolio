@@ -61,9 +61,10 @@ export default async function handler(
 
         if (clashError) throw clashError;
         if (clash) {
-          res
-            .status(409)
-            .json({ ok: false, message: 'A post with this slug already exists' });
+          res.status(409).json({
+            ok: false,
+            message: 'A post with this slug already exists',
+          });
           return;
         }
 
@@ -73,6 +74,7 @@ export default async function handler(
           slug,
           title: body.title.trim(),
           excerpt: body.excerpt?.trim() || excerptFromHtml(body.content_html),
+          teaser: body.teaser?.trim() || null,
           content_html: body.content_html,
           cover_image_url: body.cover_image_url ?? null,
           cover_image_alt: body.cover_image_alt ?? null,
@@ -87,7 +89,8 @@ export default async function handler(
             ? body.seo_keywords
             : null,
           canonical_url: body.canonical_url ?? null,
-          published_at: status === 'published' ? new Date().toISOString() : null,
+          published_at:
+            status === 'published' ? new Date().toISOString() : null,
         };
 
         const { data, error } = await supabaseAdmin

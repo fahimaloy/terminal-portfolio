@@ -3,7 +3,7 @@ import { supabaseAdmin } from '../../../utils/supabaseAdmin';
 import type { BlogListItem } from '../../../types/blog';
 
 const LIST_COLUMNS =
-  'id, slug, title, excerpt, cover_image_url, cover_image_alt, status, featured, tags, reading_minutes, view_count, seo_title, seo_description, seo_keywords, canonical_url, published_at, created_at, updated_at';
+  'id, slug, title, excerpt, teaser, cover_image_url, cover_image_alt, status, featured, tags, reading_minutes, view_count, seo_title, seo_description, seo_keywords, canonical_url, published_at, created_at, updated_at';
 
 const MAX_PAGE_SIZE = 50;
 
@@ -73,7 +73,7 @@ export default async function handler(
     if (search) {
       const safe = search.replace(/[%,()]/g, ' ');
       query = query.or(
-        `title.ilike.%${safe}%,excerpt.ilike.%${safe}%`,
+        `title.ilike.%${safe}%,excerpt.ilike.%${safe}%,teaser.ilike.%${safe}%`,
       );
     }
 

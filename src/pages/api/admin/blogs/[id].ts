@@ -88,9 +88,10 @@ export default async function handler(
 
         if (clashError) throw clashError;
         if (clash) {
-          res
-            .status(409)
-            .json({ ok: false, message: 'Another post already uses this slug' });
+          res.status(409).json({
+            ok: false,
+            message: 'Another post already uses this slug',
+          });
           return;
         }
 
@@ -109,6 +110,7 @@ export default async function handler(
           slug,
           title: body.title.trim(),
           excerpt: body.excerpt?.trim() || excerptFromHtml(body.content_html),
+          teaser: body.teaser?.trim() || null,
           content_html: body.content_html,
           cover_image_url: body.cover_image_url ?? null,
           cover_image_alt: body.cover_image_alt ?? null,

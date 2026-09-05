@@ -36,6 +36,7 @@ export default function BlogForm({
   const [slug, setSlug] = useState(initial?.slug ?? '');
   const [slugLocked, setSlugLocked] = useState(Boolean(initial?.slug));
   const [excerpt, setExcerpt] = useState(initial?.excerpt ?? '');
+  const [teaser, setTeaser] = useState(initial?.teaser ?? '');
   const [contentHtml, setContentHtml] = useState(initial?.content_html ?? '');
   const [coverUrl, setCoverUrl] = useState(initial?.cover_image_url ?? '');
   const [coverAlt, setCoverAlt] = useState(initial?.cover_image_alt ?? '');
@@ -84,6 +85,7 @@ export default function BlogForm({
       title: title.trim(),
       slug: slug.trim(),
       excerpt: excerpt.trim() || null,
+      teaser: teaser.trim() || null,
       content_html: contentHtml,
       cover_image_url: coverUrl.trim() || null,
       cover_image_alt: coverAlt.trim() || null,
@@ -155,6 +157,18 @@ export default function BlogForm({
           onChange={(e) => setExcerpt(e.target.value)}
           maxLength={400}
           showCount
+          disabled={submitting}
+        />
+
+        <TextArea
+          id="blog-teaser"
+          label="Teaser"
+          rows={2}
+          value={teaser}
+          onChange={(e) => setTeaser(e.target.value)}
+          maxLength={160}
+          showCount
+          hint="Short reels card line (falls back to excerpt if empty)"
           disabled={submitting}
         />
 

@@ -86,9 +86,9 @@ export default function BlogCard({ post, index = 0 }: Props) {
                 {post.title}
               </h3>
 
-              {post.excerpt && (
+              {(post.teaser ?? post.excerpt) && (
                 <p className="text-[11px] font-body text-text-secondary line-clamp-3">
-                  {post.excerpt}
+                  {post.teaser ?? post.excerpt}
                 </p>
               )}
 

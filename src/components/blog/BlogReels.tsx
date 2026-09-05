@@ -299,9 +299,9 @@ export default function BlogReels({
                   </div>
 
                   <div className="p-4 space-y-3 overflow-y-auto">
-                    {post.excerpt ? (
+                    {post.teaser ?? post.excerpt ? (
                       <p className="text-sm text-text-secondary line-clamp-3">
-                        {post.excerpt}
+                        {post.teaser ?? post.excerpt}
                       </p>
                     ) : null}
                     {post.tags?.length ? (
@@ -416,9 +416,9 @@ function ReelsCardInner({
         <Eye size={10} /> {post.view_count ?? 0}
       </div>
       <div className="font-display text-lg text-text-primary">{post.title}</div>
-      {post.excerpt ? (
+      {post.teaser ?? post.excerpt ? (
         <p className="text-sm text-text-secondary line-clamp-3">
-          {post.excerpt}
+          {post.teaser ?? post.excerpt}
         </p>
       ) : null}
       <div className="flex gap-2">
