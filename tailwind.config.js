@@ -1,4 +1,7 @@
-// tailwind.config.js
+// tailwind.config.js — colors are generated from src/styles/tokens.css (single source of truth).
+// See scripts/generate-tokens.mjs → tailwind.tokens.generated.js
+const generated = require('./tailwind.tokens.generated.js');
+
 module.exports = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx}',
@@ -7,40 +10,7 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
-      colors: {
-        'bg-void': '#0a0a0a',
-        'bg-smoke': '#1a1a1a',
-        'bg-ash': '#2a2a2a',
-        'bg-charcoal': '#353535',
-        'bg-panel': 'rgba(26, 26, 26, 0.95)',
-        'neon-yellow': '#ffaa00',
-        'neon-magenta': '#ff00aa',
-        'neon-cyan': '#00f0ff',
-        'neon-green': '#39ff14',
-        'neon-red': '#ff3355',
-        'neon-purple': '#8a2be2',
-        'neon-blue': '#00aaff',
-        'text-primary': '#ffffff',
-        'text-secondary': '#b8b8c0',
-        'text-muted': '#8a8a92',
-        'text-muted-light': '#a0a0a8',
-        'glow-yellow': 'rgba(255, 170, 0, 0.5)',
-        'glow-yellow-sm': 'rgba(255, 170, 0, 0.15)',
-        'glow-magenta': 'rgba(255, 0, 170, 0.5)',
-        'glow-magenta-sm': 'rgba(255, 0, 170, 0.15)',
-        'glow-cyan': 'rgba(0, 240, 255, 0.5)',
-        'glow-cyan-sm': 'rgba(0, 240, 255, 0.15)',
-        'glow-green': 'rgba(57, 255, 20, 0.5)',
-        'glow-green-sm': 'rgba(57, 255, 20, 0.15)',
-        'glow-red': 'rgba(255, 51, 85, 0.5)',
-        'glow-red-sm': 'rgba(255, 51, 85, 0.15)',
-        'glow-purple': 'rgba(138, 43, 226, 0.5)',
-        'glow-purple-sm': 'rgba(138, 43, 226, 0.15)',
-        'glow-blue': 'rgba(0, 170, 255, 0.5)',
-        'glow-blue-sm': 'rgba(0, 170, 255, 0.15)',
-        'glass-bg': 'rgba(26, 26, 26, 0.7)',
-        'glass-border': 'rgba(255, 255, 255, 0.08)',
-      },
+      colors: generated.colors,
       fontFamily: {
         display: ['Audiowide', 'Orbitron', 'sans-serif'],
         body: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
