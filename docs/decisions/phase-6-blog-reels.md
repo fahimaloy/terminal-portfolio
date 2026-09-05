@@ -73,3 +73,15 @@ Full fallback: **static stacked cards with normal scroll** instead of `scroll-sn
 - Future (if desired): `chore(supabase): add blog_posts teaser column migration` — separate human-reviewed migration file; not bundled with reels.
 
 — Recorded before any Phase 6 patch per AGENTS.md Data-layer contract & Phase 0 guardrail.
+
+## 10. Numbering note — Phase 2 label gap on `newui`
+
+`git log newui ^main` shows `bcceb44 (Phase 1) → 26af3c2 (Phase 3)` with no
+commit labelled Phase 2. This is a label gap only, not missing work:
+the original `c4ca123 docs(plan): cyberpunk gaming UI redesign, 31 tasks
+across 4 phases` plan already used Phase 2 for "Public surface" (later
+landed across the large `3ab29…`/`7d4c67…`/`91fbfa…`/`b4ff60…` refactor
+stack before `bcceb44`), while the post-`bcceb44` sequence re-numbered
+fresh from Phase 1. No docs rewrite or history rewrite is warranted for
+this cosmetic numbering gap; the `newui` head (`0d6e246`) is 6 commits
+ahead with Phases 1, 3–6 represented.
