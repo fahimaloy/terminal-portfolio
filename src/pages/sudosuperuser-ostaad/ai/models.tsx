@@ -540,7 +540,7 @@ const AiModelsPage = () => {
                   </span>
                 </HudPanel>
 
-                <div className="max-h-64 overflow-y-auto border border-white/5 rounded-xl p-3 bg-black/30">
+                <div className="max-h-64 overflow-y-auto border border-white/5 clip-notch-sm p-3 bg-black/30">
                   {fetchedModels.length === 0 ? (
                     <p className="text-text-muted text-sm font-body">
                       No models found from this provider.

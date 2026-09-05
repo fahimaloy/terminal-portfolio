@@ -44,7 +44,10 @@ export default function SearchableMultiSelect({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -68,21 +71,24 @@ export default function SearchableMultiSelect({
     <div ref={containerRef} className="relative">
       {/* Selected chips display */}
       <div
-        className="form-premium-input w-full rounded-xl p-2 flex items-center gap-1 flex-wrap cursor-pointer min-h-[44px]"
+        className="form-premium-input w-full p-2 flex items-center gap-1 flex-wrap cursor-pointer min-h-[44px]"
         onClick={() => !disabled && setIsOpen(!isOpen)}
       >
         {selectedOptions.length > 0 ? (
           selectedOptions.slice(0, maxDisplay).map((opt) => (
             <span
               key={opt.id}
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-neon-purple/20 border border-neon-purple/30 rounded-lg text-xs text-neon-purple/80"
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-neon-purple/20 border border-neon-purple/30 clip-notch-sm text-xs text-neon-purple/80"
             >
               {opt.icon}
               {opt.label}
               {!disabled && (
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); remove(opt.id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    remove(opt.id);
+                  }}
                   className="ml-0.5 hover:text-red-400"
                 >
                   <X size={12} />
@@ -91,29 +97,35 @@ export default function SearchableMultiSelect({
             </span>
           ))
         ) : (
-          <span className="text-sm text-gray-500">{placeholder}</span>
+          <span className="text-sm text-text-muted">{placeholder}</span>
         )}
         {selectedOptions.length > maxDisplay && (
-          <span className="text-xs text-gray-400">+{selectedOptions.length - maxDisplay}</span>
+          <span className="text-xs text-text-muted">
+            +{selectedOptions.length - maxDisplay}
+          </span>
         )}
         <div className="ml-auto">
-          {isOpen ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+          {isOpen ? (
+            <ChevronUp size={16} className="text-text-muted" />
+          ) : (
+            <ChevronDown size={16} className="text-text-muted" />
+          )}
         </div>
       </div>
 
       {/* Dropdown */}
       {isOpen && !disabled && (
-        <div className="absolute z-50 mt-1 w-full bg-bg-ash border border-gray-700 rounded-xl shadow-xl max-h-60 overflow-hidden">
+        <div className="absolute z-50 mt-1 w-full bg-bg-ash border border-white/10 clip-notch-sm shadow-xl max-h-60 overflow-hidden">
           {/* Search input */}
-          <div className="p-2 border-b border-gray-700">
-            <div className="flex items-center gap-2 px-2 bg-white/5 rounded-lg">
-              <Search size={14} className="text-gray-400" />
+          <div className="p-2 border-b border-white/10">
+            <div className="flex items-center gap-2 px-2 bg-white/[0.03] clip-notch-sm">
+              <Search size={14} className="text-text-muted" />
               <input
                 type="text"
                 placeholder={placeholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 bg-transparent text-sm text-white py-1.5 focus:outline-none placeholder-gray-500"
+                className="flex-1 bg-transparent text-sm text-text-primary py-1.5 focus:outline-none focus-visible:outline-none placeholder:text-text-muted"
                 autoFocus
               />
             </div>
@@ -126,7 +138,7 @@ export default function SearchableMultiSelect({
                 key={opt.id}
                 type="button"
                 onClick={() => toggle(opt.id)}
-                className={`w-full px-3 py-2 flex items-center gap-2 text-left text-sm hover:bg-white/5 transition-colors ${
+                className={`w-full px-3 py-2 flex items-center gap-2 text-left text-sm hover:bg-white/[0.03] transition-colors focus-visible:outline-none focus-visible:bg-white/[0.05] ${
                   selectedIds.includes(opt.id) ? 'bg-neon-purple/10' : ''
                 }`}
               >
@@ -134,22 +146,34 @@ export default function SearchableMultiSelect({
                   className={`w-4 h-4 rounded border flex items-center justify-center ${
                     selectedIds.includes(opt.id)
                       ? 'bg-neon-purple border-neon-purple'
-                      : 'border-gray-600'
+                      : 'border-white/20'
                   }`}
                 >
                   {selectedIds.includes(opt.id) && (
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                      <path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="M2 5L4 7L8 3"
+                        stroke="white"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   )}
                 </div>
                 {opt.icon}
-                <span className="text-white">{opt.label}</span>
-                {opt.sublabel && <span className="text-gray-500 text-xs ml-auto">{opt.sublabel}</span>}
+                <span className="text-text-primary">{opt.label}</span>
+                {opt.sublabel && (
+                  <span className="text-text-muted text-xs ml-auto">
+                    {opt.sublabel}
+                  </span>
+                )}
               </button>
             ))}
             {filtered.length === 0 && (
-              <div className="text-center text-gray-500 text-sm py-4">No options found</div>
+              <div className="text-center text-text-muted text-sm py-4">
+                No options found
+              </div>
             )}
           </div>
         </div>
