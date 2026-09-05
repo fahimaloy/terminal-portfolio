@@ -14,6 +14,8 @@ export interface BlogPost {
   slug: string;
   title: string;
   excerpt: string | null;
+  /** Short reels card line — falls back to excerpt when null */
+  teaser: string | null;
   /** Sanitized HTML produced by the TipTap editor */
   content_html: string;
   cover_image_url: string | null;
@@ -61,6 +63,7 @@ export interface BlogUpsertInput {
   slug?: string;
   title: string;
   excerpt?: string | null;
+  teaser?: string | null;
   content_html: string;
   cover_image_url?: string | null;
   cover_image_alt?: string | null;

@@ -3,7 +3,7 @@ import { supabaseAdmin } from '../../../utils/supabaseAdmin';
 import type { BlogPost, BlogListItem } from '../../../types/blog';
 
 const NEIGHBOUR_COLUMNS =
-  'id, slug, title, excerpt, cover_image_url, cover_image_alt, status, featured, tags, reading_minutes, view_count, seo_title, seo_description, seo_keywords, canonical_url, published_at, created_at, updated_at';
+  'id, slug, title, excerpt, teaser, cover_image_url, cover_image_alt, status, featured, tags, reading_minutes, view_count, seo_title, seo_description, seo_keywords, canonical_url, published_at, created_at, updated_at';
 
 /**
  * GET /api/blogs/[slug]
