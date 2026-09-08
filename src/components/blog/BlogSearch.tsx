@@ -3,7 +3,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { Search, X } from 'lucide-react';
-import { HudPanel, NeonChip } from '../ui';
 
 interface Props {
   value: string;
@@ -37,12 +36,16 @@ export default function BlogSearch({
   }, [local, value, onChange]);
 
   return (
-    <HudPanel accent="cyan" notch="md" className="p-4 space-y-3">
+    <div
+      className="rounded-[var(--radius-lg)] border p-4 space-y-3"
+      style={{ background: 'var(--bg-2)', borderColor: 'var(--border-subtle)' }}
+    >
       {/* Search input */}
       <div className="relative">
         <Search
           size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-neon-cyan"
+          className="absolute left-3 top-1/2 -translate-y-1/2"
+          style={{ color: 'var(--fg-4)' } as React.CSSProperties}
         />
         <input
           type="search"
@@ -50,7 +53,14 @@ export default function BlogSearch({
           onChange={(e) => setLocal(e.target.value)}
           placeholder="SEARCH TRANSMISSIONS..."
           aria-label="Search blog posts"
-          className="w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-10 py-2.5 font-mono text-xs tracking-wider focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted transition-all duration-200 clip-notch-sm"
+          className="w-full rounded-[var(--radius-md)] border pl-10 pr-10 py-2.5 font-mono text-xs tracking-wider focus:outline-none placeholder:text-[var(--fg-4)] transition-colors duration-200"
+          style={
+            {
+              background: 'var(--bg-3)',
+              borderColor: 'var(--border-subtle)',
+              color: 'var(--fg-1)',
+            } as React.CSSProperties
+          }
         />
         {local && (
           <button
@@ -59,7 +69,8 @@ export default function BlogSearch({
               onChange('');
             }}
             aria-label="Clear search"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-neon-red transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+            style={{ color: 'var(--fg-4)' } as React.CSSProperties}
           >
             <X size={14} />
           </button>
@@ -73,44 +84,79 @@ export default function BlogSearch({
             <button
               key={mode}
               onClick={() => onSortChange(mode)}
-              className={`px-2.5 py-1 font-display text-[9px] tracking-[2px] border transition-colors duration-200 clip-notch-sm ${
+              className="px-2.5 py-1 font-mono text-[9px] tracking-[0.16em] border rounded-[var(--radius-sm)] transition-colors duration-200"
+              style={
                 sort === mode
-                  ? 'border-neon-cyan/40 bg-neon-cyan/15 text-neon-cyan'
-                  : 'border-white/10 text-text-muted hover:text-text-primary'
-              }`}
+                  ? {
+                      borderColor: 'var(--fg-3)',
+                      background: 'var(--bg-3)',
+                      color: 'var(--fg-1)',
+                    }
+                  : {
+                      borderColor: 'var(--border-subtle)',
+                      color: 'var(--fg-4)',
+                      background: 'transparent',
+                    }
+              }
             >
               {mode === 'recent' ? 'RECENT' : 'TOP'}
             </button>
           ))}
         </div>
-        <span className="font-mono text-[9px] text-text-muted">
+        <span className="font-mono text-[9px]" style={{ color: 'var(--fg-4)' }}>
           {String(resultCount).padStart(2, '0')} ENTRIES
         </span>
       </div>
 
       {/* Tag filter */}
       {tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 pt-1 border-t border-white/5">
-          <span className="pt-1">
-            <NeonChip
-              accent={activeTag === '' ? 'yellow' : 'cyan'}
-              onClick={() => onTagChange('')}
-            >
-              ALL
-            </NeonChip>
-          </span>
+        <div
+          className="flex flex-wrap gap-1.5 pt-3"
+          style={{ borderTop: '1px solid var(--border-subtle)' }}
+        >
+          <button
+            onClick={() => onTagChange('')}
+            className="px-2 py-1 rounded-full font-mono text-[10px] tracking-[0.14em] border transition-colors"
+            style={
+              activeTag === ''
+                ? {
+                    background: 'var(--fg-1)',
+                    color: 'var(--bg-1)',
+                    borderColor: 'var(--fg-1)',
+                  }
+                : {
+                    background: 'var(--bg-3)',
+                    color: 'var(--fg-3)',
+                    borderColor: 'var(--border-subtle)',
+                  }
+            }
+          >
+            ALL
+          </button>
           {tags.map((tag) => (
-            <span key={tag} className="pt-1">
-              <NeonChip
-                accent={activeTag === tag ? 'yellow' : 'cyan'}
-                onClick={() => onTagChange(activeTag === tag ? '' : tag)}
-              >
-                {tag.toUpperCase()}
-              </NeonChip>
-            </span>
+            <button
+              key={tag}
+              onClick={() => onTagChange(activeTag === tag ? '' : tag)}
+              className="px-2 py-1 rounded-full font-mono text-[10px] tracking-[0.14em] border transition-colors"
+              style={
+                activeTag === tag
+                  ? {
+                      background: 'var(--fg-1)',
+                      color: 'var(--bg-1)',
+                      borderColor: 'var(--fg-1)',
+                    }
+                  : {
+                      background: 'var(--bg-3)',
+                      color: 'var(--fg-3)',
+                      borderColor: 'var(--border-subtle)',
+                    }
+              }
+            >
+              {tag.toUpperCase()}
+            </button>
           ))}
         </div>
       )}
-    </HudPanel>
+    </div>
   );
 }

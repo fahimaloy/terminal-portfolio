@@ -1,12 +1,10 @@
 // src/components/ui/forms/TagInput.tsx
-/* Tag editor: Enter/comma adds, Backspace on empty removes last, chips animate in. */
-
 import React, { useEffect, useRef, useState } from 'react';
 import { animate } from 'animejs';
 import FormField from './FormField';
 import { controlClass } from './TextInput';
 import NeonChip from '../NeonChip';
-import { canAnimate } from '../../../config/animations';
+import { canAnimate, durations, easings } from '../../../config/animations';
 
 interface Props {
   id: string;
@@ -36,7 +34,6 @@ export default function TagInput({
   const listRef = useRef<HTMLDivElement>(null);
   const prevCount = useRef(value.length);
 
-  // Animate only the newly added chip.
   useEffect(() => {
     if (value.length > prevCount.current && listRef.current && canAnimate()) {
       const chips = listRef.current.children;
@@ -45,8 +42,8 @@ export default function TagInput({
         animate(last, {
           opacity: [0, 1],
           scale: [0.7, 1],
-          duration: 300,
-          ease: 'outExpo',
+          duration: durations.hover * 1000 + 60,
+          ease: easings.expoOut,
         });
       }
     }
@@ -67,7 +64,6 @@ export default function TagInput({
       add();
       return;
     }
-    // Backspace on an empty field removes the last tag.
     if (e.key === 'Backspace' && !draft && value.length > 0) {
       onChange(value.slice(0, -1));
     }
@@ -84,7 +80,15 @@ export default function TagInput({
         placeholder={placeholder}
         disabled={disabled}
         aria-invalid={Boolean(error)}
-        className={`${controlClass} ${error ? 'border-neon-red/50' : ''}`}
+        style={{
+          background: 'var(--bg-3)',
+          border: `1px solid ${
+            error ? 'var(--status-error)' : 'var(--border-subtle)'
+          }`,
+          borderRadius: 'var(--radius-md)',
+          color: 'var(--fg-1)',
+        }}
+        className={`${controlClass} focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)]`}
       />
       {value.length > 0 && (
         <div ref={listRef} className="flex flex-wrap gap-1.5 mt-2">

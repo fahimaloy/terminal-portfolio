@@ -39,7 +39,7 @@ describe('SuggestionGenerator', () => {
       linkedin: null,
       resume_url: null,
       avatar_url: null,
-      is_active: true
+      is_active: true,
     };
 
     const mockProjects = [
@@ -62,8 +62,8 @@ describe('SuggestionGenerator', () => {
         description_html: null,
         client_name: null,
         client_location: null,
-        client_logo: null
-      }
+        client_logo: null,
+      },
     ];
 
     const mockSkills = [
@@ -77,8 +77,8 @@ describe('SuggestionGenerator', () => {
         icon_color: null,
         sort_order: 1,
         is_visible: true,
-        duration: null
-      }
+        duration: null,
+      },
     ];
 
     const mockKnowledge = [
@@ -86,21 +86,25 @@ describe('SuggestionGenerator', () => {
         id: 1,
         category: 'Web Development',
         content: 'Advanced web technologies',
-        is_visible: true
-      }
+        is_visible: true,
+      },
     ];
 
     it('should generate profile-based suggestions', () => {
       generator.setProfile(mockProfile);
       const suggestions = generator.generateSuggestions('', 20);
-      const profileSuggestions = suggestions.filter(s => s.source.category === 'profile');
+      const profileSuggestions = suggestions.filter(
+        (s) => s.source.category === 'profile',
+      );
       expect(profileSuggestions.length).toBeGreaterThan(0);
     });
 
     it('should generate project-based suggestions', () => {
       generator.setProjects(mockProjects);
       const suggestions = generator.generateSuggestions('', 20);
-      const projectSuggestions = suggestions.filter(s => s.source.category === 'project');
+      const projectSuggestions = suggestions.filter(
+        (s) => s.source.category === 'project',
+      );
       expect(projectSuggestions.length).toBeGreaterThan(0);
       expect(projectSuggestions[0].label).toContain('Portfolio Website');
     });
@@ -108,7 +112,9 @@ describe('SuggestionGenerator', () => {
     it('should generate skill-based suggestions', () => {
       generator.setSkills(mockSkills);
       const suggestions = generator.generateSuggestions('', 20);
-      const skillSuggestions = suggestions.filter(s => s.source.category === 'skill');
+      const skillSuggestions = suggestions.filter(
+        (s) => s.source.category === 'skill',
+      );
       expect(skillSuggestions.length).toBeGreaterThan(0);
       expect(skillSuggestions[0].label).toContain('TypeScript');
     });
@@ -116,7 +122,9 @@ describe('SuggestionGenerator', () => {
     it('should generate knowledge-based suggestions', () => {
       generator.setKnowledgeBases(mockKnowledge);
       const suggestions = generator.generateSuggestions('', 20);
-      const knowledgeSuggestions = suggestions.filter(s => s.source.category === 'knowledge');
+      const knowledgeSuggestions = suggestions.filter(
+        (s) => s.source.category === 'knowledge',
+      );
       expect(knowledgeSuggestions.length).toBeGreaterThan(0);
       expect(knowledgeSuggestions[0].label).toContain('Web Development');
     });
@@ -139,7 +147,7 @@ describe('SuggestionGenerator', () => {
         linkedin: null,
         resume_url: null,
         avatar_url: null,
-        is_active: true
+        is_active: true,
       };
 
       const mockProjects = [
@@ -162,8 +170,8 @@ describe('SuggestionGenerator', () => {
           description_html: null,
           client_name: null,
           client_location: null,
-          client_logo: null
-        }
+          client_logo: null,
+        },
       ];
 
       generator.setProfile(mockProfile);
@@ -172,7 +180,10 @@ describe('SuggestionGenerator', () => {
 
     it('should prioritize suggestions matching query', () => {
       const reactSuggestions = generator.generateSuggestions('react', 10);
-      const portfolioSuggestions = generator.generateSuggestions('portfolio', 10);
+      const portfolioSuggestions = generator.generateSuggestions(
+        'portfolio',
+        10,
+      );
 
       // React query should prioritize project with React in title
       expect(reactSuggestions[0].label).toContain('React Portfolio');
@@ -188,7 +199,10 @@ describe('SuggestionGenerator', () => {
     });
 
     it('should return empty array for no matches with specific query', () => {
-      const suggestions = generator.generateSuggestions('xyznonexistentqueryxyz', 10);
+      const suggestions = generator.generateSuggestions(
+        'xyznonexistentqueryxyz',
+        10,
+      );
       // Should still return system suggestions as they have priority
       expect(suggestions.length).toBeGreaterThan(0);
     });
@@ -197,7 +211,7 @@ describe('SuggestionGenerator', () => {
   describe('Conversation context', () => {
     it('should use conversation history for context', () => {
       generator.addConversationMessage('Tell me about your React projects');
-      
+
       // Query that matches conversation context should get bonus
       const suggestions = generator.generateSuggestions('projects', 10);
       expect(suggestions.length).toBeGreaterThan(0);
@@ -208,7 +222,7 @@ describe('SuggestionGenerator', () => {
       for (let i = 0; i < 15; i++) {
         generator.addConversationMessage(`Message ${i}`);
       }
-      
+
       const suggestions = generator.generateSuggestions('test', 10);
       // Should still work without errors
       expect(suggestions.length).toBeGreaterThan(0);
@@ -222,18 +236,20 @@ describe('SuggestionGenerator', () => {
 
       // Mark first suggestion as used
       generator.markSuggestionUsed(allSuggestions[0].id);
-      
+
       const newSuggestions = generator.generateSuggestions('', 50);
       // Should not include the used suggestion
-      expect(newSuggestions.find(s => s.id === allSuggestions[0].id)).toBeUndefined();
+      expect(
+        newSuggestions.find((s) => s.id === allSuggestions[0].id),
+      ).toBeUndefined();
     });
 
     it('should update stats when suggestions are used', () => {
       const initialStats = generator.getSuggestionStats();
       const suggestions = generator.generateSuggestions('', 10);
-      
+
       generator.markSuggestionUsed(suggestions[0].id);
-      
+
       const updatedStats = generator.getSuggestionStats();
       expect(updatedStats.usedCount).toBe(initialStats.usedCount + 1);
       expect(updatedStats.availableCount).toBe(initialStats.availableCount - 1);

@@ -14,7 +14,9 @@ export function clampMetric(value: ProjectMetric, fallback: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
-export function getProjectMetric<K extends 'complexity' | 'quality' | 'momentum'>(
+export function getProjectMetric<
+  K extends 'complexity' | 'quality' | 'momentum',
+>(
   project: PortfolioProject | PortfolioProjectWithMetrics,
   key: K,
   fallback: number,

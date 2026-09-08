@@ -113,6 +113,8 @@ export function detectIntent(message: string): IntentType {
  * Returns the skill name if detected, null otherwise.
  */
 export function extractSkillName(message: string): string | null {
-  const match = message.match(/(?:tell\s+me\s+about|experience\s+with|your)\s+(.+?)(?:\s*\?|$)/i);
+  const match = message.match(
+    /(?:tell\s+me\s+about|experience\s+with|your)\s+(.+?)(?:\s*\?|$)/i,
+  );
   return match ? match[1].trim() : null;
 }

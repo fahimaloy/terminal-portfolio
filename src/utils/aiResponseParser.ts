@@ -115,7 +115,9 @@ export function findSkillsByIds(
 }
 
 export function containsAnyMarker(text: string): boolean {
-  return /\[\[(PROJECT_(LIST|SINGLE|REF)|SKILL|SKILL_LIST|EXPERIENCE_TIMELINE|PROJECT_TABLE)[^\]]*\]\]/.test(text);
+  return /\[\[(PROJECT_(LIST|SINGLE|REF)|SKILL|SKILL_LIST|EXPERIENCE_TIMELINE|PROJECT_TABLE)[^\]]*\]\]/.test(
+    text,
+  );
 }
 
 export function containsProjectMarker(text: string): boolean {
@@ -124,6 +126,9 @@ export function containsProjectMarker(text: string): boolean {
 
 export function stripAllMarkers(text: string): string {
   return text
-    .replace(/\[\[(PROJECT_(LIST|SINGLE|REF)|SKILL|SKILL_LIST|EXPERIENCE_TIMELINE|PROJECT_TABLE)[^\]]*\]\]/g, '')
+    .replace(
+      /\[\[(PROJECT_(LIST|SINGLE|REF)|SKILL|SKILL_LIST|EXPERIENCE_TIMELINE|PROJECT_TABLE)[^\]]*\]\]/g,
+      '',
+    )
     .trim();
 }

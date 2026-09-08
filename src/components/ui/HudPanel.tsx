@@ -3,28 +3,15 @@ import React from 'react';
 import { GlitchAccent } from './GlitchText';
 
 type NotchSize = 'sm' | 'md' | 'lg';
-const NOTCH_CLASS: Record<NotchSize, string> = {
-  sm: 'clip-notch-sm',
-  md: 'clip-notch-md',
-  lg: 'clip-notch-lg',
-};
-const GLOW_CLASS: Record<GlitchAccent, string> = {
-  yellow: 'hud-glow-yellow',
-  magenta: 'hud-glow-magenta',
-  cyan: 'hud-glow-cyan',
-  green: 'hud-glow-green',
-  red: 'hud-glow-red',
-  purple: 'hud-glow-purple',
-  blue: 'hud-glow-blue',
-};
-const ACCENT_TITLE: Record<GlitchAccent, string> = {
-  yellow: 'text-neon-yellow',
-  magenta: 'text-neon-magenta',
-  cyan: 'text-neon-cyan',
-  green: 'text-neon-green',
-  red: 'text-neon-red',
-  purple: 'text-neon-purple',
-  blue: 'text-neon-blue',
+
+const ACCENT_COLOR: Record<GlitchAccent, string> = {
+  yellow: 'var(--neon-yellow)',
+  magenta: 'var(--neon-magenta)',
+  cyan: 'var(--neon-cyan)',
+  green: 'var(--neon-green)',
+  red: 'var(--neon-red)',
+  purple: 'var(--neon-purple)',
+  blue: 'var(--neon-blue)',
 };
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
@@ -32,35 +19,35 @@ type Props = React.HTMLAttributes<HTMLDivElement> & {
   notch?: NotchSize;
   title?: string;
   innerClassName?: string;
-  /** flat removes the inner gradient */
+  /** flat removes the inner gradient — kept for compat, now no-op (flat card always) */
   flat?: boolean;
 };
 
 export default function HudPanel({
   accent = 'yellow',
-  notch = 'md',
+  notch: _notch = 'md',
   title,
   className = '',
   innerClassName = '',
-  flat = false,
+  flat: _flat = false,
   children,
   ...rest
 }: Props) {
-  const bgStyle: React.CSSProperties = flat
-    ? { background: 'var(--bg-smoke)' }
-    : {
-        background:
-          'linear-gradient(135deg, var(--overlay-white-02), var(--overlay-black-40))',
-      };
+  const accentColor = ACCENT_COLOR[accent];
+  const panelStyle: React.CSSProperties = {
+    background: 'var(--bg-2)',
+    border: '1px solid var(--border-subtle)',
+    borderRadius: 'var(--radius-lg)',
+    borderTop: `3px solid ${accentColor}`,
+    ...(rest.style || {}),
+  };
+
   return (
-    <div
-      {...rest}
-      className={`${NOTCH_CLASS[notch]} ${GLOW_CLASS[accent]} ${className}`}
-      style={{ ...bgStyle, ...(rest.style || {}) }}
-    >
+    <div {...rest} className={`rounded-card ${className}`} style={panelStyle}>
       {title && (
         <div
-          className={`px-3 py-1.5 border-b border-white/5 font-display text-[10px] tracking-[3px] uppercase ${ACCENT_TITLE[accent]}`}
+          className="px-3 py-1.5 border-b font-display text-[10px] tracking-[3px] uppercase"
+          style={{ borderColor: 'var(--border-subtle)', color: 'var(--fg-2)' }}
         >
           {title}
         </div>

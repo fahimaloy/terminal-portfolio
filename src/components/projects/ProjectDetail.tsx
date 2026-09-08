@@ -6,10 +6,8 @@ import {
   PortfolioProjectMedia,
   getProjectMedia,
 } from '../../utils/api';
-import { GlitchText, HudPanel, NeonButton, NeonChip, StatBar } from '../ui';
+import { StatBar } from '../ui';
 import { getProjectMetric } from '../../types/project';
-
-const ACCENTS = ['yellow', 'magenta', 'cyan', 'green'] as const;
 
 interface ProjectDetailProps {
   project: PortfolioProject;
@@ -53,52 +51,80 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
     setIsVideoPlaying(allMedia[index].media_type === 'video');
   };
 
-  const accent = ACCENTS[(project.id || 0) % ACCENTS.length];
-
   if (loading) {
     return (
       <div className="space-y-6">
-        <NeonButton
-          variant="outline"
-          accent="magenta"
-          iconLeft={<FiArrowLeft />}
+        <button
           onClick={onBack}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] font-mono text-[11px] tracking-[0.16em] border"
+          style={{
+            background: 'transparent',
+            borderColor: 'var(--border-subtle)',
+            color: 'var(--fg-2)',
+          }}
         >
-          BACK TO PROJECTS
-        </NeonButton>
-        <HudPanel
-          accent="cyan"
-          notch="md"
-          className="p-12 flex flex-col items-center gap-3"
+          <FiArrowLeft size={12} /> BACK TO PROJECTS
+        </button>
+        <div
+          className="p-12 flex flex-col items-center gap-3 rounded-[var(--radius-lg)] border"
+          style={{
+            background: 'var(--bg-2)',
+            borderColor: 'var(--border-subtle)',
+          }}
         >
-          <div className="w-8 h-8 border-4 border-neon-cyan/20 border-t-neon-cyan rounded-full animate-spin" />
-          <div className="font-display tracking-[2px] text-neon-cyan">
+          <div
+            className="w-8 h-8 border-2 rounded-full animate-spin"
+            style={{
+              borderColor: 'var(--border-subtle)',
+              borderTopColor: 'var(--fg-3)',
+            }}
+          />
+          <div
+            className="font-mono tracking-[0.2em] text-[11px]"
+            style={{ color: 'var(--fg-3)' }}
+          >
             LOADING PROJECT…
           </div>
-        </HudPanel>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <NeonButton
-        variant="outline"
-        accent="magenta"
-        iconLeft={<FiArrowLeft />}
+      <button
         onClick={onBack}
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] font-mono text-[11px] tracking-[0.16em] border"
+        style={{
+          background: 'transparent',
+          borderColor: 'var(--border-subtle)',
+          color: 'var(--fg-2)',
+        }}
       >
-        BACK TO PROJECTS
-      </NeonButton>
+        <FiArrowLeft size={12} /> BACK TO PROJECTS
+      </button>
 
-      <HudPanel
-        accent="cyan"
-        notch="md"
-        title={`// DETAIL: ${project.title.toUpperCase()}`}
-        className="overflow-hidden"
+      <div
+        className="overflow-hidden rounded-[var(--radius-lg)] border"
+        style={{
+          background: 'var(--bg-2)',
+          borderColor: 'var(--border-subtle)',
+        }}
       >
+        {/* Top hairline accent */}
+        <div className="h-[3px] w-full" style={{ background: 'var(--fg-3)' }} />
+        <div
+          className="px-3 py-2 border-b font-mono text-[10px] tracking-[0.2em]"
+          style={{ borderColor: 'var(--border-subtle)', color: 'var(--fg-4)' }}
+        >
+          {'// DETAIL: '}
+          {project.title.toUpperCase()}
+        </div>
         {/* Main preview area */}
-        <div className="relative w-full aspect-video bg-black/50">
+        <div
+          className="relative w-full aspect-video"
+          style={{ background: 'var(--bg-1)' }}
+        >
           {currentMedia && currentMedia.media_type === 'video' && (
             <div className="relative w-full h-full">
               <video
@@ -133,13 +159,25 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
             />
           )}
           {!allMedia.length && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-text-muted">
-              <div className="w-6 h-6 border-4 border-neon-cyan/20 border-t-neon-cyan rounded-full animate-spin" />
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+              style={{ color: 'var(--fg-4)' }}
+            >
+              <div
+                className="w-6 h-6 border-2 rounded-full animate-spin"
+                style={{
+                  borderColor: 'var(--border-subtle)',
+                  borderTopColor: 'var(--fg-3)',
+                }}
+              />
               <div className="font-body text-sm">NO MEDIA AVAILABLE</div>
             </div>
           )}
           {allMedia.length > 1 && (
-            <div className="absolute bottom-2 right-2 bg-black/60 text-text-primary text-[10px] font-mono px-2 py-1">
+            <div
+              className="absolute bottom-2 right-2 text-[10px] font-mono px-2 py-1 rounded-[var(--radius-sm)]"
+              style={{ background: 'var(--bg-1)', color: 'var(--fg-2)' }}
+            >
               {currentMediaIndex + 1} / {allMedia.length}
             </div>
           )}
@@ -148,17 +186,43 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
         {/* Title */}
         <div className="p-5 space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <GlitchText accent="cyan" as="h2" className="text-2xl">
+            <h2
+              className="text-2xl font-display font-medium"
+              style={{ color: 'var(--fg-1)' }}
+            >
               {project.title}
-            </GlitchText>
+            </h2>
             {project.short_title && (
-              <NeonChip accent="yellow">{project.short_title}</NeonChip>
+              <span
+                className="inline-flex px-2 py-1 rounded-[var(--radius-sm)] font-mono text-[10px] tracking-[0.14em] border"
+                style={{
+                  background: 'var(--bg-3)',
+                  borderColor: 'var(--border-subtle)',
+                  color: 'var(--fg-3)',
+                }}
+              >
+                {project.short_title}
+              </span>
             )}
-            {project.featured && <NeonChip accent="magenta">FEATURED</NeonChip>}
+            {project.featured && (
+              <span
+                className="inline-flex px-2 py-1 rounded-[var(--radius-sm)] font-mono text-[10px] tracking-[0.14em] border"
+                style={{
+                  background: 'var(--bg-3)',
+                  borderColor: 'var(--border-subtle)',
+                  color: 'var(--fg-3)',
+                }}
+              >
+                FEATURED
+              </span>
+            )}
           </div>
 
           {/* Description */}
-          <div className="font-body text-sm text-text-secondary leading-relaxed whitespace-pre-wrap">
+          <div
+            className="font-body text-sm leading-relaxed whitespace-pre-wrap"
+            style={{ color: 'var(--fg-2)' }}
+          >
             {project.description || 'No description available.'}
           </div>
 
@@ -166,9 +230,17 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
           {project.languages && project.languages.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {project.languages.map((lang, i) => (
-                <NeonChip key={i} accent="cyan">
-                  {lang}
-                </NeonChip>
+                <span
+                  key={i}
+                  className="inline-flex px-2 py-0.5 rounded-full font-mono text-[10px] tracking-[0.14em] border"
+                  style={{
+                    background: 'var(--bg-3)',
+                    borderColor: 'var(--border-subtle)',
+                    color: 'var(--fg-3)',
+                  }}
+                >
+                  {lang.toUpperCase()}
+                </span>
               ))}
             </div>
           )}
@@ -200,9 +272,12 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <NeonButton accent="yellow" iconLeft={<FiExternalLink />}>
-                  LIVE
-                </NeonButton>
+                <span
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] font-mono text-[11px] tracking-[0.14em]"
+                  style={{ background: 'var(--fg-1)', color: 'var(--bg-1)' }}
+                >
+                  <FiExternalLink size={12} /> LIVE
+                </span>
               </a>
             )}
             {project.repo_url && (
@@ -211,23 +286,29 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <NeonButton
-                  variant="outline"
-                  accent="cyan"
-                  iconLeft={<FiGithub />}
+                <span
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] font-mono text-[11px] tracking-[0.14em] border"
+                  style={{
+                    background: 'transparent',
+                    borderColor: 'var(--border-subtle)',
+                    color: 'var(--fg-2)',
+                  }}
                 >
-                  SOURCE
-                </NeonButton>
+                  <FiGithub size={12} /> SOURCE
+                </span>
               </a>
             )}
           </div>
         </div>
-      </HudPanel>
+      </div>
 
       {/* Thumbnail strip */}
       {allMedia.length > 1 && (
         <div>
-          <div className="text-[9px] font-display tracking-[3px] text-text-muted mb-2">
+          <div
+            className="text-[9px] font-mono tracking-[0.24em] mb-2"
+            style={{ color: 'var(--fg-4)' }}
+          >
             {'// ADDITIONAL_MEDIA'}
           </div>
           <div className="flex flex-wrap gap-2">
@@ -236,11 +317,12 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                 key={m.id}
                 onClick={() => handleMediaChange(index)}
                 aria-label={`Media ${index + 1}`}
-                className={`relative w-24 h-16 overflow-hidden clip-notch-sm transition-all ${
-                  currentMediaIndex === index
-                    ? 'border-2 border-neon-cyan shadow-[0_0_8px_var(--glow-cyan)]'
-                    : 'border-2 border-transparent opacity-60 hover:opacity-100'
-                }`}
+                className="relative w-24 h-16 overflow-hidden rounded-[var(--radius-sm)] border transition-opacity"
+                style={{
+                  borderColor:
+                    currentMediaIndex === index ? 'var(--fg-3)' : 'transparent',
+                  opacity: currentMediaIndex === index ? 1 : 0.6,
+                }}
               >
                 {m.media_type === 'image' ? (
                   <Image
@@ -251,7 +333,10 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-bg-ash flex items-center justify-center text-text-primary text-xl">
+                  <div
+                    className="w-full h-full flex items-center justify-center text-xl"
+                    style={{ background: 'var(--bg-3)', color: 'var(--fg-1)' }}
+                  >
                     ▶
                   </div>
                 )}
@@ -261,14 +346,17 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
         </div>
       )}
 
-      <NeonButton
-        variant="outline"
-        accent="magenta"
-        iconLeft={<FiArrowLeft />}
+      <button
         onClick={onBack}
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] font-mono text-[11px] tracking-[0.16em] border"
+        style={{
+          background: 'transparent',
+          borderColor: 'var(--border-subtle)',
+          color: 'var(--fg-2)',
+        }}
       >
-        BACK TO PROJECTS
-      </NeonButton>
+        <FiArrowLeft size={12} /> BACK TO PROJECTS
+      </button>
     </div>
   );
 }

@@ -199,18 +199,13 @@ export const exitAnim = {
 };
 
 /**
- * Neon glow pulse animation parameters.
+ * Subtle opacity pulse — muted editorial (no neon glow).
+ * Kept as pulseGlow for compat; no boxShadow.
  */
 export const pulseGlow = {
-  boxShadow: [
-    '0 0 10px var(--glow-cyan-30)',
-    '0 0 20px var(--glow-cyan-60)',
-    '0 0 10px var(--glow-cyan-30)',
-  ],
+  opacity: [0.96, 1] as [number, number],
   duration: durations.pulse,
-  loop: true,
-  alternate: true,
-  ease: easings.sineInOut,
+  ease: easings.smooth ?? easings.sineInOut,
 };
 
 /**

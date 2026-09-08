@@ -11,8 +11,9 @@ interface CursorGlowProps {
 }
 
 export default function CursorGlow({
-  color = 'var(--glow-cyan-sm)',
-  size = 400,
+  // Kept for API compat; resolved from warm tokens unless overridden
+  color,
+  size = 160,
   intensity = 1,
 }: CursorGlowProps) {
   const glowRef = useRef<HTMLDivElement>(null);
@@ -20,13 +21,14 @@ export default function CursorGlow({
     null,
   );
 
+  // Resolve warm default via CSS var; caller override wins
+  const bg = color ?? 'var(--fg-1)';
+
   useEffect(() => {
     if (isReducedMotion()) return;
-
     const glowEl = glowRef.current;
     if (!glowEl) return;
 
-    // Create animatable with x:0 y:0 so the instance exposes .x() and .y()
     animatableRef.current = createSafeAnimatable(glowEl, {
       x: 0,
       y: 0,
@@ -48,13 +50,11 @@ export default function CursorGlow({
 
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     const handleChange = () => {
-      // Re-evaluate: if reduced motion is now preferred, teardown animatable
       if (mq.matches) {
         window.removeEventListener('mousemove', handleMouseMove);
         animatableRef.current?.revert();
         animatableRef.current = null;
       } else {
-        // Recreate if needed
         if (!animatableRef.current && glowRef.current) {
           animatableRef.current = createSafeAnimatable(glowRef.current, {
             x: 0,
@@ -67,22 +67,18 @@ export default function CursorGlow({
       }
     };
 
-    // Modern browsers
-    if (typeof mq.addEventListener === 'function') {
+    if (typeof mq.addEventListener === 'function')
       mq.addEventListener('change', handleChange);
-    } else if (typeof mq.addListener === 'function') {
-      mq.addListener(handleChange);
-    }
+    else if (typeof (mq as any).addListener === 'function')
+      (mq as any).addListener(handleChange);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      if (typeof mq.removeEventListener === 'function') {
+      if (typeof mq.removeEventListener === 'function')
         mq.removeEventListener('change', handleChange);
-      } else if (typeof mq.removeListener === 'function') {
-        mq.removeListener(handleChange);
-      }
+      else if (typeof (mq as any).removeListener === 'function')
+        (mq as any).removeListener(handleChange);
       animatableRef.current?.revert();
-      // Fallback if animejs version exposes cancel but not revert
       const cancellable = animatableRef.current as unknown as {
         cancel?: () => void;
       } | null;
@@ -101,12 +97,13 @@ export default function CursorGlow({
     <div
       ref={glowRef}
       aria-hidden="true"
-      className="pointer-events-none fixed z-[1] rounded-full blur-[80px] opacity-0 transition-opacity duration-300"
+      className="pointer-events-none fixed z-[1] rounded-full"
       style={{
         width: size,
         height: size,
-        background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
-        opacity: intensity * 0.6,
+        background: `radial-gradient(circle, ${bg} 0%, transparent 70%)`,
+        opacity: 0.06 * intensity,
+        filter: 'blur(20px)',
         left: 0,
         top: 0,
         willChange: 'transform',

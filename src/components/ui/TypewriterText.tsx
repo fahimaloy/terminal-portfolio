@@ -1,11 +1,12 @@
 // src/components/ui/TypewriterText.tsx
-import React, { useEffect, useRef, useState } from 'react';
-import { animate } from 'animejs';
-import { isReducedMotion } from '../../config/animations';
+// Editorial stagger-fade — replaces typewriter+glitch with muted y+opacity choreography.
+import React, { useEffect, useRef } from 'react';
+import { animate, createScope, stagger } from 'animejs';
+import { durations, easings, isReducedMotion } from '../../config/animations';
 
 type Props = {
   text: string;
-  speed?: number; // ms per char (used to derive total duration)
+  speed?: number;
   startDelay?: number;
   showCursor?: boolean;
   onDone?: () => void;
@@ -14,82 +15,76 @@ type Props = {
 
 export default function TypewriterText({
   text,
-  speed = 12,
+  speed: _speed = 40,
   startDelay = 0,
-  showCursor = true,
+  showCursor: _showCursor = false,
   onDone,
   className = '',
 }: Props) {
-  const [shown, setShown] = useState('');
-  const [done, setDone] = useState(false);
+  const rootRef = useRef<HTMLSpanElement>(null);
   const onDoneRef = useRef(onDone);
-  const [cursorOn, setCursorOn] = useState(true);
-  const animRef = useRef<ReturnType<typeof animate> | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   useEffect(() => {
     onDoneRef.current = onDone;
   });
 
   useEffect(() => {
-    // SSR / reduced motion: show full text immediately
+    const root = rootRef.current;
+    if (!root) return;
     if (isReducedMotion()) {
-      setShown(text);
-      setDone(true);
       onDoneRef.current?.();
       return;
     }
+    const letters = root.querySelectorAll('.tw-char');
+    if (!letters.length) {
+      onDoneRef.current?.();
+      return;
+    }
+    const scope = createScope({
+      root,
+      mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
+      defaults: {
+        duration: (durations[700] ?? 0.7) * 1000,
+        ease: easings.outExpo ?? 'outExpo',
+        composition: 'blend',
+      },
+    } as Parameters<typeof createScope>[0]);
 
-    setDone(false);
-    setShown('');
+    let cancelled = false;
+    const timer = startDelay > 0 ? setTimeout(run, startDelay) : null;
+    if (!timer) run();
 
-    const proxy = { val: 0 };
-    const totalDuration = text.length * speed;
-
-    const startAnim = () => {
-      animRef.current = animate(proxy, {
-        val: [0, text.length],
-        duration: totalDuration,
-        ease: 'linear',
-        onUpdate: () => {
-          setShown(text.slice(0, Math.floor(proxy.val)));
-        },
-        onComplete: () => {
-          setShown(text);
-          setDone(true);
-          onDoneRef.current?.();
-        },
+    function run() {
+      if (cancelled) return;
+      scope.add(() => {
+        animate(letters, {
+          y: [8, 0],
+          opacity: [0, 1],
+          duration: 700,
+          ease: 'outExpo',
+          delay: stagger(40, { from: 'first' }),
+          onComplete: () => onDoneRef.current?.(),
+        });
       });
-    };
-
-    if (startDelay > 0) {
-      timerRef.current = setTimeout(startAnim, startDelay);
-    } else {
-      startAnim();
     }
 
     return () => {
-      animRef.current?.cancel();
-      animRef.current = null;
-      if (timerRef.current) clearTimeout(timerRef.current);
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+      scope.revert();
     };
-  }, [text, speed, startDelay]);
-
-  useEffect(() => {
-    if (!showCursor || done) return;
-    const id = setInterval(() => setCursorOn((c) => !c), 500);
-    return () => clearInterval(id);
-  }, [showCursor, done]);
+  }, [text, startDelay]);
 
   return (
-    <span className={`whitespace-pre-wrap ${className}`}>
-      {shown}
-      {showCursor && !done && (
+    <span ref={rootRef} className={className} aria-label={text}>
+      {Array.from(text).map((ch, i) => (
         <span
-          className="inline-block w-[6px] h-[1em] bg-current align-middle ml-0.5"
-          style={{ opacity: cursorOn ? 1 : 0 }}
-        />
-      )}
+          key={i}
+          className="tw-char inline-block opacity-0"
+          style={{ whiteSpace: ch === ' ' ? 'pre' : undefined }}
+        >
+          {ch === ' ' ? '\u00A0' : ch}
+        </span>
+      ))}
     </span>
   );
 }

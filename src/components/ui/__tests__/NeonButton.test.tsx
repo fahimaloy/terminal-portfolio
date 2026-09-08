@@ -30,6 +30,11 @@ describe('NeonButton', () => {
   it('applies filled variant style by default', () => {
     render(<NeonButton data-testid="b">X</NeonButton>);
     const el = screen.getByTestId('b');
-    expect(el.className).toMatch(/clip-notch-sm/);
+    // editorial: rounded card via inline style var(--radius-md), no clip-notch
+    expect(el.style.borderRadius).toBe('var(--radius-md)');
+    expect(el.style.background).toContain('var(--neon-');
+    expect(el.className).not.toMatch(/clip-notch-sm/);
+    expect(el.className).toMatch(/focus-visible:ring/);
+    expect(el.className).toMatch(/font-display/);
   });
 });

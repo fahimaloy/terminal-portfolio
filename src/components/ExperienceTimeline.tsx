@@ -9,7 +9,13 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { PortfolioExperience } from '../utils/api';
-import { ChevronDown, ChevronUp, MapPin, Calendar, Briefcase } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  MapPin,
+  Calendar,
+  Briefcase,
+} from 'lucide-react';
 import { animate, createScope, stagger } from 'animejs';
 import { isReducedMotion } from '../config/animations';
 
@@ -17,7 +23,9 @@ type ExperienceTimelineProps = {
   experiences: PortfolioExperience[];
 };
 
-export default function ExperienceTimeline({ experiences }: ExperienceTimelineProps) {
+export default function ExperienceTimeline({
+  experiences,
+}: ExperienceTimelineProps) {
   const [expandedId, setExpandedId] = useState<number | null>(
     experiences.length > 0 ? experiences[0].id : null,
   );
@@ -42,7 +50,8 @@ export default function ExperienceTimeline({ experiences }: ExperienceTimelinePr
       });
 
       // Animate content cards with stagger
-      const contents = timelineRef.current!.querySelectorAll('.timeline-content');
+      const contents =
+        timelineRef.current!.querySelectorAll('.timeline-content');
       animate(contents, {
         opacity: [0, 1],
         x: [20, 0],
@@ -89,10 +98,19 @@ export default function ExperienceTimeline({ experiences }: ExperienceTimelinePr
                 {/* Company logo or initials */}
                 {exp.company_logo ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={exp.company_logo} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" loading="lazy" />
+                  <img
+                    src={exp.company_logo}
+                    alt=""
+                    className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                    loading="lazy"
+                  />
                 ) : (
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
-                    {exp.company_name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                    {exp.company_name
+                      .split(' ')
+                      .map((w) => w[0])
+                      .join('')
+                      .slice(0, 2)}
                   </div>
                 )}
 
@@ -100,11 +118,18 @@ export default function ExperienceTimeline({ experiences }: ExperienceTimelinePr
                   <div className="font-display text-sm text-neon-cyan text-shadow-neon-cyan">
                     {exp.title}
                   </div>
-                  <div className="text-xs text-white mt-0.5">{exp.company_name}</div>
+                  <div className="text-xs text-white mt-0.5">
+                    {exp.company_name}
+                  </div>
                   <div className="flex items-center gap-3 mt-1 text-[10px] text-text-muted">
                     <span className="flex items-center gap-1">
                       <Calendar size={10} />
-                      {formatDate(exp.from_date)} – {exp.is_current ? 'Present' : exp.to_date ? formatDate(exp.to_date) : ''}
+                      {formatDate(exp.from_date)} –{' '}
+                      {exp.is_current
+                        ? 'Present'
+                        : exp.to_date
+                        ? formatDate(exp.to_date)
+                        : ''}
                     </span>
                     {exp.location && (
                       <span className="flex items-center gap-1">
@@ -115,11 +140,17 @@ export default function ExperienceTimeline({ experiences }: ExperienceTimelinePr
                 </div>
 
                 <button
-                  onClick={() => setExpandedId(expandedId === exp.id ? null : exp.id)}
+                  onClick={() =>
+                    setExpandedId(expandedId === exp.id ? null : exp.id)
+                  }
                   className="text-text-muted hover:text-white"
                   aria-label={expandedId === exp.id ? 'Collapse' : 'Expand'}
                 >
-                  {expandedId === exp.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  {expandedId === exp.id ? (
+                    <ChevronUp size={16} />
+                  ) : (
+                    <ChevronDown size={16} />
+                  )}
                 </button>
               </div>
 
@@ -127,11 +158,15 @@ export default function ExperienceTimeline({ experiences }: ExperienceTimelinePr
               {expandedId === exp.id && (
                 <div className="mt-3 pt-3 border-t border-white/10 space-y-3">
                   {exp.description && (
-                    <p className="text-sm text-text-secondary">{exp.description}</p>
+                    <p className="text-sm text-text-secondary">
+                      {exp.description}
+                    </p>
                   )}
                   {exp.projects && exp.projects.length > 0 && (
                     <div>
-                      <div className="text-[10px] text-text-muted mb-2">PROJECTS</div>
+                      <div className="text-[10px] text-text-muted mb-2">
+                        PROJECTS
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {exp.projects.map((proj) => (
                           <div

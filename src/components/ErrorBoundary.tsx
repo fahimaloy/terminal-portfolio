@@ -48,7 +48,11 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div className="flex flex-col items-center justify-center p-6">
           <div
             className="w-full max-w-md"
-            style={this.reducedMotion ? {} : { animation: 'errorShake 4s linear infinite' }}
+            style={
+              this.reducedMotion
+                ? {}
+                : { animation: 'errorShake 4s linear infinite' }
+            }
           >
             <HudPanel
               accent="red"

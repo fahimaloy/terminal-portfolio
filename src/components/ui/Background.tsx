@@ -1,22 +1,13 @@
 // src/components/ui/Background.tsx
-/* ═══════════════════════════════════════════════════════════════════════════════
-   BACKGROUND SYSTEM — Scroll-reactive animated background
-   Features:
-   - Zone-based color changes (background shifts hue based on scroll section)
-   - Morphing SVG shapes in background
-   - Grid pulse (TronGrid)
-   - Particle field cursor follow
-   - Scanline overlay
-═══════════════════════════════════════════════════════════════════════════════ */
+/* Warm ambient background — soft washes, scroll-scrubbed morph dekor, no neon zones. */
 
 import React, { useEffect, useRef } from 'react';
 import {
-  animate,
-  onScroll,
   createScope,
   createTimeline,
   createDrawable,
   morphTo,
+  onScroll,
   stagger,
 } from 'animejs';
 import {
@@ -30,15 +21,6 @@ import TronGrid from './TronGrid';
 import ScanlineOverlay from './ScanlineOverlay';
 import ParticleField from './ParticleField';
 
-// Background zone colors (subtle hue shifts per section)
-const ZONES = [
-  { start: 0, end: 0.25, color: 'var(--glow-cyan-zone)' },
-  { start: 0.25, end: 0.5, color: 'var(--glow-magenta-zone)' },
-  { start: 0.5, end: 0.75, color: 'var(--glow-yellow-zone)' },
-  { start: 0.75, end: 1, color: 'var(--glow-green-zone)' },
-];
-
-// Morphing SVG shape paths (for background decoration)
 const MORPH_PATHS = [
   'M50,10 C80,10 90,30 90,50 C90,70 80,90 50,90 C20,90 10,70 10,50 C10,30 20,10 50,10',
   'M50,5 C90,15 95,50 85,80 C75,95 40,95 20,80 C5,65 5,35 15,20 C25,10 40,5 50,5',
@@ -51,7 +33,6 @@ export default function Background() {
 
   useEffect(() => {
     if (!bgRef.current) return;
-    // Reduced-motion: render shapes statically at their final path (no animation).
     if (isReducedMotion() || !canAnimate()) return;
 
     const scope = createScope({ root: bgRef.current });
@@ -62,10 +43,6 @@ export default function Background() {
         bgRef.current!.querySelectorAll<SVGPathElement>('.bg-morph-shape');
       if (shapes.length === 0) return;
 
-      // One continuous timeline: boot draw-in → scroll-scrubbed morph.
-      // Animation contract: createTimeline for sequences, onScroll sync for
-      // scroll-driven scrub, stagger for grids — matches BootSequence.ts +
-      // useTimeline.ts + useScrollAnimation.ts conventions.
       const tl = createTimeline({
         defaults: { ease: drawPreset.ease },
       });
@@ -82,10 +59,7 @@ export default function Background() {
         0,
       );
 
-      // Scroll-linked morph stays in the same timeline so boot completion →
-      // scroll scrub is one unified animation lifecycle, not two bolted
-      // animates sharing only a scope. Each morph is scroll-synced independently
-      // so the scrub tracks scroll position per shape.
+      // Scroll-scrubbed morph — warm washes, not neon zones
       shapes.forEach((shape, i) => {
         tl.add(
           shape,
@@ -108,18 +82,26 @@ export default function Background() {
 
   return (
     <div ref={bgRef} className="fixed inset-0 z-0" aria-hidden="true">
-      {/* Base gradient — scroll-reactive zone color */}
+      {/* Base — warm charcoal washes */}
       <div
-        className="absolute inset-0 transition-colors duration-700"
+        className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse at center, var(--bg-smoke) 0%, var(--bg-void) 60%, black 100%)',
+            'radial-gradient(ellipse at center, var(--bg-2) 0%, var(--bg-1) 62%, var(--bg-1) 100%)',
+        }}
+      />
+      {/* Subtle warm vignette wash */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 90% 70% at 50% 18%, var(--bg-3) 0%, transparent 55%), radial-gradient(ellipse 70% 60% at 80% 85%, var(--overlay-white-015) 0%, transparent 60%)',
         }}
       />
 
-      {/* Morphing SVG shapes (subtle background decoration) */}
+      {/* Morphing SVG shapes — warm border-subtle, very low opacity */}
       <svg
-        className="absolute inset-0 w-full h-full opacity-[0.04]"
+        className="absolute inset-0 w-full h-full opacity-[0.035]"
         preserveAspectRatio="xMidYMid slice"
       >
         <defs>
@@ -130,10 +112,9 @@ export default function Background() {
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="var(--neon-cyan)" />
-            <stop offset="100%" stopColor="var(--neon-magenta)" />
+            <stop offset="0%" stopColor="var(--border-subtle)" />
+            <stop offset="100%" stopColor="var(--fg-3)" />
           </linearGradient>
-          {/* Hidden morph targets for morphTo() — never rendered */}
           {MORPH_PATHS.map((d, i) => (
             <path
               key={`bg-morph-target-${i}`}
@@ -170,21 +151,16 @@ export default function Background() {
         />
       </svg>
 
-      {/* Tron Grid */}
       <TronGrid />
-
-      {/* Particle Field */}
       <ParticleField />
-
-      {/* Scanline Overlay */}
       <ScanlineOverlay />
 
-      {/* Vignette */}
+      {/* Vignette — warm */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse at center, transparent 30%, var(--overlay-60) 90%)',
+            'radial-gradient(ellipse at center, transparent 42%, var(--overlay-60) 92%)',
         }}
       />
     </div>

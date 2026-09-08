@@ -10,7 +10,10 @@ const supabaseProjectRef =
   process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID ??
   process.env.NEXT_PUBLIC_SUPABASE_PROJECT_NAME;
 
-function resolveStorageKey(url: string | undefined, projectRef: string | undefined): string {
+function resolveStorageKey(
+  url: string | undefined,
+  projectRef: string | undefined,
+): string {
   const fromUrl = url?.match(/^https:\/\/([a-z0-9-]+)\.supabase\.co/i)?.[1];
   if (fromUrl) return `sb-${fromUrl}-auth-token`;
   if (projectRef) return `sb-${projectRef}-auth-token`;
@@ -34,7 +37,8 @@ if (supabaseUrl && supabasePublishableKey) {
         autoRefreshToken: true,
         flowType: 'pkce',
         detectSessionInUrl: true,
-        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+        storage:
+          typeof window !== 'undefined' ? window.localStorage : undefined,
         storageKey: resolveStorageKey(supabaseUrl, supabaseProjectRef),
         lock: async <R>(
           _name: string,

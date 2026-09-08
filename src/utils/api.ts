@@ -1,6 +1,9 @@
 import axios from 'axios';
 import config from '../../config.json';
-import { supabase, hasSupabaseConfig as hasSupabaseClientConfig } from './supabase';
+import {
+  supabase,
+  hasSupabaseConfig as hasSupabaseClientConfig,
+} from './supabase';
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const CACHE_PREFIX = 'portfolio_cache:';
@@ -76,9 +79,8 @@ const clearPortfolioCache = (): void => {
   }
 
   try {
-    const keysToDelete = Array.from(
-      { length: localStorage.length },
-      (_, i) => localStorage.key(i),
+    const keysToDelete = Array.from({ length: localStorage.length }, (_, i) =>
+      localStorage.key(i),
     ).filter((k): k is string => Boolean(k && k.startsWith(CACHE_PREFIX)));
 
     keysToDelete.forEach((key) => localStorage.removeItem(key));
@@ -122,7 +124,10 @@ const getCachedOrFetch = async <T>(
     })
     .catch((err) => {
       if (isNetworkError(err)) {
-        console.warn(`[getCachedOrFetch] ${key} network error — not caching:`, (err as Error).message || err);
+        console.warn(
+          `[getCachedOrFetch] ${key} network error — not caching:`,
+          (err as Error).message || err,
+        );
       }
       throw err;
     })
@@ -293,7 +298,9 @@ const adminContentAction = async (
     return Boolean(data?.ok);
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      const respData = error.response?.data as Record<string, unknown> | undefined;
+      const respData = error.response?.data as
+        | Record<string, unknown>
+        | undefined;
       console.error(
         `[adminContentAction] "${action}" failed (${error.response?.status}):`,
         (respData && respData.message) || error.message,
@@ -328,20 +335,28 @@ export const getPortfolioSkills = async (): Promise<PortfolioSkill[]> => {
         return data as PortfolioSkill[];
       } catch (e) {
         if (isNetworkError(e)) throw e;
-        console.warn('[getPortfolioSkills] query failed', (e as Error).message || e);
+        console.warn(
+          '[getPortfolioSkills] query failed',
+          (e as Error).message || e,
+        );
         return [];
       }
     });
   } catch (e) {
     if (isNetworkError(e)) {
-      console.warn('[getPortfolioSkills] Supabase unavailable — returning empty:', (e as Error).message || e);
+      console.warn(
+        '[getPortfolioSkills] Supabase unavailable — returning empty:',
+        (e as Error).message || e,
+      );
       return [];
     }
     throw e;
   }
 };
 
-export const getKnowledgeBases = async (): Promise<PortfolioKnowledgeBase[]> => {
+export const getKnowledgeBases = async (): Promise<
+  PortfolioKnowledgeBase[]
+> => {
   if (!hasSupabaseConfig() || !supabase) {
     return [];
   }
@@ -361,13 +376,19 @@ export const getKnowledgeBases = async (): Promise<PortfolioKnowledgeBase[]> => 
         return data as PortfolioKnowledgeBase[];
       } catch (e) {
         if (isNetworkError(e)) throw e;
-        console.warn('[getKnowledgeBases] query failed', (e as Error).message || e);
+        console.warn(
+          '[getKnowledgeBases] query failed',
+          (e as Error).message || e,
+        );
         return [];
       }
     });
   } catch (e) {
     if (isNetworkError(e)) {
-      console.warn('[getKnowledgeBases] Supabase unavailable — returning empty:', (e as Error).message || e);
+      console.warn(
+        '[getKnowledgeBases] Supabase unavailable — returning empty:',
+        (e as Error).message || e,
+      );
       return [];
     }
     throw e;
@@ -400,7 +421,10 @@ export const getMeetings = async (): Promise<PortfolioMeeting[]> => {
     });
   } catch (e) {
     if (isNetworkError(e)) {
-      console.warn('[getMeetings] Supabase unavailable — returning empty:', (e as Error).message || e);
+      console.warn(
+        '[getMeetings] Supabase unavailable — returning empty:',
+        (e as Error).message || e,
+      );
       return [];
     }
     throw e;
@@ -430,13 +454,19 @@ export const getPortfolioProjects = async (): Promise<PortfolioProject[]> => {
         return data as PortfolioProject[];
       } catch (e) {
         if (isNetworkError(e)) throw e;
-        console.warn('[getPortfolioProjects] query failed', (e as Error).message || e);
+        console.warn(
+          '[getPortfolioProjects] query failed',
+          (e as Error).message || e,
+        );
         return [];
       }
     });
   } catch (e) {
     if (isNetworkError(e)) {
-      console.warn('[getPortfolioProjects] Supabase unavailable — returning empty:', (e as Error).message || e);
+      console.warn(
+        '[getPortfolioProjects] Supabase unavailable — returning empty:',
+        (e as Error).message || e,
+      );
       return [];
     }
     throw e;
@@ -469,13 +499,19 @@ export const getFeaturedPortfolioProjects = async (): Promise<
         return data as PortfolioProject[];
       } catch (e) {
         if (isNetworkError(e)) throw e;
-        console.warn('[getFeaturedPortfolioProjects] query failed', (e as Error).message || e);
+        console.warn(
+          '[getFeaturedPortfolioProjects] query failed',
+          (e as Error).message || e,
+        );
         return [];
       }
     });
   } catch (e) {
     if (isNetworkError(e)) {
-      console.warn('[getFeaturedPortfolioProjects] Supabase unavailable — returning empty:', (e as Error).message || e);
+      console.warn(
+        '[getFeaturedPortfolioProjects] Supabase unavailable — returning empty:',
+        (e as Error).message || e,
+      );
       return [];
     }
     throw e;
@@ -511,13 +547,19 @@ export const getProjectMedia = async (
         return data as PortfolioProjectMedia[];
       } catch (e) {
         if (isNetworkError(e)) throw e;
-        console.warn('[getProjectMedia] query failed', (e as Error).message || e);
+        console.warn(
+          '[getProjectMedia] query failed',
+          (e as Error).message || e,
+        );
         return [];
       }
     });
   } catch (e) {
     if (isNetworkError(e)) {
-      console.warn('[getProjectMedia] Supabase unavailable — returning empty:', (e as Error).message || e);
+      console.warn(
+        '[getProjectMedia] Supabase unavailable — returning empty:',
+        (e as Error).message || e,
+      );
       return [];
     }
     throw e;
@@ -547,13 +589,19 @@ export const getPortfolioProfile =
           return data as PortfolioProfile;
         } catch (e) {
           if (isNetworkError(e)) throw e;
-          console.warn('[getPortfolioProfile] query failed', (e as Error).message || e);
+          console.warn(
+            '[getPortfolioProfile] query failed',
+            (e as Error).message || e,
+          );
           return null;
         }
       });
     } catch (e) {
       if (isNetworkError(e)) {
-        console.warn('[getPortfolioProfile] Supabase unavailable — returning empty:', (e as Error).message || e);
+        console.warn(
+          '[getPortfolioProfile] Supabase unavailable — returning empty:',
+          (e as Error).message || e,
+        );
         return null;
       }
       throw e;
@@ -592,7 +640,10 @@ export const getSiteTexts = async (): Promise<Record<string, string>> => {
     });
   } catch (e) {
     if (isNetworkError(e)) {
-      console.warn('[getSiteTexts] Supabase unavailable — returning empty:', (e as Error).message || e);
+      console.warn(
+        '[getSiteTexts] Supabase unavailable — returning empty:',
+        (e as Error).message || e,
+      );
       return {};
     }
     throw e;
@@ -621,13 +672,19 @@ export const getSiteTextByKey = async (key: string): Promise<string | null> => {
         return (data as { value: string }).value;
       } catch (e) {
         if (isNetworkError(e)) throw e;
-        console.warn('[getSiteTextByKey] query failed', (e as Error).message || e);
+        console.warn(
+          '[getSiteTextByKey] query failed',
+          (e as Error).message || e,
+        );
         return null;
       }
     });
   } catch (e) {
     if (isNetworkError(e)) {
-      console.warn('[getSiteTextByKey] Supabase unavailable — returning empty:', (e as Error).message || e);
+      console.warn(
+        '[getSiteTextByKey] Supabase unavailable — returning empty:',
+        (e as Error).message || e,
+      );
       return null;
     }
     throw e;
@@ -834,7 +891,7 @@ export const createMeeting = async (
   payload: Partial<PortfolioMeeting>,
 ): Promise<boolean> => {
   // We can let the user book a meeting without being admin, so this shouldn't use adminContentAction if booked from frontend.
-  // Actually, we'll implement a separate API endpoint for creating meetings from chat/frontend, 
+  // Actually, we'll implement a separate API endpoint for creating meetings from chat/frontend,
   // but for admin manual creation/updates we use these.
   if (!hasSupabaseConfig()) return false;
   const ok = await adminContentAction(
@@ -875,9 +932,11 @@ export const uploadProjectAsset = async (
   }
 
   const filePath = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-  const { error } = await supabase!.storage.from(bucket).upload(filePath, file, {
-    upsert: false,
-  });
+  const { error } = await supabase!.storage
+    .from(bucket)
+    .upload(filePath, file, {
+      upsert: false,
+    });
 
   if (error) {
     return null;
@@ -889,7 +948,9 @@ export const uploadProjectAsset = async (
 
 // ─── Experiences ───────────────────────────────────────
 
-export const getPortfolioExperiences = async (): Promise<PortfolioExperience[]> => {
+export const getPortfolioExperiences = async (): Promise<
+  PortfolioExperience[]
+> => {
   if (!hasSupabaseConfig() || !supabase) return [];
   try {
     return await getCachedOrFetch('experiences', async () => {
@@ -903,13 +964,19 @@ export const getPortfolioExperiences = async (): Promise<PortfolioExperience[]> 
         return data as PortfolioExperience[];
       } catch (e) {
         if (isNetworkError(e)) throw e;
-        console.warn('[getPortfolioExperiences] query failed', (e as Error).message || e);
+        console.warn(
+          '[getPortfolioExperiences] query failed',
+          (e as Error).message || e,
+        );
         return [];
       }
     });
   } catch (e) {
     if (isNetworkError(e)) {
-      console.warn('[getPortfolioExperiences] Supabase unavailable — returning empty:', (e as Error).message || e);
+      console.warn(
+        '[getPortfolioExperiences] Supabase unavailable — returning empty:',
+        (e as Error).message || e,
+      );
       return [];
     }
     throw e;
@@ -926,7 +993,9 @@ export const getAllExperiences = async (): Promise<PortfolioExperience[]> => {
   return data as PortfolioExperience[];
 };
 
-export const getExperienceProjects = async (experienceId: number): Promise<PortfolioProject[]> => {
+export const getExperienceProjects = async (
+  experienceId: number,
+): Promise<PortfolioProject[]> => {
   if (!hasSupabaseConfig() || !supabase) return [];
   const { data: links, error: linkError } = await supabase!
     .from('experience_projects')
@@ -965,7 +1034,10 @@ export const createExperience = async (
     .single();
   if (error || !data) return false;
   if (projectIds.length > 0) {
-    const links = projectIds.map((pid) => ({ experience_id: data.id, project_id: pid }));
+    const links = projectIds.map((pid) => ({
+      experience_id: data.id,
+      project_id: pid,
+    }));
     await supabase!.from('experience_projects').insert(links);
   }
   clearPortfolioCache();
@@ -995,9 +1067,15 @@ export const updateExperience = async (
     .eq('id', id);
   if (error) return false;
   if (projectIds !== undefined) {
-    await supabase!.from('experience_projects').delete().eq('experience_id', id);
+    await supabase!
+      .from('experience_projects')
+      .delete()
+      .eq('experience_id', id);
     if (projectIds.length > 0) {
-      const links = projectIds.map((pid) => ({ experience_id: id, project_id: pid }));
+      const links = projectIds.map((pid) => ({
+        experience_id: id,
+        project_id: pid,
+      }));
       await supabase!.from('experience_projects').insert(links);
     }
   }

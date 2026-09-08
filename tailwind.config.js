@@ -12,7 +12,7 @@ module.exports = {
     extend: {
       colors: generated.colors,
       fontFamily: {
-        display: ['Audiowide', 'Orbitron', 'sans-serif'],
+        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
         body: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
@@ -25,16 +25,6 @@ module.exports = {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.3' },
         },
-        'scanline-drift': {
-          '0%': { transform: 'translateY(0)' },
-          '100%': { transform: 'translateY(4px)' },
-        },
-        'glitch-shift': {
-          '0%, 90%, 100%': { transform: 'translate(0,0)' },
-          '92%': { transform: 'translate(-1px, 0)' },
-          '94%': { transform: 'translate(1px, 0)' },
-          '96%': { transform: 'translate(-1px, 1px)' },
-        },
         'ripple-out': {
           '0%': { transform: 'scale(0)', opacity: '0.5' },
           '100%': { transform: 'scale(2.5)', opacity: '0' },
@@ -45,18 +35,11 @@ module.exports = {
           '60%': { transform: 'scaleX(1)', transformOrigin: 'right' },
           '100%': { transform: 'scaleX(0)', transformOrigin: 'right' },
         },
-        'reticle-spin': {
-          '0%': { transform: 'rotate(0deg)' },
-          '100%': { transform: 'rotate(360deg)' },
-        },
       },
       animation: {
         'pulse-glow': 'pulse-glow 2.4s ease-in-out infinite',
         'pulse-dot': 'pulse-dot 1.2s ease-in-out infinite',
-        'scanline-drift': 'scanline-drift 0.5s linear infinite',
-        'glitch-shift': 'glitch-shift 4s steps(1,end) infinite',
         'send-flash': 'send-flash 0.4s var(--ease-smooth) forwards',
-        'reticle-spin': 'reticle-spin 4s linear infinite',
       },
     },
   },

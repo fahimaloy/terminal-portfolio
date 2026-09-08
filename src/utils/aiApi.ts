@@ -31,7 +31,12 @@ export interface AiModel {
   cooldown_until: string | null;
   created_at: string;
   updated_at: string;
-  provider?: { id: number; name: string; provider_type: string; identifier_slug: string } | null;
+  provider?: {
+    id: number;
+    name: string;
+    provider_type: string;
+    identifier_slug: string;
+  } | null;
 }
 
 // ─── Providers ────────────────────────────────────────────────
@@ -58,7 +63,9 @@ export async function createProvider(payload: {
     if (data.ok) return data.provider;
     throw new Error(data.message || 'Failed to create provider');
   } catch (err: any) {
-    throw new Error(err.response?.data?.message || err.message || 'Failed to create provider');
+    throw new Error(
+      err.response?.data?.message || err.message || 'Failed to create provider',
+    );
   }
 }
 
@@ -67,7 +74,10 @@ export async function updateProvider(
   payload: Partial<AiProvider>,
 ): Promise<AiProvider | null> {
   try {
-    const { data } = await axios.patch('/api/admin/ai/providers', { id, ...payload });
+    const { data } = await axios.patch('/api/admin/ai/providers', {
+      id,
+      ...payload,
+    });
     if (data.ok) return data.provider;
     return null;
   } catch {
@@ -77,7 +87,9 @@ export async function updateProvider(
 
 export async function deleteProvider(id: number): Promise<boolean> {
   try {
-    const { data } = await axios.delete('/api/admin/ai/providers', { data: { id } });
+    const { data } = await axios.delete('/api/admin/ai/providers', {
+      data: { id },
+    });
     return data.ok;
   } catch {
     return false;
@@ -109,7 +121,9 @@ export async function createModels(payload: {
     if (data.ok) return data.models;
     throw new Error(data.message || 'Failed to create models');
   } catch (err: any) {
-    throw new Error(err.response?.data?.message || err.message || 'Failed to create models');
+    throw new Error(
+      err.response?.data?.message || err.message || 'Failed to create models',
+    );
   }
 }
 
@@ -118,7 +132,10 @@ export async function updateModel(
   payload: Partial<AiModel>,
 ): Promise<AiModel | null> {
   try {
-    const { data } = await axios.patch('/api/admin/ai/models', { id, ...payload });
+    const { data } = await axios.patch('/api/admin/ai/models', {
+      id,
+      ...payload,
+    });
     if (data.ok) return data.model;
     return null;
   } catch {
@@ -128,7 +145,9 @@ export async function updateModel(
 
 export async function deleteModel(id: number): Promise<boolean> {
   try {
-    const { data } = await axios.delete('/api/admin/ai/models', { data: { id } });
+    const { data } = await axios.delete('/api/admin/ai/models', {
+      data: { id },
+    });
     return data.ok;
   } catch {
     return false;
@@ -147,7 +166,9 @@ export async function testConnection(payload: {
     if (data.ok) return { models: data.models, count: data.count };
     throw new Error(data.message || 'Connection failed');
   } catch (err: any) {
-    throw new Error(err.response?.data?.message || err.message || 'Connection test failed');
+    throw new Error(
+      err.response?.data?.message || err.message || 'Connection test failed',
+    );
   }
 }
 
@@ -226,7 +247,8 @@ export async function fetchAllAiData(): Promise<{
 }> {
   try {
     const { data } = await axios.get('/api/admin/ai');
-    if (data.ok) return { providers: data.providers || [], models: data.models || [] };
+    if (data.ok)
+      return { providers: data.providers || [], models: data.models || [] };
     return { providers: [], models: [] };
   } catch {
     return { providers: [], models: [] };

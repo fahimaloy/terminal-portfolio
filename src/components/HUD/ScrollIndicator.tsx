@@ -34,7 +34,8 @@ export default function ScrollIndicator({
       if (!ticking) {
         requestAnimationFrame(() => {
           const scrollTop = window.scrollY;
-          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const docHeight =
+            document.documentElement.scrollHeight - window.innerHeight;
           const p = docHeight > 0 ? Math.min(1, scrollTop / docHeight) : 0;
           setProgress(p);
 

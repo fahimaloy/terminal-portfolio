@@ -10,84 +10,27 @@ interface AnimatedDividerProps {
 
 export default function AnimatedDivider({
   className = '',
-  color = 'currentColor',
-  animated = true,
+  color = 'var(--border-subtle)',
+  animated = false,
 }: AnimatedDividerProps) {
   return (
-    <div className={`relative py-8 ${className}`} aria-hidden="true">
-      <svg
-        className="w-full h-8"
-        viewBox="0 0 1200 32"
-        preserveAspectRatio="none"
-        fill="none"
-      >
-        {/* Main line */}
-        <line
-          x1="0"
-          y1="16"
-          x2="1200"
-          y2="16"
-          stroke={color}
-          strokeWidth="1"
-          strokeOpacity="0.3"
+    <div className={`relative py-6 ${className}`} aria-hidden="true">
+      <div className="flex items-center gap-4">
+        <div
+          className="flex-1 h-px"
+          style={{ background: color, opacity: 0.6 }}
         />
-        {/* Animated center diamond */}
-        {animated && (
-          <>
-            <rect
-              x="584"
-              y="8"
-              width="32"
-              height="16"
-              fill={color}
-              fillOpacity="0.2"
-              stroke={color}
-              strokeWidth="1"
-              strokeOpacity="0.6"
-            >
-              <animateTransform
-                attributeName="transform"
-                type="rotate"
-                from="0 600 16"
-                to="360 600 16"
-                dur="8s"
-                repeatCount="indefinite"
-              />
-            </rect>
-            {/* Pulsing dots */}
-            <circle cx="500" cy="16" r="3" fill={color} fillOpacity="0.6">
-              <animate
-                attributeName="r"
-                values="2;4;2"
-                dur="2s"
-                repeatCount="indefinite"
-              />
-              <animate
-                attributeName="opacity"
-                values="0.4;1;0.4"
-                dur="2s"
-                repeatCount="indefinite"
-              />
-            </circle>
-            <circle cx="700" cy="16" r="3" fill={color} fillOpacity="0.6">
-              <animate
-                attributeName="r"
-                values="2;4;2"
-                dur="2s"
-                repeatCount="indefinite"
-                begin="0.5s"
-              />
-              <animate
-                attributeName="opacity"
-                values="0.4;1;0.4"
-                dur="2s"
-                repeatCount="indefinite"
-                begin="0.5s"
-              />
-            </circle>
-          </>
-        )}
-      </svg>
+        {animated ? (
+          <div
+            className="w-2 h-2 rounded-full flex-shrink-0"
+            style={{ background: 'var(--fg-4)', opacity: 0.5 }}
+          />
+        ) : null}
+        <div
+          className="flex-1 h-px"
+          style={{ background: color, opacity: 0.6 }}
+        />
+      </div>
     </div>
   );
 }

@@ -33,10 +33,10 @@ export default function NotFoundPage() {
   // Generate particle positions after mount to avoid hydration mismatch
   useEffect(() => {
     const colors = [
-      'var(--neon-yellow)',
-      'var(--neon-magenta)',
-      'var(--neon-cyan)',
-      'var(--neon-green)',
+      'var(--fg-3)',
+      'var(--fg-4)',
+      'var(--border-subtle)',
+      'var(--border-strong)',
     ];
     setParticles(
       Array.from({ length: 20 }, (_, i) => ({
@@ -164,7 +164,10 @@ export default function NotFoundPage() {
 
         <div className="w-full max-w-2xl space-y-6 relative z-10">
           <div className="text-center">
-            <div className="text-[10px] font-display tracking-[6px] text-neon-red text-shadow-neon-magenta mb-3 diag-item opacity-0">
+            <div
+              className="text-[10px] font-display tracking-[6px] mb-3 diag-item opacity-0"
+              style={{ color: 'var(--fg-4)' }}
+            >
               {'// ERROR // 404'}
             </div>
             <GlitchText
@@ -175,7 +178,10 @@ export default function NotFoundPage() {
             >
               {glitchText}
             </GlitchText>
-            <div className="font-display tracking-[4px] text-neon-yellow text-shadow-neon-yellow mt-4 diag-item opacity-0">
+            <div
+              className="font-display tracking-[4px] mt-4 diag-item opacity-0"
+              style={{ color: 'var(--fg-2)' }}
+            >
               SIGNAL_LOST
             </div>
             <div className="font-body text-sm text-text-secondary mt-3 max-w-md mx-auto diag-item opacity-0 min-h-[3rem]">

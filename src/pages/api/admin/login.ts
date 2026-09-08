@@ -71,9 +71,10 @@ export default async function handler(
       'Retry-After',
       Math.ceil((rateLimit.resetAt - Date.now()) / 1000).toString(),
     );
-    res
-      .status(429)
-      .json({ ok: false, message: 'Too many login attempts. Please try again later.' });
+    res.status(429).json({
+      ok: false,
+      message: 'Too many login attempts. Please try again later.',
+    });
     return;
   }
 

@@ -31,12 +31,12 @@ const StatCard: React.FC<{
         />
       )}
     </div>
-    <div className="text-2xl font-display text-text-primary">{value}</div>
-    <div className="text-[10px] font-display tracking-[2px] text-text-muted mt-1">
+    <div className="text-2xl font-display text-[var(--fg-1)]">{value}</div>
+    <div className="text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mt-1">
       {label.toUpperCase()}
     </div>
     {sub && (
-      <div className="font-mono text-xs text-text-muted mt-0.5">{sub}</div>
+      <div className="font-mono text-xs text-[var(--fg-3)] mt-0.5">{sub}</div>
     )}
   </HudPanel>
 );
@@ -48,18 +48,18 @@ const ProgressBar: React.FC<{
   max: number;
   label: string;
   color?: string;
-}> = ({ value, max, label, color = 'bg-neon-magenta' }) => {
+}> = ({ value, max, label, color = 'bg-[var(--bg-3)]' }) => {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
     <div className="flex items-center gap-2 font-body text-xs">
-      <span className="w-20 text-text-muted">{label}</span>
-      <div className="flex-1 bg-white/[0.03] border border-white/10 h-2 clip-notch-sm overflow-hidden">
+      <span className="w-20 text-[var(--fg-3)]">{label}</span>
+      <div className="flex-1 bg-[var(--bg-2)] border border-[var(--border-subtle)] h-2 rounded-[var(--radius-md)] overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${color}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-16 text-right font-mono text-text-primary">
+      <span className="w-16 text-right font-mono text-[var(--fg-1)]">
         {value.toLocaleString()}
       </span>
     </div>
@@ -126,16 +126,16 @@ const AiUsagePage = () => {
               >
                 USAGE & REPORTS
               </GlitchText>
-              <p className="text-[10px] font-mono text-text-muted mt-1">
+              <p className="text-[10px] font-mono text-[var(--fg-3)] mt-1">
                 {'>'} AI MODEL TELEMETRY
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <label className="font-display text-[10px] tracking-[2px] text-text-muted">
+              <label className="font-display text-[10px] tracking-[2px] text-[var(--fg-3)]">
                 Period:
               </label>
               <select
-                className="bg-bg-smoke border border-white/10 text-text-primary px-3 py-1.5 font-body text-sm focus:outline-none focus:border-neon-cyan clip-notch-sm transition-all duration-200 [color-scheme:dark]"
+                className="bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-1.5 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] rounded-[var(--radius-md)] transition-all duration-200 [color-scheme:dark]"
                 value={days}
                 onChange={(e) => setDays(Number(e.target.value))}
               >
@@ -160,7 +160,7 @@ const AiUsagePage = () => {
             <div className="flex items-center justify-center min-h-[40vh]">
               <div className="text-center">
                 <div className="text-4xl mb-4 animate-pulse">⏳</div>
-                <div className="font-body text-sm text-text-muted">
+                <div className="font-body text-sm text-[var(--fg-3)]">
                   Loading usage data...
                 </div>
               </div>
@@ -168,31 +168,31 @@ const AiUsagePage = () => {
           ) : totalLogs === 0 ? (
             <HudPanel accent="cyan" notch="md" className="p-12 text-center">
               <div className="text-5xl mb-4">📭</div>
-              <p className="font-display tracking-[2px] text-text-primary text-lg mb-2">
+              <p className="font-display tracking-[2px] text-[var(--fg-1)] text-lg mb-2">
                 No usage data yet
               </p>
-              <p className="font-body text-sm text-text-muted">
+              <p className="font-body text-sm text-[var(--fg-3)]">
                 Usage data will appear here once AI models are used.
               </p>
             </HudPanel>
           ) : (
             <>
               {/* ─── Tab Navigation ────────────────────────── */}
-              <div className="flex gap-1 mb-6 border-b border-white/10 overflow-x-auto">
+              <div className="flex gap-1 mb-6 border-b border-[var(--border-subtle)] overflow-x-auto">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-4 py-2 font-display text-[11px] tracking-[2px] clip-notch-sm transition-all duration-200 whitespace-nowrap ${
+                    className={`px-4 py-2 font-display text-[11px] tracking-[2px] rounded-[var(--radius-md)] transition-all duration-200 whitespace-nowrap ${
                       activeTab === tab.id
-                        ? 'bg-neon-magenta/15 text-neon-magenta border border-neon-magenta/30 border-b-transparent'
-                        : 'text-text-muted hover:text-text-primary hover:bg-white/[0.03] border border-transparent'
+                        ? 'bg-[var(--bg-3)] text-[var(--fg-2)] border border-[var(--border-subtle)] border-b-transparent'
+                        : 'text-[var(--fg-3)] hover:text-[var(--fg-1)] hover:bg-[var(--bg-2)] border border-transparent'
                     }`}
                   >
                     <span className="mr-1">{tab.icon}</span>
                     {tab.label.toUpperCase()}
                     {tab.count !== undefined && tab.count > 0 && (
-                      <span className="ml-1 bg-neon-magenta text-black text-xs px-1.5 py-0.5 rounded-full">
+                      <span className="ml-1 bg-[var(--bg-3)] text-[var(--bg-1)] text-xs px-1.5 py-0.5 rounded-full">
                         {tab.count}
                       </span>
                     )}
@@ -240,7 +240,7 @@ const AiUsagePage = () => {
                   </div>
 
                   <HudPanel accent="cyan" notch="md" className="p-6">
-                    <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-4">
+                    <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
                       REQUEST DISTRIBUTION
                     </div>
                     <div className="space-y-3">
@@ -248,13 +248,13 @@ const AiUsagePage = () => {
                         label="Successful"
                         value={overview.successfulRequests}
                         max={overview.totalRequests}
-                        color="bg-neon-green"
+                        color="bg-[var(--bg-3)]"
                       />
                       <ProgressBar
                         label="Failed"
                         value={overview.failedRequests}
                         max={overview.totalRequests}
-                        color="bg-neon-red"
+                        color="bg-[var(--bg-3)]"
                       />
                     </div>
                   </HudPanel>
@@ -265,7 +265,7 @@ const AiUsagePage = () => {
               {activeTab === 'per-model' && (
                 <div className="space-y-4">
                   {modelStats.length === 0 ? (
-                    <p className="font-body text-sm text-text-muted">
+                    <p className="font-body text-sm text-[var(--fg-3)]">
                       No model-specific data available.
                     </p>
                   ) : (
@@ -278,18 +278,18 @@ const AiUsagePage = () => {
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <h4 className="font-display tracking-[2px] text-text-primary text-sm">
+                            <h4 className="font-display tracking-[2px] text-[var(--fg-1)] text-sm">
                               {stat.modelIdentifier}
                             </h4>
-                            <p className="font-body text-xs text-text-muted">
+                            <p className="font-body text-xs text-[var(--fg-3)]">
                               Provider: {stat.providerName}
                             </p>
                           </div>
                           <div className="text-right">
-                            <div className="font-body text-sm text-text-primary">
+                            <div className="font-body text-sm text-[var(--fg-1)]">
                               {stat.totalRequests} requests
                             </div>
-                            <div className="font-mono text-xs text-text-muted">
+                            <div className="font-mono text-xs text-[var(--fg-3)]">
                               {stat.avgLatencyMs}ms avg
                             </div>
                           </div>
@@ -297,43 +297,43 @@ const AiUsagePage = () => {
 
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                           <div className="text-center">
-                            <div className="text-lg font-display text-text-primary">
+                            <div className="text-lg font-display text-[var(--fg-1)]">
                               {stat.totalRequests.toLocaleString()}
                             </div>
-                            <div className="font-display text-[10px] tracking-[2px] text-text-muted">
+                            <div className="font-display text-[10px] tracking-[2px] text-[var(--fg-3)]">
                               Total
                             </div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-display text-neon-green">
+                            <div className="text-lg font-display text-[var(--fg-2)]">
                               {stat.successfulRequests.toLocaleString()}
                             </div>
-                            <div className="font-display text-[10px] tracking-[2px] text-text-muted">
+                            <div className="font-display text-[10px] tracking-[2px] text-[var(--fg-3)]">
                               Success
                             </div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-display text-neon-red">
+                            <div className="text-lg font-display text-[var(--fg-2)]">
                               {stat.failedRequests.toLocaleString()}
                             </div>
-                            <div className="font-display text-[10px] tracking-[2px] text-text-muted">
+                            <div className="font-display text-[10px] tracking-[2px] text-[var(--fg-3)]">
                               Failed
                             </div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-display text-text-primary">
+                            <div className="text-lg font-display text-[var(--fg-1)]">
                               {stat.totalTokens.toLocaleString()}
                             </div>
-                            <div className="font-display text-[10px] tracking-[2px] text-text-muted">
+                            <div className="font-display text-[10px] tracking-[2px] text-[var(--fg-3)]">
                               Tokens
                             </div>
                           </div>
                         </div>
 
                         {stat.failedRequests > 0 && (
-                          <div className="w-full bg-white/[0.03] border border-white/10 h-2 clip-notch-sm overflow-hidden">
+                          <div className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] h-2 rounded-[var(--radius-md)] overflow-hidden">
                             <div
-                              className="h-full bg-neon-red rounded-full"
+                              className="h-full bg-[var(--bg-3)] rounded-full"
                               style={{
                                 width: `${
                                   stat.totalRequests > 0
@@ -356,13 +356,13 @@ const AiUsagePage = () => {
               {activeTab === 'daily' && (
                 <div className="space-y-4">
                   {dailyStats.length === 0 ? (
-                    <p className="font-body text-sm text-text-muted">
+                    <p className="font-body text-sm text-[var(--fg-3)]">
                       No daily data available.
                     </p>
                   ) : (
                     <>
                       <HudPanel accent="cyan" notch="md" className="p-4">
-                        <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-4">
+                        <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
                           DAILY REQUEST VOLUME (LAST {dailyStats.length} DAYS)
                         </div>
                         <div className="space-y-1">
@@ -375,12 +375,12 @@ const AiUsagePage = () => {
                                 key={day.date}
                                 className="flex items-center gap-2 font-body text-xs"
                               >
-                                <span className="w-24 text-text-muted font-mono">
+                                <span className="w-24 text-[var(--fg-3)] font-mono">
                                   {day.date}
                                 </span>
-                                <div className="flex-1 bg-white/[0.03] border border-white/10 h-5 clip-notch-sm overflow-hidden flex">
+                                <div className="flex-1 bg-[var(--bg-2)] border border-[var(--border-subtle)] h-5 rounded-[var(--radius-md)] overflow-hidden flex">
                                   <div
-                                    className="bg-neon-magenta shadow-[0_0_8px_var(--glow-magenta)] h-full transition-all"
+                                    className="bg-[var(--bg-3)] h-full transition-all"
                                     style={{
                                       width: `${
                                         (day.totalRequests / maxVal) * 100
@@ -388,10 +388,10 @@ const AiUsagePage = () => {
                                     }}
                                   />
                                 </div>
-                                <span className="w-16 text-right font-mono text-text-primary">
+                                <span className="w-16 text-right font-mono text-[var(--fg-1)]">
                                   {day.totalRequests}
                                 </span>
-                                <span className="w-12 text-right font-mono text-text-muted">
+                                <span className="w-12 text-right font-mono text-[var(--fg-3)]">
                                   {day.totalTokens > 0
                                     ? `${(day.totalTokens / 1000).toFixed(1)}k`
                                     : '—'}
@@ -409,7 +409,7 @@ const AiUsagePage = () => {
                       >
                         <table className="w-full font-body text-sm">
                           <thead>
-                            <tr className="border-b border-white/10 text-text-muted">
+                            <tr className="border-b border-[var(--border-subtle)] text-[var(--fg-3)]">
                               <th className="p-3 text-left font-display text-[10px] tracking-[2px]">
                                 Date
                               </th>
@@ -434,24 +434,24 @@ const AiUsagePage = () => {
                             {dailyStats.map((day) => (
                               <tr
                                 key={day.date}
-                                className="border-b border-white/5 hover:bg-white/[0.03]"
+                                className="border-b border-[var(--border-subtle)] hover:bg-[var(--bg-2)]"
                               >
-                                <td className="p-3 font-mono text-xs text-text-secondary">
+                                <td className="p-3 font-mono text-xs text-[var(--fg-2)]">
                                   {day.date}
                                 </td>
-                                <td className="p-3 text-right font-mono text-text-secondary">
+                                <td className="p-3 text-right font-mono text-[var(--fg-2)]">
                                   {day.totalRequests}
                                 </td>
-                                <td className="p-3 text-right font-mono text-neon-green">
+                                <td className="p-3 text-right font-mono text-[var(--fg-2)]">
                                   {day.successfulRequests}
                                 </td>
-                                <td className="p-3 text-right font-mono text-neon-red">
+                                <td className="p-3 text-right font-mono text-[var(--fg-2)]">
                                   {day.totalRequests - day.successfulRequests}
                                 </td>
-                                <td className="p-3 text-right font-mono text-text-secondary">
+                                <td className="p-3 text-right font-mono text-[var(--fg-2)]">
                                   {day.totalTokens.toLocaleString()}
                                 </td>
-                                <td className="p-3 text-right font-mono text-text-secondary">
+                                <td className="p-3 text-right font-mono text-[var(--fg-2)]">
                                   {day.totalRequests > 0
                                     ? `${Math.round(
                                         (day.successfulRequests /
@@ -480,7 +480,7 @@ const AiUsagePage = () => {
                       className="p-8 text-center"
                     >
                       <div className="text-4xl mb-2">✨</div>
-                      <p className="font-body text-sm text-text-muted">
+                      <p className="font-body text-sm text-[var(--fg-3)]">
                         No errors recorded. Everything is running smoothly!
                       </p>
                     </HudPanel>
@@ -492,7 +492,7 @@ const AiUsagePage = () => {
                     >
                       <table className="w-full font-body text-sm">
                         <thead>
-                          <tr className="border-b border-white/10 text-text-muted">
+                          <tr className="border-b border-[var(--border-subtle)] text-[var(--fg-3)]">
                             <th className="p-3 text-left font-display text-[10px] tracking-[2px]">
                               Time
                             </th>
@@ -514,24 +514,24 @@ const AiUsagePage = () => {
                           {recentErrors.map((err) => (
                             <tr
                               key={err.id}
-                              className="border-b border-white/5 hover:bg-white/[0.03]"
+                              className="border-b border-[var(--border-subtle)] hover:bg-[var(--bg-2)]"
                             >
-                              <td className="p-3 font-mono text-xs text-text-muted">
+                              <td className="p-3 font-mono text-xs text-[var(--fg-3)]">
                                 {new Date(err.createdAt).toLocaleString()}
                               </td>
-                              <td className="p-3 font-mono text-xs text-neon-red">
+                              <td className="p-3 font-mono text-xs text-[var(--fg-2)]">
                                 {err.modelIdentifier}
                               </td>
-                              <td className="p-3 text-text-secondary">
+                              <td className="p-3 text-[var(--fg-2)]">
                                 {err.providerName}
                               </td>
                               <td className="p-3">
-                                <span className="font-display text-[10px] tracking-[2px] bg-neon-red/15 text-neon-red border border-neon-red/30 px-2 py-0.5 clip-notch-sm">
+                                <span className="font-display text-[10px] tracking-[2px] bg-[var(--bg-3)] text-[var(--fg-2)] border border-[var(--border-subtle)] px-2 py-0.5 rounded-[var(--radius-md)]">
                                   {err.requestType}
                                 </span>
                               </td>
                               <td
-                                className="p-3 font-mono text-xs text-neon-red max-w-xs truncate"
+                                className="p-3 font-mono text-xs text-[var(--fg-2)] max-w-xs truncate"
                                 title={err.errorMessage}
                               >
                                 {err.errorMessage}

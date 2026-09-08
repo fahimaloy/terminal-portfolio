@@ -1,5 +1,5 @@
 import config from '../../../config.json';
-import Photo from "../../assets/ascii_photo.png"
+import Photo from '../../assets/ascii_photo.png';
 const fahim = async (args: string[]): Promise<string> => {
   if (config.ascii === 'cveinnt') {
     return `                                                  

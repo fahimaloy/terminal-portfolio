@@ -49,7 +49,8 @@ export default function ReadingProgress({ targetRef }: Props) {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-[70] h-[3px] bg-white/[0.04]"
+      className="fixed top-0 left-0 right-0 z-[70] h-[2px]"
+      style={{ background: 'var(--border-subtle)' }}
       role="progressbar"
       aria-label="Reading progress"
       aria-valuenow={Math.round(progress * 100)}
@@ -60,9 +61,7 @@ export default function ReadingProgress({ targetRef }: Props) {
         className="h-full"
         style={{
           width: `${progress * 100}%`,
-          background:
-            'linear-gradient(90deg, var(--neon-cyan), var(--neon-yellow), var(--neon-magenta))',
-          boxShadow: '0 0 10px var(--neon-cyan)',
+          background: 'var(--fg-1)',
           transition: 'width 80ms linear',
         }}
       />

@@ -1,6 +1,4 @@
 // src/components/ui/forms/TextArea.tsx
-/* Themed textarea with focus animation and optional character counter. */
-
 import React, { useRef } from 'react';
 import FormField from './FormField';
 import { controlClass } from './TextInput';
@@ -24,6 +22,7 @@ export default function TextArea({
   showCount,
   required,
   className = '',
+  style,
   ...rest
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -55,9 +54,18 @@ export default function TextArea({
             focusOut(wrapRef.current);
             rest.onBlur?.(e);
           }}
-          className={`${controlClass} resize-none ${
-            error ? 'border-neon-red/50' : ''
-          } ${className}`}
+          style={
+            {
+              background: 'var(--bg-3)',
+              border: `1px solid ${
+                error ? 'var(--status-error)' : 'var(--border-subtle)'
+              }`,
+              borderRadius: 'var(--radius-md)',
+              color: 'var(--fg-1)',
+              ...style,
+            } as React.CSSProperties
+          }
+          className={`${controlClass} resize-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] ${className}`}
         />
       </div>
     </FormField>

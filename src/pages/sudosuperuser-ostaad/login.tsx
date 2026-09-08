@@ -244,17 +244,17 @@ const LoginPage = () => {
     hasError: boolean,
   ) => {
     const baseClasses =
-      'w-full px-4 py-3 bg-bg-smoke border-2 border-white/10 text-text-primary placeholder-text-muted transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed clip-notch-md font-body text-sm';
+      'w-full px-4 py-3 bg-[var(--bg-2)] border-2 border-[var(--border-subtle)] text-[var(--fg-1)] placeholder:text-[var(--fg-3)] transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed rounded-[var(--radius-lg)] font-body text-sm';
 
     if (hasError && touched[fieldName]) {
-      return `${baseClasses} border-neon-red focus:border-neon-red focus:shadow-[0_0_12px_var(--glow-red)] text-neon-red`;
+      return `${baseClasses} border-[var(--border-subtle)] focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] text-[var(--fg-2)]`;
     }
 
     if (focusedField === fieldName) {
-      return `${baseClasses} border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)]`;
+      return `${baseClasses} border-[var(--border-subtle)] focus:shadow-[0_0_0_3px_var(--border-subtle)]`;
     }
 
-    return `${baseClasses} border-white/10 hover:border-white/30 focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)]`;
+    return `${baseClasses} border-[var(--border-subtle)] hover:border-[var(--border-strong)] focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)]`;
   };
 
   const isFormValid =
@@ -278,12 +278,12 @@ const LoginPage = () => {
         />
       </Head>
 
-      <div className="min-h-screen bg-bg-void text-text-primary font-body flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen bg-[var(--bg-1)] text-[var(--fg-1)] font-body flex flex-col items-center justify-center p-4 relative overflow-hidden">
         {/* Animated background */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-magenta/5 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--bg-3)] rounded-full animate-pulse" />
           <div
-            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-cyan/5 rounded-full blur-3xl animate-pulse"
+            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--bg-3)] rounded-full animate-pulse"
             style={{ animationDelay: '2s' }}
           />
         </div>
@@ -295,11 +295,9 @@ const LoginPage = () => {
               {status === 'success' ? '🎉' : status === 'error' ? '⚠️' : '🔐'}
             </div>
             <h1 className="text-3xl font-display mb-2 tracking-wider">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-magenta to-neon-cyan">
-                Admin Access
-              </span>
+              <span className="text-transparent">Admin Access</span>
             </h1>
-            <p className="text-text-muted text-sm">
+            <p className="text-[var(--fg-3)] text-sm">
               Secure Portfolio Management
             </p>
           </div>
@@ -328,7 +326,7 @@ const LoginPage = () => {
                   <div className="font-display tracking-[2px]">
                     ACCESS GRANTED
                   </div>
-                  <div className="font-body text-sm text-text-muted">
+                  <div className="font-body text-sm text-[var(--fg-3)]">
                     Redirecting to dashboard...
                   </div>
                 </div>
@@ -361,12 +359,12 @@ const LoginPage = () => {
             <div
               className={`h-1 transition-all duration-500 ${
                 status === 'loading'
-                  ? 'bg-neon-yellow animate-pulse-glow'
+                  ? 'bg-[var(--fg-3)] animate-pulse'
                   : status === 'success'
-                  ? 'bg-neon-green shadow-[0_0_10px_var(--glow-green)]'
+                  ? 'bg-[var(--fg-1)]'
                   : status === 'error'
-                  ? 'bg-neon-red animate-pulse-glow'
-                  : 'bg-neon-cyan'
+                  ? 'bg-[var(--fg-2)] animate-pulse'
+                  : 'bg-[var(--border-subtle)]'
               }`}
             />
 
@@ -381,11 +379,11 @@ const LoginPage = () => {
                 <div>
                   <label
                     htmlFor="username"
-                    className="block text-sm font-display mb-2 flex items-center gap-2 text-text-muted"
+                    className="block text-sm font-display mb-2 flex items-center gap-2 text-[var(--fg-3)]"
                   >
                     <span>👤</span>
                     <span>Username</span>
-                    <span className="text-neon-red">*</span>
+                    <span className="text-[var(--fg-2)]">*</span>
                   </label>
                   <input
                     ref={usernameInputRef}
@@ -415,7 +413,7 @@ const LoginPage = () => {
                   {touched.username && validationErrors.username && (
                     <p
                       id="username-error"
-                      className="mt-1 text-xs text-neon-red flex items-center gap-1 animate-fade-in"
+                      className="mt-1 text-xs text-[var(--fg-2)] flex items-center gap-1 animate-fade-in"
                     >
                       <span>⚠️</span> {validationErrors.username}
                     </p>
@@ -426,11 +424,11 @@ const LoginPage = () => {
                 <div>
                   <label
                     htmlFor="password"
-                    className="block text-sm font-display mb-2 flex items-center gap-2 text-text-muted"
+                    className="block text-sm font-display mb-2 flex items-center gap-2 text-[var(--fg-3)]"
                   >
                     <span>🔑</span>
                     <span>Password</span>
-                    <span className="text-neon-red">*</span>
+                    <span className="text-[var(--fg-2)]">*</span>
                   </label>
                   <div className="relative">
                     <input
@@ -459,7 +457,7 @@ const LoginPage = () => {
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       disabled={status === 'loading' || isLocked}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text-primary transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-neon-cyan rounded"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[var(--fg-3)] hover:text-[var(--fg-1)] transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[var(--border-subtle)] rounded"
                       aria-label={
                         showPassword ? 'Hide password' : 'Show password'
                       }
@@ -498,7 +496,7 @@ const LoginPage = () => {
                   {touched.password && validationErrors.password && (
                     <p
                       id="password-error"
-                      className="mt-1 text-xs text-neon-red flex items-center gap-1 animate-fade-in"
+                      className="mt-1 text-xs text-[var(--fg-2)] flex items-center gap-1 animate-fade-in"
                     >
                       <span>⚠️</span> {validationErrors.password}
                     </p>
@@ -533,14 +531,14 @@ const LoginPage = () => {
                         key={i}
                         className={`w-2 h-2 rounded-full transition-colors ${
                           i < MAX_ATTEMPTS - attempts
-                            ? 'bg-neon-magenta shadow-[0_0_5px_var(--glow-magenta)]'
-                            : 'bg-neon-red/30'
+                            ? 'bg-[var(--fg-3)]'
+                            : 'bg-[var(--border-subtle)]'
                         }`}
                         aria-label={`Attempt ${i + 1} of ${MAX_ATTEMPTS}`}
                       />
                     ))}
                   </div>
-                  <p className="text-xs text-text-muted mt-2">
+                  <p className="text-xs text-[var(--fg-3)] mt-2">
                     {MAX_ATTEMPTS - attempts} attempt
                     {MAX_ATTEMPTS - attempts !== 1 ? 's' : ''} remaining
                   </p>
@@ -548,11 +546,11 @@ const LoginPage = () => {
               )}
 
               {/* Security Notice */}
-              <div className="mt-6 pt-6 border-t border-white/5">
-                <div className="flex items-start gap-3 text-xs text-text-muted">
+              <div className="mt-6 pt-6 border-t border-[var(--border-subtle)]">
+                <div className="flex items-start gap-3 text-xs text-[var(--fg-3)]">
                   <span className="text-lg flex-shrink-0">🛡️</span>
                   <div>
-                    <div className="font-display mb-1 text-neon-cyan">
+                    <div className="font-display mb-1 text-[var(--fg-2)]">
                       Secure Connection
                     </div>
                     <p>
@@ -567,12 +565,12 @@ const LoginPage = () => {
           </HudPanel>
 
           {/* Footer */}
-          <div className="mt-8 text-center text-xs text-text-muted">
+          <div className="mt-8 text-center text-xs text-[var(--fg-3)]">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="w-2 h-2 bg-neon-green rounded-full animate-pulse-dot shadow-[0_0_5px_var(--glow-green)]" />
+              <span className="w-2 h-2 bg-[var(--fg-3)] rounded-full animate-pulse " />
               <span>System Online</span>
             </div>
-            <code className="text-text-muted">
+            <code className="text-[var(--fg-3)]">
               $ sudo access-portfolio --admin
             </code>
           </div>
