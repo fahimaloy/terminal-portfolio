@@ -35,7 +35,7 @@ import {
   Hash,
 } from 'lucide-react';
 import { animate } from 'animejs';
-import { isReducedMotion } from '../../config/animations';
+import { isReducedMotion, durations, easings } from '../../config/animations';
 import AnimatedCounter from '../ui/AnimatedCounter';
 
 const lowlight = createLowlight(common);
@@ -86,8 +86,8 @@ function MenuButton({
     if (ref.current && !isReducedMotion()) {
       animate(ref.current, {
         scale: [1, 0.9, 1.05, 1],
-        duration: 200,
-        ease: 'outExpo',
+        duration: durations.hover * 1000,
+        ease: easings.expoOut,
       });
     }
   };
@@ -98,10 +98,18 @@ function MenuButton({
       type="button"
       onClick={handleClick}
       disabled={disabled}
-      className={`p-1.5 clip-notch-sm transition-all duration-150 focus-visible:outline-none focus-visible:border focus-visible:border-neon-cyan focus-visible:shadow-[0_0_12px_var(--glow-cyan-sm)] ${
-        active
-          ? 'bg-neon-purple/25 text-neon-purple border border-neon-purple/30'
-          : 'text-text-muted hover:text-text-primary hover:bg-white/[0.04] border border-transparent'
+      style={{
+        borderRadius: 'var(--radius-md)',
+        border: active
+          ? '1px solid color-mix(in srgb, var(--neon-purple) 30%, transparent)'
+          : '1px solid transparent',
+        background: active
+          ? 'color-mix(in srgb, var(--neon-purple) 12%, transparent)'
+          : 'transparent',
+        color: active ? 'var(--neon-purple)' : 'var(--text-muted)',
+      }}
+      className={`p-1.5 transition-all focus-visible:outline-none focus-visible:border focus-visible:border-[var(--neon-cyan)] focus-visible:shadow-[0_0_0_3px_var(--glow-cyan-sm)] ${
+        !active ? 'hover:text-[var(--fg-1)] hover:bg-[var(--bg-3)]' : ''
       } ${disabled ? 'opacity-30 cursor-not-allowed' : ''}`}
       title={title}
     >
@@ -271,10 +279,22 @@ const MenuBar = ({
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-white/10 bg-white/[0.03] relative">
+    <div
+      className="flex flex-wrap items-center gap-1 p-2 relative"
+      style={{
+        borderBottom: '1px solid var(--border-subtle)',
+        background: 'var(--bg-3)',
+      }}
+    >
       {buttons.map((btn, i) => {
         if ('divider' in btn) {
-          return <div key={i} className="w-px h-6 bg-white/10 mx-1" />;
+          return (
+            <div
+              key={i}
+              className="w-px h-6 mx-1"
+              style={{ background: 'var(--border-subtle)' }}
+            />
+          );
         }
         return (
           <MenuButton
@@ -293,11 +313,19 @@ const MenuBar = ({
         <button
           type="button"
           onClick={() => setLangPickerOpen(!langPickerOpen)}
-          className={`p-1.5 clip-notch-sm transition-all flex items-center gap-1 text-xs focus-visible:outline-none focus-visible:border focus-visible:border-neon-cyan ${
-            editor.isActive('codeBlock')
-              ? 'bg-neon-purple/25 text-neon-purple border border-neon-purple/30'
-              : 'text-text-muted hover:text-text-primary hover:bg-white/[0.04] border border-transparent'
-          }`}
+          className="p-1.5 transition-all flex items-center gap-1 text-xs focus-visible:outline-none focus-visible:border focus-visible:border-[var(--neon-cyan)]"
+          style={{
+            borderRadius: 'var(--radius-md)',
+            border: editor.isActive('codeBlock')
+              ? '1px solid color-mix(in srgb, var(--neon-purple) 30%, transparent)'
+              : '1px solid transparent',
+            background: editor.isActive('codeBlock')
+              ? 'color-mix(in srgb, var(--neon-purple) 12%, transparent)'
+              : 'transparent',
+            color: editor.isActive('codeBlock')
+              ? 'var(--neon-purple)'
+              : 'var(--text-muted)',
+          }}
           title="Code Block Language"
         >
           <Hash size={14} />
@@ -306,17 +334,29 @@ const MenuBar = ({
           </span>
         </button>
         {langPickerOpen && (
-          <div className="absolute top-full left-0 mt-1 z-50 bg-bg-smoke border border-white/10 clip-notch-sm p-2 max-h-48 overflow-y-auto min-w-[140px] shadow-xl">
+          <div
+            className="absolute top-full left-0 mt-1 z-50 p-2 max-h-48 overflow-y-auto min-w-[140px] shadow-xl"
+            style={{
+              background: 'var(--bg-2)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+            }}
+          >
             {LANGS.map((lang) => (
               <button
                 key={lang}
                 type="button"
                 onClick={() => setCodeLang(lang)}
-                className={`block w-full text-left px-2 py-1 text-xs clip-notch-sm transition-colors focus-visible:outline-none focus-visible:border-neon-cyan ${
-                  activeLang === lang
-                    ? 'bg-neon-purple/15 text-neon-purple'
-                    : 'text-text-secondary hover:bg-white/[0.04]'
-                }`}
+                className="block w-full text-left px-2 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:border-[var(--neon-cyan)]"
+                style={{
+                  borderRadius: 'var(--radius-sm)',
+                  background:
+                    activeLang === lang
+                      ? 'color-mix(in srgb, var(--neon-purple) 12%, transparent)'
+                      : 'transparent',
+                  color:
+                    activeLang === lang ? 'var(--neon-purple)' : 'var(--fg-2)',
+                }}
               >
                 {lang}
               </button>
@@ -329,7 +369,8 @@ const MenuBar = ({
       <button
         type="button"
         onClick={onToggleFullscreen}
-        className="p-1.5 clip-notch-sm text-text-muted hover:text-text-primary hover:bg-white/[0.04] transition-all ml-auto focus-visible:outline-none focus-visible:border focus-visible:border-neon-cyan"
+        className="p-1.5 transition-all ml-auto focus-visible:outline-none focus-visible:border focus-visible:border-[var(--neon-cyan)]"
+        style={{ borderRadius: 'var(--radius-md)', color: 'var(--text-muted)' }}
         title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
       >
         {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
@@ -410,8 +451,8 @@ export default function RichTextEditor({
       animate(btns, {
         opacity: [0, 1],
         y: [-4, 0],
-        duration: 200,
-        ease: 'outExpo',
+        duration: durations.hover * 1000,
+        ease: easings.expoOut,
         delay: 30,
       });
     }
@@ -421,11 +462,17 @@ export default function RichTextEditor({
     <>
       <div
         ref={containerRef}
-        className={`border border-white/10 clip-notch-sm overflow-hidden bg-white/[0.03] ${
-          isFullscreen
-            ? 'fixed inset-4 z-50 flex flex-col shadow-2xl shadow-[0_0_24px_var(--glow-purple-sm)]'
-            : ''
+        className={`overflow-hidden ${
+          isFullscreen ? 'fixed inset-4 z-50 flex flex-col shadow-2xl' : ''
         }`}
+        style={{
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          background: 'var(--bg-2)',
+          boxShadow: isFullscreen
+            ? '0 0 24px var(--glow-purple-sm)'
+            : undefined,
+        }}
       >
         <div className="toolbar-animate">
           <MenuBar
@@ -438,12 +485,19 @@ export default function RichTextEditor({
           editor={editor}
           className={`prose prose-invert max-w-none p-3 focus:outline-none focus-visible:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:focus-visible:outline-none ${
             isFullscreen ? 'flex-1 min-h-0' : 'min-h-[150px]'
-          } [&_.ProseMirror]:min-h-[130px] [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-text-muted [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)]`}
+          } [&_.ProseMirror]:min-h-[130px] [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-[var(--text-muted)] [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)]`}
           data-placeholder={placeholder || 'Write your description...'}
         />
 
         {/* Footer: word count */}
-        <div className="flex items-center justify-between px-3 py-2 border-t border-white/10 bg-white/[0.03] text-xs text-text-muted">
+        <div
+          className="flex items-center justify-between px-3 py-2 text-xs"
+          style={{
+            borderTop: '1px solid var(--border-subtle)',
+            background: 'var(--bg-3)',
+            color: 'var(--text-muted)',
+          }}
+        >
           <div className="flex gap-4">
             <span>
               <AnimatedCounter value={wordCount} /> words
@@ -451,7 +505,10 @@ export default function RichTextEditor({
             <span>{charCount} chars</span>
           </div>
           {isFullscreen && (
-            <span className="text-[10px] text-text-muted">
+            <span
+              className="text-[10px]"
+              style={{ color: 'var(--text-muted)' }}
+            >
               ESC to exit fullscreen
             </span>
           )}

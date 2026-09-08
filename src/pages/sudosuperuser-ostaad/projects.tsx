@@ -205,7 +205,7 @@ const ProjectsPage = () => {
             <div ref={listRef} className="lg:col-span-2">
               {projects.length > 0 ? (
                 <HudPanel accent="magenta" notch="md" className="p-6">
-                  <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+                  <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
                     PROJECTS ({projects.length})
                   </div>
 
@@ -213,20 +213,20 @@ const ProjectsPage = () => {
                     {projects.map((project) => (
                       <div
                         key={project.id}
-                        className="project-item p-3 bg-white/[0.03] border border-white/10 clip-notch-sm flex flex-col gap-2 transition-all duration-200 hover:border-neon-cyan/30 hover:bg-neon-cyan/5"
+                        className="project-item p-3 bg-[var(--bg-2)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] flex flex-col gap-2 transition-all duration-200 hover:border-[var(--border-strong)] hover:bg-[var(--bg-3)]"
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <div className="font-display tracking-[2px] text-text-primary text-sm">
+                            <div className="font-display tracking-[2px] text-[var(--fg-1)] text-sm">
                               {project.title}
                             </div>
                             {project.short_title && (
-                              <div className="text-xs text-text-muted font-body">
+                              <div className="text-xs text-[var(--fg-3)] font-body">
                                 {project.short_title}
                               </div>
                             )}
                             {project.client_name && (
-                              <div className="text-xs text-neon-magenta font-body">
+                              <div className="text-xs text-[var(--fg-2)] font-body">
                                 Client: {project.client_name}
                               </div>
                             )}
@@ -266,7 +266,7 @@ const ProjectsPage = () => {
                   notch="md"
                   className="p-6 text-center"
                 >
-                  <span className="font-body text-sm text-text-muted">
+                  <span className="font-body text-sm text-[var(--fg-3)]">
                     No projects yet.
                   </span>
                 </HudPanel>
@@ -275,18 +275,18 @@ const ProjectsPage = () => {
 
             <HudPanel accent="magenta" notch="md" className="p-6">
               <div ref={formRef}>
-                <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+                <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
                   {editingProjectId ? 'EDIT PROJECT' : 'ADD PROJECT'}
                 </div>
 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                       Title *
                     </label>
                     <input
                       type="text"
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="Project title"
                       value={projectDraft.title || ''}
                       onChange={(e) =>
@@ -300,12 +300,12 @@ const ProjectsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                       Short Title
                     </label>
                     <input
                       type="text"
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="Short title"
                       value={projectDraft.short_title || ''}
                       onChange={(e) =>
@@ -319,7 +319,7 @@ const ProjectsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                       Description (Rich Text)
                     </label>
                     <RichTextEditor
@@ -333,18 +333,18 @@ const ProjectsPage = () => {
                     />
                   </div>
 
-                  <div className="border-t border-white/10 pt-3">
-                    <h4 className="font-display tracking-[2px] text-sm text-text-muted mb-2">
+                  <div className="border-t border-[var(--border-subtle)] pt-3">
+                    <h4 className="font-display tracking-[2px] text-sm text-[var(--fg-3)] mb-2">
                       Client Information
                     </h4>
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                        <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                           Client Name
                         </label>
                         <input
                           type="text"
-                          className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                          className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                           placeholder="Client name"
                           value={projectDraft.client_name || ''}
                           onChange={(e) =>
@@ -357,12 +357,12 @@ const ProjectsPage = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                        <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                           Client Location
                         </label>
                         <input
                           type="text"
-                          className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                          className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                           placeholder="e.g., New York, USA"
                           value={projectDraft.client_location || ''}
                           onChange={(e) =>
@@ -375,12 +375,12 @@ const ProjectsPage = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                        <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                           Client Logo URL
                         </label>
                         <input
                           type="url"
-                          className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                          className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                           placeholder="https://..."
                           value={projectDraft.client_logo || ''}
                           onChange={(e) =>
@@ -393,7 +393,7 @@ const ProjectsPage = () => {
                         />
                         {projectDraft.client_logo && (
                           <div className="mt-2 flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-white/10 overflow-hidden flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-lg bg-[var(--bg-2)] overflow-hidden flex items-center justify-center">
                               <img
                                 src={projectDraft.client_logo}
                                 alt="Client logo"
@@ -404,7 +404,7 @@ const ProjectsPage = () => {
                                 }}
                               />
                             </div>
-                            <span className="font-body text-xs text-text-muted">
+                            <span className="font-body text-xs text-[var(--fg-3)]">
                               Logo preview
                             </span>
                           </div>
@@ -414,12 +414,12 @@ const ProjectsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                       Thumbnail URL
                     </label>
                     <input
                       type="url"
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="Thumbnail URL"
                       value={projectDraft.thumbnail_url || ''}
                       onChange={(e) =>
@@ -433,12 +433,12 @@ const ProjectsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                       Main Image URL
                     </label>
                     <input
                       type="url"
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="Main image URL"
                       value={projectDraft.image_url || ''}
                       onChange={(e) =>
@@ -452,12 +452,12 @@ const ProjectsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                       Live URL
                     </label>
                     <input
                       type="url"
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="Live project URL"
                       value={projectDraft.project_url || ''}
                       onChange={(e) =>
@@ -471,12 +471,12 @@ const ProjectsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                       Repo URL
                     </label>
                     <input
                       type="url"
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="Repository URL"
                       value={projectDraft.repo_url || ''}
                       onChange={(e) =>
@@ -490,12 +490,12 @@ const ProjectsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                       Languages (comma separated)
                     </label>
                     <input
                       type="text"
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="e.g., JavaScript, Python, Go"
                       value={(projectDraft.languages || []).join(', ')}
                       onChange={(e) => setProjectLanguages(e.target.value)}
@@ -504,12 +504,12 @@ const ProjectsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                       Tags (comma separated)
                     </label>
                     <input
                       type="text"
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="e.g., web, mobile, api (skills are auto-added)"
                       value={(projectDraft.tags || []).join(', ')}
                       onChange={(e) => setProjectTags(e.target.value)}
@@ -517,8 +517,8 @@ const ProjectsPage = () => {
                     />
                   </div>
 
-                  <div className="border-t border-white/10 pt-3">
-                    <label className="block text-[10px] font-display tracking-[2px] mb-2 text-text-muted">
+                  <div className="border-t border-[var(--border-subtle)] pt-3">
+                    <label className="block text-[10px] font-display tracking-[2px] mb-2 text-[var(--fg-3)]">
                       Skills Used
                     </label>
                     <SearchableMultiSelect
@@ -531,12 +531,12 @@ const ProjectsPage = () => {
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                         Featured Order
                       </label>
                       <input
                         type="number"
-                        className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                        className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                         value={projectDraft.featured_order || 0}
                         onChange={(e) =>
                           setProjectDraft((prev) => ({
@@ -549,12 +549,12 @@ const ProjectsPage = () => {
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                      <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                         Sort Order
                       </label>
                       <input
                         type="number"
-                        className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                        className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                         value={projectDraft.sort_order || 0}
                         onChange={(e) =>
                           setProjectDraft((prev) => ({
@@ -567,7 +567,7 @@ const ProjectsPage = () => {
                     </div>
                   </div>
 
-                  <label className="flex items-center gap-2 font-body text-sm cursor-pointer text-text-secondary">
+                  <label className="flex items-center gap-2 font-body text-sm cursor-pointer text-[var(--fg-2)]">
                     <input
                       type="checkbox"
                       checked={Boolean(projectDraft.featured)}
@@ -578,7 +578,7 @@ const ProjectsPage = () => {
                         }))
                       }
                       disabled={isSaving}
-                      className="cursor-pointer accent-neon-cyan"
+                      className="cursor-pointer accent-[var(--fg-1)]"
                     />
                     Featured Project
                   </label>

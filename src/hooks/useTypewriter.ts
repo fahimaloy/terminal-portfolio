@@ -130,7 +130,7 @@ export function useTypewriter(options: TypewriterOptions = {}) {
           setIsTyping(false);
           onComplete?.();
         },
-        });
+      });
 
       animRef.current = anim;
     });

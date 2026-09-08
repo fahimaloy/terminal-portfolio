@@ -231,6 +231,13 @@ function lintFile(filePath, allowed) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (line.includes(IGNORE_MARKER)) continue;
+    // Adjacent-line ignore: prettier may split a JSX element and its
+    // trailing {/* token-lint-ignore */} onto the next line (e.g. _app.tsx
+    // theme-color meta). Treat a raw-hex line as ignored when the immediate
+    // next or previous line carries the marker.
+    const adjIgnored =
+      (i + 1 < lines.length && lines[i + 1].includes(IGNORE_MARKER)) ||
+      (i > 0 && lines[i - 1].includes(IGNORE_MARKER));
     // Skip pure CSS variable definition lines entirely
     if (CSS_VAR_DEF_RE.test(line)) continue;
 
@@ -240,7 +247,7 @@ function lintFile(filePath, allowed) {
     // companion to tokens.css (it @imports it and defines utilities that may
     // legitimately inline rgba hex for glass/overlay variants).
     const isTokensCompanion = filePath.replace(/\\/g, '/').endsWith('src/styles/global.css');
-    if (!inTokensCss && !isTokensCompanion) {
+    if (!inTokensCss && !isTokensCompanion && !adjIgnored) {
       for (const m of line.matchAll(HEX_RE)) {
         violations.push({
           file: filePath,
@@ -253,7 +260,7 @@ function lintFile(filePath, allowed) {
     }
 
     // 2) raw rgba() — outside tokens.css (and its companion) only
-    if (!inTokensCss && !isTokensCompanion) {
+    if (!inTokensCss && !isTokensCompanion && !adjIgnored) {
       for (const m of line.matchAll(RGBA_RE)) {
         violations.push({
           file: filePath,

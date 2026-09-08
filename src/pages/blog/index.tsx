@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SEOMeta from '../../components/SEOMeta';
 import BlogSearch from '../../components/blog/BlogSearch';
 import BlogReels from '../../components/blog/BlogReels';
-import { GlitchText, HudPanel, NeonButton } from '../../components/ui';
 import { getBlogPosts } from '../../utils/blogApi';
 import type { BlogListItem } from '../../types/blog';
 
@@ -71,34 +70,64 @@ export default function BlogIndexPage() {
 
       <main className="min-h-screen relative z-10 px-4 pt-24 pb-10 max-w-6xl mx-auto">
         <header className="text-center mb-6">
-          <div className="text-[10px] font-display tracking-[6px] text-neon-cyan text-shadow-neon-cyan mb-2">
+          <div
+            className="text-[10px] font-mono tracking-[0.32em] mb-2"
+            style={{ color: 'var(--fg-4)' }}
+          >
             {'// TRANSMISSION_LOG'}
           </div>
-          <GlitchText as="h1" accent="cyan" className="text-4xl md:text-6xl">
+          <h1
+            className="text-4xl md:text-6xl font-display font-semibold tracking-[-0.02em] leading-none"
+            style={{ color: 'var(--fg-1)' }}
+          >
             BLOG
-          </GlitchText>
-          <p className="font-body text-xs md:text-sm text-text-muted mt-4 max-w-lg mx-auto">
+          </h1>
+          <p
+            className="font-body text-xs md:text-sm mt-4 max-w-lg mx-auto"
+            style={{ color: 'var(--fg-3)' }}
+          >
             Build logs, engineering notes and deep dives from the terminal.
           </p>
         </header>
 
         {/* Filter drawer affordance — keeps search/tag/sort without a second route */}
         <div className="flex justify-end mb-4">
-          <NeonButton
-            accent="cyan"
-            variant={drawerOpen ? 'outline' : 'ghost'}
+          <button
             onClick={() => setDrawerOpen((v) => !v)}
+            className="inline-flex items-center justify-center px-4 py-2 font-mono text-[11px] tracking-[0.14em] border rounded-[var(--radius-md)] transition-colors duration-200"
+            style={
+              drawerOpen
+                ? {
+                    background: 'var(--fg-1)',
+                    color: 'var(--bg-1)',
+                    borderColor: 'var(--fg-1)',
+                  }
+                : {
+                    background: 'transparent',
+                    color: 'var(--fg-2)',
+                    borderColor: 'var(--border-subtle)',
+                  }
+            }
           >
             {drawerOpen
               ? 'CLOSE FILTERS'
               : `FILTER${tag || search ? ' • ACTIVE' : ''}`}
-          </NeonButton>
+          </button>
         </div>
 
         {drawerOpen && (
           <div className="mb-6">
-            <HudPanel accent="cyan" notch="md" className="p-4">
-              <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-3">
+            <div
+              className="p-4 rounded-[var(--radius-lg)] border"
+              style={{
+                background: 'var(--bg-2)',
+                borderColor: 'var(--border-subtle)',
+              }}
+            >
+              <div
+                className="text-[10px] font-mono tracking-[0.24em] mb-3"
+                style={{ color: 'var(--fg-4)' }}
+              >
                 {'// FILTER_DRAWER'}
               </div>
               <BlogSearch
@@ -111,11 +140,14 @@ export default function BlogIndexPage() {
                 onSortChange={setSort}
                 resultCount={total}
               />
-              <p className="font-mono text-[10px] text-text-muted mt-3">
+              <p
+                className="font-mono text-[10px] mt-3"
+                style={{ color: 'var(--fg-4)' }}
+              >
                 Filters apply in-place to the reels buffer (page resets to 1).
                 No secondary list route.
               </p>
-            </HudPanel>
+            </div>
           </div>
         )}
 
@@ -125,33 +157,53 @@ export default function BlogIndexPage() {
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="h-[56dvh] bg-white/[0.03] border border-white/5 clip-notch-md animate-pulse-glow"
+                className="h-[56dvh] rounded-[var(--radius-lg)] border animate-pulse"
+                style={{
+                  background: 'var(--bg-2)',
+                  borderColor: 'var(--border-subtle)',
+                }}
               />
             ))}
           </div>
         ) : isEmpty ? (
-          <HudPanel accent="magenta" notch="md" className="p-8 text-center">
-            <div className="font-display text-sm text-neon-magenta tracking-[3px]">
+          <div
+            className="p-8 text-center rounded-[var(--radius-lg)] border"
+            style={{
+              background: 'var(--bg-2)',
+              borderColor: 'var(--border-subtle)',
+            }}
+          >
+            <div
+              className="font-display text-sm tracking-[0.16em]"
+              style={{ color: 'var(--fg-1)' }}
+            >
               NO TRANSMISSIONS FOUND
             </div>
-            <p className="font-mono text-[11px] text-text-muted mt-2">
+            <p
+              className="font-mono text-[11px] mt-2"
+              style={{ color: 'var(--fg-4)' }}
+            >
               {'>'} Adjust your search parameters and retry.
             </p>
             {search || tag ? (
               <div className="mt-4 flex justify-center gap-2">
-                <NeonButton
-                  accent="cyan"
-                  variant="outline"
+                <button
                   onClick={() => {
                     setSearch('');
                     setTag('');
                   }}
+                  className="inline-flex items-center justify-center px-4 py-2 font-mono text-[11px] tracking-[0.14em] border rounded-[var(--radius-md)] transition-colors"
+                  style={{
+                    background: 'transparent',
+                    borderColor: 'var(--border-subtle)',
+                    color: 'var(--fg-2)',
+                  }}
                 >
                   CLEAR FILTERS
-                </NeonButton>
+                </button>
               </div>
             ) : null}
-          </HudPanel>
+          </div>
         ) : showReels ? (
           <BlogReels
             items={items}
@@ -165,10 +217,13 @@ export default function BlogIndexPage() {
 
         {/* Deep-link hint — reels overlay uses in-place expand; /blog/[slug] preserved for SEO/share */}
         {!isEmpty && !loading && (
-          <p className="font-mono text-[10px] text-text-muted text-center mt-6">
+          <p
+            className="font-mono text-[10px] text-center mt-6"
+            style={{ color: 'var(--fg-4)' }}
+          >
             Tip: each card exposes a Permalink to{' '}
-            <span className="text-neon-cyan">/blog/[slug]</span> for sharing —
-            reels view does not swap routes per swipe.
+            <span style={{ color: 'var(--fg-2)' }}>/blog/[slug]</span> for
+            sharing — reels view does not swap routes per swipe.
           </p>
         )}
       </main>

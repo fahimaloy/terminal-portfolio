@@ -1,7 +1,4 @@
-// src/components/ui/Toast.tsx
-/* Toast notifications with anime.js slide-in. Provider + useToast hook.
-   Mount <ToastProvider> once (in _app) and call useToast() anywhere below it. */
-
+// src/components/ui/Toast.tsx — flat editorial toast with accent left border
 import React, {
   createContext,
   useCallback,
@@ -13,7 +10,7 @@ import React, {
 } from 'react';
 import { animate } from 'animejs';
 import { CheckCircle, AlertCircle, Info, X } from 'lucide-react';
-import { canAnimate } from '../../config/animations';
+import { canAnimate, durations, easings } from '../../config/animations';
 
 export type ToastKind = 'success' | 'error' | 'info';
 
@@ -33,21 +30,21 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 
 const KIND_STYLES: Record<
   ToastKind,
-  { accent: string; border: string; icon: React.ReactNode }
+  { accent: string; borderLeft: string; icon: React.ReactNode }
 > = {
   success: {
-    accent: 'text-neon-green',
-    border: 'border-neon-green/40',
+    accent: 'var(--status-success)',
+    borderLeft: 'var(--status-success)',
     icon: <CheckCircle size={14} />,
   },
   error: {
-    accent: 'text-neon-red',
-    border: 'border-neon-red/40',
+    accent: 'var(--status-error)',
+    borderLeft: 'var(--status-error)',
     icon: <AlertCircle size={14} />,
   },
   info: {
-    accent: 'text-neon-cyan',
-    border: 'border-neon-cyan/40',
+    accent: 'var(--fg-3)',
+    borderLeft: 'var(--border-strong)',
     icon: <Info size={14} />,
   },
 };
@@ -69,8 +66,8 @@ function ToastItem({
       animate(ref.current, {
         opacity: [0, 1],
         x: [40, 0],
-        duration: 320,
-        ease: 'outExpo',
+        duration: durations.hover * 1000 + 80,
+        ease: easings.expoOut,
       });
     }
     const timer = setTimeout(() => onDismiss(toast.id), AUTO_DISMISS_MS);
@@ -82,16 +79,26 @@ function ToastItem({
       ref={ref}
       role="status"
       aria-live="polite"
-      className={`clip-notch-sm bg-bg-smoke border ${style.border} px-3 py-2.5 flex items-center gap-2 shadow-lg pointer-events-auto max-w-xs`}
+      className="px-3 py-2.5 flex items-center gap-2 pointer-events-auto max-w-xs"
+      style={{
+        background: 'var(--bg-2)',
+        border: '1px solid var(--border-subtle)',
+        borderLeft: `3px solid ${style.borderLeft}`,
+        borderRadius: 'var(--radius-lg)',
+      }}
     >
-      <span className={style.accent}>{style.icon}</span>
-      <span className="font-body text-xs text-text-primary flex-1">
+      <span style={{ color: style.accent }}>{style.icon}</span>
+      <span
+        className="font-body text-xs flex-1"
+        style={{ color: 'var(--fg-1)' }}
+      >
         {toast.message}
       </span>
       <button
         onClick={() => onDismiss(toast.id)}
         aria-label="Dismiss notification"
-        className="text-text-muted hover:text-text-primary transition-colors"
+        className="transition-colors hover:opacity-70"
+        style={{ color: 'var(--text-muted)' }}
       >
         <X size={12} />
       </button>

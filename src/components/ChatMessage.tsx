@@ -1,6 +1,10 @@
 // src/components/ChatMessage.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { PortfolioProject, PortfolioSkill, PortfolioExperience } from '../utils/api';
+import {
+  PortfolioProject,
+  PortfolioSkill,
+  PortfolioExperience,
+} from '../utils/api';
 import {
   parseAiResponse,
   findProjectsByIds,
@@ -112,7 +116,11 @@ export default React.memo(function ChatMessage({
     return (
       <div className="flex w-full justify-start">
         <div className="w-full max-w-[95%] md:max-w-[85%]">
-          <HudPanel accent="cyan" notch="sm" className="px-4 py-3 hud-glow-cyan">
+          <HudPanel
+            accent="cyan"
+            notch="sm"
+            className="px-4 py-3 hud-glow-cyan"
+          >
             <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-3">
               {'> AI.RESPONSE'}
             </div>
@@ -131,7 +139,11 @@ export default React.memo(function ChatMessage({
     return (
       <div className="flex w-full justify-start">
         <div className="w-full max-w-[95%] md:max-w-[85%]">
-          <HudPanel accent="cyan" notch="sm" className="px-4 py-3 hud-glow-cyan">
+          <HudPanel
+            accent="cyan"
+            notch="sm"
+            className="px-4 py-3 hud-glow-cyan"
+          >
             <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-3">
               {'> AI.RESPONSE'}
             </div>
@@ -146,7 +158,11 @@ export default React.memo(function ChatMessage({
     return (
       <div className="flex w-full justify-start">
         <div className="w-full max-w-[95%] md:max-w-[85%]">
-          <HudPanel accent="cyan" notch="sm" className="px-4 py-3 hud-glow-cyan">
+          <HudPanel
+            accent="cyan"
+            notch="sm"
+            className="px-4 py-3 hud-glow-cyan"
+          >
             <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-3">
               {'> AI.RESPONSE'}
             </div>
@@ -239,7 +255,9 @@ export default React.memo(function ChatMessage({
                   return <SkillGrid key={idx} skills={skillList} />;
                 }
                 case 'experience_timeline':
-                  return <ExperienceTimeline key={idx} experiences={experiences} />;
+                  return (
+                    <ExperienceTimeline key={idx} experiences={experiences} />
+                  );
                 case 'project_table':
                   return (
                     <ProjectTableView

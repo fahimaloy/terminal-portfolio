@@ -134,25 +134,25 @@ const ProfilePage = () => {
 
           {statusMessage && (
             <HudPanel accent="green" notch="sm" className="mb-4 p-3">
-              <span className="font-body text-sm text-neon-green">
+              <span className="font-body text-sm text-[var(--fg-2)]">
                 {statusMessage}
               </span>
             </HudPanel>
           )}
 
           <HudPanel accent="cyan" notch="md" className="p-6 mb-8">
-            <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-4">
+            <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
               PORTFOLIO DETAILS
             </div>
 
             <div className="grid gap-3 mb-4 md:grid-cols-2">
               <div>
-                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                   Full Name:
                 </label>
                 <input
                   type="text"
-                  className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Full name"
                   value={profile.full_name || ''}
                   onChange={(e) =>
@@ -166,12 +166,12 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                   Title:
                 </label>
                 <input
                   type="text"
-                  className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Professional title"
                   value={profile.title || ''}
                   onChange={(e) =>
@@ -182,12 +182,12 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                   Phone:
                 </label>
                 <input
                   type="text"
-                  className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Phone number"
                   value={profile.phone || ''}
                   onChange={(e) =>
@@ -198,12 +198,12 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                   Email:
                 </label>
                 <input
                   type="email"
-                  className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Email address"
                   value={profile.email || ''}
                   onChange={(e) =>
@@ -214,12 +214,12 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                   Website:
                 </label>
                 <input
                   type="url"
-                  className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Website URL"
                   value={profile.website || ''}
                   onChange={(e) =>
@@ -233,12 +233,12 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                   GitHub:
                 </label>
                 <input
                   type="url"
-                  className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="GitHub profile URL"
                   value={profile.github || ''}
                   onChange={(e) =>
@@ -249,12 +249,12 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                   LinkedIn:
                 </label>
                 <input
                   type="url"
-                  className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="LinkedIn profile URL"
                   value={profile.linkedin || ''}
                   onChange={(e) =>
@@ -268,12 +268,12 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                   Avatar URL:
                 </label>
                 <input
                   type="url"
-                  className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Avatar image URL"
                   value={profile.avatar_url || ''}
                   onChange={(e) =>
@@ -288,11 +288,11 @@ const ProfilePage = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+              <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                 Summary:
               </label>
               <textarea
-                className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200 resize-none"
+                className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200 resize-none"
                 rows={3}
                 placeholder="Short summary"
                 value={profile.summary || ''}
@@ -307,11 +307,11 @@ const ProfilePage = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+              <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                 Bio:
               </label>
               <textarea
-                className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200 resize-none"
+                className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200 resize-none"
                 rows={4}
                 placeholder="Detailed bio"
                 value={profile.bio || ''}
@@ -326,7 +326,7 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2 mb-4">
-              <label className="block text-[10px] font-display tracking-[2px] text-text-muted">
+              <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)]">
                 Welcome / Greeting Message
               </label>
               <textarea
@@ -337,7 +337,7 @@ const ProfilePage = () => {
                 placeholder="Hi, I'm your AI assistant. Ask me anything about my skills, projects, and professional background!"
                 maxLength={500}
                 rows={3}
-                className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200 resize-none"
+                className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200 resize-none"
                 disabled={isSaving}
               />
             </div>
@@ -353,27 +353,27 @@ const ProfilePage = () => {
           </HudPanel>
 
           <HudPanel accent="magenta" notch="md" className="p-6">
-            <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+            <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
               ADMIN CREDENTIALS
             </div>
 
-            <p className="mb-4 font-body text-sm text-text-muted">
+            <p className="mb-4 font-body text-sm text-[var(--fg-3)]">
               Default seed:{' '}
-              <code className="text-neon-magenta font-mono">fahimaloy</code> /{' '}
-              <code className="text-neon-magenta font-mono">dibona</code> /{' '}
-              <code className="text-neon-magenta font-mono">
+              <code className="text-[var(--fg-2)] font-mono">fahimaloy</code> /{' '}
+              <code className="text-[var(--fg-2)] font-mono">dibona</code> /{' '}
+              <code className="text-[var(--fg-2)] font-mono">
                 private.fahimaloy@proton.me
               </code>
             </p>
 
             <div className="grid gap-3 mb-4 md:grid-cols-2">
               <div>
-                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                   Username:
                 </label>
                 <input
                   type="text"
-                  className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Username"
                   value={credentialsForm.username}
                   onChange={(e) =>
@@ -387,12 +387,12 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                   Private Email:
                 </label>
                 <input
                   type="email"
-                  className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Private email"
                   value={credentialsForm.email}
                   onChange={(e) =>
@@ -406,12 +406,12 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                   Current Password (required):
                 </label>
                 <input
                   type="password"
-                  className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Current password"
                   value={credentialsForm.currentPassword}
                   onChange={(e) =>
@@ -425,12 +425,12 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                   New Password (optional):
                 </label>
                 <input
                   type="password"
-                  className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="New password"
                   value={credentialsForm.newPassword}
                   onChange={(e) =>

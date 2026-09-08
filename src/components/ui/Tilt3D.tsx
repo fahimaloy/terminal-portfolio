@@ -5,13 +5,13 @@ import { isReducedMotion } from '../../config/animations';
 
 type Props = {
   children: React.ReactNode;
-  intensity?: number; // degrees, default 2
+  intensity?: number; // degrees, default 4 (reduced editorial)
   className?: string;
 };
 
 export default function Tilt3D({
   children,
-  intensity = 2,
+  intensity = 4,
   className = '',
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -49,7 +49,7 @@ export default function Tilt3D({
       rotateX: '0deg',
       rotateY: '0deg',
       duration: 500,
-      ease: 'outElastic(1, .5)',
+      ease: 'outExpo',
     });
   }, [cancelPrev]);
 

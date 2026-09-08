@@ -27,7 +27,9 @@ const App = ({ Component, pageProps }: AppProps) => {
           key="viewport"
           maximum-scale="1"
         />
-        <meta name="theme-color" content="#0a0a0a" key="theme-color" /> {/* token-lint-ignore — browser meta, not style */}
+        {/* prettier-ignore */}
+        <meta name="theme-color" content="#0a0a0a" key="theme-color" />{' '}
+        {/* token-lint-ignore — browser meta, not style */}
         {noindex && (
           <meta name="robots" content="noindex, nofollow" key="robots" />
         )}
@@ -38,7 +40,7 @@ const App = ({ Component, pageProps }: AppProps) => {
             position: 'fixed',
             inset: 0,
             background: 'var(--bg-void)',
-            color: 'var(--neon-cyan)',
+            color: 'var(--fg-1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -58,7 +60,7 @@ const App = ({ Component, pageProps }: AppProps) => {
             >
               {'// JAVASCRIPT_REQUIRED'}
             </div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--neon-yellow)' }}>
+            <div style={{ fontSize: '0.875rem', color: 'var(--fg-3)' }}>
               This portfolio requires JavaScript to render the neural HUD
               interface. The site is a Next.js application — please enable JS
               and reload.

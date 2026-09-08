@@ -33,7 +33,11 @@ type SkillCardProps = {
   delay?: number;
 };
 
-export default function SkillCard({ skill, inline = false, delay = 0 }: SkillCardProps) {
+export default function SkillCard({
+  skill,
+  inline = false,
+  delay = 0,
+}: SkillCardProps) {
   const gradient = getGradient(skill.id);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -65,12 +69,16 @@ export default function SkillCard({ skill, inline = false, delay = 0 }: SkillCar
       <div
         ref={ref}
         className={`bg-gradient-to-br ${gradient} border border-white/10 rounded-xl ${
-          inline ? 'px-3 py-2 inline-flex items-center gap-2' : 'p-4 flex flex-col items-center text-center'
+          inline
+            ? 'px-3 py-2 inline-flex items-center gap-2'
+            : 'p-4 flex flex-col items-center text-center'
         } transition-all duration-200 hover:border-white/20 skill-card`}
       >
-        <div className={`font-display text-neon-cyan text-shadow-neon-cyan ${
-          inline ? 'text-sm' : 'text-lg mb-2'
-        }`}>
+        <div
+          className={`font-display text-neon-cyan text-shadow-neon-cyan ${
+            inline ? 'text-sm' : 'text-lg mb-2'
+          }`}
+        >
           {skill.name}
         </div>
         {!inline && (
@@ -89,7 +97,9 @@ export default function SkillCard({ skill, inline = false, delay = 0 }: SkillCar
           </div>
         )}
         {skill.category && !inline && (
-          <div className="text-[9px] text-text-muted mt-1">{skill.category}</div>
+          <div className="text-[9px] text-text-muted mt-1">
+            {skill.category}
+          </div>
         )}
       </div>
     </Tilt3D>

@@ -28,4 +28,3 @@ export { default as AnimatedDivider } from './AnimatedDivider';
 export { default as CursorGlow } from './CursorGlow';
 export { default as MagneticButton } from './MagneticButton';
 export { default as Tooltip } from './Tooltip';
-

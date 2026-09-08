@@ -21,37 +21,80 @@ type Action =
 
 // Fields allowed for upsert/update per entity (whitelist for security).
 const PROFILE_FIELDS = new Set([
-  'full_name', 'title', 'bio', 'welcome_message', 'summary',
-  'phone', 'email', 'location', 'website', 'github', 'linkedin',
-  'resume_url', 'avatar_url', 'is_active',
+  'full_name',
+  'title',
+  'bio',
+  'welcome_message',
+  'summary',
+  'phone',
+  'email',
+  'location',
+  'website',
+  'github',
+  'linkedin',
+  'resume_url',
+  'avatar_url',
+  'is_active',
 ]);
 
 const SKILL_FIELDS = new Set([
-  'name', 'category', 'level', 'icon_key', 'icon_type', 'icon_color',
-  'duration', 'sort_order', 'is_visible',
+  'name',
+  'category',
+  'level',
+  'icon_key',
+  'icon_type',
+  'icon_color',
+  'duration',
+  'sort_order',
+  'is_visible',
 ]);
 
 const PROJECT_FIELDS = new Set([
-  'title', 'short_title', 'description', 'description_html', 'image_url',
-  'thumbnail_url', 'icon_key', 'project_url', 'repo_url', 'languages',
-  'tags', 'client_name', 'client_location', 'client_logo', 'featured',
-  'featured_order', 'sort_order', 'is_visible',
+  'title',
+  'short_title',
+  'description',
+  'description_html',
+  'image_url',
+  'thumbnail_url',
+  'icon_key',
+  'project_url',
+  'repo_url',
+  'languages',
+  'tags',
+  'client_name',
+  'client_location',
+  'client_logo',
+  'featured',
+  'featured_order',
+  'sort_order',
+  'is_visible',
 ]);
 
 const MEDIA_FIELDS = new Set([
-  'project_id', 'media_type', 'url', 'thumbnail_url', 'video_provider',
-  'media_order', 'is_visible',
+  'project_id',
+  'media_type',
+  'url',
+  'thumbnail_url',
+  'video_provider',
+  'media_order',
+  'is_visible',
 ]);
 
-const KNOWLEDGE_FIELDS = new Set([
-  'category', 'content', 'is_visible',
-]);
+const KNOWLEDGE_FIELDS = new Set(['category', 'content', 'is_visible']);
 
 const MEETING_FIELDS = new Set([
-  'name', 'email', 'date', 'time', 'reason', 'status',
+  'name',
+  'email',
+  'date',
+  'time',
+  'reason',
+  'status',
 ]);
 
-const filterFields = (payload: Record<string, unknown>, allowed: Set<string>): Record<string, unknown> => {
+const filterFields = (
+  payload: Record<string, unknown>,
+  allowed: Set<string>,
+): Record<string, unknown> => {
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(payload)) {
     if (allowed.has(key)) {
@@ -63,7 +106,10 @@ const filterFields = (payload: Record<string, unknown>, allowed: Set<string>): R
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const validateRequiredFields = (payload: Record<string, unknown>, fields: string[]): string | null => {
+const validateRequiredFields = (
+  payload: Record<string, unknown>,
+  fields: string[],
+): string | null => {
   for (const f of fields) {
     const v = payload[f];
     if (v === undefined || v === null || (typeof v === 'string' && !v.trim())) {
@@ -201,7 +247,9 @@ export default async function handler(
 
     if (action === 'addProjectMedia') {
       const payload = filterFields(raw, MEDIA_FIELDS);
-      const { error } = await supabaseAdmin.from('project_media').insert(payload);
+      const { error } = await supabaseAdmin
+        .from('project_media')
+        .insert(payload);
       if (error) throw error;
       res.status(200).json({ ok: true });
       return;
@@ -219,7 +267,9 @@ export default async function handler(
 
     if (action === 'createKnowledgeBase') {
       const payload = filterFields(raw, KNOWLEDGE_FIELDS);
-      const { error } = await supabaseAdmin.from('knowledge_bases').insert(payload);
+      const { error } = await supabaseAdmin
+        .from('knowledge_bases')
+        .insert(payload);
       if (error) throw error;
       res.status(200).json({ ok: true });
       return;

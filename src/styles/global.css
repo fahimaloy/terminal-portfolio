@@ -5,196 +5,41 @@
 @import './tokens.css';
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   CYBERPUNK REUSABLE UTILITIES
-   All utilities reference CSS tokens from tokens.css.
-   New utilities added for v2.0 enhanced design system.
-═══════════════════════════════════════════════════════════════════════════════ */
+   EDITORIAL WARM — REUSABLE UTILITIES
+   All utilities reference CSS tokens from tokens.css (no raw hex/rgba).
+   Warm, subtle editorial surface system — no neon blooms or clip-notches.
+   ═══════════════════════════════════════════════════════════════════════════════ */
 
 @layer utilities {
-  /* ── TEXT SHADOWS ────────────────────────────────────────────────────────── */
-  .text-shadow-neon-yellow {
-    text-shadow: 0 0 8px var(--neon-yellow), 0 0 16px var(--glow-yellow);
+  /* ── SUBTLE ACCENT RING / HAIRLINE (replaces hud-glow / border-glow / text-shadow-neon) ─ */
+  .accent-ring {
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    border-radius: var(--radius-lg);
   }
-  .text-shadow-neon-magenta {
-    text-shadow: 0 0 8px var(--neon-magenta), 0 0 16px var(--glow-magenta);
-  }
-  .text-shadow-neon-cyan {
-    text-shadow: 0 0 8px var(--neon-cyan), 0 0 16px var(--glow-cyan);
-  }
-  .text-shadow-neon-green {
-    text-shadow: 0 0 8px var(--neon-green), 0 0 16px var(--glow-green);
-  }
-  .text-shadow-neon-red {
-    text-shadow: 0 0 8px var(--neon-red), 0 0 16px var(--glow-red);
-  }
-  .text-shadow-neon-purple {
-    text-shadow: 0 0 8px var(--neon-purple), 0 0 16px var(--glow-purple);
-  }
-  .text-shadow-neon-blue {
-    text-shadow: 0 0 8px var(--neon-blue), 0 0 16px var(--glow-blue);
+  .accent-hairline {
+    border: 1px solid var(--border-subtle);
   }
 
-  /* ── SHAPE / CLIP-PATH NOTCHES ────────────────────────────────────────────── */
+  /* ── SHAPE — ROUNDED (replaces clip-notch) ────────────────────────────────── */
+  .rounded-card {
+    border-radius: var(--radius-lg);
+  }
+  .rounded-pill {
+    border-radius: var(--radius-full);
+  }
+
+  /* Backwards-compat aliases — no clip-path, map to border-radius */
   .clip-notch-sm {
-    clip-path: polygon(
-      var(--clip-notch-sm) 0,
-      100% 0,
-      100% calc(100% - var(--clip-notch-sm)),
-      calc(100% - var(--clip-notch-sm)) 100%,
-      0 100%,
-      0 var(--clip-notch-sm)
-    );
+    border-radius: var(--radius-sm);
   }
   .clip-notch-md {
-    clip-path: polygon(
-      var(--clip-notch-md) 0,
-      100% 0,
-      100% calc(100% - var(--clip-notch-md)),
-      calc(100% - var(--clip-notch-md)) 100%,
-      0 100%,
-      0 var(--clip-notch-md)
-    );
+    border-radius: var(--radius-md);
   }
   .clip-notch-lg {
-    clip-path: polygon(
-      var(--clip-notch-lg) 0,
-      100% 0,
-      100% calc(100% - var(--clip-notch-lg)),
-      calc(100% - var(--clip-notch-lg)) 100%,
-      0 100%,
-      0 var(--clip-notch-lg)
-    );
+    border-radius: var(--radius-lg);
   }
   .clip-notch-xl {
-    clip-path: polygon(
-      var(--clip-notch-xl) 0,
-      100% 0,
-      100% calc(100% - var(--clip-notch-xl)),
-      calc(100% - var(--clip-notch-xl)) 100%,
-      0 100%,
-      0 var(--clip-notch-xl)
-    );
-  }
-
-  /* ── HUD GLOW EFFECTS ─────────────────────────────────────────────────────── */
-  .hud-glow-yellow {
-    box-shadow: 0 0 18px var(--glow-yellow),
-      inset 0 0 14px rgba(255, 170, 0, 0.08);
-  }
-  .hud-glow-magenta {
-    box-shadow: 0 0 18px var(--glow-magenta),
-      inset 0 0 14px rgba(255, 0, 170, 0.08);
-  }
-  .hud-glow-cyan {
-    box-shadow: 0 0 18px var(--glow-cyan),
-      inset 0 0 14px rgba(0, 240, 255, 0.08);
-  }
-  .hud-glow-green {
-    box-shadow: 0 0 18px var(--glow-green),
-      inset 0 0 14px rgba(57, 255, 20, 0.08);
-  }
-  .hud-glow-red {
-    box-shadow: 0 0 18px var(--glow-red), inset 0 0 14px rgba(255, 51, 85, 0.08);
-  }
-  .hud-glow-purple {
-    box-shadow: 0 0 18px var(--glow-purple),
-      inset 0 0 14px var(--glow-purple-sm);
-  }
-  .hud-glow-blue {
-    box-shadow: 0 0 18px var(--glow-blue), inset 0 0 14px var(--glow-blue-sm);
-  }
-
-  /* ── BORDER GLows ─────────────────────────────────────────────────────────── */
-  .border-glow-cyan {
-    border-color: var(--neon-cyan);
-    box-shadow: 0 0 12px var(--glow-cyan-sm);
-  }
-  .border-glow-magenta {
-    border-color: var(--neon-magenta);
-    box-shadow: 0 0 12px var(--glow-magenta-sm);
-  }
-  .border-glow-yellow {
-    border-color: var(--neon-yellow);
-    box-shadow: 0 0 12px var(--glow-yellow-sm);
-  }
-  .border-glow-green {
-    border-color: var(--neon-green);
-    box-shadow: 0 0 12px var(--glow-green-sm);
-  }
-  .border-glow-red {
-    border-color: var(--neon-red);
-    box-shadow: 0 0 12px var(--glow-red-sm);
-  }
-  .border-glow-purple {
-    border-color: var(--neon-purple);
-    box-shadow: 0 0 12px var(--glow-purple-sm);
-  }
-  .border-glow-blue {
-    border-color: var(--neon-blue);
-    box-shadow: 0 0 12px var(--glow-blue-sm);
-  }
-
-  /* ── ANIMATED GLYPH EFFECTS ──────────────────────────────────────────────── */
-  .animate-pulse-glow {
-    animation: pulseGlow 2s ease-in-out infinite;
-  }
-  @keyframes pulseGlow {
-    0%,
-    100% {
-      opacity: 0.4;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-
-  .animate-pulse-dot {
-    animation: pulseDot 2s ease-in-out infinite;
-  }
-  @keyframes pulseDot {
-    0%,
-    100% {
-      opacity: 0.3;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.2);
-    }
-  }
-
-  .animate-pulse-soft {
-    animation: pulseSoft 3s ease-in-out infinite;
-  }
-  @keyframes pulseSoft {
-    0%,
-    100% {
-      opacity: 0.6;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-
-  /* ── FLOAT ANIMATION ──────────────────────────────────────────────────────── */
-  @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0px) translateX(0px);
-      opacity: 0.4;
-    }
-    25% {
-      transform: translateY(-20px) translateX(10px);
-      opacity: 0.7;
-    }
-    50% {
-      transform: translateY(-10px) translateX(-5px);
-      opacity: 0.5;
-    }
-    75% {
-      transform: translateY(-25px) translateX(15px);
-      opacity: 0.6;
-    }
+    border-radius: var(--radius-xl);
   }
 
   /* ── FADE IN ANIMATIONS ───────────────────────────────────────────────────── */
@@ -251,7 +96,41 @@
     }
   }
 
-  /* ── GLASSMORPHISM ────────────────────────────────────────────────────────── */
+  /* ── SUBTLE PULSE / FLOAT (kept — no neon refs) ──────────────────────────── */
+  .animate-pulse-soft {
+    animation: pulseSoft 3s ease-in-out infinite;
+  }
+  @keyframes pulseSoft {
+    0%,
+    100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px) translateX(0px);
+      opacity: 0.4;
+    }
+    25% {
+      transform: translateY(-20px) translateX(10px);
+      opacity: 0.7;
+    }
+    50% {
+      transform: translateY(-10px) translateX(-5px);
+      opacity: 0.5;
+    }
+    75% {
+      transform: translateY(-25px) translateX(15px);
+      opacity: 0.6;
+    }
+  }
+
+  /* ── GLASSMORPHISM — warm editorial ───────────────────────────────────────── */
   .glass {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
@@ -259,21 +138,14 @@
     -webkit-backdrop-filter: var(--glass-blur);
   }
 
-  .glass-cyan {
-    background: rgba(0, 240, 255, 0.06);
-    border: 1px solid rgba(0, 240, 255, 0.2);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+  .glass-subtle {
+    background: var(--bg-3);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
   }
 
-  .glass-magenta {
-    background: rgba(255, 0, 170, 0.06);
-    border: 1px solid rgba(255, 0, 170, 0.2);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-
-  /* ── DISPLAY FONT (futuristic headings) ───────────────────────────────────── */
+  /* ── FONT FAMILIES ────────────────────────────────────────────────────────── */
   .font-display {
     font-family: var(--font-display);
   }
@@ -284,13 +156,12 @@
     font-family: var(--font-mono);
   }
 
-  /* ── CURSOR ─────────────────────────────────────────────────────────────── */
+  /* ── CURSOR — plain editorial ────────────────────────────────────────────── */
   body {
-    cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%2300f0ff" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>'),
-      auto;
+    cursor: auto;
   }
 
-  /* ── SCROLLBAR ────────────────────────────────────────────────────────────── */
+  /* ── SCROLLBAR — warm, no neon ──────────────────────────────────────────── */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -305,8 +176,7 @@
     border: 1px solid var(--bg-panel);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--neon-cyan);
-    box-shadow: 0 0 8px var(--glow-cyan-sm);
+    background: var(--border-strong);
   }
 
   /* ── FULL HEIGHT SETUP ────────────────────────────────────────────────────── */
@@ -328,10 +198,10 @@
     scrollbar-width: none;
   }
 
-  /* ── SELECTION ────────────────────────────────────────────────────────────── */
+  /* ── SELECTION — warm ─────────────────────────────────────────────────────── */
   ::selection {
-    background: var(--glow-cyan);
-    color: var(--text-primary);
+    background: var(--selection-bg);
+    color: var(--selection-fg);
   }
 
   /* ── REDUCED MOTION ───────────────────────────────────────────────────────── */
@@ -347,62 +217,49 @@
 
 /* ── TAILWIND COMPONENTS ─────────────────────────────────────────────────────── */
 @layer components {
-  /* HUD Panel base */
+  /* Panel — flat editorial, no glow */
   .hud-panel {
     @apply relative bg-bg-panel border text-text-primary font-body;
-    border-color: var(--glow-cyan-faint);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    border-color: var(--border-subtle);
+    background: var(--bg-panel);
+    border-radius: var(--radius-lg);
   }
 
-  /* ── FORM PREMIUM INPUT — actual CSS for .form-premium-input ─────────────── */
+  /* ── FORM PREMIUM INPUT — warm, rounded ──────────────────────────────────── */
   .form-premium-input {
-    @apply bg-bg-smoke border border-white/10 text-text-primary placeholder:text-text-muted;
-    clip-path: polygon(
-      var(--clip-notch-sm) 0,
-      100% 0,
-      100% calc(100% - var(--clip-notch-sm)),
-      calc(100% - var(--clip-notch-sm)) 100%,
-      0 100%,
-      0 var(--clip-notch-sm)
-    );
+    @apply bg-bg-smoke border text-text-primary placeholder:text-text-muted;
+    border-radius: var(--radius-md);
+    border-color: var(--border-subtle);
     transition: border-color var(--dur-transition) var(--ease-out),
       box-shadow var(--dur-transition) var(--ease-out);
   }
   .form-premium-input:focus {
     outline: none;
     border-color: var(--neon-cyan);
-    box-shadow: 0 0 12px var(--glow-cyan-sm);
+    box-shadow: 0 0 0 3px var(--glow-cyan-sm);
   }
   .form-premium-input:focus-visible {
     outline: none;
     border-color: var(--neon-cyan);
-    box-shadow: 0 0 14px var(--glow-cyan), 0 0 0 2px var(--glow-cyan-sm);
+    box-shadow: 0 0 0 3px var(--glow-cyan-sm);
   }
 
-  /* Neon Button base */
+  /* Button — plain editorial, no clip-path */
   .neon-btn {
     @apply relative inline-flex items-center justify-center font-display uppercase tracking-wider transition-all duration-200;
     border: 2px solid transparent;
-    clip-path: polygon(
-      8px 0,
-      100% 0,
-      100% calc(100% - 8px),
-      calc(100% - 8px) 100%,
-      0 100%,
-      0 8px
-    );
+    border-radius: var(--radius-md);
   }
 
-  /* Glitch Text base */
+  /* Glitch Text base — kept minimal, no glitch animation */
   .glitch-text {
     @apply relative font-display;
     position: relative;
   }
 
-  /* Stat Bar base */
+  /* Stat Bar base — flat, rounded */
   .stat-bar {
     @apply relative block w-full h-3 bg-bg-ash overflow-hidden;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    border-radius: var(--radius-sm);
   }
 }

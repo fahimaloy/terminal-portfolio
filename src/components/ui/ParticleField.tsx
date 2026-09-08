@@ -1,215 +1,70 @@
 // src/components/ui/ParticleField.tsx
-/* ═══════════════════════════════════════════════════════════════════════════════
-   PARTICLE FIELD — Cursor-reactive floating particles
-   Uses anime.js createAnimatable for smooth cursor-follow physics.
-   Particles drift upward, react to cursor proximity.
-   ═══════════════════════════════════════════════════════════════════════════════ */
+/* Warm ambient blobs — 3-4 large soft washes, slow drift, muted. */
 
-import React, { useEffect, useRef, useCallback } from 'react';
-import { damp, mapRange } from 'animejs';
-import { createSafeAnimatable } from '../../utils/animatable';
-import { isReducedMotion } from '../../config/animations';
+import React, { useEffect, useRef } from 'react';
+import { animate, createScope } from 'animejs';
+import { durations, easings, isReducedMotion } from '../../config/animations';
 
-type Particle = {
-  el: HTMLDivElement;
-  x: number;
-  y: number;
-  baseX: number;
-  baseY: number;
-  vx: number;
-  vy: number;
-  size: number;
-  speed: number;
-  animatable: ReturnType<typeof createSafeAnimatable>;
-};
-
-const COLORS = [
-  'var(--neon-yellow)',
-  'var(--neon-magenta)',
-  'var(--neon-cyan)',
-  'var(--neon-green)',
-  'var(--neon-purple)',
+const BLOBS: { w: number; h: number; left: string; top: string }[] = [
+  { w: 520, h: 520, left: '8%', top: '12%' },
+  { w: 640, h: 640, left: '52%', top: '8%' },
+  { w: 480, h: 480, left: '18%', top: '58%' },
+  { w: 560, h: 560, left: '58%', top: '52%' },
 ];
-const COUNT = 30;
-
-function rand(min: number, max: number) {
-  return Math.random() * (max - min) + min;
-}
 
 export default function ParticleField() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const particlesRef = useRef<Particle[]>([]);
-  const rafRef = useRef<number | null>(null);
-  const cursorRef = useRef({ x: -9999, y: -9999 });
-  const dimsRef = useRef({ w: 0, h: 0 });
-
-  const createParticles = useCallback(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    // Clear existing
-    particlesRef.current.forEach((p) => p.el.remove());
-    particlesRef.current = [];
-
-    dimsRef.current = {
-      w: window.innerWidth,
-      h: window.innerHeight,
-    };
-
-    for (let i = 0; i < COUNT; i++) {
-      const el = document.createElement('div');
-      const size = rand(1.5, 4);
-      const baseX = rand(0, dimsRef.current.w);
-      const baseY = rand(0, dimsRef.current.h);
-
-      el.style.cssText = `
-        position: absolute;
-        width: ${size}px;
-        height: ${size}px;
-        background: ${COLORS[Math.floor(Math.random() * COLORS.length)]};
-        border-radius: 50%;
-        pointer-events: none;
-        opacity: 0;
-        left: 0;
-        top: 0;
-        will-change: transform, opacity;
-      `;
-      container.appendChild(el);
-
-      particlesRef.current.push({
-        el,
-        x: baseX,
-        y: baseY,
-        baseX,
-        baseY,
-        vx: rand(-0.3, 0.3),
-        vy: rand(-0.6, -0.2),
-        size,
-        speed: rand(0.3, 1),
-        animatable: createSafeAnimatable(el, {
-          x: 0,
-          y: 0,
-          duration: 600,
-          ease: 'outExpo',
-        }),
-      });
-    }
-  }, []);
+  const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
   useEffect(() => {
-    if (isReducedMotion()) return;
+    if (!containerRef.current || isReducedMotion()) return;
+    const scope = createScope({ root: containerRef.current });
+    scopeRef.current = scope;
 
-    createParticles();
-
-    const handleResize = () => {
-      dimsRef.current = {
-        w: window.innerWidth,
-        h: window.innerHeight,
-      };
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      cursorRef.current = { x: e.clientX, y: e.clientY };
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length > 0) {
-        cursorRef.current = {
-          x: e.touches[0].clientX,
-          y: e.touches[0].clientY,
-        };
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('touchmove', handleTouchMove);
-
-    const tick = () => {
-      const { w, h } = dimsRef.current;
-      const cursor = cursorRef.current;
-      const time = Date.now() * 0.001;
-
-      for (const p of particlesRef.current) {
-        // Floating drift
-        p.vx += Math.sin(time * p.speed) * 0.005;
-        p.vy -= 0.002;
-
-        // Cursor repulsion
-        const dx = p.x - cursor.x;
-        const dy = p.y - cursor.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const maxDist = 120;
-
-        if (dist < maxDist && dist > 0) {
-          const force = (1 - dist / maxDist) * 2.5;
-          p.vx += (dx / dist) * force;
-          p.vy += (dy / dist) * force;
-        }
-
-        // Apply velocity with damping
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vx = damp(p.vx, 0, 0.92, 0.08);
-        p.vy = damp(p.vy, 0, 0.92, 0.08);
-
-        // Wrap around screen
-        if (p.y < -10) {
-          p.y = h + 10;
-          p.x = rand(0, w);
-        }
-        if (p.y > h + 10) {
-          p.y = -10;
-          p.x = rand(0, w);
-        }
-        if (p.x < -10) p.x = w + 10;
-        if (p.x > w + 10) p.x = -10;
-
-        // Opacity based on proximity to cursor
-        const proximityOpacity =
-          dist < maxDist ? mapRange(dist, 0, maxDist, 0.9, 0.3) : 0.4;
-
-        p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
-        p.el.style.opacity = String(proximityOpacity);
-      }
-
-      rafRef.current = requestAnimationFrame(tick);
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
-
-    // Handle visibility
-    const onVis = () => {
-      if (document.hidden) {
-        if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current);
-          rafRef.current = null;
-        }
-      } else {
-        rafRef.current = requestAnimationFrame(tick);
-      }
-    };
-    document.addEventListener('visibilitychange', onVis);
+    scope.add(() => {
+      const blobs =
+        containerRef.current!.querySelectorAll<HTMLElement>('.warm-blob');
+      blobs.forEach((el, i) => {
+        animate(el, {
+          translateX: [0, i % 2 === 0 ? 18 : -18, 0],
+          translateY: [0, i % 2 === 0 ? -14 : 16, 0],
+          duration: 20000,
+          loop: true,
+          alternate: true,
+          ease: easings.smooth ?? 'inOutSine',
+          delay: i * (durations.stagger * 1000),
+        });
+      });
+    });
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('visibilitychange', onVis);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      particlesRef.current.forEach((p) => {
-        p.animatable.revert();
-        p.el.remove();
-      });
-      particlesRef.current = [];
+      scope.revert();
+      scopeRef.current = null;
     };
-  }, [createParticles]);
+  }, []);
 
   return (
     <div
       ref={containerRef}
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-[2]"
-    />
+      className="pointer-events-none fixed inset-0 z-[2] overflow-hidden"
+    >
+      {BLOBS.map((b, i) => (
+        <div
+          key={i}
+          className="warm-blob absolute rounded-full"
+          style={{
+            width: b.w,
+            height: b.h,
+            left: b.left,
+            top: b.top,
+            background: `radial-gradient(ellipse at center, var(--bg-3), var(--bg-2) 70%, transparent 75%)`,
+            opacity: 0.04,
+            filter: 'blur(40px)',
+            willChange: 'transform',
+          }}
+        />
+      ))}
+    </div>
   );
 }

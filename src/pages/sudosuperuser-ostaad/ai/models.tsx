@@ -329,7 +329,9 @@ const AiModelsPage = () => {
   const providerBadge = (model: AiModel) => {
     const provider = providers.find((p) => p.id === model.provider_id);
     if (!provider)
-      return <span className="text-[10px] text-neon-red">No provider</span>;
+      return (
+        <span className="text-[10px] text-[var(--fg-2)]">No provider</span>
+      );
     return (
       <NeonChip
         accent={provider.provider_type === 'gemini' ? 'cyan' : 'magenta'}
@@ -369,7 +371,7 @@ const AiModelsPage = () => {
 
           {statusMessage && (
             <HudPanel accent="green" notch="sm" className="mb-4 p-3">
-              <span className="font-body text-sm text-neon-green">
+              <span className="font-body text-sm text-[var(--fg-2)]">
                 {statusMessage}
               </span>
             </HudPanel>
@@ -377,7 +379,7 @@ const AiModelsPage = () => {
 
           {/* ─── Create New Model Form ─────────────────────── */}
           <HudPanel accent="cyan" notch="md" className="p-6 mb-8">
-            <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-4">
+            <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
               ADD NEW AI MODEL
             </div>
 
@@ -385,11 +387,11 @@ const AiModelsPage = () => {
               <div className="space-y-4">
                 {/* Provider Type */}
                 <div>
-                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                  <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                     PROVIDER TYPE:
                   </label>
                   <select
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
+                    className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] rounded-[var(--radius-md)] transition-all duration-200 [color-scheme:dark]"
                     value={providerType}
                     onChange={(e) =>
                       setProviderType(
@@ -405,12 +407,12 @@ const AiModelsPage = () => {
 
                 {/* Provider Name */}
                 <div>
-                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                  <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                     PROVIDER NAME:
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                     placeholder="e.g., My Gemini Provider"
                     value={providerName}
                     onChange={(e) => handleNameChange(e.target.value)}
@@ -420,15 +422,15 @@ const AiModelsPage = () => {
 
                 {/* Identifier Slug */}
                 <div>
-                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                  <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                     IDENTIFIER SLUG:
-                    <span className="text-text-muted ml-2 text-[9px]">
+                    <span className="text-[var(--fg-3)] ml-2 text-[9px]">
                       (unique, used for model identifiers)
                     </span>
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted font-mono clip-notch-sm transition-all duration-200"
+                    className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] font-mono rounded-[var(--radius-md)] transition-all duration-200"
                     placeholder="e.g., my-gemini-provider"
                     value={identifierSlug}
                     onChange={(e) =>
@@ -441,12 +443,12 @@ const AiModelsPage = () => {
                 {/* Base URL (OpenAI Compatible only) */}
                 {providerType === 'openai_compatible' && (
                   <div>
-                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                       BASE URL:
                     </label>
                     <input
                       type="url"
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted font-mono clip-notch-sm transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] font-mono rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="e.g., https://api.openai.com/v1"
                       value={baseUrl}
                       onChange={(e) => setBaseUrl(e.target.value)}
@@ -457,12 +459,12 @@ const AiModelsPage = () => {
 
                 {/* API Key */}
                 <div>
-                  <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                  <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                     API KEY:
                   </label>
                   <input
                     type="password"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                     placeholder="Enter your API key"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
@@ -473,13 +475,13 @@ const AiModelsPage = () => {
                 {/* RPM / RPD Limits */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                       REQUESTS PER MINUTE (OPTIONAL):
                     </label>
                     <input
                       type="number"
                       min="0"
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="e.g., 60"
                       value={rpmLimit}
                       onChange={(e) =>
@@ -491,13 +493,13 @@ const AiModelsPage = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
+                    <label className="block text-[10px] font-display tracking-[2px] text-[var(--fg-3)] mb-1">
                       REQUESTS PER DAY (OPTIONAL):
                     </label>
                     <input
                       type="number"
                       min="0"
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="e.g., 10000"
                       value={rpdLimit}
                       onChange={(e) =>
@@ -522,7 +524,7 @@ const AiModelsPage = () => {
 
                 {testError && (
                   <HudPanel accent="red" notch="sm" className="p-3">
-                    <span className="font-body text-sm text-neon-red">
+                    <span className="font-body text-sm text-[var(--fg-2)]">
                       {testError}
                     </span>
                   </HudPanel>
@@ -534,15 +536,15 @@ const AiModelsPage = () => {
             {step === 'select' && (
               <div className="space-y-4">
                 <HudPanel accent="green" notch="sm" className="p-3">
-                  <span className="font-body text-sm text-neon-green">
+                  <span className="font-body text-sm text-[var(--fg-2)]">
                     Found {fetchedModels.length} models. Select the ones you
                     want to add:
                   </span>
                 </HudPanel>
 
-                <div className="max-h-64 overflow-y-auto border border-white/5 clip-notch-sm p-3 bg-black/30">
+                <div className="max-h-64 overflow-y-auto border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-3 bg-[var(--bg-1)]">
                   {fetchedModels.length === 0 ? (
-                    <p className="text-text-muted text-sm font-body">
+                    <p className="text-[var(--fg-3)] text-sm font-body">
                       No models found from this provider.
                     </p>
                   ) : (
@@ -550,15 +552,15 @@ const AiModelsPage = () => {
                       {fetchedModels.map((modelName) => (
                         <label
                           key={modelName}
-                          className="flex items-center gap-3 text-sm cursor-pointer hover:bg-white/5 p-2 rounded clip-notch-sm transition-all duration-200"
+                          className="flex items-center gap-3 text-sm cursor-pointer hover:bg-[var(--bg-3)] p-2 rounded-[var(--radius-md)] transition-all duration-200"
                         >
                           <input
                             type="checkbox"
                             checked={selectedModels.has(modelName)}
                             onChange={() => toggleModelSelection(modelName)}
-                            className="cursor-pointer accent-neon-cyan"
+                            className="cursor-pointer accent-[var(--fg-1)]"
                           />
-                          <span className="font-mono text-text-primary">
+                          <span className="font-mono text-[var(--fg-1)]">
                             {modelName}
                           </span>
                         </label>
@@ -592,26 +594,26 @@ const AiModelsPage = () => {
 
           {/* ─── Models Table ──────────────────────────────── */}
           <HudPanel accent="cyan" notch="md" className="overflow-hidden">
-            <div className="p-4 border-b border-white/5">
-              <div className="text-lg font-display tracking-[2px] text-neon-cyan">
+            <div className="p-4 border-b border-[var(--border-subtle)]">
+              <div className="text-lg font-display tracking-[2px] text-[var(--fg-2)]">
                 CONFIGURED MODELS ({models.length})
               </div>
               {models.length > 0 && (
-                <p className="text-[10px] font-body text-text-muted mt-1">
+                <p className="text-[10px] font-body text-[var(--fg-3)] mt-1">
                   Drag rows to reorder. Models are used in top-to-bottom order.
                 </p>
               )}
             </div>
 
             {models.length === 0 ? (
-              <div className="p-8 text-center text-text-muted font-body">
+              <div className="p-8 text-center text-[var(--fg-3)] font-body">
                 No models configured yet. Add one above.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/5 text-text-muted">
+                    <tr className="border-b border-[var(--border-subtle)] text-[var(--fg-3)]">
                       <th className="p-3 text-left w-8">#</th>
                       <th className="p-3 text-left">Model</th>
                       <th className="p-3 text-left">Provider</th>
@@ -630,20 +632,20 @@ const AiModelsPage = () => {
                         onDragStart={() => handleDragStart(model.id)}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={() => handleDrop(model.id)}
-                        className={`border-b border-white/5 hover:bg-white/5 cursor-move ${
+                        className={`border-b border-[var(--border-subtle)] hover:bg-[var(--bg-3)] cursor-move ${
                           !model.is_active ? 'opacity-50' : ''
                         }`}
                       >
-                        <td className="p-3 text-text-muted font-mono">
+                        <td className="p-3 text-[var(--fg-3)] font-mono">
                           {model.sort_order}
                         </td>
                         <td className="p-3">
                           <div>
-                            <span className="font-display text-text-primary">
+                            <span className="font-display text-[var(--fg-1)]">
                               {model.display_name || model.model_name}
                             </span>
                             {model.model_name !== model.display_name && (
-                              <div className="text-[10px] text-text-muted font-mono">
+                              <div className="text-[10px] text-[var(--fg-3)] font-mono">
                                 {model.model_name}
                               </div>
                             )}
@@ -652,7 +654,7 @@ const AiModelsPage = () => {
                         </td>
                         <td className="p-3">{providerBadge(model)}</td>
                         <td className="p-3">
-                          <code className="text-[10px] text-text-muted">
+                          <code className="text-[10px] text-[var(--fg-3)]">
                             {model.identifier}
                           </code>
                         </td>
@@ -661,7 +663,7 @@ const AiModelsPage = () => {
                             <input
                               type="number"
                               min="0"
-                              className="w-16 px-1 py-0.5 bg-black/30 border border-white/10 text-text-primary text-[10px] text-center rounded clip-notch-sm focus:outline-none focus:border-neon-cyan"
+                              className="w-16 px-1 py-0.5 bg-[var(--bg-1)] border border-[var(--border-subtle)] text-[var(--fg-1)] text-[10px] text-center rounded-[var(--radius-md)] focus:outline-none focus:border-[var(--border-strong)]"
                               value={editingLimits[model.id].rpm}
                               onChange={(e) =>
                                 setEditingLimits((prev) => ({
@@ -678,7 +680,7 @@ const AiModelsPage = () => {
                               autoFocus
                             />
                           ) : (
-                            <span className="text-text-secondary">
+                            <span className="text-[var(--fg-2)]">
                               {model.rpm_limit ?? '—'}
                             </span>
                           )}
@@ -688,7 +690,7 @@ const AiModelsPage = () => {
                             <input
                               type="number"
                               min="0"
-                              className="w-16 px-1 py-0.5 bg-black/30 border border-white/10 text-text-primary text-[10px] text-center rounded clip-notch-sm focus:outline-none focus:border-neon-cyan"
+                              className="w-16 px-1 py-0.5 bg-[var(--bg-1)] border border-[var(--border-subtle)] text-[var(--fg-1)] text-[10px] text-center rounded-[var(--radius-md)] focus:outline-none focus:border-[var(--border-strong)]"
                               value={editingLimits[model.id].rpd}
                               onChange={(e) =>
                                 setEditingLimits((prev) => ({
@@ -704,7 +706,7 @@ const AiModelsPage = () => {
                               }
                             />
                           ) : (
-                            <span className="text-text-secondary">
+                            <span className="text-[var(--fg-2)]">
                               {model.rpd_limit ?? '—'}
                             </span>
                           )}
@@ -713,14 +715,14 @@ const AiModelsPage = () => {
                           <button
                             onClick={() => handleToggleActive(model)}
                             disabled={togglingIds.has(model.id)}
-                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full border border-[var(--border-subtle)] transition-colors ${
                               model.is_active
-                                ? 'bg-neon-green/30'
-                                : 'bg-neon-red/30'
+                                ? 'bg-[var(--fg-1)]'
+                                : 'bg-[var(--bg-3)]'
                             }`}
                           >
                             <span
-                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-[var(--bg-1)] border border-[var(--border-subtle)] transition-transform ${
                                 model.is_active
                                   ? 'translate-x-4.5'
                                   : 'translate-x-0.5'

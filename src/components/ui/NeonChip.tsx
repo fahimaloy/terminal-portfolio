@@ -1,35 +1,13 @@
-// src/components/ui/NeonChip.tsx
-/* ═══════════════════════════════════════════════════════════════════════════════
-   NEON CHIP — Small tag/label with neon glow and hover animation
-   Uses anime.js for hover scale effect.
-═══════════════════════════════════════════════════════════════════════════════ */
-
+// src/components/ui/NeonChip.tsx — Chip with subtle editorial accent
 import React, { useRef, useEffect } from 'react';
 import { animate } from 'animejs';
 import { GlitchAccent } from './GlitchText';
-import { isReducedMotion } from '../../config/animations';
+import { isReducedMotion, durations, easings } from '../../config/animations';
 
-const ACCENT_BG: Record<GlitchAccent | 'purple' | 'blue', string> = {
-  yellow: 'bg-neon-yellow/15 border-neon-yellow/30',
-  magenta: 'bg-neon-magenta/15 border-neon-magenta/30',
-  cyan: 'bg-neon-cyan/15 border-neon-cyan/30',
-  green: 'bg-neon-green/15 border-neon-green/30',
-  red: 'bg-neon-red/15 border-neon-red/30',
-  purple: 'bg-neon-purple/15 border-neon-purple/30',
-  blue: 'bg-neon-blue/15 border-neon-blue/30',
-};
-const ACCENT_TEXT: Record<GlitchAccent | 'purple' | 'blue', string> = {
-  yellow: 'text-neon-yellow',
-  magenta: 'text-neon-magenta',
-  cyan: 'text-neon-cyan',
-  green: 'text-neon-green',
-  red: 'text-neon-red',
-  purple: 'text-neon-purple',
-  blue: 'text-neon-blue',
-};
+type ChipAccent = GlitchAccent | 'purple' | 'blue';
 
 type Props = React.HTMLAttributes<HTMLSpanElement> & {
-  accent?: GlitchAccent | 'purple' | 'blue';
+  accent?: ChipAccent;
   children: React.ReactNode;
   icon?: React.ReactNode;
   onClick?: () => void;
@@ -46,13 +24,16 @@ export default function NeonChip({
   className = '',
   removable,
   onRemove,
+  style,
   ...rest
 }: Props) {
   const ref = useRef<HTMLSpanElement>(null);
   const animRef = useRef<ReturnType<typeof animate> | null>(null);
 
   useEffect(() => {
-    return () => { animRef.current?.cancel(); };
+    return () => {
+      animRef.current?.cancel();
+    };
   }, []);
 
   const handleClick = () => {
@@ -60,8 +41,8 @@ export default function NeonChip({
     animRef.current?.cancel();
     animRef.current = animate(ref.current, {
       scale: [1, 1.05],
-      duration: 200,
-      ease: 'outExpo',
+      duration: durations.hover * 1000,
+      ease: easings.outQuad,
     });
     onClick();
   };
@@ -70,10 +51,19 @@ export default function NeonChip({
     <span
       {...rest}
       ref={ref}
-      onClick={handleClick}
-      className={`inline-flex items-center gap-1 px-2 py-0.5 border rounded-md text-[10px] font-display tracking-[1px] transition-colors duration-200 ${
-        ACCENT_BG[accent]
-      } ${ACCENT_TEXT[accent]} ${onClick ? 'cursor-pointer hover:scale-[1.05]' : ''} ${className}`}
+      onClick={onClick ? handleClick : undefined}
+      style={
+        {
+          background: `color-mix(in srgb, var(--neon-${accent}) 10%, transparent)`,
+          border: `1px solid color-mix(in srgb, var(--neon-${accent}) 18%, transparent)`,
+          borderRadius: 'var(--radius-full)',
+          color: 'var(--fg-2)',
+          ...style,
+        } as React.CSSProperties
+      }
+      className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-display tracking-[1px] transition-colors ${
+        onClick ? 'cursor-pointer hover:scale-[1.05]' : ''
+      } ${className}`}
     >
       {icon && <span className="text-[10px]">{icon}</span>}
       {children}
@@ -83,7 +73,7 @@ export default function NeonChip({
             e.stopPropagation();
             onRemove?.();
           }}
-          className="ml-0.5 hover:text-red-400"
+          className="ml-0.5 hover:text-[var(--status-error)] transition-colors"
           aria-label="Remove"
         >
           ×

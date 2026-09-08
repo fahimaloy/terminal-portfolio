@@ -1,7 +1,6 @@
 // src/components/home/HudChrome.tsx
 // Fixed HUD overlays: identity badge, status/clock, last command, system info.
 import React from 'react';
-import { HudPanel } from '../ui';
 
 type HudChromeProps = {
   profileName: string;
@@ -20,64 +19,111 @@ export default function HudChrome({
 }: HudChromeProps) {
   return (
     <div className="pointer-events-none fixed inset-0 z-20">
-      {/* Top-left: ROOT.USER */}
+      {/* Top-left: identity */}
       <div className="absolute top-4 left-4 pointer-events-auto">
-        <HudPanel
-          accent="yellow"
-          notch="md"
-          className="p-3 inline-flex items-center gap-3"
+        <div
+          className="inline-flex items-center gap-3 px-3 py-2 rounded-[var(--radius-lg)] border"
+          style={{
+            background: 'var(--bg-2)',
+            borderColor: 'var(--border-subtle)',
+          }}
         >
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-neon-yellow to-neon-magenta flex items-center justify-center font-display text-black text-sm shadow-[0_0_12px_var(--glow-yellow)]">
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center font-display text-sm font-medium"
+            style={{ background: 'var(--fg-1)', color: 'var(--bg-1)' }}
+          >
             {profileInitial}
           </div>
           <div>
-            <div className="text-[9px] font-display tracking-[3px] text-neon-yellow text-shadow-neon-yellow">
+            <div
+              className="text-[9px] font-mono tracking-[0.28em]"
+              style={{ color: 'var(--fg-4)' }}
+            >
               {'// ' + (siteTexts.developer_label || 'DEVELOPER')}
             </div>
-            <div className="text-sm font-display tracking-wider text-text-primary">
+            <div
+              className="text-sm font-display tracking-wide"
+              style={{ color: 'var(--fg-1)' }}
+            >
               {profileName}
             </div>
           </div>
-        </HudPanel>
+        </div>
       </div>
 
-      {/* Top-right: SYS.STATUS + clock */}
+      {/* Top-right: status + clock */}
       <div className="absolute top-4 right-4 pointer-events-auto flex flex-col items-end gap-2">
-        <HudPanel accent="cyan" notch="md" className="p-2 px-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-neon-green animate-pulse-dot shadow-[0_0_8px_var(--neon-green)]" />
-            <span className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan">
-              {siteTexts.active_label || 'ACTIVE'}
-            </span>
-          </div>
-        </HudPanel>
-        <div className="text-[10px] font-mono text-text-muted">{now}</div>
+        <div
+          className="px-3 py-1.5 rounded-[var(--radius-md)] border inline-flex items-center gap-2"
+          style={{
+            background: 'var(--bg-2)',
+            borderColor: 'var(--border-subtle)',
+          }}
+        >
+          <span
+            className="w-2 h-2 rounded-full"
+            style={{ background: 'var(--status-success)' }}
+          />
+          <span
+            className="text-[10px] font-mono tracking-[0.18em]"
+            style={{ color: 'var(--fg-2)' }}
+          >
+            {siteTexts.active_label || 'ACTIVE'}
+          </span>
+        </div>
+        <div className="text-[10px] font-mono" style={{ color: 'var(--fg-4)' }}>
+          {now}
+        </div>
       </div>
 
-      {/* Bottom-left: LATEST TRANSMISSION */}
+      {/* Bottom-left: latest transmission */}
       {messages.length > 0 && (
         <div className="absolute bottom-28 left-4 max-w-[260px] pointer-events-auto">
-          <HudPanel accent="magenta" notch="md" className="p-3">
-            <div className="text-[9px] font-display tracking-[3px] text-neon-magenta text-shadow-neon-magenta mb-1">
+          <div
+            className="p-3 rounded-[var(--radius-lg)] border"
+            style={{
+              background: 'var(--bg-2)',
+              borderColor: 'var(--border-subtle)',
+            }}
+          >
+            <div
+              className="text-[9px] font-mono tracking-[0.24em] mb-1"
+              style={{ color: 'var(--fg-4)' }}
+            >
               {'\u25BC ' + (siteTexts.last_command_label || 'LAST COMMAND')}
             </div>
-            <div className="text-[11px] font-body text-text-secondary line-clamp-2">
+            <div
+              className="text-[11px] font-body line-clamp-2"
+              style={{ color: 'var(--fg-2)' }}
+            >
               {messages[messages.length - 1]?.text}
             </div>
-          </HudPanel>
+          </div>
         </div>
       )}
 
-      {/* Bottom-right: SYSTEM */}
+      {/* Bottom-right: system */}
       <div className="absolute bottom-28 right-4 pointer-events-auto">
-        <HudPanel accent="cyan" notch="md" className="p-3 text-right">
-          <div className="text-[9px] font-display tracking-[3px] text-neon-cyan text-shadow-neon-cyan">
+        <div
+          className="p-3 text-right rounded-[var(--radius-lg)] border"
+          style={{
+            background: 'var(--bg-2)',
+            borderColor: 'var(--border-subtle)',
+          }}
+        >
+          <div
+            className="text-[9px] font-mono tracking-[0.24em]"
+            style={{ color: 'var(--fg-4)' }}
+          >
             {siteTexts.terminal_version || 'TERMINAL v4.0.0'}
           </div>
-          <div className="text-[9px] font-mono text-text-muted mt-0.5">
+          <div
+            className="text-[9px] font-mono mt-0.5"
+            style={{ color: 'var(--fg-4)' }}
+          >
             {siteTexts.status_ready || 'STATUS: READY'}
           </div>
-        </HudPanel>
+        </div>
       </div>
     </div>
   );

@@ -91,7 +91,12 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({
           aria-hidden="true"
           className="absolute -top-px left-0 right-0 h-[2px] bg-neon-magenta shadow-[0_0_12px_var(--glow-magenta)]"
         />
-        <HudPanel accent="magenta" notch="md" title="// BOOK_MEETING" className="p-6">
+        <HudPanel
+          accent="magenta"
+          notch="md"
+          title="// BOOK_MEETING"
+          className="p-6"
+        >
           <div className="text-[9px] font-display tracking-[3px] text-text-muted mb-4">
             {'> USER: anonymous_visitor'}
           </div>
@@ -100,7 +105,12 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({
             <GlitchText accent="magenta" as="h3" className="text-lg">
               BOOK A MEETING
             </GlitchText>
-            <NeonButton variant="ghost" accent="magenta" onClick={onClose} iconLeft={<FiX />}>
+            <NeonButton
+              variant="ghost"
+              accent="magenta"
+              onClick={onClose}
+              iconLeft={<FiX />}
+            >
               CLOSE
             </NeonButton>
           </div>
@@ -110,14 +120,28 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({
               <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
                 NAME <span className="text-neon-red">*</span>
               </label>
-              <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className={inputClass} style={inputStyle} />
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={inputClass}
+                style={inputStyle}
+              />
             </div>
 
             <div>
               <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
                 EMAIL <span className="text-neon-red">*</span>
               </label>
-              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} style={inputStyle} />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+                style={inputStyle}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -125,13 +149,27 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({
                 <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
                   DATE <span className="text-neon-red">*</span>
                 </label>
-                <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className={inputClass} style={inputStyle} />
+                <input
+                  type="date"
+                  required
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className={inputClass}
+                  style={inputStyle}
+                />
               </div>
               <div>
                 <label className="block text-[10px] font-display tracking-[2px] text-text-muted mb-1">
                   TIME <span className="text-neon-red">*</span>
                 </label>
-                <input type="time" required value={time} onChange={(e) => setTime(e.target.value)} className={inputClass} style={inputStyle} />
+                <input
+                  type="time"
+                  required
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className={inputClass}
+                  style={inputStyle}
+                />
               </div>
             </div>
 
@@ -150,12 +188,16 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({
 
             {status === 'error' && (
               <HudPanel accent="red" notch="sm" className="p-2 text-center">
-                <span className="font-body text-sm text-neon-red">{message}</span>
+                <span className="font-body text-sm text-neon-red">
+                  {message}
+                </span>
               </HudPanel>
             )}
             {status === 'success' && (
               <HudPanel accent="green" notch="sm" className="p-2 text-center">
-                <span className="font-body text-sm text-neon-green">{message}</span>
+                <span className="font-body text-sm text-neon-green">
+                  {message}
+                </span>
               </HudPanel>
             )}
 
@@ -166,7 +208,11 @@ export const MeetingBooking: React.FC<{ onClose: () => void }> = ({
               disabled={status === 'loading' || status === 'success'}
               loading={status === 'loading'}
             >
-              {status === 'loading' ? 'BOOKING…' : status === 'success' ? 'BOOKED!' : 'SUBMIT REQUEST'}
+              {status === 'loading'
+                ? 'BOOKING…'
+                : status === 'success'
+                ? 'BOOKED!'
+                : 'SUBMIT REQUEST'}
             </NeonButton>
           </form>
         </HudPanel>

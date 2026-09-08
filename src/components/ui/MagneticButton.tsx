@@ -14,11 +14,13 @@ interface MagneticButtonProps {
 export default function MagneticButton({
   children,
   className = '',
-  strength = 0.3,
+  strength = 0.18,
   onClick,
 }: MagneticButtonProps) {
   const ref = useRef<HTMLButtonElement>(null);
-  const animatableRef = useRef<ReturnType<typeof createSafeAnimatable> | null>(null);
+  const animatableRef = useRef<ReturnType<typeof createSafeAnimatable> | null>(
+    null,
+  );
 
   React.useEffect(() => {
     if (ref.current && !isReducedMotion()) {
@@ -31,7 +33,9 @@ export default function MagneticButton({
     }
     return () => {
       animatableRef.current?.revert();
-      const cancellable = animatableRef.current as unknown as { cancel?: () => void } | null;
+      const cancellable = animatableRef.current as unknown as {
+        cancel?: () => void;
+      } | null;
       if (cancellable && typeof cancellable.cancel === 'function') {
         try {
           cancellable.cancel();

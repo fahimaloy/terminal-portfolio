@@ -2,22 +2,16 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
-import { ArrowLeft, ArrowRight, Clock, Eye, Calendar } from 'lucide-react';
+import { ArrowLeft, Clock, Eye, Calendar } from 'lucide-react';
 import { createScope, animate, stagger } from 'animejs';
 import SEOMeta from '../../components/SEOMeta';
 import RichTextRenderer from '../../components/RichTextRenderer';
 import ReadingProgress from '../../components/blog/ReadingProgress';
 import LightningTransition from '../../components/blog/LightningTransition';
 import BlogCard from '../../components/blog/BlogCard';
-import {
-  GlitchText,
-  NeonButton,
-  NeonChip,
-  HudPanel,
-} from '../../components/ui';
 import { supabaseAdmin } from '../../utils/supabaseAdmin';
 import type { BlogPost, BlogListItem } from '../../types/blog';
-import { isReducedMotion } from '../../config/animations';
+import { isReducedMotion, durations, easings } from '../../config/animations';
 
 interface Props {
   post: BlogPost;
@@ -42,33 +36,42 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
   const articleRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const coverRef = useRef<HTMLDivElement>(null);
-  const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
   const [boltTrigger, setBoltTrigger] = useState(0);
   const pendingHref = useRef<string | null>(null);
 
-  // Hero entrance
+  // Hero entrance — editorial y+opacity stagger via createScope
   useEffect(() => {
-    if (!heroRef.current || isReducedMotion()) return;
+    const root = heroRef.current;
+    if (!root || isReducedMotion()) return;
 
-    const scope = createScope({ root: heroRef.current });
-    scopeRef.current = scope;
+    const scope = createScope({
+      root,
+      mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
+      defaults: {
+        duration: (durations[700] ?? 0.7) * 1000,
+        ease: easings.outExpo ?? 'outExpo',
+        composition: 'blend',
+      },
+    } as Parameters<typeof createScope>[0]);
 
     scope.add(() => {
-      const bits = heroRef.current!.querySelectorAll('.reader-reveal');
-      animate(bits, {
-        opacity: [0, 1],
-        y: [18, 0],
-        duration: 480,
-        ease: 'outExpo',
-        delay: stagger(90),
-      });
+      const bits = root.querySelectorAll('.reader-reveal');
+      if (bits.length) {
+        animate(bits, {
+          opacity: [0, 1],
+          y: [16, 0],
+          duration: 700,
+          ease: 'outExpo',
+          delay: stagger(70, { from: 'first' }),
+        });
+      }
     });
 
     return () => scope.revert();
   }, [post.id]);
 
-  // Parallax cover
+  // Parallax cover — subtle, muted
   useEffect(() => {
     if (!coverRef.current || isReducedMotion()) return;
     let raf = 0;
@@ -79,8 +82,8 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
         const el = coverRef.current;
         if (el) {
           el.style.transform = `translate3d(0, ${
-            window.scrollY * 0.28
-          }px, 0) scale(1.06)`;
+            window.scrollY * 0.18
+          }px, 0) scale(1.04)`;
         }
         raf = 0;
       });
@@ -93,7 +96,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
     };
   }, [post.id]);
 
-  // Lightning-wrapped navigation between posts
+  // Lightning-wrapped navigation between posts (muted wipe)
   const swapTo = useCallback((slug: string) => {
     pendingHref.current = `/blog/${slug}`;
     setBoltTrigger((t) => t + 1);
@@ -135,7 +138,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
               <img
                 src={post.cover_image_url}
                 alt={post.cover_image_alt || post.title}
-                className="w-full h-full object-cover opacity-30"
+                className="w-full h-full object-cover opacity-[0.28]"
               />
             </div>
           )}
@@ -150,12 +153,18 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
 
           <div className="relative max-w-3xl mx-auto w-full">
             <Link href="/blog" legacyBehavior>
-              <a className="reader-reveal inline-flex items-center gap-2 font-display text-[10px] tracking-[3px] text-neon-cyan hover:text-neon-yellow transition-colors mb-6 opacity-0">
+              <a
+                className="reader-reveal inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.18em] mb-6 opacity-0 transition-colors hover:opacity-80"
+                style={{ color: 'var(--fg-3)' }}
+              >
                 <ArrowLeft size={12} /> BACK TO LOG
               </a>
             </Link>
 
-            <div className="reader-reveal flex flex-wrap items-center gap-3 text-[10px] font-mono text-text-muted mb-4 opacity-0">
+            <div
+              className="reader-reveal flex flex-wrap items-center gap-3 text-[10px] font-mono mb-4 opacity-0"
+              style={{ color: 'var(--fg-4)' }}
+            >
               <span className="inline-flex items-center gap-1">
                 <Calendar size={10} /> {formatDate(post.published_at)}
               </span>
@@ -170,17 +179,19 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             </div>
 
             <div className="reader-reveal opacity-0">
-              <GlitchText
-                as="h1"
-                accent="cyan"
-                className="text-3xl md:text-5xl"
+              <h1
+                className="text-3xl md:text-5xl font-display font-semibold tracking-[-0.02em] leading-tight"
+                style={{ color: 'var(--fg-1)' }}
               >
                 {post.title}
-              </GlitchText>
+              </h1>
             </div>
 
             {post.excerpt && (
-              <p className="reader-reveal font-body text-sm md:text-base text-text-secondary mt-5 max-w-2xl opacity-0">
+              <p
+                className="reader-reveal font-body text-sm md:text-base mt-5 max-w-2xl leading-relaxed opacity-0"
+                style={{ color: 'var(--fg-2)' }}
+              >
                 {post.excerpt}
               </p>
             )}
@@ -188,9 +199,17 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             {post.tags?.length > 0 && (
               <div className="reader-reveal flex flex-wrap gap-1.5 mt-5 opacity-0">
                 {post.tags.map((tag) => (
-                  <NeonChip key={tag} accent="magenta">
+                  <span
+                    key={tag}
+                    className="inline-flex px-2.5 py-1 rounded-full font-mono text-[9px] tracking-[0.14em] border"
+                    style={{
+                      background: 'var(--bg-2)',
+                      borderColor: 'var(--border-subtle)',
+                      color: 'var(--fg-3)',
+                    }}
+                  >
                     {tag.toUpperCase()}
-                  </NeonChip>
+                  </span>
                 ))}
               </div>
             )}
@@ -201,43 +220,65 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
         <div className="max-w-3xl mx-auto px-4 pb-20">
           <RichTextRenderer
             html={post.content_html}
-            className="blog-prose font-body text-sm md:text-base text-text-secondary leading-relaxed"
+            className="blog-prose font-body text-sm md:text-base leading-relaxed"
           />
 
-          {/* Prev / Next */}
+          {/* Prev / Next — editorial cards, no HudPanel/Neon */}
           <nav className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-16">
             {prev ? (
-              <button onClick={() => swapTo(prev.slug)} className="text-left">
-                <HudPanel
-                  accent="cyan"
-                  notch="md"
-                  className="p-4 h-full hover:scale-[1.01] transition-transform"
+              <button
+                onClick={() => swapTo(prev.slug)}
+                className="text-left group"
+              >
+                <div
+                  className="p-4 h-full rounded-[var(--radius-lg)] border transition-colors duration-200 hover:border-[var(--border-strong)]"
+                  style={{
+                    background: 'var(--bg-2)',
+                    borderColor: 'var(--border-subtle)',
+                  }}
                 >
-                  <div className="text-[9px] font-display tracking-[3px] text-neon-cyan mb-1">
-                    ◀ PREVIOUS
+                  <div
+                    className="text-[9px] font-mono tracking-[0.2em] mb-1"
+                    style={{ color: 'var(--fg-4)' }}
+                  >
+                    {'\u25C0 PREVIOUS'}
                   </div>
-                  <div className="font-body text-xs text-text-primary line-clamp-2">
+                  <div
+                    className="font-body text-xs line-clamp-2"
+                    style={{ color: 'var(--fg-1)' }}
+                  >
                     {prev.title}
                   </div>
-                </HudPanel>
+                </div>
               </button>
             ) : (
               <div />
             )}
             {next ? (
-              <button onClick={() => swapTo(next.slug)} className="text-right">
-                <HudPanel
-                  accent="magenta"
-                  notch="md"
-                  className="p-4 h-full hover:scale-[1.01] transition-transform"
+              <button
+                onClick={() => swapTo(next.slug)}
+                className="text-right group"
+              >
+                <div
+                  className="p-4 h-full rounded-[var(--radius-lg)] border transition-colors duration-200 hover:border-[var(--border-strong)]"
+                  style={{
+                    background: 'var(--bg-2)',
+                    borderColor: 'var(--border-subtle)',
+                  }}
                 >
-                  <div className="text-[9px] font-display tracking-[3px] text-neon-magenta mb-1">
-                    NEXT ▶
+                  <div
+                    className="text-[9px] font-mono tracking-[0.2em] mb-1"
+                    style={{ color: 'var(--fg-4)' }}
+                  >
+                    {'NEXT \u25B6'}
                   </div>
-                  <div className="font-body text-xs text-text-primary line-clamp-2">
+                  <div
+                    className="font-body text-xs line-clamp-2"
+                    style={{ color: 'var(--fg-1)' }}
+                  >
                     {next.title}
                   </div>
-                </HudPanel>
+                </div>
               </button>
             ) : (
               <div />
@@ -247,7 +288,10 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           {/* Related */}
           {related.length > 0 && (
             <section className="mt-16">
-              <div className="text-[10px] font-display tracking-[4px] text-text-muted mb-4">
+              <div
+                className="text-[10px] font-mono tracking-[0.24em] mb-4"
+                style={{ color: 'var(--fg-4)' }}
+              >
                 {'// RELATED_TRANSMISSIONS'}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -259,13 +303,17 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           )}
 
           <div className="flex justify-center mt-14">
-            <NeonButton
-              accent="cyan"
-              variant="outline"
+            <button
               onClick={() => router.push('/blog')}
+              className="inline-flex items-center justify-center px-5 py-2.5 font-mono text-[11px] tracking-[0.14em] border rounded-[var(--radius-md)] transition-colors duration-200"
+              style={{
+                background: 'transparent',
+                borderColor: 'var(--border-subtle)',
+                color: 'var(--fg-2)',
+              }}
             >
               ALL POSTS
-            </NeonButton>
+            </button>
           </div>
         </div>
       </article>

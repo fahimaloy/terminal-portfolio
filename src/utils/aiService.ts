@@ -90,7 +90,10 @@ function resetRpmForModel(modelId: number): void {
 
 // ─── RPD Tracking ─────────────────────────────────────────────
 
-async function checkRpdLimit(modelId: number, rpdLimit: number): Promise<boolean> {
+async function checkRpdLimit(
+  modelId: number,
+  rpdLimit: number,
+): Promise<boolean> {
   if (!supabaseAdmin) return true;
 
   const today = new Date().toISOString().split('T')[0];
@@ -118,10 +121,7 @@ export async function getActiveModels(): Promise<AiModelWithProvider[]> {
 
   // Fetch providers first, then models
   const [{ data: providers }, { data: models }] = await Promise.all([
-    supabaseAdmin
-      .from('ai_providers')
-      .select('*')
-      .eq('is_active', true),
+    supabaseAdmin.from('ai_providers').select('*').eq('is_active', true),
     supabaseAdmin
       .from('ai_models')
       .select('*')
@@ -244,7 +244,10 @@ async function callGemini(
   model: AiModel,
   systemInstruction: string,
   messages: { role: string; text: string }[],
-): Promise<{ text: string; tokens: { prompt: number; completion: number; total: number } }> {
+): Promise<{
+  text: string;
+  tokens: { prompt: number; completion: number; total: number };
+}> {
   const genAI = new GoogleGenerativeAI(provider.api_key);
 
   const genAiModel = genAI.getGenerativeModel({
@@ -258,7 +261,8 @@ async function callGemini(
   }));
 
   const history = formattedMessages.slice(0, -1);
-  const currentMsg = formattedMessages[formattedMessages.length - 1]?.parts[0]?.text || '';
+  const currentMsg =
+    formattedMessages[formattedMessages.length - 1]?.parts[0]?.text || '';
 
   const chat = genAiModel.startChat({ history });
   const result = await chat.sendMessage(currentMsg);
@@ -283,7 +287,10 @@ async function callOpenAICompatible(
   model: AiModel,
   systemInstruction: string,
   messages: { role: string; text: string }[],
-): Promise<{ text: string; tokens: { prompt: number; completion: number; total: number } }> {
+): Promise<{
+  text: string;
+  tokens: { prompt: number; completion: number; total: number };
+}> {
   const baseUrl = provider.base_url || 'https://api.openai.com/v1';
 
   const formattedMessages = [
@@ -330,7 +337,10 @@ async function sendWithModel(
   model: AiModelWithProvider,
   systemInstruction: string,
   messages: { role: string; text: string }[],
-): Promise<{ text: string; tokens: { prompt: number; completion: number; total: number } }> {
+): Promise<{
+  text: string;
+  tokens: { prompt: number; completion: number; total: number };
+}> {
   if (!model.provider) {
     throw new Error('Model has no associated provider');
   }
@@ -340,7 +350,12 @@ async function sendWithModel(
   if (model.provider.provider_type === 'gemini') {
     return await callGemini(model.provider, model, systemInstruction, messages);
   } else if (model.provider.provider_type === 'openai_compatible') {
-    return await callOpenAICompatible(model.provider, model, systemInstruction, messages);
+    return await callOpenAICompatible(
+      model.provider,
+      model,
+      systemInstruction,
+      messages,
+    );
   } else {
     throw new Error(`Unknown provider type: ${model.provider.provider_type}`);
   }
@@ -526,7 +541,13 @@ export async function getUsageOverview(): Promise<{
   avgLatencyMs: number;
 }> {
   if (!supabaseAdmin) {
-    return { totalRequests: 0, successfulRequests: 0, failedRequests: 0, totalTokens: 0, avgLatencyMs: 0 };
+    return {
+      totalRequests: 0,
+      successfulRequests: 0,
+      failedRequests: 0,
+      totalTokens: 0,
+      avgLatencyMs: 0,
+    };
   }
 
   const { data } = await supabaseAdmin
@@ -534,18 +555,33 @@ export async function getUsageOverview(): Promise<{
     .select('success, total_tokens, latency_ms');
 
   if (!data) {
-    return { totalRequests: 0, successfulRequests: 0, failedRequests: 0, totalTokens: 0, avgLatencyMs: 0 };
+    return {
+      totalRequests: 0,
+      successfulRequests: 0,
+      failedRequests: 0,
+      totalTokens: 0,
+      avgLatencyMs: 0,
+    };
   }
 
   const total = data.length;
   const successful = data.filter((r) => r.success).length;
   const failed = total - successful;
   const totalTokens = data.reduce((sum, r) => sum + (r.total_tokens || 0), 0);
-  const avgLatencyMs = total > 0
-    ? Math.round(data.reduce((sum, r) => sum + (r.latency_ms || 0), 0) / total)
-    : 0;
+  const avgLatencyMs =
+    total > 0
+      ? Math.round(
+          data.reduce((sum, r) => sum + (r.latency_ms || 0), 0) / total,
+        )
+      : 0;
 
-  return { totalRequests: total, successfulRequests: successful, failedRequests: failed, totalTokens, avgLatencyMs };
+  return {
+    totalRequests: total,
+    successfulRequests: successful,
+    failedRequests: failed,
+    totalTokens,
+    avgLatencyMs,
+  };
 }
 
 export async function getModelUsageSummaries(): Promise<ModelUsageSummary[]> {
@@ -590,7 +626,9 @@ export async function getModelUsageSummaries(): Promise<ModelUsageSummary[]> {
     const successful = logs.filter((r) => r.success).length;
     const failed = total - successful;
     const totalTokens = logs.reduce((sum, r) => sum + (r.total_tokens || 0), 0);
-    const avgLatencyMs = Math.round(logs.reduce((sum, r) => sum + (r.latency_ms || 0), 0) / total);
+    const avgLatencyMs = Math.round(
+      logs.reduce((sum, r) => sum + (r.latency_ms || 0), 0) / total,
+    );
     const lastUsed = logs.reduce((latest, r) => {
       return r.created_at > latest ? r.created_at : latest;
     }, logs[0].created_at);
@@ -626,7 +664,10 @@ export async function getDailyUsage(days: number = 30): Promise<DailyUsage[]> {
   if (!data) return [];
 
   // Group by date
-  const dailyMap = new Map<string, { total: number; success: number; tokens: number }>();
+  const dailyMap = new Map<
+    string,
+    { total: number; success: number; tokens: number }
+  >();
 
   for (const row of data) {
     const date = row.created_at.split('T')[0];
@@ -647,7 +688,9 @@ export async function getDailyUsage(days: number = 30): Promise<DailyUsage[]> {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export async function getRecentLogs(limit: number = 100): Promise<AiRequestLog[]> {
+export async function getRecentLogs(
+  limit: number = 100,
+): Promise<AiRequestLog[]> {
   if (!supabaseAdmin) return [];
 
   const { data } = await supabaseAdmin

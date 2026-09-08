@@ -69,7 +69,8 @@ export default function SEOMeta({
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
         headline: blogPost.title,
-        description: blogPost.seo_description || blogPost.excerpt || description,
+        description:
+          blogPost.seo_description || blogPost.excerpt || description,
         image: blogPost.cover_image_url || imageUrl,
         url: fullUrl,
         mainEntityOfPage: { '@type': 'WebPage', '@id': fullUrl },

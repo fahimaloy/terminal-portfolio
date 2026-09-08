@@ -1,9 +1,7 @@
-// src/hooks/useFormAnimation.ts
-/* Form micro-interactions: focus glow, error shake, success pulse. */
-
+// src/hooks/useFormAnimation.ts — micro-interactions using token-driven durations/easings
 import { useCallback, useRef } from 'react';
 import { animate } from 'animejs';
-import { isReducedMotion } from '../config/animations';
+import { isReducedMotion, durations, easings } from '../config/animations';
 
 export function useFormAnimation() {
   const shakenRef = useRef<Set<HTMLElement>>(new Set());
@@ -12,8 +10,8 @@ export function useFormAnimation() {
     if (!el || isReducedMotion()) return;
     animate(el, {
       scale: [1, 1.012],
-      duration: 200,
-      ease: 'outExpo',
+      duration: durations.hover * 1000,
+      ease: easings.expoOut,
       composition: 'blend',
     });
   }, []);
@@ -22,8 +20,8 @@ export function useFormAnimation() {
     if (!el || isReducedMotion()) return;
     animate(el, {
       scale: 1,
-      duration: 180,
-      ease: 'outQuad',
+      duration: durations.tap * 1000 + 60,
+      ease: easings.quadOut,
       composition: 'blend',
     });
   }, []);
@@ -34,8 +32,8 @@ export function useFormAnimation() {
     shakenRef.current.add(el);
     animate(el, {
       x: [0, -8, 8, -5, 5, -2, 2, 0],
-      duration: 420,
-      ease: 'outQuad',
+      duration: durations.enter * 1000 - 60,
+      ease: easings.quadOut,
       onComplete: () => shakenRef.current.delete(el),
     });
   }, []);
@@ -44,8 +42,8 @@ export function useFormAnimation() {
     if (!el || isReducedMotion()) return;
     animate(el, {
       scale: [1, 1.06, 1],
-      duration: 520,
-      ease: 'outElastic',
+      duration: durations.enter * 1000 + 40,
+      ease: easings.elasticOut,
     });
   }, []);
 

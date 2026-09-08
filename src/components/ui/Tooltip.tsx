@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { animate } from 'animejs';
-import { isReducedMotion } from '../../config/animations';
+import { isReducedMotion, durations, easings } from '../../config/animations';
 
 interface TooltipProps {
   children: React.ReactNode;
@@ -36,10 +36,20 @@ export default function Tooltip({
         cancelAnim();
         animRef.current = animate(tooltipRef.current, {
           opacity: [0, 1],
-          y: position === 'top' ? [4, 0] : position === 'bottom' ? [-4, 0] : [0, 0],
-          x: position === 'left' ? [4, 0] : position === 'right' ? [-4, 0] : [0, 0],
-          duration: 200,
-          ease: 'outExpo',
+          y:
+            position === 'top'
+              ? [4, 0]
+              : position === 'bottom'
+              ? [-4, 0]
+              : [0, 0],
+          x:
+            position === 'left'
+              ? [4, 0]
+              : position === 'right'
+              ? [-4, 0]
+              : [0, 0],
+          duration: durations.hover * 1000,
+          ease: easings.expoOut,
         });
       }
     }, delay);
@@ -52,8 +62,8 @@ export default function Tooltip({
       cancelAnim();
       animRef.current = animate(tooltipRef.current, {
         opacity: 0,
-        duration: 150,
-        ease: 'outQuad',
+        duration: durations.tap * 1000 + 30,
+        ease: easings.quadOut,
       });
     }
     setTimeout(() => setIsVisible(false), 150);
@@ -86,8 +96,14 @@ export default function Tooltip({
         <div
           ref={tooltipRef}
           role="tooltip"
-          className={`absolute z-50 px-2 py-1 text-xs font-body text-text-primary bg-bg-smoke border border-white/10 rounded-lg shadow-lg whitespace-nowrap pointer-events-none ${positionClasses[position]}`}
-          style={{ opacity: 0 }}
+          className={`absolute z-50 px-2 py-1 text-xs font-body whitespace-nowrap pointer-events-none ${positionClasses[position]}`}
+          style={{
+            opacity: 0,
+            background: 'var(--bg-3)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-md)',
+            color: 'var(--fg-1)',
+          }}
         >
           {content}
         </div>

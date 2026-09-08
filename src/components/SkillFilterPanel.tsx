@@ -19,7 +19,9 @@ export default function SkillFilterPanel({
 
   const filtered = useMemo(() => {
     if (!search) return skills;
-    return skills.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()));
+    return skills.filter((s) =>
+      s.name.toLowerCase().includes(search.toLowerCase()),
+    );
   }, [skills, search]);
 
   const toggle = (id: number) => {
@@ -53,7 +55,9 @@ export default function SkillFilterPanel({
       <div className="flex flex-wrap gap-1.5">
         {filtered.map((skill) => {
           const Icon = skill.icon_key
-            ? (LucideIcons[skill.icon_key as keyof typeof LucideIcons] as React.ComponentType<any> | undefined)
+            ? (LucideIcons[skill.icon_key as keyof typeof LucideIcons] as
+                | React.ComponentType<any>
+                | undefined)
             : null;
           const isSelected = selectedIds.includes(skill.id);
           return (

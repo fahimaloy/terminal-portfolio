@@ -22,6 +22,10 @@ describe('GlitchText', () => {
       </GlitchText>,
     );
     const el = screen.getByTestId('g');
-    expect(el.style.textShadow).toContain('var(--neon-magenta)');
+    // editorial: single-entity warm foreground, no neon glitch or RGB offset
+    expect(el.style.color).toBe('var(--fg-1)');
+    expect(el.className).toMatch(/font-display/);
+    expect(el.style.textShadow).toBe('');
+    expect(el.className).not.toMatch(/text-neon-/);
   });
 });

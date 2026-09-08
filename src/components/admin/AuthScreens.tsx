@@ -41,25 +41,42 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
 
   return (
     <div className="min-h-screen bg-bg-void flex flex-col items-center justify-center px-4">
-      <HudPanel accent="magenta" notch="md" title="// AUTHENTICATING" className="p-8 max-w-md w-full">
+      <HudPanel
+        accent="magenta"
+        notch="md"
+        title="// AUTHENTICATING"
+        className="p-8 max-w-md w-full"
+      >
         <div className="flex flex-col items-center gap-6">
           {variant === 'spinner' && (
             <div ref={spinnerRef} className="relative w-20 h-20">
               <div
                 className="spinner-corner absolute inset-0 border-2 border-neon-magenta"
-                style={{ clipPath: 'polygon(0 0, 16px 0, 16px 4px, 4px 4px, 4px 16px, 0 16px)' }}
+                style={{
+                  clipPath:
+                    'polygon(0 0, 16px 0, 16px 4px, 4px 4px, 4px 16px, 0 16px)',
+                }}
               />
               <div
                 className="spinner-corner absolute inset-0 border-2 border-neon-cyan"
-                style={{ clipPath: 'polygon(100% 0, calc(100% - 16px) 0, calc(100% - 16px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 16px, 100% 16px)' }}
+                style={{
+                  clipPath:
+                    'polygon(100% 0, calc(100% - 16px) 0, calc(100% - 16px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 16px, 100% 16px)',
+                }}
               />
               <div
                 className="spinner-corner absolute inset-0 border-2 border-neon-yellow"
-                style={{ clipPath: 'polygon(0 100%, 16px 100%, 16px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 16px), 0 calc(100% - 16px))' }}
+                style={{
+                  clipPath:
+                    'polygon(0 100%, 16px 100%, 16px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 16px), 0 calc(100% - 16px))',
+                }}
               />
               <div
                 className="spinner-corner absolute inset-0 border-2 border-neon-green"
-                style={{ clipPath: 'polygon(100% 100%, calc(100% - 16px) 100%, calc(100% - 16px) calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) calc(100% - 16px), 100% calc(100% - 16px))' }}
+                style={{
+                  clipPath:
+                    'polygon(100% 100%, calc(100% - 16px) 100%, calc(100% - 16px) calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) calc(100% - 16px), 100% calc(100% - 16px))',
+                }}
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-2xl">🔐</span>
@@ -73,7 +90,10 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
                 <div
                   key={i}
                   className="w-3 h-3 rounded-full bg-neon-magenta animate-pulse-dot"
-                  style={{ boxShadow: '0 0 8px var(--glow-magenta)', animationDelay: `${i * 0.2}s` }}
+                  style={{
+                    boxShadow: '0 0 8px var(--glow-magenta)',
+                    animationDelay: `${i * 0.2}s`,
+                  }}
                 />
               ))}
             </div>
@@ -108,7 +128,12 @@ export const ErrorScreen: React.FC<ErrorScreenProps> = ({
 }) => {
   return (
     <div className="min-h-screen bg-bg-void flex flex-col items-center justify-center p-4">
-      <HudPanel accent="red" notch="md" title="// ACCESS_DENIED" className="p-8 max-w-md w-full">
+      <HudPanel
+        accent="red"
+        notch="md"
+        title="// ACCESS_DENIED"
+        className="p-8 max-w-md w-full"
+      >
         <div className="text-center space-y-4">
           <div className="text-5xl">⚠️</div>
           <GlitchText accent="red" as="h1" className="text-xl">

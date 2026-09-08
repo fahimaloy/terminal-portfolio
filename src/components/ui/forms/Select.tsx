@@ -1,7 +1,4 @@
 // src/components/ui/forms/Select.tsx
-/* Themed select. Deliberately wraps a native <select> rather than a div-based
-   listbox: keyboard nav, screen readers, and mobile pickers all work for free. */
-
 import React, { useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import FormField from './FormField';
@@ -32,6 +29,7 @@ export default function Select({
   placeholder,
   required,
   className = '',
+  style,
   ...rest
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -59,9 +57,18 @@ export default function Select({
             focusOut(wrapRef.current);
             rest.onBlur?.(e);
           }}
-          className={`${controlClass} appearance-none pr-9 cursor-pointer ${
-            error ? 'border-neon-red/50' : ''
-          } ${className}`}
+          style={
+            {
+              background: 'var(--bg-3)',
+              border: `1px solid ${
+                error ? 'var(--status-error)' : 'var(--border-subtle)'
+              }`,
+              borderRadius: 'var(--radius-md)',
+              color: 'var(--fg-1)',
+              ...style,
+            } as React.CSSProperties
+          }
+          className={`${controlClass} appearance-none pr-9 cursor-pointer focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] ${className}`}
         >
           {placeholder && <option value="">{placeholder}</option>}
           {options.map((opt) => (
@@ -72,7 +79,8 @@ export default function Select({
         </select>
         <ChevronDown
           size={14}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-neon-cyan pointer-events-none"
+          className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ color: 'var(--text-muted)' }}
         />
       </div>
     </FormField>

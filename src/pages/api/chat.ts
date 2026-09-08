@@ -11,7 +11,10 @@ import { detectIntent } from '../../utils/intentDetection';
 import { verifyCsrf } from '../../utils/csrf';
 
 // Session abuse tracking
-const sessionAbuse = new Map<string, { count: number; resetAt: number; bannedUntil: number }>();
+const sessionAbuse = new Map<
+  string,
+  { count: number; resetAt: number; bannedUntil: number }
+>();
 
 function checkSessionAbuse(sessionId: string): boolean {
   const now = Date.now();
@@ -25,7 +28,11 @@ function checkSessionAbuse(sessionId: string): boolean {
 
 function recordAbuse(sessionId: string): boolean {
   const now = Date.now();
-  const session = sessionAbuse.get(sessionId) || { count: 0, resetAt: now + 5 * 60 * 1000, bannedUntil: 0 };
+  const session = sessionAbuse.get(sessionId) || {
+    count: 0,
+    resetAt: now + 5 * 60 * 1000,
+    bannedUntil: 0,
+  };
   if (session.bannedUntil > now) return true;
   session.count += 1;
   if (session.count >= 10) {
@@ -49,16 +56,27 @@ async function buildRAGResponse(
 
   switch (intent) {
     case 'list_projects': {
-      let query = supabaseAdmin.from('projects').select('*').eq('is_visible', true);
+      let query = supabaseAdmin
+        .from('projects')
+        .select('*')
+        .eq('is_visible', true);
       if (skillFilter && skillFilter.length > 0) {
-        const { data: skills } = await supabaseAdmin.from('skills').select('name').in('id', skillFilter);
+        const { data: skills } = await supabaseAdmin
+          .from('skills')
+          .select('name')
+          .in('id', skillFilter);
         if (skills?.length) {
-          query = query.overlaps('tags', skills.map((s: any) => s.name));
+          query = query.overlaps(
+            'tags',
+            skills.map((s: any) => s.name),
+          );
         }
       }
       const { data: projects } = await query.order('sort_order');
       return {
-        text: `Here are my projects${skillFilter?.length ? ' filtered by selected skills' : ''}:\n\n[[PROJECT_TABLE]]`,
+        text: `Here are my projects${
+          skillFilter?.length ? ' filtered by selected skills' : ''
+        }:\n\n[[PROJECT_TABLE]]`,
         type: 'rag' as const,
         response_type: 'project_table' as const,
         data: { projects },
@@ -66,13 +84,18 @@ async function buildRAGResponse(
     }
 
     case 'list_skills': {
-      let query = supabaseAdmin.from('skills').select('*').eq('is_visible', true);
+      let query = supabaseAdmin
+        .from('skills')
+        .select('*')
+        .eq('is_visible', true);
       if (skillFilter && skillFilter.length > 0) {
         query = query.in('id', skillFilter);
       }
       const { data: skills } = await query.order('sort_order');
       return {
-        text: `Here are my technical skills:\n\n[[SKILL_LIST:${skills?.map((s: any) => s.id).join(',')}]]`,
+        text: `Here are my technical skills:\n\n[[SKILL_LIST:${skills
+          ?.map((s: any) => s.id)
+          .join(',')}]]`,
         type: 'rag' as const,
         response_type: 'skill_list' as const,
         data: { skills },
@@ -96,7 +119,10 @@ async function buildRAGResponse(
           const { data: projs } = await supabaseAdmin!
             .from('projects')
             .select('id, title, short_title, thumbnail_url')
-            .in('id', links.map((l: any) => l.project_id));
+            .in(
+              'id',
+              links.map((l: any) => l.project_id),
+            );
           return { ...exp, projects: projs || [] };
         }),
       );
@@ -112,10 +138,14 @@ async function buildRAGResponse(
     case 'about_me':
       return {
         text: [
-          profile?.summary || profile?.bio || `Hi, I'm ${profile?.full_name || 'Fahim'}.`,
+          profile?.summary ||
+            profile?.bio ||
+            `Hi, I'm ${profile?.full_name || 'Fahim'}.`,
           profile?.welcome_message || '',
           profile?.bio || '',
-        ].filter(Boolean).join('\n\n'),
+        ]
+          .filter(Boolean)
+          .join('\n\n'),
         type: 'rag' as const,
         response_type: 'profile_info' as const,
         data: { profile },
@@ -130,7 +160,9 @@ async function buildRAGResponse(
           profile?.linkedin ? `LinkedIn: ${profile.linkedin}` : '',
           profile?.phone ? `Phone: ${profile.phone}` : '',
           profile?.website ? `Website: ${profile.website}` : '',
-        ].filter(Boolean).join('\n'),
+        ]
+          .filter(Boolean)
+          .join('\n'),
         type: 'rag' as const,
         response_type: 'contact_info' as const,
         data: { profile },
@@ -160,8 +192,13 @@ export default async function handler(
     windowSeconds: 60,
   });
   if (!rateLimit.allowed) {
-    res.setHeader('Retry-After', Math.ceil((rateLimit.resetAt - Date.now()) / 1000).toString());
-    return res.status(429).json({ message: 'Too many requests. Please slow down.' });
+    res.setHeader(
+      'Retry-After',
+      Math.ceil((rateLimit.resetAt - Date.now()) / 1000).toString(),
+    );
+    return res
+      .status(429)
+      .json({ message: 'Too many requests. Please slow down.' });
   }
 
   try {
@@ -174,7 +211,9 @@ export default async function handler(
     // Session abuse check
     const sessionId = (req.headers['x-session-id'] as string) || clientIp;
     if (checkSessionAbuse(sessionId)) {
-      return res.status(429).json({ message: 'Session temporarily banned due to abuse.' });
+      return res
+        .status(429)
+        .json({ message: 'Session temporarily banned due to abuse.' });
     }
 
     if (!supabaseAdmin) {
@@ -202,7 +241,11 @@ export default async function handler(
       { data: knowledge },
       { data: experiences },
     ] = await Promise.all([
-      supabaseAdmin.from('profiles').select('*').eq('is_active', true).maybeSingle(),
+      supabaseAdmin
+        .from('profiles')
+        .select('*')
+        .eq('is_active', true)
+        .maybeSingle(),
       supabaseAdmin.from('skills').select('*').eq('is_visible', true),
       supabaseAdmin.from('projects').select('*').eq('is_visible', true),
       supabaseAdmin.from('project_media').select('*').eq('is_visible', true),
@@ -246,14 +289,19 @@ ${contextStr}
     const dbModels = await getActiveModels();
 
     if (dbModels.length > 0) {
-      const response = await sendMessageWithFallback('chat', systemInstruction, messages);
+      const response = await sendMessageWithFallback(
+        'chat',
+        systemInstruction,
+        messages,
+      );
       return res.status(200).json({ text: response.text, type: 'ai' });
     }
 
     // Fallback to env var Gemini
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
-        message: 'No AI models configured. Please add models in admin dashboard or set GEMINI_API_KEY.',
+        message:
+          'No AI models configured. Please add models in admin dashboard or set GEMINI_API_KEY.',
       });
     }
 
@@ -269,7 +317,8 @@ ${contextStr}
     });
 
     const history = formattedMessages.slice(0, -1);
-    const currentMsg = formattedMessages[formattedMessages.length - 1].parts[0].text;
+    const currentMsg =
+      formattedMessages[formattedMessages.length - 1].parts[0].text;
     const chat = model.startChat({ history });
     const result = await chat.sendMessage(currentMsg);
     const responseText = result.response.text();

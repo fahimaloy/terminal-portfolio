@@ -78,7 +78,11 @@ export function checkRateLimit(
   }
 
   entry.count += 1;
-  return { allowed: true, remaining: maxRequests - entry.count, resetAt: entry.resetAt };
+  return {
+    allowed: true,
+    remaining: maxRequests - entry.count,
+    resetAt: entry.resetAt,
+  };
 }
 
 /**
@@ -102,5 +106,7 @@ export function getClientIp(req: {
     return realIp;
   }
 
-  return req.connection?.remoteAddress || req.socket?.remoteAddress || '127.0.0.1';
+  return (
+    req.connection?.remoteAddress || req.socket?.remoteAddress || '127.0.0.1'
+  );
 }

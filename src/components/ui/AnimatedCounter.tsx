@@ -4,7 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { animate } from 'animejs';
-import { canAnimate } from '../../config/animations';
+import { canAnimate, durations, easings } from '../../config/animations';
 
 interface Props {
   value: number;
@@ -17,7 +17,7 @@ interface Props {
 
 export default function AnimatedCounter({
   value,
-  duration = 1200,
+  duration = (durations[700] ?? 0.7) * 1000,
   delay = 0,
   className = '',
   suffix = '',
@@ -38,7 +38,7 @@ export default function AnimatedCounter({
       animController = animate(proxy.current, {
         val: [0, value],
         duration,
-        ease: 'outExpo',
+        ease: easings.outExpo ?? 'outExpo',
         onUpdate: () => setDisplay(Math.round(proxy.current.val)),
       });
     }, delay);
