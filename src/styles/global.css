@@ -4,12 +4,42 @@
 
 @import './tokens.css';
 
+/* ── VIEWPORT + SAFE-AREA — dvh truth (fixes input-below-fold) ──────────────── */
+html {
+  height: 100%;
+  scrollbar-gutter: stable;
+}
+body {
+  min-height: 100dvh;
+  min-height: 100vh; /* fallback */
+  background: var(--bg-1);
+  color: var(--fg-1);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+#__next {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+/* dvh helpers for layout shells */
+@supports (height: 100dvh) {
+  .h-dvh {
+    height: 100dvh;
+  }
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
+  .max-h-dvh {
+    max-height: 100dvh;
+  }
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
    EDITORIAL WARM — REUSABLE UTILITIES
    All utilities reference CSS tokens from tokens.css (no raw hex/rgba).
    Warm, subtle editorial surface system — no neon blooms or clip-notches.
    ═══════════════════════════════════════════════════════════════════════════════ */
-
 @layer utilities {
   /* ── SUBTLE ACCENT RING / HAIRLINE (replaces hud-glow / border-glow / text-shadow-neon) ─ */
   .accent-ring {
@@ -179,16 +209,6 @@
     background: var(--border-strong);
   }
 
-  /* ── FULL HEIGHT SETUP ────────────────────────────────────────────────────── */
-  html,
-  body,
-  body > div:first-child,
-  div#__next,
-  div#__next > div {
-    height: 100%;
-    overflow: auto;
-  }
-
   /* ── SCROLLBAR NONE ───────────────────────────────────────────────────────── */
   .scrollbar-none::-webkit-scrollbar {
     display: none;
@@ -204,6 +224,36 @@
     color: var(--selection-fg);
   }
 
+  /* ── BLOG RETRO THEME — warm paper + amber ink (scoped via .blog-theme or [data-theme="blog"]) ─ */
+  .blog-theme,
+  [data-theme='blog'] {
+    --bg-1: var(--retro-paper);
+    --bg-2: var(--retro-paper-soft);
+    --fg-1: var(--retro-ink);
+    --fg-2: var(--retro-ink-soft);
+    --border-subtle: rgba(26, 26, 24, 0.12);
+    --border-strong: rgba(26, 26, 24, 0.2);
+  }
+  .blog-theme ::selection,
+  [data-theme='blog'] ::selection {
+    background: var(--retro-amber);
+    color: white;
+  }
+
+  /* ── PULSE DOT — HUD status indicator (uses token durations/easing) ──── */
+  @keyframes pulseDot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+  .animate-pulse-dot {
+    animation: pulseDot var(--dur-pulse) var(--ease-in-out) infinite;
+  }
+
   /* ── REDUCED MOTION ───────────────────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
     *,
@@ -214,17 +264,8 @@
     }
   }
 }
-
 /* ── TAILWIND COMPONENTS ─────────────────────────────────────────────────────── */
 @layer components {
-  /* Panel — flat editorial, no glow */
-  .hud-panel {
-    @apply relative bg-bg-panel border text-text-primary font-body;
-    border-color: var(--border-subtle);
-    background: var(--bg-panel);
-    border-radius: var(--radius-lg);
-  }
-
   /* ── FORM PREMIUM INPUT — warm, rounded ──────────────────────────────────── */
   .form-premium-input {
     @apply bg-bg-smoke border text-text-primary placeholder:text-text-muted;

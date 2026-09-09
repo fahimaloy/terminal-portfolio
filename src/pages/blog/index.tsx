@@ -295,7 +295,10 @@ export default function BlogIndexPage() {
         path="/blog"
       />
 
-      <main className="min-h-screen relative z-10 px-4 pt-24 pb-10 max-w-6xl mx-auto">
+      <main
+        className="min-h-screen relative z-10 px-4 pt-24 pb-10 max-w-6xl mx-auto"
+        data-theme="blog"
+      >
         <header className="text-center mb-6">
           <div
             className="text-[10px] font-mono tracking-[0.32em] mb-2"

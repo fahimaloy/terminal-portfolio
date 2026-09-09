@@ -23,7 +23,7 @@ import SkillCard from './SkillCard';
 import SkillGrid from './SkillGrid';
 import ExperienceTimeline from './ExperienceTimeline';
 import RichTextRenderer from './RichTextRenderer';
-import { HudPanel, TypewriterText } from './ui';
+import { HudPanel, MentionChip, TypewriterText } from './ui';
 
 type ChatMessageProps = {
   role: 'user' | 'model';
@@ -229,7 +229,10 @@ export default React.memo(function ChatMessage({
                   const proj = findProjectById(projects, segment.id);
                   if (!proj) return null;
                   return (
-                    <span key={idx} className="inline-block mx-1">
+                    <MentionChip
+                      tag={proj.title || String(proj.id)}
+                      wash="cyan"
+                    >
                       <InlineProjectCard
                         project={proj}
                         skills={skills}
@@ -238,16 +241,19 @@ export default React.memo(function ChatMessage({
                           setShowModal(true);
                         }}
                       />
-                    </span>
+                    </MentionChip>
                   );
                 }
                 case 'skill_ref': {
                   const skill = findSkillById(skills, segment.id);
                   if (!skill) return null;
                   return (
-                    <span key={idx} className="inline-block mx-1">
+                    <MentionChip
+                      tag={String(skill.name || skill.id)}
+                      wash="cyan"
+                    >
                       <SkillCard skill={skill} inline />
-                    </span>
+                    </MentionChip>
                   );
                 }
                 case 'skill_list': {

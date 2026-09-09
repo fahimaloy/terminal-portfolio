@@ -113,7 +113,42 @@ function parseTokensCss(css) {
     fonts[m[1]] = m[2].trim();
   }
 
-  return { neon, glow, glowSm, durations, easings, bg, text, glass, springs, fonts };
+
+  // --wash-*, --grid-*, --surface-*, --retro-*, --ring-*, --status-*, --border-*, --shadow-*
+  const wash = {};
+  for (const m of primaryCss.matchAll(/--wash-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+    wash[m[1]] = m[2].trim();
+  }
+  const grid = {};
+  for (const m of primaryCss.matchAll(/--grid-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+    grid[m[1]] = m[2].trim();
+  }
+  const surface = {};
+  for (const m of primaryCss.matchAll(/--surface-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+    surface[m[1]] = m[2].trim();
+  }
+  const retro = {};
+  for (const m of primaryCss.matchAll(/--retro-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+    retro[m[1]] = m[2].trim();
+  }
+  const ring = {};
+  for (const m of primaryCss.matchAll(/--ring-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+    ring[m[1]] = m[2].trim();
+  }
+  const status = {};
+  for (const m of primaryCss.matchAll(/--status-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+    status[m[1]] = m[2].trim();
+  }
+  const border = {};
+  for (const m of primaryCss.matchAll(/--border-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+    border[m[1]] = m[2].trim();
+  }
+  const shadow = {};
+  for (const m of primaryCss.matchAll(/--shadow-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+    shadow[m[1]] = m[2].trim();
+  }
+
+  return { neon, glow, glowSm, durations, easings, bg, text, glass, springs, fonts, wash, grid, surface, retro, ring, status, border, shadow };
 }
 
 function msToSeconds(msStr) {
@@ -128,7 +163,7 @@ function msToSeconds(msStr) {
 // ---------------------------------------------------------------------------
 
 function generateTsContent(tokens) {
-  const { neon, glow, glowSm, durations, easings, springs } = tokens;
+  const { neon, glow, glowSm, durations, easings, springs, wash, grid, surface, retro, ring, status, border, shadow } = tokens;
 
   // Build accentConfig entries — preserve EXPECTED_ACCENTS order for stable output
   const accentNames = EXPECTED_ACCENTS.filter((n) => neon[n]);
@@ -172,6 +207,31 @@ function generateTsContent(tokens) {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `  ${toJsKey(k)}: '${escapeSingle(v)}'`);
 
+  // Wash surfaces (derived from --wash-*)
+  const washEntries = Object.entries(wash)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `  ${toJsKey(k)}: '${escapeSingle(v)}'`);
+
+  // Grid lattice (derived from --grid-*)
+  const gridEntries = Object.entries(grid)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `  ${toJsKey(k)}: '${escapeSingle(v)}'`);
+
+  // Surface elevation (derived from --surface-*)
+  const surfaceEntries = Object.entries(surface)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `  ${toJsKey(k)}: '${escapeSingle(v)}'`);
+
+  // Retro blog theme (derived from --retro-*)
+  const retroEntries = Object.entries(retro)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `  ${toJsKey(k)}: '${escapeSingle(v)}'`);
+
+  // Ring/stroke aliases (derived from --ring-*)
+  const ringEntries = Object.entries(ring)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `  ${toJsKey(k)}: '${escapeSingle(v)}'`);
+
   return `// AUTO-GENERATED — do not edit. Run: node scripts/generate-tokens.mjs
 // Source: src/styles/tokens.css
 
@@ -209,11 +269,36 @@ ${glowSmEntries.join(',\n')},
 export const generatedSprings = {
 ${springEntries.join(',\n')},
 } as const;
+
+// Wash surfaces (derived from --wash-*)
+export const generatedWash: Record<string, string> = {
+${washEntries.join(',\n')},
+} as const;
+
+// Grid lattice (derived from --grid-*)
+export const generatedGrid: Record<string, string> = {
+${gridEntries.join(',\n')},
+} as const;
+
+// Surface elevation (derived from --surface-*)
+export const generatedSurface: Record<string, string> = {
+${surfaceEntries.join(',\n')},
+} as const;
+
+// Retro blog theme (derived from --retro-*)
+export const generatedRetro: Record<string, string> = {
+${retroEntries.join(',\n')},
+} as const;
+
+// Ring/stroke aliases (derived from --ring-*)
+export const generatedRing: Record<string, string> = {
+${ringEntries.join(',\n')},
+} as const;
 `;
 }
 
 function generateTwContent(tokens) {
-  const { neon, glow, glowSm, bg, text, glass } = tokens;
+  const { neon, glow, glowSm, bg, text, glass, wash, grid, surface, retro, ring, status, border } = tokens;
 
   // Build Tailwind extend.colors map — mirrors current tailwind.config.js extend.colors
   const colorEntries = {};
@@ -244,6 +329,34 @@ function generateTwContent(tokens) {
     // --glass-backdrop-alpha is numeric — skip
     if (/^[0-9.]+$/.test(v)) continue;
     colorEntries[`glass-${k}`] = v;
+  }
+  // wash colors
+  for (const [k, v] of Object.entries(wash).sort(([a], [b]) => a.localeCompare(b))) {
+    colorEntries[`wash-${k}`] = v;
+  }
+  // grid colors
+  for (const [k, v] of Object.entries(grid).sort(([a], [b]) => a.localeCompare(b))) {
+    colorEntries[`grid-${k}`] = v;
+  }
+  // surface colors
+  for (const [k, v] of Object.entries(surface).sort(([a], [b]) => a.localeCompare(b))) {
+    colorEntries[`surface-${k}`] = v;
+  }
+  // retro colors
+  for (const [k, v] of Object.entries(retro).sort(([a], [b]) => a.localeCompare(b))) {
+    colorEntries[`retro-${k}`] = v;
+  }
+  // ring colors
+  for (const [k, v] of Object.entries(ring).sort(([a], [b]) => a.localeCompare(b))) {
+    colorEntries[`ring-${k}`] = v;
+  }
+  // status colors
+  for (const [k, v] of Object.entries(status).sort(([a], [b]) => a.localeCompare(b))) {
+    colorEntries[`status-${k}`] = v;
+  }
+  // border colors
+  for (const [k, v] of Object.entries(border).sort(([a], [b]) => a.localeCompare(b))) {
+    colorEntries[`border-${k}`] = v;
   }
 
   const colorLines = Object.entries(colorEntries)
@@ -367,7 +480,7 @@ function main() {
   writeFileSync(OUT_TS, tsContent, 'utf8');
   writeFileSync(OUT_TW, twContent, 'utf8');
 
-  console.log(`[generate-tokens] Wrote ${path.relative(ROOT, OUT_TS)} (${Object.keys(tokens.neon).length} accents, ${Object.keys(tokens.durations).length} durations, ${Object.keys(tokens.easings).length} easings)`);
+  console.log(`[generate-tokens] Wrote ${path.relative(ROOT, OUT_TS)} (${Object.keys(tokens.neon).length} accents, ${Object.keys(tokens.durations).length} durations, ${Object.keys(tokens.easings).length} easings, ${Object.keys(tokens.wash).length} wash, ${Object.keys(tokens.grid).length} grid, ${Object.keys(tokens.surface).length} surface, ${Object.keys(tokens.retro).length} retro, ${Object.keys(tokens.ring).length} ring)`);
   console.log(`[generate-tokens] Wrote ${path.relative(ROOT, OUT_TW)} (${Object.keys(tokens.neon).length} neon + ${Object.keys(tokens.glow).length} glow + ${Object.keys(tokens.glowSm).length} glow-sm + bg/text/glass colors)`);
 }
 

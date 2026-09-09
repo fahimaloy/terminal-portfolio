@@ -33,6 +33,7 @@ import {
   canAnimate,
 } from '../../config/animations';
 import { HairlineDivider } from '../ui/graphics';
+import GridLattice from '../ui/graphics/primitives/GridLattice';
 
 type HeroSectionProps = {
   profile: PortfolioProfile | null;
@@ -369,12 +370,16 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
 
         {/* Hairline divider drawable under label/name */}
         <HairlineDivider className="hero-hairline w-24 mx-auto mt-2 opacity-0" />
-
         {/* Name — plain editorial, no glitch */}
         <div data-hero="name" className="hero-name opacity-0 mt-1">
           <h1
-            className="text-4xl md:text-6xl font-display font-semibold tracking-[-0.02em] leading-none"
-            style={{ color: 'var(--fg-1)' }}
+            className="text-7xl font-display font-semibold tracking-[-0.02em] leading-none text-neon-cyan"
+            style={{
+              color: 'var(--neon-cyan)',
+              background: 'var(--wash-cyan)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
           >
             {profile?.full_name?.toUpperCase() || 'FAHIM AHMED'}
           </h1>
@@ -399,19 +404,30 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
         {profile?.bio && (
           <div
             data-hero="bio"
-            className="hero-bio text-xs md:text-sm font-body text-center mt-5 max-w-lg leading-relaxed opacity-0"
-            style={{ color: 'var(--fg-3)' }}
+            className="hero-bio text-[15px] font-body text-center mt-5 max-w-lg leading-relaxed opacity-0"
+            style={{ color: 'var(--fg-2)' }}
           >
             {profile.bio}
           </div>
         )}
 
         {/* Stats row */}
-        <div data-hero="stats" className="hero-stats flex gap-8 mt-6">
+        <div data-hero="stats" className="hero-stats flex gap-8 mt-6 relative">
+          <GridLattice
+            opacity={0.03}
+            color="var(--grid-1)"
+            className="absolute inset-0 pointer-events-none"
+            aria-hidden="true"
+          />
           <div className="text-center opacity-0">
             <div
               className="text-2xl font-display font-medium"
-              style={{ color: 'var(--fg-1)' }}
+              style={{
+                color: 'var(--fg-1)',
+                background: 'var(--wash-yellow-strong)',
+                padding: '8px 12px',
+                borderRadius: 'var(--radius-sm)',
+              }}
             >
               {projectCount}+
             </div>
@@ -425,7 +441,12 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
           <div className="text-center opacity-0">
             <div
               className="text-2xl font-display font-medium"
-              style={{ color: 'var(--fg-1)' }}
+              style={{
+                color: 'var(--fg-1)',
+                background: 'var(--wash-cyan-strong)',
+                padding: '8px 12px',
+                borderRadius: 'var(--radius-sm)',
+              }}
             >
               {skillCount}+
             </div>
@@ -439,7 +460,12 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
           <div className="text-center opacity-0">
             <div
               className="text-2xl font-display font-medium"
-              style={{ color: 'var(--fg-1)' }}
+              style={{
+                color: 'var(--fg-1)',
+                background: 'var(--wash-green-strong)',
+                padding: '8px 12px',
+                borderRadius: 'var(--radius-sm)',
+              }}
             >
               {expCount}+
             </div>
@@ -452,16 +478,16 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
           </div>
         </div>
 
-        {/* CTA Buttons — editorial flat */}
+        {/* CTA Buttons — AAA spring hover */}
         <div className="flex flex-wrap gap-3 mt-7 justify-center">
           <button
             data-hero="cta"
             onClick={onOpenChat}
-            className="hero-btn opacity-0 inline-flex items-center justify-center px-5 py-2.5 font-mono text-[11px] tracking-[0.16em] border rounded-[var(--radius-md)] transition-colors duration-200"
+            className="hero-btn opacity-0 inline-flex items-center justify-center px-5 py-2.5 font-mono text-[11px] tracking-[0.16em] border rounded-[var(--radius-md)] transition-colors duration-200 hover:scale-102 hover:transition-transform duration-200 ease-in-out"
             style={{
-              background: 'var(--fg-1)',
+              background: 'var(--wash-yellow)',
               color: 'var(--bg-1)',
-              borderColor: 'var(--fg-1)',
+              borderColor: 'var(--neon-cyan)',
             }}
           >
             START CHAT
@@ -471,11 +497,11 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
             onClick={() =>
               window.open('https://github.com/fahimaloy', '_blank')
             }
-            className="hero-btn opacity-0 inline-flex items-center justify-center px-5 py-2.5 font-mono text-[11px] tracking-[0.16em] border rounded-[var(--radius-md)] transition-colors duration-200"
+            className="hero-btn opacity-0 inline-flex items-center justify-center px-5 py-2.5 font-mono text-[11px] tracking-[0.16em] border rounded-[var(--radius-md)] transition-colors duration-200 hover:scale-102 hover:transition-transform duration-200 ease-in-out"
             style={{
               background: 'transparent',
               color: 'var(--fg-1)',
-              borderColor: 'var(--border-strong)',
+              borderColor: 'var(--neon-cyan)',
             }}
           >
             VIEW CODE
@@ -483,7 +509,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
           <button
             data-hero="cta"
             onClick={() => router.push('/blog')}
-            className="hero-btn opacity-0 inline-flex items-center justify-center px-5 py-2.5 font-mono text-[11px] tracking-[0.16em] border rounded-[var(--radius-md)] transition-colors duration-200"
+            className="hero-btn opacity-0 inline-flex items-center justify-center px-5 py-2.5 font-mono text-[11px] tracking-[0.16em] border rounded-[var(--radius-md)] transition-colors duration-200 hover:scale-102 hover:transition-transform duration-200 ease-in-out"
             style={{
               background: 'transparent',
               color: 'var(--fg-2)',
@@ -513,8 +539,8 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
                 onClick={() => onSend(card.message)}
                 className="quick-card text-left p-4 cursor-pointer border rounded-[var(--radius-lg)] transition-colors duration-200 opacity-0"
                 style={{
-                  background: 'var(--bg-2)',
-                  borderColor: 'var(--border-subtle)',
+                  background: 'var(--wash-yellow)',
+                  borderColor: 'var(--neon-cyan)',
                   color: 'var(--fg-1)',
                 }}
               >

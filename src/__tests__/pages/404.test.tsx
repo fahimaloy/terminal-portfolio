@@ -1,4 +1,4 @@
-// src/pages/__tests__/404.test.tsx
+// src/__tests__/pages/404.test.tsx
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from '@testing-library/react';
 import React from 'react';
@@ -103,7 +103,7 @@ vi.mock('animejs', () => {
   };
 });
 
-import NotFoundPage from '../404';
+import NotFoundPage from '../../pages/404';
 import {
   createScope,
   createTimeline,

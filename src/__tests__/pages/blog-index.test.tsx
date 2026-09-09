@@ -1,4 +1,4 @@
-// src/pages/__tests__/blog-index.test.tsx
+// src/__tests__/pages/blog-index.test.tsx
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   render,
@@ -132,7 +132,7 @@ vi.mock('next/image', () => ({
   },
 }));
 
-import BlogIndexPage from '../blog/index';
+import BlogIndexPage from '../../pages/blog/index';
 import { createScope, createTimeline } from 'animejs';
 
 const mockedCreateScope = vi.mocked(createScope);

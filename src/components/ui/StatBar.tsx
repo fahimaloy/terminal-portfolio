@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { animate } from 'animejs';
 import { GlitchAccent } from './GlitchText';
 import { canAnimate, durations, easings } from '../../config/animations';
+import { useMotionScope } from '../../hooks/useMotionScope';
 
 const ACCENT_COLOR: Record<GlitchAccent, string> = {
   yellow: 'var(--neon-yellow)',
@@ -36,6 +37,7 @@ export default function StatBar({
   const [isVisible, setIsVisible] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);
   const proxyRef = useRef({ val: 0 });
+  const motionScope = useMotionScope(barRef);
 
   useEffect(() => {
     const target = Math.max(0, Math.min(100, Math.round(value)));
@@ -46,56 +48,67 @@ export default function StatBar({
       return;
     }
 
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-      proxyRef.current.val = 0;
+    setIsVisible(true);
+
+    proxyRef.current.val = 0;
+    const scope = motionScope.create();
+    if (!scope) return;
+
+    scope.add(() => {
       animate(proxyRef.current, {
         val: [0, target],
-        duration: durations.enter * 1000,
+        duration: durations.entry * 1000,
         ease: easings.expoOut,
         onUpdate: () => {
           setDisplayValue(Math.round(proxyRef.current.val));
         },
       });
-    }, delay);
+    });
 
-    return () => clearTimeout(timer);
+    return () => {
+      scope.revert();
+    };
   }, [value, delay]);
 
   return (
     <div className={`font-body text-xs ${className}`}>
-      <div className="flex justify-between mb-1">
-        <span
-          className="font-display tracking-[2px] uppercase text-[10px]"
-          style={{ color: 'var(--fg-2)' }}
+      <div className="flex items-center justify-between mb-1">
+        <div
+          className="font-mono text-[10px] tracking-[0.18em]"
+          style={{ color: 'var(--fg-3)' }}
         >
           {label}
-        </span>
+        </div>
         {showValue && (
-          <span
-            className="font-mono text-[10px]"
-            style={{ color: 'var(--text-muted)' }}
+          <div
+            className="font-mono text-[11px] tabular-nums"
+            style={{ color: `var(--neon-${accent})` }}
           >
             {displayValue}%
-          </span>
+          </div>
         )}
       </div>
       <div
-        className="h-1 overflow-hidden relative"
+        className="relative h-2 overflow-hidden rounded-full"
         style={{
           background: 'var(--bg-3)',
-          borderRadius: 'var(--radius-full)',
+          border: '1px solid var(--border-subtle)',
         }}
       >
         <div
-          ref={barRef}
+          className="absolute inset-0 opacity-40"
+          style={{ background: `var(--wash-${accent})` }}
+          aria-hidden="true"
+        />
+        <div
           data-testid="stat-bar-fill"
-          className="h-full"
+          ref={barRef}
+          className="absolute inset-y-0 left-0 rounded-full"
           style={{
             width: isVisible ? `${displayValue}%` : '0%',
-            background: ACCENT_COLOR[accent],
-            borderRadius: 'var(--radius-full)',
             transition: isVisible ? 'none' : 'width 0s',
+            background: `var(--neon-${accent})`,
+            boxShadow: `0 0 10px var(--glow-${accent})`,
           }}
         />
       </div>

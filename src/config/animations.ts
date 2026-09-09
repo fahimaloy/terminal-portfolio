@@ -37,13 +37,16 @@ export const easings: Record<string, string> =
   generatedEasings as unknown as Record<string, string>;
 
 // ── Spring Presets (Anime.js v4 spring() parameters) ───────────────────────
+// Keep in sync with tokens.css --spring-* (validated via generatedSprings, but re-export here for ergonomics)
 export const springs = {
-  stiff: { stiffness: 200, damping: 15 }, // snappy
-  soft: { stiffness: 100, damping: 10 }, // soft
-  bouncy: { stiffness: 120, damping: 6 }, // bouncy
-  gentle: { stiffness: 80, damping: 12 }, // gentle
-  hard: { stiffness: 300, damping: 20 }, // hard stop
-  card: { stiffness: 150, damping: 14 }, // HUD card — canonical InlineProjectCard → Detail spring
+  stiff: { stiffness: 200, damping: 15 },
+  soft: { stiffness: 100, damping: 10 },
+  bouncy: { stiffness: 120, damping: 6 },
+  gentle: { stiffness: 90, damping: 14 },
+  hard: { stiffness: 300, damping: 20 },
+  card: { stiffness: 150, damping: 14 },
+  snappy: { stiffness: 240, damping: 18 },
+  wobbly: { stiffness: 180, damping: 12 },
 } as const;
 
 // ── Default Options ──────────────────────────────────────────────────────────
