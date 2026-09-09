@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { Clock, Eye, Star } from 'lucide-react';
 import type { BlogListItem } from '../../types/blog';
 import Tilt3D from '../ui/Tilt3D';
+import HairlineDivider from '../ui/graphics/primitives/HairlineDivider';
+import MorphOrb from '../ui/graphics/primitives/MorphOrb';
 
 interface Props {
   post: BlogListItem;
@@ -24,7 +26,19 @@ function formatDate(iso: string | null): string {
     .toUpperCase();
 }
 
+const ACCENT_CYCLE = [
+  'yellow',
+  'magenta',
+  'cyan',
+  'green',
+  'purple',
+  'blue',
+] as const;
+type CardAccent = (typeof ACCENT_CYCLE)[number];
+
 export default function BlogCard({ post, index = 0 }: Props) {
+  const accent: CardAccent = ACCENT_CYCLE[index % ACCENT_CYCLE.length];
+
   return (
     <Tilt3D intensity={4}>
       <Link href={`/blog/${post.slug}`} legacyBehavior>
@@ -38,12 +52,20 @@ export default function BlogCard({ post, index = 0 }: Props) {
           aria-label={`Read ${post.title}`}
         >
           <div
-            className="overflow-hidden h-full rounded-[var(--radius-lg)] border transition-transform duration-200 hover:scale-[1.01]"
+            className="relative overflow-hidden h-full rounded-[var(--radius-lg)] border transition-transform duration-200 hover:scale-[1.01]"
             style={{
               background: 'var(--bg-2)',
               borderColor: 'var(--border-subtle)',
             }}
           >
+            {/* Inset MorphOrb chrome — token-only, muted */}
+            <div
+              className="pointer-events-none absolute top-2 right-2 opacity-[0.12]"
+              aria-hidden="true"
+            >
+              <MorphOrb accent={accent} size={48} />
+            </div>
+
             {/* Cover */}
             <div
               className="relative aspect-video overflow-hidden"
@@ -82,6 +104,8 @@ export default function BlogCard({ post, index = 0 }: Props) {
                 </div>
               )}
             </div>
+
+            <HairlineDivider className="opacity-60" accent={accent} />
 
             {/* Body */}
             <div className="p-4 space-y-2">

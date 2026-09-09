@@ -3,7 +3,15 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import { ArrowLeft, Clock, Eye, Calendar } from 'lucide-react';
-import { createScope, animate, stagger } from 'animejs';
+import {
+  createScope,
+  animate,
+  stagger,
+  createTimeline,
+  createDrawable,
+  spring,
+} from 'animejs';
+import { splitText } from 'animejs';
 import SEOMeta from '../../components/SEOMeta';
 import RichTextRenderer from '../../components/RichTextRenderer';
 import ReadingProgress from '../../components/blog/ReadingProgress';
@@ -11,7 +19,14 @@ import LightningTransition from '../../components/blog/LightningTransition';
 import BlogCard from '../../components/blog/BlogCard';
 import { supabaseAdmin } from '../../utils/supabaseAdmin';
 import type { BlogPost, BlogListItem } from '../../types/blog';
-import { isReducedMotion, durations, easings } from '../../config/animations';
+import {
+  isReducedMotion,
+  canAnimate,
+  durations,
+  easings,
+  springs,
+} from '../../config/animations';
+import { HairlineDivider } from '../../components/ui/graphics';
 
 interface Props {
   post: BlogPost;
@@ -40,35 +55,260 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
   const [boltTrigger, setBoltTrigger] = useState(0);
   const pendingHref = useRef<string | null>(null);
 
-  // Hero entrance — editorial y+opacity stagger via createScope
+  // Hero entrance — premium: splitText title cascade + meta drawable rule + aurora wash
   useEffect(() => {
     const root = heroRef.current;
-    if (!root || isReducedMotion()) return;
+    if (!root) return;
+    const reduced = isReducedMotion() || !canAnimate();
 
     const scope = createScope({
       root,
       mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
       defaults: {
-        duration: (durations[700] ?? 0.7) * 1000,
-        ease: easings.outExpo ?? 'outExpo',
+        duration: (durations.enter ?? 0.48) * 1000,
+        ease: (easings.smooth ?? easings.outExpo ?? 'outExpo') as string,
         composition: 'blend',
       },
     } as Parameters<typeof createScope>[0]);
 
+    let titleSplitter: ReturnType<typeof splitText> | null = null;
+
     scope.add(() => {
-      const bits = root.querySelectorAll('.reader-reveal');
-      if (bits.length) {
-        animate(bits, {
-          opacity: [0, 1],
-          y: [16, 0],
-          duration: 700,
-          ease: 'outExpo',
-          delay: stagger(70, { from: 'first' }),
-        });
+      const backLink = root.querySelectorAll<HTMLElement>('.reader-back');
+      const meta = root.querySelectorAll<HTMLElement>('.reader-meta');
+      const titleEl = root.querySelector<HTMLElement>('.reader-title');
+      const excerptEl = root.querySelectorAll<HTMLElement>('.reader-excerpt');
+      const tagsWrap = root.querySelectorAll<HTMLElement>('.reader-tags');
+      const tagChips = root.querySelectorAll<HTMLElement>('.reader-tag');
+      const hairlineLines = root.querySelectorAll<SVGGeometryElement>(
+        '.reader-hairline line',
+      );
+      const hairlineWraps =
+        root.querySelectorAll<HTMLElement>('.reader-hairline');
+      const auroraWash = root.querySelectorAll<HTMLElement>('.reader-aurora');
+
+      if (reduced) {
+        const tl = createTimeline({
+          defaults: { ease: (easings.outExpo ?? 'outExpo') as string },
+        } as any);
+        if (backLink.length)
+          tl.add(
+            backLink as unknown as HTMLElement[],
+            { y: [12, 0], opacity: [0, 1], duration: 420 } as any,
+            0,
+          );
+        if (meta.length)
+          tl.add(
+            meta as unknown as HTMLElement[],
+            { y: [12, 0], opacity: [0, 1], duration: 460 } as any,
+            stagger(70),
+          );
+        if (hairlineWraps.length)
+          tl.add(
+            hairlineWraps as unknown as HTMLElement[],
+            { opacity: [0, 1], duration: 260 } as any,
+            stagger(40),
+          );
+        if (titleEl)
+          tl.add(
+            titleEl as unknown as HTMLElement,
+            { y: [14, 0], opacity: [0, 1], duration: 520 } as any,
+            stagger(70),
+          );
+        if (excerptEl.length)
+          tl.add(
+            excerptEl as unknown as HTMLElement[],
+            { y: [12, 0], opacity: [0, 1], duration: 440 } as any,
+            stagger(70),
+          );
+        if (tagsWrap.length)
+          tl.add(
+            tagsWrap as unknown as HTMLElement[],
+            { opacity: [0, 1], duration: 320 } as any,
+            stagger(40),
+          );
+        if (tagChips.length)
+          tl.add(
+            tagChips as unknown as HTMLElement[],
+            { y: [8, 0], opacity: [0, 1], duration: 400 } as any,
+            stagger(30, { from: 'first' }),
+          );
+        if (auroraWash.length)
+          tl.add(
+            auroraWash as unknown as HTMLElement[],
+            { opacity: [0, 1], duration: 340 } as any,
+            0,
+          );
+        return;
       }
+
+      const tl = createTimeline({
+        defaults: { ease: (easings.smooth ?? 'outExpo') as string },
+      } as any);
+
+      const softSpring = spring(
+        springs.soft as unknown as Record<string, number>,
+      ) as unknown as string;
+
+      if (backLink.length) {
+        tl.add(
+          backLink as unknown as HTMLElement[],
+          {
+            y: [14, 0],
+            opacity: [0, 1],
+            duration: (durations.enter ?? 0.48) * 1000 * 0.55,
+            ease: (easings.smooth ?? 'outExpo') as string,
+          } as any,
+          0,
+        );
+      }
+      if (meta.length) {
+        tl.add(
+          meta as unknown as HTMLElement[],
+          {
+            y: [12, 0],
+            opacity: [0, 1],
+            duration: (durations.enter ?? 0.48) * 1000 * 0.5,
+            ease: (easings.smooth ?? 'outExpo') as string,
+          } as any,
+          stagger(70),
+        );
+      }
+
+      if (auroraWash.length) {
+        tl.add(
+          auroraWash as unknown as HTMLElement[],
+          {
+            opacity: [0, 1],
+            duration: (durations.enter ?? 0.48) * 1000 * 0.6,
+            ease: (easings.smooth ?? 'outExpo') as string,
+          } as any,
+          0,
+        );
+      }
+
+      const hairlineDrawable = hairlineLines.length
+        ? (createDrawable('.reader-hairline line') as unknown as HTMLElement[])
+        : ([] as unknown as HTMLElement[]);
+      if ((hairlineDrawable as unknown as unknown[]).length) {
+        tl.add(
+          hairlineDrawable as unknown as HTMLElement[],
+          {
+            draw: ['0 0', '0 1'],
+            duration: (durations.draw ?? 1.2) * 1000,
+            ease: (easings.smooth ?? 'linear') as string,
+          } as any,
+          stagger(40, { from: 'first' }),
+        );
+        if (hairlineWraps.length) {
+          tl.add(
+            hairlineWraps as unknown as HTMLElement[],
+            {
+              opacity: [0, 1],
+              duration: (durations.enter ?? 0.48) * 1000 * 0.32,
+              ease: (easings.smooth ?? 'outExpo') as string,
+            } as any,
+            '-220',
+          );
+        }
+      } else if (hairlineWraps.length) {
+        tl.add(
+          hairlineWraps as unknown as HTMLElement[],
+          {
+            opacity: [0, 1],
+            scaleX: [0, 1],
+            duration: (durations.hover ?? 0.24) * 1000,
+            ease: (easings.smooth ?? 'outExpo') as string,
+          } as any,
+          stagger(40),
+        );
+      }
+
+      try {
+        if (titleEl) {
+          titleSplitter = splitText(titleEl, {
+            chars: true,
+            words: { wrap: 'clip' },
+          });
+        }
+      } catch {
+        titleSplitter = null;
+      }
+      const titleChars =
+        (titleSplitter?.chars as unknown as HTMLElement[]) ?? [];
+      if (titleChars.length) {
+        tl.add(
+          titleChars as unknown as HTMLElement[],
+          {
+            y: ['112%', '0%'],
+            opacity: [0, 1],
+            duration: (durations.enter ?? 0.48) * 1000 * 0.56,
+            ease: (easings.expoOut ?? easings.outExpo ?? 'outExpo') as string,
+            delay: stagger(20, { from: 'first' }),
+          } as any,
+          stagger(70),
+        );
+      } else if (titleEl) {
+        tl.add(
+          titleEl as unknown as HTMLElement,
+          {
+            y: [16, 0],
+            opacity: [0, 1],
+            duration: (durations.enter ?? 0.48) * 1000 * 0.55,
+            ease: softSpring ?? (easings.smooth as string),
+          } as any,
+          stagger(70),
+        );
+      }
+
+      if (excerptEl.length) {
+        tl.add(
+          excerptEl as unknown as HTMLElement[],
+          {
+            y: [12, 0],
+            opacity: [0, 1],
+            duration: 520,
+            ease: softSpring ?? (easings.smooth as string),
+          } as any,
+          stagger(70),
+        );
+      }
+
+      if (tagChips.length) {
+        tl.add(
+          tagChips as unknown as HTMLElement[],
+          {
+            y: [10, 0],
+            opacity: [0, 1],
+            scale: [0.98, 1],
+            duration: 440,
+            ease: softSpring ?? (easings.smooth as string),
+            delay: stagger(22, { from: 'first' }),
+          } as any,
+          stagger(60, { from: 'first' }),
+        );
+      } else if (tagsWrap.length) {
+        tl.add(
+          tagsWrap as unknown as HTMLElement[],
+          {
+            y: [10, 0],
+            opacity: [0, 1],
+            duration: 460,
+            ease: softSpring ?? (easings.smooth as string),
+          } as any,
+          stagger(70),
+        );
+      }
+
+      void canAnimate;
     });
 
-    return () => scope.revert();
+    return () => {
+      try {
+        titleSplitter?.revert();
+      } catch {}
+      scope.revert();
+    };
   }, [post.id]);
 
   // Parallax cover — subtle, muted
@@ -123,11 +363,56 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
       <LightningTransition trigger={boltTrigger} onMidpoint={handleMidpoint} />
 
       <article ref={articleRef} className="relative z-10 min-h-screen">
-        {/* Full-screen hero */}
+        {/* Full-screen hero — premium: aurora wash + parallax cover + splitText title + drawable rule */}
         <div
           ref={heroRef}
           className="relative min-h-screen flex flex-col justify-end overflow-hidden px-4 pb-16 pt-28"
         >
+          {/* Soft aurora wash behind cover — token-only var(--aurora-*) */}
+          <div
+            aria-hidden="true"
+            className="reader-aurora pointer-events-none absolute inset-0 opacity-0 overflow-hidden"
+          >
+            <div
+              style={{
+                position: 'absolute',
+                top: '-8%',
+                left: '-6%',
+                width: '58%',
+                height: '56%',
+                borderRadius: '9999px',
+                background:
+                  'radial-gradient(ellipse at center, var(--aurora-1) 0%, transparent 72%)',
+                filter: 'blur(64px)',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                top: '-6%',
+                right: '-8%',
+                width: '48%',
+                height: '52%',
+                borderRadius: '9999px',
+                background:
+                  'radial-gradient(ellipse at center, var(--aurora-2) 0%, transparent 72%)',
+                filter: 'blur(56px)',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '-10%',
+                left: '10%',
+                width: '52%',
+                height: '48%',
+                borderRadius: '9999px',
+                background:
+                  'radial-gradient(ellipse at center, var(--aurora-3) 0%, transparent 72%)',
+                filter: 'blur(48px)',
+              }}
+            />
+          </div>
           {/* Parallax cover */}
           {post.cover_image_url && (
             <div
@@ -154,7 +439,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           <div className="relative max-w-3xl mx-auto w-full">
             <Link href="/blog" legacyBehavior>
               <a
-                className="reader-reveal inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.18em] mb-6 opacity-0 transition-colors hover:opacity-80"
+                className="reader-back inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.18em] mb-6 opacity-0 transition-colors hover:opacity-80"
                 style={{ color: 'var(--fg-3)' }}
               >
                 <ArrowLeft size={12} /> BACK TO LOG
@@ -162,7 +447,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             </Link>
 
             <div
-              className="reader-reveal flex flex-wrap items-center gap-3 text-[10px] font-mono mb-4 opacity-0"
+              className="reader-meta flex flex-wrap items-center gap-3 text-[10px] font-mono mb-4 opacity-0"
               style={{ color: 'var(--fg-4)' }}
             >
               <span className="inline-flex items-center gap-1">
@@ -178,18 +463,19 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
               </span>
             </div>
 
-            <div className="reader-reveal opacity-0">
-              <h1
-                className="text-3xl md:text-5xl font-display font-semibold tracking-[-0.02em] leading-tight"
-                style={{ color: 'var(--fg-1)' }}
-              >
-                {post.title}
-              </h1>
-            </div>
+            {/* Drawable hairline rule under meta — animated via createDrawable draw ['0 0','0 1'] */}
+            <HairlineDivider className="reader-hairline w-full max-w-xl mb-5 opacity-0" />
+
+            <h1
+              className="reader-title text-3xl md:text-5xl font-display font-semibold tracking-[-0.02em] leading-tight opacity-0"
+              style={{ color: 'var(--fg-1)' }}
+            >
+              {post.title}
+            </h1>
 
             {post.excerpt && (
               <p
-                className="reader-reveal font-body text-sm md:text-base mt-5 max-w-2xl leading-relaxed opacity-0"
+                className="reader-excerpt font-body text-sm md:text-base mt-5 max-w-2xl leading-relaxed opacity-0"
                 style={{ color: 'var(--fg-2)' }}
               >
                 {post.excerpt}
@@ -197,11 +483,11 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             )}
 
             {post.tags?.length > 0 && (
-              <div className="reader-reveal flex flex-wrap gap-1.5 mt-5 opacity-0">
+              <div className="reader-tags flex flex-wrap gap-1.5 mt-5 opacity-0">
                 {post.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex px-2.5 py-1 rounded-full font-mono text-[9px] tracking-[0.14em] border"
+                    className="reader-tag inline-flex px-2.5 py-1 rounded-full font-mono text-[9px] tracking-[0.14em] border opacity-0"
                     style={{
                       background: 'var(--bg-2)',
                       borderColor: 'var(--border-subtle)',

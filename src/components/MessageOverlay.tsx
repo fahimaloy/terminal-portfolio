@@ -13,7 +13,7 @@ import React, {
 } from 'react';
 import { FiSend, FiX, FiSliders } from 'react-icons/fi';
 import * as LucideIcons from 'lucide-react';
-import { createScope, animate, stagger, spring } from 'animejs';
+import { createScope, animate, stagger } from 'animejs';
 import AdvancedFeaturesBar, { FeatureMode } from './AdvancedFeaturesBar';
 import ContactForm from './ContactForm';
 import MeetingForm from './MeetingForm';
@@ -27,7 +27,12 @@ import {
   TypeaheadSuggestions,
   useTypeaheadSuggestions,
 } from './ui';
-import { isReducedMotion } from '../config/animations';
+import {
+  durations,
+  easings,
+  isReducedMotion,
+  canAnimate,
+} from '../config/animations';
 import { useEnhancedTypeaheadSuggestions } from '../hooks/useEnhancedSuggestions';
 
 type SuggestionShape = {
@@ -175,9 +180,17 @@ export default function MessageOverlay({
     }
   }, [isOpen]);
 
-  // Stagger entrance for quick suggestion chips
+  // Stagger entrance for quick suggestion chips — 30-40ms, expoOut, reduced-motion fallback
   useEffect(() => {
-    if (isReducedMotion() || !chipsRef.current || inputValue.length > 0) return;
+    if (!chipsRef.current || inputValue.length > 0) return;
+    if (isReducedMotion() || !canAnimate()) {
+      const chips =
+        chipsRef.current.querySelectorAll<HTMLElement>('.suggestion-chip');
+      chips.forEach((c) => {
+        c.style.opacity = '1';
+      });
+      return;
+    }
 
     const scope = createScope({ root: chipsRef.current });
     scopeRef.current = scope;
@@ -185,12 +198,14 @@ export default function MessageOverlay({
     scope.add(() => {
       const chips = chipsRef.current!.querySelectorAll('.suggestion-chip');
       if (!chips.length) return;
-      animate(chips, {
+      (animate as any)(chips, {
         opacity: [0, 1],
-        y: [16, 0],
-        scale: [0.9, 1],
-        delay: stagger(60, { from: 'first' }),
-        ...spring({ stiffness: 160, damping: 14 }),
+        y: [12, 0],
+        scale: [0.96, 1],
+        duration: durations.enter * 1000 * 0.5,
+        ease: (easings.expoOut as unknown as string) ?? 'outExpo',
+        delay: stagger(34, { from: 'first' }),
+        composition: 'blend',
       });
     });
 
@@ -311,6 +326,28 @@ export default function MessageOverlay({
                           <button
                             key={s.label}
                             onClick={() => handleQuickSuggestion(s.label)}
+                            onMouseEnter={(e) => {
+                              if (isReducedMotion() || !canAnimate()) return;
+                              (animate as any)(e.currentTarget, {
+                                scale: 1.02,
+                                duration: durations.hover * 1000,
+                                ease:
+                                  (easings.smooth as unknown as string) ??
+                                  'linear',
+                                composition: 'blend',
+                              });
+                            }}
+                            onMouseLeave={(e) => {
+                              if (isReducedMotion() || !canAnimate()) return;
+                              (animate as any)(e.currentTarget, {
+                                scale: 1,
+                                duration: durations.hover * 1000,
+                                ease:
+                                  (easings.smooth as unknown as string) ??
+                                  'linear',
+                                composition: 'blend',
+                              });
+                            }}
                             className={`suggestion-chip p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-neon-${accent}/10 hover:border-neon-${accent}/30 transition-colors text-left opacity-0`}
                           >
                             <div className="flex items-center gap-2">

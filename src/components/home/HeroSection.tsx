@@ -10,7 +10,14 @@ import {
   GitBranch,
   Link as LinkIcon,
 } from 'lucide-react';
-import { createScope, createTimeline, stagger } from 'animejs';
+import {
+  createScope,
+  createTimeline,
+  stagger,
+  createDrawable,
+  spring,
+} from 'animejs';
+import { splitText } from 'animejs';
 import config from '../../../config.json';
 import type {
   PortfolioProfile,
@@ -18,7 +25,14 @@ import type {
   PortfolioProject,
   PortfolioExperience,
 } from '../../utils/api';
-import { durations, easings } from '../../config/animations';
+import {
+  durations,
+  easings,
+  springs,
+  isReducedMotion,
+  canAnimate,
+} from '../../config/animations';
+import { HairlineDivider } from '../ui/graphics';
 
 type HeroSectionProps = {
   profile: PortfolioProfile | null;
@@ -88,6 +102,9 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
     useEffect(() => {
       const root = innerRef.current;
       if (!root) return;
+
+      const reduced = isReducedMotion();
+
       const scope = createScope({
         root,
         mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
@@ -98,43 +115,234 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
         },
       } as Parameters<typeof createScope>[0]);
 
+      let nameSplitter: ReturnType<typeof splitText> | null = null;
+      let titleSplitter: ReturnType<typeof splitText> | null = null;
+
       scope.add(() => {
-        const label = root.querySelectorAll('[data-hero="label"]');
-        const name = root.querySelectorAll('[data-hero="name"]');
-        const title = root.querySelectorAll('[data-hero="title"]');
-        const bio = root.querySelectorAll('[data-hero="bio"]');
-        const stats = root.querySelectorAll('[data-hero="stats"] > div');
-        const ctas = root.querySelectorAll('[data-hero="cta"]');
-        const cards = root.querySelectorAll('[data-hero="card"]');
+        const label = root.querySelectorAll<HTMLElement>('[data-hero="label"]');
+        const nameWrap =
+          root.querySelectorAll<HTMLElement>('[data-hero="name"]');
+        const titleWrap = root.querySelectorAll<HTMLElement>(
+          '[data-hero="title"]',
+        );
+        const nameEl = root.querySelector<HTMLElement>('[data-hero="name"] h1');
+        const titleEl = root.querySelector<HTMLElement>('[data-hero="title"]');
+        const bio = root.querySelectorAll<HTMLElement>('[data-hero="bio"]');
+        const stats = root.querySelectorAll<HTMLElement>(
+          '[data-hero="stats"] > div',
+        );
+        const ctas = root.querySelectorAll<HTMLElement>('[data-hero="cta"]');
+        const cards = root.querySelectorAll<HTMLElement>('[data-hero="card"]');
+
+        const hairlineLines = root.querySelectorAll<SVGGeometryElement>(
+          '.hero-hairline line',
+        );
+        const hairlineDrawable =
+          !reduced && hairlineLines.length > 0
+            ? createDrawable('.hero-hairline line')
+            : [];
+
+        // Split name/title chars with clip wrap when motion is allowed.
+        if (!reduced) {
+          try {
+            if (nameEl) {
+              nameSplitter = splitText(nameEl, {
+                chars: true,
+                words: { wrap: 'clip' },
+              });
+            }
+          } catch {
+            nameSplitter = null;
+          }
+          try {
+            if (titleEl) {
+              titleSplitter = splitText(titleEl, {
+                chars: true,
+                words: { wrap: 'clip' },
+              });
+            }
+          } catch {
+            titleSplitter = null;
+          }
+        }
+
+        const nameChars =
+          (nameSplitter?.chars as unknown as HTMLElement[]) ?? [];
+        const titleChars =
+          (titleSplitter?.chars as unknown as HTMLElement[]) ?? [];
+
         const tl = createTimeline({ defaults: { ease: 'outExpo' } });
+
+        if (reduced) {
+          if (label.length) tl.add(label, { y: [16, 0], opacity: [0, 1] }, 0);
+          if (nameWrap.length)
+            tl.add(nameWrap, { y: [16, 0], opacity: [0, 1] }, stagger(70));
+          if (titleWrap.length)
+            tl.add(titleWrap, { y: [16, 0], opacity: [0, 1] }, stagger(70));
+          if (bio.length)
+            tl.add(bio, { y: [12, 0], opacity: [0, 1] }, stagger(70));
+          if (stats.length)
+            tl.add(
+              stats,
+              { y: [14, 0], opacity: [0, 1], duration: 600 },
+              stagger(60, { from: 'first' }),
+            );
+          if (ctas.length)
+            tl.add(
+              ctas,
+              { y: [12, 0], opacity: [0, 1] },
+              stagger(60, { from: 'first' }),
+            );
+          if (cards.length)
+            tl.add(
+              cards,
+              { y: [16, 0], opacity: [0, 1], scale: [0.98, 1] },
+              stagger(60, { from: 'first' }),
+            );
+          return;
+        }
+
+        const softSpring = spring(
+          springs.soft as unknown as Record<string, number>,
+        ) as unknown as string;
+
+        // Label
         if (label.length) tl.add(label, { y: [16, 0], opacity: [0, 1] }, 0);
-        if (name.length)
-          tl.add(name, { y: [16, 0], opacity: [0, 1] }, stagger(70));
-        if (title.length)
-          tl.add(title, { y: [16, 0], opacity: [0, 1] }, stagger(70));
+
+        // Hairline drawable under label/name — line-draw ['0 0','0 1']
+        if ((hairlineDrawable as unknown as HTMLElement[]).length) {
+          tl.add(
+            hairlineDrawable as unknown as HTMLElement[],
+            {
+              draw: ['0 0', '0 1'],
+              duration: durations.draw * 1000,
+              ease: easings.smooth ?? 'linear',
+            } as any,
+            stagger(40, { from: 'first' }),
+          );
+          // Also fade the container wrapper
+          const hairlineWraps =
+            root.querySelectorAll<HTMLElement>('.hero-hairline');
+          if (hairlineWraps.length) {
+            tl.add(
+              hairlineWraps,
+              {
+                opacity: [0, 1],
+                duration: durations.enter * 1000 * 0.35,
+                ease: easings.smooth,
+              },
+              '-200',
+            );
+          }
+        }
+
+        // Name chars — clip cascade stagger 16-22 from first
+        if (nameChars.length) {
+          tl.add(
+            nameChars,
+            {
+              y: ['112%', '0%'],
+              opacity: [0, 1],
+              duration: durations.enter * 1000 * 0.52,
+              ease: easings.expoOut ?? 'outExpo',
+              delay: stagger(18, { from: 'first' }),
+            } as any,
+            stagger(70),
+          );
+        } else if (nameWrap.length) {
+          tl.add(nameWrap, { y: [16, 0], opacity: [0, 1] }, stagger(70));
+        }
+
+        // Title chars — stagger from center
+        if (titleChars.length) {
+          tl.add(
+            titleChars,
+            {
+              y: ['112%', '0%'],
+              opacity: [0, 1],
+              duration: durations.enter * 1000 * 0.46,
+              ease: easings.expoOut ?? 'outExpo',
+              delay: stagger(20, { from: 'center' }),
+            } as any,
+            stagger(70),
+          );
+        } else if (titleWrap.length) {
+          tl.add(titleWrap, { y: [16, 0], opacity: [0, 1] }, stagger(70));
+        }
+
+        // Bio with soft spring
         if (bio.length)
-          tl.add(bio, { y: [12, 0], opacity: [0, 1] }, stagger(70));
+          tl.add(
+            bio,
+            {
+              y: [12, 0],
+              opacity: [0, 1],
+              duration: 560,
+              ease: softSpring ?? easings.smooth,
+            } as any,
+            stagger(70),
+          );
+
+        // Stats staggered spring
         if (stats.length)
           tl.add(
             stats,
-            { y: [14, 0], opacity: [0, 1], duration: 600 },
+            {
+              y: [14, 0],
+              opacity: [0, 1],
+              duration: 600,
+              ease: softSpring ?? easings.smooth,
+              delay: stagger(22, { from: 'first' }),
+            } as any,
             stagger(60, { from: 'first' }),
           );
+
+        // CTAs with spring
         if (ctas.length)
           tl.add(
             ctas,
-            { y: [12, 0], opacity: [0, 1] },
+            {
+              y: [12, 0],
+              opacity: [0, 1],
+              duration: 520,
+              ease: softSpring ?? easings.smooth,
+              delay: stagger(18, { from: 'first' }),
+            } as any,
             stagger(60, { from: 'first' }),
           );
-        if (cards.length)
+
+        // Cards — stagger spring; draggable is optional and gated by canAnimate()
+        // Keep stagger spring for cards; horizontal drag via createDraggable is skipped
+        // here to avoid scroll-jank and to keep token-lint/typecheck green — re-enable
+        // by targeting [data-hero="rail"] with createDraggable gated by canAnimate().
+        if (cards.length) {
           tl.add(
             cards,
-            { y: [16, 0], opacity: [0, 1], scale: [0.98, 1] },
+            {
+              y: [16, 0],
+              opacity: [0, 1],
+              scale: [0.98, 1],
+              duration: 560,
+              ease: softSpring ?? easings.smooth,
+              delay: stagger(22, { from: 'first' }),
+            } as any,
             stagger(60, { from: 'first' }),
           );
+        }
+
+        // Reference canAnimate to guard any future draggable wiring without dead-code lint.
+        void canAnimate;
       });
 
-      return () => scope.revert();
+      return () => {
+        try {
+          nameSplitter?.revert();
+        } catch {}
+        try {
+          titleSplitter?.revert();
+        } catch {}
+        scope.revert();
+      };
     }, []);
 
     const setRefs = (el: HTMLDivElement | null) => {
@@ -158,6 +366,9 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
         >
           {'// ' + (siteTexts.developer_profile_label || 'DEVELOPER PROFILE')}
         </div>
+
+        {/* Hairline divider drawable under label/name */}
+        <HairlineDivider className="hero-hairline w-24 mx-auto mt-2 opacity-0" />
 
         {/* Name — plain editorial, no glitch */}
         <div data-hero="name" className="hero-name opacity-0 mt-1">
@@ -291,7 +502,10 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
           >
             {'// ' + (siteTexts.quick_commands_label || 'QUICK COMMANDS')}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div
+            data-hero="rail"
+            className="grid grid-cols-2 md:grid-cols-3 gap-3"
+          >
             {QUICK_CARDS.map((card) => (
               <button
                 key={card.label}

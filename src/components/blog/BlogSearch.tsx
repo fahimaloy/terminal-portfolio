@@ -1,8 +1,16 @@
 // src/components/blog/BlogSearch.tsx
 /* Instant search + tag filter + sort controls for the blog index. */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Search, X } from 'lucide-react';
+import { createScope, animate, stagger, spring } from 'animejs';
+import {
+  durations,
+  easings,
+  springs,
+  isReducedMotion,
+  canAnimate,
+} from '../../config/animations';
 
 interface Props {
   value: string;
@@ -26,6 +34,13 @@ export default function BlogSearch({
   resultCount,
 }: Props) {
   const [local, setLocal] = useState(value);
+  const chipsRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Keep local in sync when parent resets (e.g. CLEAR FILTERS)
+  useEffect(() => {
+    setLocal(value);
+  }, [value]);
 
   // Debounce keystrokes before hitting the API.
   useEffect(() => {
@@ -34,6 +49,69 @@ export default function BlogSearch({
     }, 280);
     return () => clearTimeout(t);
   }, [local, value, onChange]);
+
+  // Stagger entrance for tag chips when tags change — gated
+  useEffect(() => {
+    const root = chipsRef.current;
+    if (!root) return;
+    if (isReducedMotion() || !canAnimate()) return;
+    if (!tags.length) return;
+
+    const scope = createScope({ root } as Parameters<typeof createScope>[0]);
+
+    scope.add(() => {
+      const chips = root.querySelectorAll<HTMLElement>('.blog-search-chip');
+      if (!chips.length) return;
+      (animate as unknown as (a: unknown, b: unknown) => void)(
+        chips as unknown as HTMLElement[],
+        {
+          y: [8, 0],
+          opacity: [0, 1],
+          duration: (durations.enter ?? 0.48) * 1000 * 0.45,
+          ease: (easings.smooth as string) ?? 'outExpo',
+          delay: stagger(30, { from: 'first' }),
+        },
+      );
+    });
+
+    return () => scope.revert();
+  }, [tags]);
+
+  const handleFocus = () => {
+    if (isReducedMotion() || !canAnimate()) return;
+    const el = inputRef.current;
+    if (!el) return;
+    const eased = spring(
+      springs.stiff as unknown as Record<string, number>,
+    ) as unknown as string;
+    (animate as unknown as (a: unknown, b: unknown) => void)(
+      el as unknown as HTMLElement,
+      {
+        borderColor: 'var(--ring-cyan)',
+        boxShadow: '0 0 0 3px var(--glow-cyan-sm)',
+        duration: (durations.hover ?? 0.24) * 1000,
+        ease: eased ?? (easings.smooth as string),
+      },
+    );
+  };
+
+  const handleBlur = () => {
+    if (isReducedMotion() || !canAnimate()) return;
+    const el = inputRef.current;
+    if (!el) return;
+    const eased = spring(
+      springs.soft as unknown as Record<string, number>,
+    ) as unknown as string;
+    (animate as unknown as (a: unknown, b: unknown) => void)(
+      el as unknown as HTMLElement,
+      {
+        borderColor: 'var(--border-subtle)',
+        boxShadow: '0 0 0 0 transparent',
+        duration: (durations.hover ?? 0.24) * 1000,
+        ease: eased ?? (easings.smooth as string),
+      },
+    );
+  };
 
   return (
     <div
@@ -48,9 +126,12 @@ export default function BlogSearch({
           style={{ color: 'var(--fg-4)' } as React.CSSProperties}
         />
         <input
+          ref={inputRef}
           type="search"
           value={local}
           onChange={(e) => setLocal(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           placeholder="SEARCH TRANSMISSIONS..."
           aria-label="Search blog posts"
           className="w-full rounded-[var(--radius-md)] border pl-10 pr-10 py-2.5 font-mono text-xs tracking-wider focus:outline-none placeholder:text-[var(--fg-4)] transition-colors duration-200"
@@ -111,12 +192,13 @@ export default function BlogSearch({
       {/* Tag filter */}
       {tags.length > 0 && (
         <div
+          ref={chipsRef}
           className="flex flex-wrap gap-1.5 pt-3"
           style={{ borderTop: '1px solid var(--border-subtle)' }}
         >
           <button
             onClick={() => onTagChange('')}
-            className="px-2 py-1 rounded-full font-mono text-[10px] tracking-[0.14em] border transition-colors"
+            className="blog-search-chip px-2 py-1 rounded-full font-mono text-[10px] tracking-[0.14em] border transition-colors"
             style={
               activeTag === ''
                 ? {
@@ -137,7 +219,7 @@ export default function BlogSearch({
             <button
               key={tag}
               onClick={() => onTagChange(activeTag === tag ? '' : tag)}
-              className="px-2 py-1 rounded-full font-mono text-[10px] tracking-[0.14em] border transition-colors"
+              className="blog-search-chip px-2 py-1 rounded-full font-mono text-[10px] tracking-[0.14em] border transition-colors"
               style={
                 activeTag === tag
                   ? {

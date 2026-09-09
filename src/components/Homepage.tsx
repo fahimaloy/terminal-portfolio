@@ -2,8 +2,9 @@
 /* HOMEPAGE — orchestrator (lean after Phase 5 split). Delegates hero/stream,
 // strip, and overlay to extracted components. Data + chat state stay here. */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { createScope, createTimeline, animate } from 'animejs';
 import config from '../../config.json';
 import {
   getPortfolioProfile,
@@ -23,6 +24,13 @@ import HeroChat from './home/HeroChat';
 import { ProjectStrip, ProjectInlineDetail } from './home/ProjectStrip';
 import ChatModalHost from './home/ChatModalHost';
 import { StatBar } from './ui';
+import HeroEmptyGraphic from './ui/graphics/compositions/HeroEmptyGraphic';
+import {
+  durations,
+  easings,
+  isReducedMotion,
+  canAnimate,
+} from '../config/animations';
 
 type Message = {
   role: 'user' | 'model';
@@ -131,9 +139,95 @@ export default function Homepage() {
   };
 
   const isInitial = messages.length === 0 && !showProjectDetail;
+  const graphicWrapRef = useRef<HTMLDivElement | null>(null);
+  const homeRootRef = useRef<HTMLDivElement | null>(null);
+  const prevInitialRef = useRef(isInitial);
+  const [graphicMounted, setGraphicMounted] = useState(false);
+
+  useEffect(() => {
+    if (isInitial && !isDataLoading) setGraphicMounted(true);
+    else if (!isInitial) {
+      const t = window.setTimeout(
+        () => setGraphicMounted(false),
+        isReducedMotion() || !canAnimate() ? 0 : durations.exit * 1000 + 80,
+      );
+      return () => window.clearTimeout(t);
+    }
+  }, [isInitial, isDataLoading]);
+
+  // Entrance after skeletons hide (StatBar only while isDataLoading, so delay graphic in).
+  useEffect(() => {
+    const wrap = graphicWrapRef.current;
+    if (isInitial && !isDataLoading && wrap && graphicMounted) {
+      if (isReducedMotion() || !canAnimate()) {
+        wrap.style.opacity = '1';
+        return;
+      }
+      wrap.style.display = '';
+      animate(wrap, {
+        opacity: [0, 1],
+        y: [10, 0],
+        duration: durations.enter * 1000 * 0.55,
+        ease: (easings.smooth as unknown as string) ?? 'linear',
+        delay: durations.stagger * 1000 * 1.2,
+      });
+    }
+  }, [isInitial, isDataLoading, graphicMounted]);
+
+  // Crossfade out when messages appear (timeline opacity+y)
+  useEffect(() => {
+    const wasInitial = prevInitialRef.current;
+    const wrap = graphicWrapRef.current;
+    if (wasInitial && !isInitial && wrap) {
+      if (isReducedMotion() || !canAnimate()) {
+        wrap.style.display = 'none';
+        prevInitialRef.current = isInitial;
+        return;
+      }
+      const scopeTarget = (wrap.parentElement ??
+        homeRootRef.current) as HTMLElement | null;
+      if (!scopeTarget) {
+        animate(wrap, {
+          opacity: [1, 0],
+          y: [0, 12],
+          duration: durations.exit * 1000,
+          ease: (easings.smooth as unknown as string) ?? 'linear',
+        });
+      } else {
+        const scope = createScope({ root: scopeTarget });
+        scope.add(() => {
+          const tl = createTimeline({
+            defaults: {
+              ease: (easings.smooth as unknown as string) ?? 'linear',
+            },
+          });
+          tl.add(
+            wrap,
+            {
+              opacity: [1, 0],
+              y: [0, 12],
+              duration: durations.exit * 1000,
+              ease: (easings.smooth as unknown as string) ?? 'linear',
+            },
+            0,
+          );
+        });
+        const t = window.setTimeout(
+          () => scope.revert(),
+          durations.exit * 1000 + 80,
+        );
+        prevInitialRef.current = isInitial;
+        return () => {
+          window.clearTimeout(t);
+          scope.revert();
+        };
+      }
+    }
+    prevInitialRef.current = isInitial;
+  }, [isInitial]);
 
   return (
-    <div className="min-h-screen relative z-10">
+    <div ref={homeRootRef} className="min-h-screen relative z-10">
       <SEOMeta
         title={profile?.full_name || config.name || 'Fahim Ahmed'}
         description={
@@ -196,6 +290,16 @@ export default function Homepage() {
           onSend={handleSend}
           onOpenChat={() => setShowOverlay(true)}
         />
+
+        {isInitial && !isDataLoading && graphicMounted && (
+          <div
+            ref={graphicWrapRef}
+            className="w-full max-w-xl mt-8 opacity-0"
+            aria-hidden="true"
+          >
+            <HeroEmptyGraphic accent="cyan" />
+          </div>
+        )}
 
         {!isInitial && projects.length > 0 && (
           <ProjectStrip

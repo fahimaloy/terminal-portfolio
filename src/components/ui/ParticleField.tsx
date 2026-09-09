@@ -1,5 +1,5 @@
 // src/components/ui/ParticleField.tsx
-/* Warm ambient blobs — 3-4 large soft washes, slow drift, muted. */
+/* Warm ambient blobs — 3 soft washes, slow drift, muted (softened for hero/aurora legibility). */
 
 import React, { useEffect, useRef } from 'react';
 import { animate, createScope } from 'animejs';
@@ -9,7 +9,6 @@ const BLOBS: { w: number; h: number; left: string; top: string }[] = [
   { w: 520, h: 520, left: '8%', top: '12%' },
   { w: 640, h: 640, left: '52%', top: '8%' },
   { w: 480, h: 480, left: '18%', top: '58%' },
-  { w: 560, h: 560, left: '58%', top: '52%' },
 ];
 
 export default function ParticleField() {

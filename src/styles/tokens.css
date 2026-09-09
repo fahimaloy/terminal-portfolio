@@ -79,6 +79,23 @@
   --glow-magenta-mid: rgba(233, 98, 191, 0.1);
   --glow-cyan-grid: rgba(38, 242, 213, 0.04);
 
+  /* ── AURORA MESH — large blurred washes for premium background depth ──────── */
+  --aurora-1: rgba(38, 242, 213, 0.08);
+  --aurora-2: rgba(233, 98, 191, 0.07);
+  --aurora-3: rgba(255, 204, 42, 0.06);
+  --aurora-4: rgba(141, 255, 85, 0.05);
+
+  /* ── RING / STROKE ALIASES — hairline + accent strokes for drawable SVGs ─── */
+  --ring-yellow: var(--neon-yellow);
+  --ring-magenta: var(--neon-magenta);
+  --ring-cyan: var(--neon-cyan);
+  --ring-green: var(--neon-green);
+  --ring-purple: var(--neon-purple);
+  --ring-blue: var(--neon-blue);
+  --ring-red: var(--neon-red);
+  --hairline: var(--border-subtle);
+  --hairline-strong: var(--border-strong);
+
   --overlay-white-015: rgba(246, 244, 242, 0.015);
   --overlay-white-02: rgba(246, 244, 242, 0.02);
   --overlay-white-05: rgba(246, 244, 242, 0.05);
