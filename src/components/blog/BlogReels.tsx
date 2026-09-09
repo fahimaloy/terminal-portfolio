@@ -248,7 +248,6 @@ export default function BlogReels({
               key={post.id}
               data-slide-index={String(i)}
               className="relative flex items-center justify-center p-4 md:p-6"
-              // @ts-ignore scrollSnapStop not in some csstype/React.CSSProperties lib versions — valid CSS at runtime
               style={
                 {
                   height: 'calc(100dvh - 96px)',

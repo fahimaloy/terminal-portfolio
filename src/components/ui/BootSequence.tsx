@@ -129,7 +129,7 @@ export default function BootSequence() {
           opacity: [0, 0.9],
           duration: durations.enter * 1000 * 0.55,
           ease: easings.smooth,
-        } as any);
+        });
       }
 
       // Root fade-in to hide flicker (overlay was opacity 0)
@@ -137,14 +137,14 @@ export default function BootSequence() {
         opacity: [0, 1],
         duration: 120,
         ease: easings.smooth,
-      } as any);
+      });
 
       if (inner) {
         animate(inner, {
           opacity: [0, 1],
           duration: 140,
           ease: easings.smooth,
-        } as any);
+        });
       }
 
       const ringDrawables =
@@ -174,7 +174,7 @@ export default function BootSequence() {
 
       const tl = createTimeline({
         defaults: { ease: easings.smooth },
-      } as any);
+      });
 
       tl.label('scope', 0);
       tl.label('rings', 60);
@@ -194,7 +194,7 @@ export default function BootSequence() {
             duration: durations.draw * 1000 * 0.42,
             ease: easings.smooth,
             delay: stagger(18, { from: 'center' }),
-          } as any,
+          },
           'scope',
         );
       }
@@ -205,7 +205,7 @@ export default function BootSequence() {
             opacity: [0, 1],
             duration: 80,
             ease: easings.smooth,
-          } as any,
+          },
           'scope',
         );
       }
@@ -217,7 +217,7 @@ export default function BootSequence() {
             scale: [0.92, 1],
             duration: durations.enter * 1000 * 0.32,
             ease: spring(springs.gentle) as unknown as string,
-          } as any,
+          },
           'rings',
         );
       }
@@ -230,7 +230,7 @@ export default function BootSequence() {
             duration: durations.enter * 1000 * 0.28,
             ease: easings.smooth,
             delay: stagger(14, { from: 'first' }),
-          } as any,
+          },
           'rings',
         );
         // gentle rotation of tick container for life
@@ -242,7 +242,7 @@ export default function BootSequence() {
             ease: 'linear',
             loop: true,
             alternate: true,
-          } as any);
+          });
         }
       }
 
@@ -256,7 +256,7 @@ export default function BootSequence() {
             duration: durations.enter * 1000 * 0.5,
             ease: easings.smooth,
             delay: stagger(22, { from: 'first' }),
-          } as any,
+          },
           'wordmark',
         );
       } else if (wordmark) {
@@ -267,7 +267,7 @@ export default function BootSequence() {
             y: [10, 0],
             duration: durations.enter * 1000 * 0.45,
             ease: easings.smooth,
-          } as any,
+          },
           'wordmark',
         );
       }
@@ -282,7 +282,7 @@ export default function BootSequence() {
             duration: durations.enter * 1000 * 0.38,
             ease: easings.smooth,
             delay: stagger(16, { from: 'first' }),
-          } as any,
+          },
           'wordmark+=60',
         );
       } else if (sub) {
@@ -293,7 +293,7 @@ export default function BootSequence() {
             y: [6, 0],
             duration: durations.enter * 1000 * 0.35,
             ease: easings.smooth,
-          } as any,
+          },
           'wordmark+=60',
         );
       }
@@ -305,7 +305,7 @@ export default function BootSequence() {
             draw: ['0 0', '0 1'],
             duration: durations.hover * 1000,
             ease: easings.smooth,
-          } as any,
+          },
           'rule',
         );
       } else {
@@ -318,7 +318,7 @@ export default function BootSequence() {
               opacity: [0, 1],
               duration: durations.hover * 1000,
               ease: easings.smooth,
-            } as any,
+            },
             'rule',
           );
         }
@@ -333,7 +333,7 @@ export default function BootSequence() {
             y: [6, 0],
             duration: durations.enter * 1000 * 0.36,
             ease: easings.smooth,
-          } as any,
+          },
           'status',
         );
       }
@@ -346,7 +346,7 @@ export default function BootSequence() {
             opacity: [0.55, 1],
             duration: durations.enter * 1000 * 0.48,
             ease: easings.smooth,
-          } as any,
+          },
           'rail',
         );
       }
@@ -359,13 +359,13 @@ export default function BootSequence() {
             opacity: [1, 0],
             duration: 420,
             ease: spring(springs.gentle) as unknown as string,
-          } as any);
+          });
         }
         animate(root, {
           opacity: [1, 0],
           duration: 320,
           ease: easings.smooth,
-        } as any).then(() => finish());
+        }).then(() => finish());
 
         if (confettiDots.length) {
           const burst = [
@@ -387,7 +387,7 @@ export default function BootSequence() {
               duration: 520,
               ease: spring(springs.bouncy) as unknown as string,
               delay: stagger(14, { from: 'center' }),
-            } as any);
+            });
           });
         }
       }, exitDelay);

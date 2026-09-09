@@ -9,8 +9,8 @@ async function dismissBootSequence(context: BrowserContext) {
 async function dismissNextPortal(page: any) {
   const portal = page.locator('nextjs-portal');
   if (await portal.isVisible()) {
-    await portal.evaluate((el: any) => el.style.display = 'none');
-    await page.waitForTimeout(200);
+    await portal.evaluate((el: any) => (el.style.display = 'none'));
+    await expect(portal).not.toBeVisible();
   }
 }
 
@@ -21,46 +21,78 @@ test.describe('Chat Interface', () => {
 
   test('chat overlay opens on START CHAT click', async ({ page }) => {
     await page.goto('/');
-    await page.waitForTimeout(3000);
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
     const startChat = page.locator('text=START CHAT').first();
     await startChat.click({ force: true });
-    await page.waitForTimeout(1000);
+    await expect(page.locator('[role="dialog"]')).toBeVisible({
+      timeout: 5000,
+    });
     const overlay = page.locator('[role="dialog"]');
     await expect(overlay.first()).toBeVisible({ timeout: 5000 });
   });
 
   test('chat overlay closes on escape', async ({ page }) => {
     await page.goto('/');
-    await page.waitForTimeout(3000);
+    await expect(page.locator('[role="dialog"]')).toBeVisible({
+      timeout: 5000,
+    });
     await dismissNextPortal(page);
     await page.locator('text=START CHAT').first().click({ force: true });
-    await page.waitForTimeout(1000);
+    await expect(page.locator('[role="dialog"]')).toBeVisible({
+      timeout: 5000,
+    });
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible();
   });
 
   test('sending a message shows response', async ({ page }) => {
     await page.goto('/');
-    await page.waitForTimeout(3000);
+    await expect(
+      page
+        .locator(
+          'input[placeholder*="message"], textarea[placeholder*="message"]',
+        )
+        .first(),
+    ).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
     await page.locator('text=START CHAT').first().click({ force: true });
-    await page.waitForTimeout(1000);
-    const input = page.locator('input[placeholder*="message"], textarea[placeholder*="message"]').first();
+    await expect(
+      page
+        .locator(
+          'input[placeholder*="message"], textarea[placeholder*="message"]',
+        )
+        .first(),
+    ).toBeVisible({ timeout: 15000 });
+    const input = page
+      .locator(
+        'input[placeholder*="message"], textarea[placeholder*="message"]',
+      )
+      .first();
     if (await input.isVisible()) {
       await input.fill('Hello');
       await page.keyboard.press('Enter');
-      await page.waitForTimeout(3000);
+      await expect(
+        page
+          .locator('[class*="message"], [class*="response"], [class*="chat"]')
+          .first(),
+      ).toBeVisible({ timeout: 15000 });
     }
   });
 
   test('quick cards send messages', async ({ page }) => {
     await page.goto('/');
-    await page.waitForTimeout(3000);
+    await expect(
+      page
+        .locator(
+          'input[placeholder*="message"], textarea[placeholder*="message"]',
+        )
+        .first(),
+    ).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
     const githubCard = page.getByText('MY GITHUB').first();
     await githubCard.click({ force: true });
-    await page.waitForTimeout(2000);
+    await expect(page).toHaveURL(/\/github|https:\/\/github\.com/);
   });
 });
 
@@ -87,13 +119,17 @@ test.describe('API Endpoints', () => {
     expect([401, 403, 500]).toContain(response.status());
   });
 
-  test('GET /api/admin/skills returns 404 (no dedicated endpoint)', async ({ request }) => {
+  test('GET /api/admin/skills returns 404 (no dedicated endpoint)', async ({
+    request,
+  }) => {
     // Admin skills/projects are fetched client-side from Supabase, not via API routes
     const response = await request.get('/api/admin/skills');
     expect([404, 200]).toContain(response.status());
   });
 
-  test('GET /api/admin/projects returns 404 (no dedicated endpoint)', async ({ request }) => {
+  test('GET /api/admin/projects returns 404 (no dedicated endpoint)', async ({
+    request,
+  }) => {
     const response = await request.get('/api/admin/projects');
     expect([404, 200]).toContain(response.status());
   });
@@ -114,35 +150,37 @@ test.describe('Responsive Design', () => {
   test('homepage renders on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/');
-    await page.waitForTimeout(3000);
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('homepage renders on tablet', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto('/');
-    await page.waitForTimeout(3000);
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('homepage renders on desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto('/');
-    await page.waitForTimeout(3000);
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('blog page renders on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/blog');
-    await page.waitForTimeout(3000);
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('admin login renders on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/sudosuperuser-ostaad/login');
-    await expect(page.locator('input[type="password"]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('input[type="password"]')).toBeVisible({
+      timeout: 15000,
+    });
   });
 });
 
@@ -153,7 +191,7 @@ test.describe('Animation & Motion', () => {
 
   test('elements have entrance animations', async ({ page }) => {
     await page.goto('/');
-    await page.waitForTimeout(5000);
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     const heroLabel = page.locator('.hero-label');
     await expect(heroLabel.first()).toBeVisible({ timeout: 15000 });
   });
@@ -166,7 +204,7 @@ test.describe('Animation & Motion', () => {
     await dismissBootSequence(reducedMotionContext);
     const page = await reducedMotionContext.newPage();
     await page.goto('/');
-    await page.waitForTimeout(2000);
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     // h1 may match multiple elements, use .first()
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
     await reducedMotionContext.close();
@@ -180,8 +218,13 @@ test.describe('Security', () => {
 
   test('admin pages are not indexed', async ({ page }) => {
     await page.goto('/sudosuperuser-ostaad/login');
-    await page.waitForTimeout(3000);
-    const robots = await page.locator('meta[name="robots"]').first().getAttribute('content');
+    await expect(page.locator('input[type="password"]')).toBeVisible({
+      timeout: 15000,
+    });
+    const robots = await page
+      .locator('meta[name="robots"]')
+      .first()
+      .getAttribute('content');
     expect(robots).toContain('noindex');
   });
 
