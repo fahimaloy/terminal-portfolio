@@ -23,9 +23,15 @@ vi.mock('animejs', () => {
 });
 
 // isolate Background from child-particle animations so animate counts reflect aurora drift only
-vi.mock('../TronGrid', () => ({ default: () => <div data-testid="tron-grid" /> }));
-vi.mock('../ScanlineOverlay', () => ({ default: () => <div data-testid="scanline" /> }));
-vi.mock('../ParticleField', () => ({ default: () => <div data-testid="particles" /> }));
+vi.mock('../TronGrid', () => ({
+  default: () => <div data-testid="tron-grid" />,
+}));
+vi.mock('../ScanlineOverlay', () => ({
+  default: () => <div data-testid="scanline" />,
+}));
+vi.mock('../ParticleField', () => ({
+  default: () => <div data-testid="particles" />,
+}));
 
 import Background from '../Background';
 import { animate, createScope, spring } from 'animejs';
@@ -35,7 +41,8 @@ function mockMatchMedia(reduceMatches: boolean) {
     writable: true,
     configurable: true,
     value: vi.fn().mockImplementation((query: string) => ({
-      matches: query === '(prefers-reduced-motion: reduce)' ? reduceMatches : false,
+      matches:
+        query === '(prefers-reduced-motion: reduce)' ? reduceMatches : false,
       media: query,
       onchange: null,
       addListener: vi.fn(),
@@ -49,7 +56,7 @@ function mockMatchMedia(reduceMatches: boolean) {
 
 function clearMatchMedia() {
   // jsdom has no matchMedia by default — remove mocked property so isReducedMotion/canAnimate return false
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   delete (window as any).matchMedia;
 }
 
@@ -73,7 +80,9 @@ describe('Background', () => {
     });
     // aurora drift gated for !isBlog — should animate each blob (4 times)
     expect(animate).toHaveBeenCalled();
-    expect((animate as unknown as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThanOrEqual(4);
+    expect(
+      (animate as unknown as ReturnType<typeof vi.fn>).mock.calls.length,
+    ).toBeGreaterThanOrEqual(4);
     expect(spring).toHaveBeenCalled();
     expect(createScope).toHaveBeenCalledTimes(1);
 
@@ -100,7 +109,11 @@ describe('Background', () => {
     blobs.forEach((el) => {
       // fix #5: willChange is undefined when !driftActive — jsdom serializes as "" not "transform"
       expect(el.style.willChange).not.toBe('transform');
-      expect(el.style.willChange === '' || el.style.willChange === 'auto' || el.style.willChange === 'undefined').toBeTruthy();
+      expect(
+        el.style.willChange === '' ||
+          el.style.willChange === 'auto' ||
+          el.style.willChange === 'undefined',
+      ).toBeTruthy();
     });
     // gated aurora drift — animate should NOT be called for aurora (child mocks prevent particle animate)
     expect(animate).not.toHaveBeenCalled();
@@ -114,7 +127,9 @@ describe('Background', () => {
   });
 
   it('auroraOpacities differ by variant', () => {
-    const { container: heroC, unmount: u1 } = render(<Background variant="hero" />);
+    const { container: heroC, unmount: u1 } = render(
+      <Background variant="hero" />,
+    );
     const heroBlobs = heroC.querySelectorAll<HTMLElement>('.bg-aurora-blob');
     expect(heroBlobs[0].style.opacity).toBe('0.12');
     expect(heroBlobs[1].style.opacity).toBe('0.1');
@@ -122,7 +137,9 @@ describe('Background', () => {
     vi.clearAllMocks();
     mockMatchMedia(false);
 
-    const { container: blogC, unmount: u2 } = render(<Background variant="blog" />);
+    const { container: blogC, unmount: u2 } = render(
+      <Background variant="blog" />,
+    );
     const blogBlobs = blogC.querySelectorAll<HTMLElement>('.bg-aurora-blob');
     expect(blogBlobs[0].style.opacity).toBe('0.06');
     u2();
@@ -170,9 +187,8 @@ describe('Background', () => {
     // still renders static auroras but gated drift not run
     const blobs = container.querySelectorAll<HTMLElement>('.bg-aurora-blob');
     expect(blobs.length).toBe(4);
-    // even with reduced-motion, willChange still reflects driftActive (hero = transform) — component renders it, but no animate runs
-    // Background sets willChange based on variant, not motion preference
-    expect(blobs[0].style.willChange).toBe('transform');
+    // driftActive is gated by reduced-motion — willChange is not transform when motion is reduced
+    blobs.forEach((el) => expect(el.style.willChange).not.toBe('transform'));
   });
 
   it('default variant rerenders from hero to blog correctly disables willChange', () => {

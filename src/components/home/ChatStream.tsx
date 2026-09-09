@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { createScope, animate } from 'animejs';
+import { createScope, animate, stagger } from 'animejs';
 import ChatMessage from '../ChatMessage';
 import { HudPanel } from '../ui';
 import {
@@ -39,6 +39,7 @@ export default function ChatStream({
   const bottomRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
+  const prevRef = useRef(0);
 
   useEffect(() => {
     if (messages.length > 0)
@@ -50,32 +51,59 @@ export default function ChatStream({
 
   // Message entrance — y+opacity stagger gated by reduced-motion.
   useEffect(() => {
-    const root = listRef.current;
-    if (!root || messages.length === 0) return;
-    if (typeof window === 'undefined') return;
+    // Revert any prior scope before early returns so rapid toggles / empty
+    // states don't leak a live anime scope.
     scopeRef.current?.revert();
     scopeRef.current = null;
+    const root = listRef.current;
+    if (!root || messages.length === 0) {
+      prevRef.current = messages.length;
+      return;
+    }
+    if (typeof window === 'undefined') {
+      prevRef.current = messages.length;
+      return;
+    }
     if (isReducedMotion() || !canAnimate()) {
-      const last = root.querySelector<HTMLElement>(
-        '[data-chat-msg]:last-child',
-      );
-      if (last) last.style.opacity = '1';
+      const nodes = root.querySelectorAll<HTMLElement>('[data-chat-msg]');
+      nodes.forEach((el) => {
+        el.style.opacity = '1';
+      });
+      prevRef.current = messages.length;
       return;
     }
     const scope = createScope({ root });
     scopeRef.current = scope;
+    const prevLen = prevRef.current;
+    const delta = messages.length - prevLen;
     scope.add(() => {
-      const last = root.querySelector<HTMLElement>(
-        '[data-chat-msg]:last-child',
-      );
-      if (!last) return;
-      (animate as any)(last, {
-        y: [12, 0],
-        opacity: [0, 1],
-        duration: durations.enter * 1000 * 0.52,
-        ease: (easings.expoOut as unknown as string) ?? 'outExpo',
-      });
+      if (delta > 1) {
+        const all = root.querySelectorAll<HTMLElement>('[data-chat-msg]');
+        const newNodes =
+          prevLen > 0 ? Array.from(all).slice(prevLen) : Array.from(all);
+        const targets = newNodes.length > 0 ? newNodes : Array.from(all);
+        if (targets.length === 0) return;
+        (animate as any)(targets, {
+          y: [12, 0],
+          opacity: [0, 1],
+          duration: durations.enter * 1000 * 0.52,
+          ease: (easings.expoOut as unknown as string) ?? 'outExpo',
+          delay: stagger(durations.stagger * 1000, { from: 'first' }),
+        });
+      } else {
+        const last = root.querySelector<HTMLElement>(
+          '[data-chat-msg]:last-child',
+        );
+        if (!last) return;
+        (animate as any)(last, {
+          y: [12, 0],
+          opacity: [0, 1],
+          duration: durations.enter * 1000 * 0.52,
+          ease: (easings.expoOut as unknown as string) ?? 'outExpo',
+        });
+      }
     });
+    prevRef.current = messages.length;
     return () => {
       scope.revert();
       if (scopeRef.current === scope) scopeRef.current = null;

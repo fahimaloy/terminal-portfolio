@@ -3,7 +3,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from '@testing-library/react';
 import React from 'react';
 
-const { pushMock, backMock, mockRevert404, mockTlAdd404, mockSplitterRevert404, mockStaggerFn, mockScrambleFn } = vi.hoisted(() => ({
+const {
+  pushMock,
+  backMock,
+  mockRevert404,
+  mockTlAdd404,
+  mockSplitterRevert404,
+  mockStaggerFn,
+  mockScrambleFn,
+} = vi.hoisted(() => ({
   pushMock: vi.fn(),
   backMock: vi.fn(),
   mockRevert404: vi.fn(),
@@ -15,7 +23,13 @@ const { pushMock, backMock, mockRevert404, mockTlAdd404, mockSplitterRevert404, 
 
 // mock next/router
 vi.mock('next/router', () => ({
-  useRouter: vi.fn(() => ({ push: pushMock, back: backMock, asPath: '/missing-page', pathname: '/404', query: {} })),
+  useRouter: vi.fn(() => ({
+    push: pushMock,
+    back: backMock,
+    asPath: '/missing-page',
+    pathname: '/404',
+    query: {},
+  })),
 }));
 
 // mock next/head
@@ -49,7 +63,11 @@ vi.mock('../../components/ui', () => ({
   },
   NeonButton: (props: any) => {
     const React = require('react');
-    return React.createElement('button', { onClick: props.onClick, className: props.className }, props.children);
+    return React.createElement(
+      'button',
+      { onClick: props.onClick, className: props.className },
+      props.children,
+    );
   },
   StatBar: () => {
     const React = require('react');
@@ -72,14 +90,30 @@ vi.mock('animejs', () => {
     stagger: mockStaggerFn,
     createDrawable: vi.fn(() => [] as any),
     spring: vi.fn(() => 'spring-ease' as any),
-    splitText: vi.fn(() => ({ chars: [{ style: {} }], words: [{ style: {} }], revert: mockSplitterRevert404 } as any)),
+    splitText: vi.fn(
+      () =>
+        ({
+          chars: [{ style: {} }],
+          words: [{ style: {} }],
+          revert: mockSplitterRevert404,
+        } as any),
+    ),
     scrambleText: mockScrambleFn,
     animate: vi.fn(),
   };
 });
 
 import NotFoundPage from '../404';
-import { createScope, createTimeline, stagger, splitText, scrambleText, createDrawable, spring, animate } from 'animejs';
+import {
+  createScope,
+  createTimeline,
+  stagger,
+  splitText,
+  scrambleText,
+  createDrawable,
+  spring,
+  animate,
+} from 'animejs';
 
 const mockedCreateScope = vi.mocked(createScope);
 const mockedStagger = vi.mocked(stagger);
@@ -93,7 +127,8 @@ function mockMatchMedia(reduceMatches: boolean) {
     writable: true,
     configurable: true,
     value: vi.fn().mockImplementation((query: string) => ({
-      matches: query === '(prefers-reduced-motion: reduce)' ? reduceMatches : false,
+      matches:
+        query === '(prefers-reduced-motion: reduce)' ? reduceMatches : false,
       media: query,
       onchange: null,
       addListener: vi.fn(),
@@ -106,7 +141,7 @@ function mockMatchMedia(reduceMatches: boolean) {
 }
 
 function clearMatchMedia() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   delete (window as any).matchMedia;
 }
 
@@ -134,7 +169,7 @@ describe('NotFoundPage', () => {
     const inner = (scrambleCall![1] as any).innerHTML;
     expect(inner).toBe('SCRAMBLE');
     expect(mockedScrambleText).toHaveBeenCalled();
-    const scrambleArg = (mockedScrambleText.mock.calls[0][0] as any);
+    const scrambleArg = mockedScrambleText.mock.calls[0][0] as any;
     expect(scrambleArg.text).toBe(TARGET_MSG);
     expect(mockedStagger).toHaveBeenCalled();
     expect(vi.mocked(animate)).not.toHaveBeenCalled();
@@ -144,7 +179,9 @@ describe('NotFoundPage', () => {
     mockMatchMedia(true);
     const { container } = render(<NotFoundPage />);
 
-    const found = Array.from(container.querySelectorAll('*')).find(el => el.textContent === TARGET_MSG);
+    const found = Array.from(container.querySelectorAll('*')).find(
+      (el) => el.textContent === TARGET_MSG,
+    );
     expect(found).toBeTruthy();
     expect(found!.textContent).toBe(TARGET_MSG);
 
@@ -161,7 +198,9 @@ describe('NotFoundPage', () => {
       expect(el.style.transform).toBe('none');
     });
 
-    const headers = container.querySelectorAll<HTMLElement>('[data-notfound="404"], [data-notfound="signal"], [data-notfound="notfound"]');
+    const headers = container.querySelectorAll<HTMLElement>(
+      '[data-notfound="404"], [data-notfound="signal"], [data-notfound="notfound"]',
+    );
     expect(headers.length).toBeGreaterThan(0);
     headers.forEach((el) => {
       expect(el.style.opacity).toBe('1');
@@ -169,14 +208,16 @@ describe('NotFoundPage', () => {
     });
 
     const splitSpans = container.querySelectorAll<HTMLElement>(
-      '[data-notfound="404"] span, [data-notfound="signal"] span, [data-notfound="notfound"] span'
+      '[data-notfound="404"] span, [data-notfound="signal"] span, [data-notfound="notfound"] span',
     );
     splitSpans.forEach((el) => {
       expect(el.style.opacity).toBe('1');
       expect(el.style.transform).toBe('none');
     });
 
-    const bracketStrokes = container.querySelectorAll<HTMLElement>('.notfound-bracket [data-graphic="grat-stroke"]');
+    const bracketStrokes = container.querySelectorAll<HTMLElement>(
+      '.notfound-bracket [data-graphic="grat-stroke"]',
+    );
     bracketStrokes.forEach((el) => {
       expect((el as unknown as HTMLElement).style.opacity).toBe('1');
     });

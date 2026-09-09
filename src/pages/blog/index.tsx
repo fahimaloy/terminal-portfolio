@@ -108,41 +108,35 @@ export default function BlogIndexPage() {
       const cta = root.querySelectorAll<HTMLElement>('.blog-empty-cta');
 
       // Reset to initial hidden state so rapid isEmpty toggles always re-fade
-      if (reduced) {
-        graphic.forEach((el) => {
-          el.style.opacity = '0';
-          el.style.transform = '';
-        });
-        if (headlineEl) {
-          headlineEl.style.opacity = '0';
-          headlineEl.style.transform = 'translateY(8px)';
-        }
-        subcopy.forEach((el) => {
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(8px)';
-        });
-        cta.forEach((el) => {
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(8px)';
-        });
-      } else {
-        graphic.forEach((el) => {
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(14px)';
-        });
-        if (headlineEl) {
-          headlineEl.style.opacity = '0';
-          headlineEl.style.transform = 'translateY(12px)';
-        }
-        subcopy.forEach((el) => {
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(10px)';
-        });
-        cta.forEach((el) => {
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(10px)';
-        });
+      const hiddenTransform = reduced
+        ? {
+            graphic: '',
+            headline: 'translateY(8px)',
+            subcopy: 'translateY(8px)',
+            cta: 'translateY(8px)',
+          }
+        : {
+            graphic: 'translateY(14px)',
+            headline: 'translateY(12px)',
+            subcopy: 'translateY(10px)',
+            cta: 'translateY(10px)',
+          };
+      graphic.forEach((el) => {
+        el.style.opacity = '0';
+        el.style.transform = hiddenTransform.graphic;
+      });
+      if (headlineEl) {
+        headlineEl.style.opacity = '0';
+        headlineEl.style.transform = hiddenTransform.headline;
       }
+      subcopy.forEach((el) => {
+        el.style.opacity = '0';
+        el.style.transform = hiddenTransform.subcopy;
+      });
+      cta.forEach((el) => {
+        el.style.opacity = '0';
+        el.style.transform = hiddenTransform.cta;
+      });
 
       if (reduced) {
         const tl = createTimeline({
