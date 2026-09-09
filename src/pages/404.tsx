@@ -1,36 +1,44 @@
 // src/pages/404.tsx
-/* ═══════════════════════════════════════════════════════════════════════════════
-   404 PAGE — Enhanced with anime.js animations
-   - Glitch 404 text
-   - Scrambled message reveal
-   - Floating particles
-   - Spring CTA button entrance
-═══════════════════════════════════════════════════════════════════════════════ */
+/* 404 — premium with splitText + scrambleText + drawable bracket + morph orb */
 
 import React, { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { GlitchText, HudPanel, NeonButton, StatBar } from '../components/ui';
-import { animate, createScope, stagger } from 'animejs';
-import { isReducedMotion } from '../config/animations';
+import { HudPanel, NeonButton, StatBar } from '../components/ui';
+import {
+  animate,
+  createScope,
+  createTimeline,
+  stagger,
+  createDrawable,
+  spring,
+} from 'animejs';
+import { splitText, scrambleText } from 'animejs';
+import {
+  durations,
+  easings,
+  springs,
+  isReducedMotion,
+  canAnimate,
+} from '../config/animations';
+import MorphOrb from '../components/ui/graphics/primitives/MorphOrb';
+import Bracket from '../components/ui/graphics/primitives/Bracket';
 
 export default function NotFoundPage() {
   const router = useRouter();
-  const [glitchText, setGlitchText] = useState('404');
-  const [scrambledMsg, setScrambledMsg] = useState('');
+  const [glitchText] = useState('404');
   const [particles, setParticles] = useState<
     { x: number; y: number; dur: number; delay: number; color: string }[]
   >([]);
   const pageRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<HTMLDivElement>(null);
+  const subtitleRef = useRef<HTMLDivElement>(null);
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
   const targetMsg =
     "THE PAGE YOU'RE LOOKING FOR ISN'T IN THE LOCAL NETWORK. THE ROUTE MAY HAVE BEEN DECOMMISSIONED OR NEVER EXISTED.";
-  const chars =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
 
-  // Generate particle positions after mount to avoid hydration mismatch
+  // Particles — reduced 20 -> 12, token-only colors
   useEffect(() => {
     const colors = [
       'var(--fg-3)',
@@ -39,7 +47,7 @@ export default function NotFoundPage() {
       'var(--border-strong)',
     ];
     setParticles(
-      Array.from({ length: 20 }, (_, i) => ({
+      Array.from({ length: 12 }, (_, i) => ({
         x: Math.random() * 100,
         y: Math.random() * 100,
         dur: 3 + Math.random() * 4,
@@ -49,88 +57,294 @@ export default function NotFoundPage() {
     );
   }, []);
 
+  // Premium motion: splitText cascades + bracket drawable + diag stagger + scrambleText
   useEffect(() => {
-    if (!pageRef.current || isReducedMotion()) {
-      setScrambledMsg(targetMsg);
+    const root = pageRef.current;
+    if (!root) return;
+    const reduced = isReducedMotion() || !canAnimate();
+
+    // Reduced-motion static fallback: show all content, static subtitle
+    if (reduced) {
+      if (subtitleRef.current) subtitleRef.current.textContent = targetMsg;
+      const staticEls = root.querySelectorAll<HTMLElement>(
+        '.diag-item, .notfound-btn',
+      );
+      staticEls.forEach((el) => {
+        el.style.opacity = '1';
+      });
+      const headers = root.querySelectorAll<HTMLElement>(
+        '[data-notfound="404"], [data-notfound="signal"], [data-notfound="notfound"]',
+      );
+      headers.forEach((el) => {
+        el.style.opacity = '1';
+      });
+      const bracketStrokes = root.querySelectorAll<HTMLElement>(
+        '.notfound-bracket [data-graphic="grat-stroke"]',
+      );
+      bracketStrokes.forEach((el) => {
+        (el as unknown as SVGGeometryElement).style.opacity = '1';
+      });
       return;
     }
 
-    const scope = createScope({ root: pageRef.current });
+    const scope = createScope({
+      root,
+      mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
+      defaults: {
+        duration: durations.enter * 1000,
+        ease: easings.expoOut,
+      },
+    } as Parameters<typeof createScope>[0]);
     scopeRef.current = scope;
 
+    let splitter404: ReturnType<typeof splitText> | null = null;
+    let splitterSignal: ReturnType<typeof splitText> | null = null;
+    let splitterNotfound: ReturnType<typeof splitText> | null = null;
+
     scope.add(() => {
-      // Stagger entrance for diagnostic items
-      const diagItems = pageRef.current!.querySelectorAll('.diag-item');
-      animate(diagItems, {
-        opacity: [0, 1],
-        x: [-10, 0],
-        duration: 400,
-        ease: 'outExpo',
-        delay: stagger(100),
+      const el404 = root.querySelector<HTMLElement>('[data-notfound="404"]');
+      const elSignal = root.querySelector<HTMLElement>(
+        '[data-notfound="signal"]',
+      );
+      const elNotfound = root.querySelector<HTMLElement>(
+        '[data-notfound="notfound"]',
+      );
+      const subtitleEl = subtitleRef.current;
+
+      // Try splitText for cascades
+      try {
+        if (el404) {
+          splitter404 = splitText(el404, {
+            chars: true,
+            words: { wrap: 'clip' },
+          });
+        }
+      } catch {
+        splitter404 = null;
+      }
+      try {
+        if (elSignal) {
+          splitterSignal = splitText(elSignal, {
+            chars: true,
+            words: { wrap: 'clip' },
+          });
+        }
+      } catch {
+        splitterSignal = null;
+      }
+      try {
+        if (elNotfound) {
+          splitterNotfound = splitText(elNotfound, {
+            chars: true,
+            words: { wrap: 'clip' },
+          });
+        }
+      } catch {
+        splitterNotfound = null;
+      }
+
+      const chars404 = (splitter404?.chars as unknown as HTMLElement[]) ?? [];
+      const charsSignal =
+        (splitterSignal?.chars as unknown as HTMLElement[]) ?? [];
+      const charsNotfound =
+        (splitterNotfound?.chars as unknown as HTMLElement[]) ?? [];
+
+      const bracketStrokes = root.querySelectorAll<SVGGeometryElement>(
+        '.notfound-bracket [data-graphic="grat-stroke"]',
+      );
+      let bracketDrawables: unknown = [];
+      try {
+        if (bracketStrokes.length) {
+          bracketDrawables = createDrawable(
+            '.notfound-bracket [data-graphic="grat-stroke"]',
+          );
+        }
+      } catch {
+        bracketDrawables = [];
+      }
+
+      const diagItems = root.querySelectorAll<HTMLElement>('.diag-item');
+      const btns = root.querySelectorAll<HTMLElement>('.notfound-btn');
+
+      const softSpring = spring(
+        springs.soft as unknown as Record<string, number>,
+      ) as unknown as string;
+      void softSpring;
+
+      const tl = createTimeline({
+        defaults: { ease: easings.expoOut },
       });
 
-      // Stagger entrance for buttons
-      const btns = pageRef.current!.querySelectorAll('.notfound-btn');
-      animate(btns, {
-        opacity: [0, 1],
-        y: [20, 0],
-        scale: [0.9, 1],
-        duration: 400,
-        ease: 'outExpo',
-        delay: stagger(80),
-      });
+      // Bracket drawable frame — draw ['0 0','0 1']
+      if (
+        bracketDrawables &&
+        (bracketDrawables as unknown as unknown[]).length !== 0
+      ) {
+        tl.add(
+          bracketDrawables as unknown as HTMLElement[],
+          {
+            draw: ['0 0', '0 1'],
+            duration: durations.draw * 1000,
+            ease: (easings.smooth as unknown as string) ?? 'linear',
+          } as any,
+          0,
+        );
+      } else if (bracketStrokes.length) {
+        tl.add(
+          bracketStrokes as unknown as HTMLElement[],
+          {
+            opacity: [0, 1],
+            duration: durations.enter * 1000 * 0.45,
+            delay: stagger(durations.stagger * 1000, { from: 'first' }),
+          } as any,
+          0,
+        );
+      }
+
+      // 404 cascade — chars y clip stagger
+      if (chars404.length) {
+        tl.add(
+          chars404,
+          {
+            y: ['112%', '0%'],
+            opacity: [0, 1],
+            duration: durations.enter * 1000 * 0.52,
+            ease: easings.expoOut,
+            delay: stagger(18, { from: 'first' }),
+          } as any,
+          stagger(70),
+        );
+      } else if (el404) {
+        tl.add(el404, { y: [14, 0], opacity: [0, 1] }, stagger(70));
+      }
+
+      // SIGNAL_LOST cascade — from center
+      if (charsSignal.length) {
+        tl.add(
+          charsSignal,
+          {
+            y: ['112%', '0%'],
+            opacity: [0, 1],
+            duration: durations.enter * 1000 * 0.46,
+            ease: easings.expoOut,
+            delay: stagger(20, { from: 'center' }),
+          } as any,
+          stagger(70),
+        );
+      } else if (elSignal) {
+        tl.add(elSignal, { y: [12, 0], opacity: [0, 1] }, stagger(70));
+      }
+
+      // NOT_FOUND cascade — from first
+      if (charsNotfound.length) {
+        tl.add(
+          charsNotfound,
+          {
+            y: ['112%', '0%'],
+            opacity: [0, 1],
+            duration: durations.enter * 1000 * 0.42,
+            ease: easings.expoOut,
+            delay: stagger(16, { from: 'first' }),
+          } as any,
+          stagger(60),
+        );
+      } else if (elNotfound) {
+        tl.add(elNotfound, { y: [10, 0], opacity: [0, 1] }, stagger(60));
+      }
+
+      // Diagnostic items stagger
+      if (diagItems.length) {
+        tl.add(
+          diagItems,
+          {
+            opacity: [0, 1],
+            x: [-10, 0],
+            duration: durations.enter * 1000 * 0.45,
+            ease: easings.expoOut,
+            delay: stagger(durations.stagger * 1000 * 0.45, {
+              from: 'first',
+            }),
+          } as any,
+          stagger(70),
+        );
+      }
+
+      // Buttons spring
+      if (btns.length) {
+        const btnSpring = spring(
+          springs.soft as unknown as Record<string, number>,
+        ) as unknown as string;
+        tl.add(
+          btns,
+          {
+            opacity: [0, 1],
+            y: [20, 0],
+            scale: [0.9, 1],
+            duration: durations.enter * 1000 * 0.42,
+            ease: btnSpring ?? easings.expoOut,
+            delay: stagger(22, { from: 'first' }),
+          } as any,
+          stagger(60, { from: 'first' }),
+        );
+      }
+
+      // ScrambleText for subtitle — use animejs text module if available
+      if (subtitleEl) {
+        const hasScramble = typeof scrambleText === 'function';
+        if (hasScramble) {
+          try {
+            // Ensure starting content is the target so scramble knows end state
+            subtitleEl.textContent = targetMsg;
+            animate(subtitleEl, {
+              innerHTML: scrambleText({
+                text: targetMsg,
+                chars: 'upper',
+                duration: durations.scramble * 1000,
+                ease: easings.expoOut,
+                from: 'left',
+                revealRate: 60,
+                settleDuration: 300,
+              }),
+              duration: durations.scramble * 1000,
+              ease: easings.expoOut,
+            } as any);
+          } catch {
+            // Fallback to static if scramble fails
+            subtitleEl.textContent = targetMsg;
+          }
+        } else {
+          // Fallback interval (guarded, but scramble should be available)
+          let index = 0;
+          const chars =
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+          const interval = setInterval(() => {
+            let result = '';
+            for (let i = 0; i < targetMsg.length; i++) {
+              if (i < index || targetMsg[i] === ' ') result += targetMsg[i];
+              else result += chars[Math.floor(Math.random() * chars.length)];
+            }
+            subtitleEl.textContent = result;
+            index++;
+            if (index > targetMsg.length) clearInterval(interval);
+          }, 20);
+        }
+      }
     });
 
-    return () => scope.revert();
-  }, []);
-
-  // Scramble effect
-  useEffect(() => {
-    if (isReducedMotion()) {
-      setScrambledMsg(targetMsg);
-      return;
-    }
-
-    let index = 0;
-    const interval = setInterval(() => {
-      let result = '';
-      for (let i = 0; i < targetMsg.length; i++) {
-        if (i < index || targetMsg[i] === ' ') {
-          result += targetMsg[i];
-        } else {
-          result += chars[Math.floor(Math.random() * chars.length)];
-        }
-      }
-      setScrambledMsg(result);
-      index++;
-      if (index > targetMsg.length) clearInterval(interval);
-    }, 20);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Glitch effect on 404
-  useEffect(() => {
-    if (isReducedMotion()) return;
-
-    const interval = setInterval(() => {
-      const glitchChars = '!@#$%^&*()_+{}[]|;:,.<>?/~';
-      const original = '404';
-      let glitched = '';
-      for (let i = 0; i < original.length; i++) {
-        if (Math.random() < 0.3) {
-          glitched +=
-            glitchChars[Math.floor(Math.random() * glitchChars.length)];
-        } else {
-          glitched += original[i];
-        }
-      }
-      setGlitchText(glitched);
-      setTimeout(() => setGlitchText('404'), 100);
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      try {
+        splitter404?.revert();
+      } catch {}
+      try {
+        splitterSignal?.revert();
+      } catch {}
+      try {
+        splitterNotfound?.revert();
+      } catch {}
+      scope.revert();
+      scopeRef.current = null;
+    };
+  }, [targetMsg]);
 
   return (
     <>
@@ -142,7 +356,7 @@ export default function NotFoundPage() {
         ref={pageRef}
         className="min-h-screen flex items-center justify-center px-4 py-10 relative overflow-hidden"
       >
-        {/* Floating particles */}
+        {/* Floating particles — 12 dots */}
         <div
           ref={particlesRef}
           className="absolute inset-0 pointer-events-none"
@@ -163,57 +377,107 @@ export default function NotFoundPage() {
         </div>
 
         <div className="w-full max-w-2xl space-y-6 relative z-10">
-          <div className="text-center">
+          {/* Header with morph orb behind glitch text */}
+          <div className="text-center relative">
+            {/* Morph orb behind glitch text — token-only via var(--*) */}
+            <div
+              className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[54%] opacity-55"
+              aria-hidden="true"
+            >
+              <MorphOrb accent="magenta" size={220} />
+            </div>
+            <div
+              className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[54%] opacity-30 translate-x-3 translate-y-2"
+              aria-hidden="true"
+            >
+              <MorphOrb accent="cyan" size={146} />
+            </div>
+            {/* Aurora wash behind orb — var(--aurora-*) */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{
+                width: 280,
+                height: 280,
+                background: 'var(--aurora-1)',
+                filter: 'blur(48px)',
+                opacity: 0.07,
+              }}
+            />
+
             <div
               className="text-[10px] font-display tracking-[6px] mb-3 diag-item opacity-0"
               style={{ color: 'var(--fg-4)' }}
             >
               {'// ERROR // 404'}
             </div>
-            <GlitchText
-              as="h1"
-              accent="magenta"
-              shift
-              className="text-7xl md:text-9xl"
+            {/* 404 — splitText target */}
+            <h1
+              data-notfound="404"
+              className="font-display tracking-wide text-7xl md:text-9xl"
+              style={{ color: 'var(--fg-1)' }}
             >
               {glitchText}
-            </GlitchText>
+            </h1>
             <div
+              data-notfound="signal"
               className="font-display tracking-[4px] mt-4 diag-item opacity-0"
               style={{ color: 'var(--fg-2)' }}
             >
               SIGNAL_LOST
             </div>
-            <div className="font-body text-sm text-text-secondary mt-3 max-w-md mx-auto diag-item opacity-0 min-h-[3rem]">
-              {scrambledMsg}
+            {/* Scramble subtitle — innerHTML driven by scrambleText */}
+            <div
+              ref={subtitleRef}
+              data-notfound="subtitle"
+              className="font-body text-sm mt-3 max-w-md mx-auto diag-item opacity-0 min-h-[3rem]"
+              style={{ color: 'var(--fg-3)' }}
+            >
+              {targetMsg}
             </div>
           </div>
 
-          <HudPanel
-            accent="red"
-            notch="md"
-            title="// DIAGNOSTIC_LOG"
-            className="p-4 space-y-3"
-          >
-            <div className="diag-item opacity-0">
-              <StatBar label="UPLINK" value={0} accent="red" />
-            </div>
-            <div className="diag-item opacity-0">
-              <StatBar label="ROUTE_INTEGRITY" value={12} accent="magenta" />
-            </div>
-            <div className="diag-item opacity-0">
-              <StatBar label="SIGNAL_STRENGTH" value={5} accent="yellow" />
-            </div>
-            <div className="text-[10px] font-mono text-text-muted space-y-1">
-              <div className="diag-item opacity-0">{'>'} STATUS: NOT_FOUND</div>
+          {/* Diagnostic — HudPanel wrapped in bracket drawable frame */}
+          <div className="relative notfound-diagnostic">
+            <Bracket className="notfound-bracket pointer-events-none absolute inset-0 opacity-60" />
+            <HudPanel
+              accent="red"
+              notch="md"
+              title="// DIAGNOSTIC_LOG"
+              className="p-4 space-y-3 relative"
+            >
               <div className="diag-item opacity-0">
-                {'>'} PATH: {router.asPath || '/'}
+                <StatBar label="UPLINK" value={0} accent="red" />
               </div>
               <div className="diag-item opacity-0">
-                {'>'} SUGGESTION: RETURN TO ROOT
+                <StatBar label="ROUTE_INTEGRITY" value={12} accent="magenta" />
               </div>
-            </div>
-          </HudPanel>
+              <div className="diag-item opacity-0">
+                <StatBar label="SIGNAL_STRENGTH" value={5} accent="yellow" />
+              </div>
+              <div className="text-[10px] font-mono space-y-1">
+                <div
+                  data-notfound="notfound"
+                  className="diag-item opacity-0"
+                  style={{ color: 'var(--fg-3)' }}
+                >
+                  {'>'} STATUS: NOT_FOUND
+                </div>
+                <div
+                  className="diag-item opacity-0"
+                  style={{ color: 'var(--fg-3)' }}
+                >
+                  {'>'} PATH: {router.asPath || '/'}
+                </div>
+                <div
+                  className="diag-item opacity-0"
+                  style={{ color: 'var(--fg-3)' }}
+                >
+                  {'>'} SUGGESTION: RETURN TO ROOT
+                </div>
+              </div>
+            </HudPanel>
+          </div>
 
           <div className="flex justify-center gap-3">
             <NeonButton

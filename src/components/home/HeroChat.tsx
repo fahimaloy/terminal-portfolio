@@ -1,7 +1,12 @@
 // src/components/home/HeroChat.tsx — hero entrance + chat stream wrapper extracted from Homepage
 import React, { useRef, useEffect, useState } from 'react';
 import { createTimeline, createScope, animate, spring, stagger } from 'animejs';
-import { isReducedMotion } from '../../config/animations';
+import {
+  isReducedMotion,
+  canAnimate,
+  durations,
+  easings,
+} from '../../config/animations';
 import {
   PortfolioProfile,
   PortfolioProject,
@@ -128,6 +133,39 @@ export default function HeroChat({
     });
     return () => scope.revert();
   }, [isDataLoading]);
+
+  // Subtle idle pulse on suggestion area when empty (opacity/scale stagger, gated)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!isInitial || isDataLoading) return;
+    if (isReducedMotion() || !canAnimate()) return;
+    const root = heroRef.current;
+    if (!root) return;
+    let idleScope: ReturnType<typeof createScope> | null = null;
+    const timer = window.setTimeout(() => {
+      if (!root.isConnected) return;
+      idleScope = createScope({ root });
+      idleScope.add(() => {
+        const cards = root.querySelectorAll<HTMLElement>('[data-hero="card"]');
+        const ctas = root.querySelectorAll<HTMLElement>('[data-hero="cta"]');
+        const targets = [...Array.from(cards), ...Array.from(ctas)];
+        if (targets.length === 0) return;
+        (animate as any)(targets, {
+          opacity: [0.9, 1],
+          scale: [0.985, 1],
+          duration: durations.pulse * 1000 * 0.55,
+          ease: (easings.smooth as unknown as string) ?? 'linear',
+          delay: stagger(durations.stagger * 1000 * 0.52, { from: 'center' }),
+          loop: true,
+          alternate: true,
+        });
+      });
+    }, 1700);
+    return () => {
+      window.clearTimeout(timer);
+      if (idleScope) idleScope.revert();
+    };
+  }, [isInitial, isDataLoading]);
 
   if (isInitial && isDataLoading) {
     return (
