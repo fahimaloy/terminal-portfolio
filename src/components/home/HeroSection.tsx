@@ -218,7 +218,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               draw: ['0 0', '0 1'],
               duration: durations.draw * 1000,
               ease: easings.smooth ?? 'linear',
-            } as any,
+            },
             stagger(40, { from: 'first' }),
           );
           // Also fade the container wrapper
@@ -247,7 +247,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               duration: durations.enter * 1000 * 0.52,
               ease: easings.expoOut ?? 'outExpo',
               delay: stagger(18, { from: 'first' }),
-            } as any,
+            },
             stagger(70),
           );
         } else if (nameWrap.length) {
@@ -264,7 +264,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               duration: durations.enter * 1000 * 0.46,
               ease: easings.expoOut ?? 'outExpo',
               delay: stagger(20, { from: 'center' }),
-            } as any,
+            },
             stagger(70),
           );
         } else if (titleWrap.length) {
@@ -280,7 +280,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               opacity: [0, 1],
               duration: 560,
               ease: softSpring ?? easings.smooth,
-            } as any,
+            },
             stagger(70),
           );
 
@@ -294,7 +294,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               duration: 600,
               ease: softSpring ?? easings.smooth,
               delay: stagger(22, { from: 'first' }),
-            } as any,
+            },
             stagger(60, { from: 'first' }),
           );
 
@@ -308,7 +308,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               duration: 520,
               ease: softSpring ?? easings.smooth,
               delay: stagger(18, { from: 'first' }),
-            } as any,
+            },
             stagger(60, { from: 'first' }),
           );
 
@@ -326,7 +326,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               duration: 560,
               ease: softSpring ?? easings.smooth,
               delay: stagger(22, { from: 'first' }),
-            } as any,
+            },
             stagger(60, { from: 'first' }),
           );
         }

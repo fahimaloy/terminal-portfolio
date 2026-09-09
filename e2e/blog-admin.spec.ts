@@ -11,13 +11,15 @@ test.describe('Blog', () => {
     const searchInput = page.locator('input[placeholder*="search" i]');
     if (await searchInput.isVisible()) {
       await searchInput.fill('test');
-      await page.waitForTimeout(500);
+      await expect(
+        page.locator("[class*='blog-card'], [class*='BlogCard']").first(),
+      ).toBeVisible();
     }
   });
 
   test('blog cards have proper structure', async ({ page }) => {
     await page.goto('/blog');
-    const cards = page.locator('[class*="blog-card"], [class*="BlogCard"]');
+    const cards = page.locator("[class*='blog-card'], [class*='BlogCard']");
     const count = await cards.count();
     if (count > 0) {
       await expect(cards.first()).toBeVisible();
@@ -55,7 +57,9 @@ test.describe('Blog Admin CRUD', () => {
 test.describe('Contact Form', () => {
   test('contact form is accessible', async ({ page }) => {
     await page.goto('/');
-    const contactLink = page.locator('a[href*="contact"], button:has-text("EMAIL")');
+    const contactLink = page.locator(
+      'a[href*="contact"], button:has-text("EMAIL")',
+    );
     if (await contactLink.first().isVisible()) {
       await contactLink.first().click();
     }

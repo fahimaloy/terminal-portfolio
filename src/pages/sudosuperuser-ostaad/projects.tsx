@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Head from 'next/head';
 import React from 'react';
 import {
@@ -394,10 +395,13 @@ const ProjectsPage = () => {
                         {projectDraft.client_logo && (
                           <div className="mt-2 flex items-center gap-2">
                             <div className="w-8 h-8 rounded-lg bg-[var(--bg-2)] overflow-hidden flex items-center justify-center">
-                              <img
+                              <Image
                                 src={projectDraft.client_logo}
                                 alt="Client logo"
+                                width={32}
+                                height={32}
                                 className="w-full h-full object-contain"
+                                unoptimized
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).style.display =
                                     'none';

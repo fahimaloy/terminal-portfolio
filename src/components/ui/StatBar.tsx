@@ -57,7 +57,7 @@ export default function StatBar({
     scope.add(() => {
       animate(proxyRef.current, {
         val: [0, target],
-        duration: durations.entry * 1000,
+        duration: durations.enter * 1000,
         ease: easings.expoOut,
         onUpdate: () => {
           setDisplayValue(Math.round(proxyRef.current.val));

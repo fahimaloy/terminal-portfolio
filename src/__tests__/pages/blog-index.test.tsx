@@ -219,10 +219,10 @@ describe('BlogIndexPage', () => {
 
     const graphic = document.querySelector<HTMLElement>('.blog-empty-graphic');
     expect(graphic).not.toBeNull();
-    expect(graphic!.style.opacity).toBe('0');
+    expect(graphic!.classList.contains('opacity-0')).toBe(true);
     expect(graphic!.style.transform).toContain('translateY');
 
-    expect(headline!.style.opacity).toBe('0');
+    expect(headline!.classList.contains('opacity-0')).toBe(true);
     expect(headline!.style.transform).toContain('translateY');
 
     expect(mockedCreateScope).toHaveBeenCalled();

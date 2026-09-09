@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS experiences (
 
 -- 4. Create experience_projects junction table
 CREATE TABLE IF NOT EXISTS experience_projects (
-  experience_id bigint NOT NULL REFERENCES experiences(id) ON DELETE CASCADE,
-  project_id bigint NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  experience_id bigint NOT NULL REFERENCES public.experiences(id) ON DELETE CASCADE,
+  project_id bigint NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
   PRIMARY KEY (experience_id, project_id)
 );
 
