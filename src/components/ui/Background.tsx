@@ -26,6 +26,7 @@ import {
 import TronGrid from './TronGrid';
 import ScanlineOverlay from './ScanlineOverlay';
 import ParticleField from './ParticleField';
+import GridLattice from './graphics/primitives/GridLattice';
 
 export type BackgroundVariant = 'default' | 'hero' | 'blog';
 
@@ -274,6 +275,12 @@ export default function Background({ variant = 'default' }: BackgroundProps) {
       <TronGrid />
       <ParticleField />
       <ScanlineOverlay />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.035]"
+        aria-hidden="true"
+      >
+        <GridLattice opacity={1} color="var(--grid-1)" />
+      </div>
 
       {/* Vignette — warm */}
       <div

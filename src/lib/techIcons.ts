@@ -143,7 +143,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'React',
     aliases: ['reactjs', 'react.js'],
     icon: SiReact,
-    hex: '#61DAFB',
+    hex: '#61DAFB', // token-lint-ignore
     category: 'Frontend',
   }, // token-lint-ignore
   {
@@ -151,7 +151,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Next.js',
     aliases: ['next.js', 'nextjs', 'next'],
     icon: SiNextdotjs,
-    hex: '#000000',
+    hex: '#000000', // token-lint-ignore
     category: 'Framework',
   }, // token-lint-ignore
   {
@@ -159,7 +159,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'TypeScript',
     aliases: ['ts', 'type-script'],
     icon: SiTypescript,
-    hex: '#3178C6',
+    hex: '#3178C6', // token-lint-ignore
     category: 'Language',
   }, // token-lint-ignore
   {
@@ -167,7 +167,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'JavaScript',
     aliases: ['js', 'java-script', 'ecmascript'],
     icon: SiJavascript,
-    hex: '#F7DF1E',
+    hex: '#F7DF1E', // token-lint-ignore
     category: 'Language',
   }, // token-lint-ignore
   {
@@ -175,7 +175,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Python',
     aliases: ['py'],
     icon: SiPython,
-    hex: '#3776AB',
+    hex: '#3776AB', // token-lint-ignore
     category: 'Language',
   }, // token-lint-ignore
   {
@@ -183,7 +183,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Node.js',
     aliases: ['node', 'nodejs', 'node.js'],
     icon: SiNodedotjs,
-    hex: '#339933',
+    hex: '#339933', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -191,7 +191,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Docker',
     aliases: [],
     icon: SiDocker,
-    hex: '#2496ED',
+    hex: '#2496ED', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -199,7 +199,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'AWS',
     aliases: ['aws', 'amazon-aws', 'amazon web services'],
     icon: SiAmazonaws,
-    hex: '#232F3E',
+    hex: '#232F3E', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -207,7 +207,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Vercel',
     aliases: [],
     icon: SiVercel,
-    hex: '#000000',
+    hex: '#000000', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -215,7 +215,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'PostgreSQL',
     aliases: ['postgres', 'psql', 'pg'],
     icon: SiPostgresql,
-    hex: '#4169E1',
+    hex: '#4169E1', // token-lint-ignore
     category: 'Database',
   }, // token-lint-ignore
   {
@@ -223,7 +223,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'MongoDB',
     aliases: ['mongo'],
     icon: SiMongodb,
-    hex: '#47A248',
+    hex: '#47A248', // token-lint-ignore
     category: 'Database',
   }, // token-lint-ignore
   {
@@ -231,7 +231,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Tailwind CSS',
     aliases: ['tailwind', 'tailwind-css'],
     icon: SiTailwindcss,
-    hex: '#06B6D4',
+    hex: '#06B6D4', // token-lint-ignore
     category: 'Frontend',
   }, // token-lint-ignore
   {
@@ -239,7 +239,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Firebase',
     aliases: [],
     icon: SiFirebase,
-    hex: '#FFCA28',
+    hex: '#FFCA28', // token-lint-ignore
     category: 'Database',
   }, // token-lint-ignore
   {
@@ -247,7 +247,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Supabase',
     aliases: [],
     icon: SiSupabase,
-    hex: '#3ECF8E',
+    hex: '#3ECF8E', // token-lint-ignore
     category: 'Database',
   }, // token-lint-ignore
   {
@@ -255,7 +255,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'GraphQL',
     aliases: ['gql'],
     icon: SiGraphql,
-    hex: '#E10098',
+    hex: '#E10098', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -263,7 +263,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Git',
     aliases: [],
     icon: SiGit,
-    hex: '#F05032',
+    hex: '#F05032', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -271,7 +271,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'GitHub',
     aliases: ['gh'],
     icon: SiGithub,
-    hex: '#181717',
+    hex: '#181717', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -279,7 +279,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Figma',
     aliases: [],
     icon: SiFigma,
-    hex: '#F24E1E',
+    hex: '#F24E1E', // token-lint-ignore
     category: 'Design',
   }, // token-lint-ignore
   {
@@ -287,7 +287,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'HTML5',
     aliases: ['html'],
     icon: SiHtml5,
-    hex: '#E34F26',
+    hex: '#E34F26', // token-lint-ignore
     category: 'Frontend',
   }, // token-lint-ignore
   {
@@ -295,7 +295,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'CSS3',
     aliases: ['css'],
     icon: SiCss3,
-    hex: '#1572B6',
+    hex: '#1572B6', // token-lint-ignore
     category: 'Frontend',
   }, // token-lint-ignore
   {
@@ -303,7 +303,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Sass',
     aliases: ['scss'],
     icon: SiSass,
-    hex: '#CC6699',
+    hex: '#CC6699', // token-lint-ignore
     category: 'Frontend',
   }, // token-lint-ignore
   {
@@ -311,7 +311,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Redux',
     aliases: [],
     icon: SiRedux,
-    hex: '#764ABC',
+    hex: '#764ABC', // token-lint-ignore
     category: 'Frontend',
   }, // token-lint-ignore
   {
@@ -319,7 +319,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Vue.js',
     aliases: ['vue', 'vuejs', 'vue.js'],
     icon: SiVuedotjs,
-    hex: '#4FC08D',
+    hex: '#4FC08D', // token-lint-ignore
     category: 'Frontend',
   }, // token-lint-ignore
   {
@@ -327,7 +327,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Angular',
     aliases: ['angularjs'],
     icon: SiAngular,
-    hex: '#DD0031',
+    hex: '#DD0031', // token-lint-ignore
     category: 'Framework',
   }, // token-lint-ignore
   {
@@ -335,7 +335,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Svelte',
     aliases: [],
     icon: SiSvelte,
-    hex: '#FF3E00',
+    hex: '#FF3E00', // token-lint-ignore
     category: 'Framework',
   }, // token-lint-ignore
   {
@@ -343,7 +343,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Astro',
     aliases: [],
     icon: SiAstro,
-    hex: '#FF5D01',
+    hex: '#FF5D01', // token-lint-ignore
     category: 'Framework',
   }, // token-lint-ignore
   {
@@ -351,7 +351,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Remix',
     aliases: [],
     icon: SiRemix,
-    hex: '#000000',
+    hex: '#000000', // token-lint-ignore
     category: 'Framework',
   }, // token-lint-ignore
   {
@@ -359,7 +359,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Gatsby',
     aliases: [],
     icon: SiGatsby,
-    hex: '#663399',
+    hex: '#663399', // token-lint-ignore
     category: 'Framework',
   }, // token-lint-ignore
   {
@@ -367,7 +367,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Webpack',
     aliases: [],
     icon: SiWebpack,
-    hex: '#8DD6F9',
+    hex: '#8DD6F9', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -375,7 +375,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Vite',
     aliases: [],
     icon: SiVite,
-    hex: '#646CFF',
+    hex: '#646CFF', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -383,7 +383,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Babel',
     aliases: [],
     icon: SiBabel,
-    hex: '#F9DC3E',
+    hex: '#F9DC3E', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -391,7 +391,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'ESLint',
     aliases: [],
     icon: SiEslint,
-    hex: '#4B32C3',
+    hex: '#4B32C3', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -399,7 +399,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Prettier',
     aliases: [],
     icon: SiPrettier,
-    hex: '#F7B93E',
+    hex: '#F7B93E', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -407,7 +407,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Jest',
     aliases: [],
     icon: SiJest,
-    hex: '#C21325',
+    hex: '#C21325', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -415,7 +415,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Testing Library',
     aliases: ['testing-library', 'react-testing-library'],
     icon: SiTestinglibrary,
-    hex: '#E33332',
+    hex: '#E33332', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -423,7 +423,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Cypress',
     aliases: [],
     icon: SiCypress,
-    hex: '#17202C',
+    hex: '#17202C', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -431,7 +431,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Playwright',
     aliases: [],
     icon: SiPlaywright,
-    hex: '#2EAD33',
+    hex: '#2EAD33', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -439,7 +439,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Storybook',
     aliases: [],
     icon: SiStorybook,
-    hex: '#FF4785',
+    hex: '#FF4785', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -447,7 +447,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'npm',
     aliases: [],
     icon: SiNpm,
-    hex: '#CB3837',
+    hex: '#CB3837', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -455,7 +455,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Yarn',
     aliases: [],
     icon: SiYarn,
-    hex: '#2C8EBB',
+    hex: '#2C8EBB', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -463,7 +463,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'pnpm',
     aliases: [],
     icon: SiPnpm,
-    hex: '#F69220',
+    hex: '#F69220', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -471,7 +471,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Express',
     aliases: ['expressjs', 'express.js'],
     icon: SiExpress,
-    hex: '#000000',
+    hex: '#000000', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -479,7 +479,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'NestJS',
     aliases: ['nest', 'nest.js', 'nestjs'],
     icon: SiNestjs,
-    hex: '#E0234E',
+    hex: '#E0234E', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -487,7 +487,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'FastAPI',
     aliases: ['fast-api'],
     icon: SiFastapi,
-    hex: '#009688',
+    hex: '#009688', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -495,7 +495,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Django',
     aliases: [],
     icon: SiDjango,
-    hex: '#092E20',
+    hex: '#092E20', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -503,7 +503,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Flask',
     aliases: [],
     icon: SiFlask,
-    hex: '#000000',
+    hex: '#000000', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -511,7 +511,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Spring',
     aliases: ['spring-boot', 'springboot'],
     icon: SiSpring,
-    hex: '#6DB33F',
+    hex: '#6DB33F', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -519,7 +519,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Laravel',
     aliases: [],
     icon: SiLaravel,
-    hex: '#FF2D20',
+    hex: '#FF2D20', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -527,7 +527,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Ruby on Rails',
     aliases: ['rails', 'ruby-on-rails'],
     icon: SiRubyonrails,
-    hex: '#CC0000',
+    hex: '#CC0000', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -535,7 +535,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'PHP',
     aliases: [],
     icon: SiPhp,
-    hex: '#777BB4',
+    hex: '#777BB4', // token-lint-ignore
     category: 'Language',
   }, // token-lint-ignore
   {
@@ -543,7 +543,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Go',
     aliases: ['golang'],
     icon: SiGo,
-    hex: '#00ADD8',
+    hex: '#00ADD8', // token-lint-ignore
     category: 'Language',
   }, // token-lint-ignore
   {
@@ -551,7 +551,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Rust',
     aliases: [],
     icon: SiRust,
-    hex: '#000000',
+    hex: '#000000', // token-lint-ignore
     category: 'Language',
   }, // token-lint-ignore
   {
@@ -559,7 +559,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Kotlin',
     aliases: [],
     icon: SiKotlin,
-    hex: '#0095D5',
+    hex: '#0095D5', // token-lint-ignore
     category: 'Language',
   }, // token-lint-ignore
   {
@@ -567,7 +567,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Swift',
     aliases: [],
     icon: SiSwift,
-    hex: '#FA7343',
+    hex: '#FA7343', // token-lint-ignore
     category: 'Language',
   }, // token-lint-ignore
   {
@@ -575,7 +575,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Dart',
     aliases: [],
     icon: SiDart,
-    hex: '#0175C2',
+    hex: '#0175C2', // token-lint-ignore
     category: 'Language',
   }, // token-lint-ignore
   {
@@ -583,7 +583,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Ruby',
     aliases: [],
     icon: SiRuby,
-    hex: '#CC342D',
+    hex: '#CC342D', // token-lint-ignore
     category: 'Language',
   }, // token-lint-ignore
   {
@@ -591,7 +591,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Java',
     aliases: ['java', 'open-jdk', 'jdk'],
     icon: SiOpenjdk,
-    hex: '#ED8B00',
+    hex: '#ED8B00', // token-lint-ignore
     category: 'Language',
   }, // token-lint-ignore
   {
@@ -599,7 +599,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Deno',
     aliases: [],
     icon: SiDeno,
-    hex: '#000000',
+    hex: '#000000', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -607,7 +607,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Bun',
     aliases: [],
     icon: SiBun,
-    hex: '#000000',
+    hex: '#000000', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -615,7 +615,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Prisma',
     aliases: [],
     icon: SiPrisma,
-    hex: '#2D3748',
+    hex: '#2D3748', // token-lint-ignore
     category: 'Database',
   }, // token-lint-ignore
   {
@@ -623,7 +623,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Redis',
     aliases: [],
     icon: SiRedis,
-    hex: '#DC382D',
+    hex: '#DC382D', // token-lint-ignore
     category: 'Database',
   }, // token-lint-ignore
   {
@@ -631,7 +631,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'MySQL',
     aliases: [],
     icon: SiMysql,
-    hex: '#4479A1',
+    hex: '#4479A1', // token-lint-ignore
     category: 'Database',
   }, // token-lint-ignore
   {
@@ -639,7 +639,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'SQLite',
     aliases: ['sqlite3'],
     icon: SiSqlite,
-    hex: '#003B57',
+    hex: '#003B57', // token-lint-ignore
     category: 'Database',
   }, // token-lint-ignore
   {
@@ -647,7 +647,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'MariaDB',
     aliases: ['maria-db'],
     icon: SiMariadb,
-    hex: '#003545',
+    hex: '#003545', // token-lint-ignore
     category: 'Database',
   }, // token-lint-ignore
   {
@@ -655,7 +655,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Elasticsearch',
     aliases: ['elastic', 'elastic-search'],
     icon: SiElasticsearch,
-    hex: '#005571',
+    hex: '#005571', // token-lint-ignore
     category: 'Database',
   }, // token-lint-ignore
   {
@@ -663,7 +663,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Kubernetes',
     aliases: ['k8s', 'k8'],
     icon: SiKubernetes,
-    hex: '#326CE5',
+    hex: '#326CE5', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -671,7 +671,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Terraform',
     aliases: [],
     icon: SiTerraform,
-    hex: '#7B42BC',
+    hex: '#7B42BC', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -679,7 +679,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Google Cloud',
     aliases: ['gcp', 'google-cloud', 'googlecloudplatform'],
     icon: SiGooglecloud,
-    hex: '#4285F4',
+    hex: '#4285F4', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -687,7 +687,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Azure',
     aliases: ['azure', 'microsoft-azure'],
     icon: SiMicrosoftazure,
-    hex: '#0089D6',
+    hex: '#0089D6', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -695,7 +695,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Netlify',
     aliases: [],
     icon: SiNetlify,
-    hex: '#00C7B7',
+    hex: '#00C7B7', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -703,7 +703,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Heroku',
     aliases: [],
     icon: SiHeroku,
-    hex: '#430098',
+    hex: '#430098', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -711,7 +711,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'DigitalOcean',
     aliases: ['do', 'digital-ocean'],
     icon: SiDigitalocean,
-    hex: '#0080FF',
+    hex: '#0080FF', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -719,7 +719,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Cloudflare',
     aliases: ['cf'],
     icon: SiCloudflare,
-    hex: '#F38020',
+    hex: '#F38020', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -727,7 +727,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Nginx',
     aliases: [],
     icon: SiNginx,
-    hex: '#009639',
+    hex: '#009639', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -735,7 +735,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Apache',
     aliases: ['httpd'],
     icon: SiApache,
-    hex: '#D22128',
+    hex: '#D22128', // token-lint-ignore
     category: 'Cloud',
   }, // token-lint-ignore
   {
@@ -743,7 +743,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Linux',
     aliases: [],
     icon: SiLinux,
-    hex: '#FCC624',
+    hex: '#FCC624', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -751,7 +751,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Ubuntu',
     aliases: [],
     icon: SiUbuntu,
-    hex: '#E95420',
+    hex: '#E95420', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -759,7 +759,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Apple',
     aliases: ['macos', 'ios-apple'],
     icon: SiApple,
-    hex: '#000000',
+    hex: '#000000', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -767,7 +767,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Android',
     aliases: [],
     icon: SiAndroid,
-    hex: '#34A853',
+    hex: '#34A853', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -775,7 +775,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'iOS',
     aliases: ['iphone'],
     icon: SiIos,
-    hex: '#000000',
+    hex: '#000000', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -783,7 +783,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Flutter',
     aliases: [],
     icon: SiFlutter,
-    hex: '#02569B',
+    hex: '#02569B', // token-lint-ignore
     category: 'Framework',
   }, // token-lint-ignore
   {
@@ -791,7 +791,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Expo',
     aliases: [],
     icon: SiExpo,
-    hex: '#000020',
+    hex: '#000020', // token-lint-ignore
     category: 'Framework',
   }, // token-lint-ignore
   {
@@ -799,7 +799,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Electron',
     aliases: [],
     icon: SiElectron,
-    hex: '#47848F',
+    hex: '#47848F', // token-lint-ignore
     category: 'Framework',
   }, // token-lint-ignore
   {
@@ -807,7 +807,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Tauri',
     aliases: [],
     icon: SiTauri,
-    hex: '#24C8DB',
+    hex: '#24C8DB', // token-lint-ignore
     category: 'Framework',
   }, // token-lint-ignore
   {
@@ -815,7 +815,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'OpenAI',
     aliases: ['chatgpt', 'gpt'],
     icon: SiOpenai,
-    hex: '#412991',
+    hex: '#412991', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -823,7 +823,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'TensorFlow',
     aliases: ['tf'],
     icon: SiTensorflow,
-    hex: '#FF6F00',
+    hex: '#FF6F00', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -831,7 +831,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'PyTorch',
     aliases: ['torch'],
     icon: SiPytorch,
-    hex: '#EE4C2C',
+    hex: '#EE4C2C', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -839,7 +839,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Jupyter',
     aliases: [],
     icon: SiJupyter,
-    hex: '#F37626',
+    hex: '#F37626', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -847,7 +847,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Notion',
     aliases: [],
     icon: SiNotion,
-    hex: '#000000',
+    hex: '#000000', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -855,7 +855,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Slack',
     aliases: [],
     icon: SiSlack,
-    hex: '#4A154B',
+    hex: '#4A154B', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -863,7 +863,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Discord',
     aliases: [],
     icon: SiDiscord,
-    hex: '#5865F2',
+    hex: '#5865F2', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -871,7 +871,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Stripe',
     aliases: [],
     icon: SiStripe,
-    hex: '#635BFF',
+    hex: '#635BFF', // token-lint-ignore
     category: 'Tool',
   }, // token-lint-ignore
   {
@@ -879,7 +879,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Sanity',
     aliases: [],
     icon: SiSanity,
-    hex: '#F03E2F',
+    hex: '#F03E2F', // token-lint-ignore
     category: 'Database',
   }, // token-lint-ignore
   {
@@ -887,7 +887,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Contentful',
     aliases: [],
     icon: SiContentful,
-    hex: '#2478CC',
+    hex: '#2478CC', // token-lint-ignore
     category: 'Database',
   }, // token-lint-ignore
   {
@@ -895,7 +895,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Strapi',
     aliases: [],
     icon: SiStrapi,
-    hex: '#2F2E8B',
+    hex: '#2F2E8B', // token-lint-ignore
     category: 'Backend',
   }, // token-lint-ignore
   {
@@ -903,7 +903,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Photoshop',
     aliases: ['photoshop', 'ps'],
     icon: SiAdobephotoshop,
-    hex: '#31A8FF',
+    hex: '#31A8FF', // token-lint-ignore
     category: 'Design',
   }, // token-lint-ignore
   {
@@ -911,7 +911,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Illustrator',
     aliases: ['illustrator', 'ai'],
     icon: SiAdobeillustrator,
-    hex: '#FF9A00',
+    hex: '#FF9A00', // token-lint-ignore
     category: 'Design',
   }, // token-lint-ignore
   {
@@ -919,7 +919,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Sketch',
     aliases: [],
     icon: SiSketch,
-    hex: '#FDB300',
+    hex: '#FDB300', // token-lint-ignore
     category: 'Design',
   }, // token-lint-ignore
   {
@@ -927,7 +927,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Framer',
     aliases: [],
     icon: SiFramer,
-    hex: '#0055FF',
+    hex: '#0055FF', // token-lint-ignore
     category: 'Design',
   }, // token-lint-ignore
   {
@@ -935,7 +935,7 @@ export const TECH_ICONS: TechIconEntry[] = [
     label: 'Blender',
     aliases: [],
     icon: SiBlender,
-    hex: '#E87D0D',
+    hex: '#E87D0D', // token-lint-ignore
     category: 'Design',
   }, // token-lint-ignore
 ];

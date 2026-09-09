@@ -1,6 +1,13 @@
 import React from 'react';
 
-type Accent = 'yellow' | 'magenta' | 'cyan' | 'green' | 'purple' | 'blue';
+type Accent =
+  | 'yellow'
+  | 'magenta'
+  | 'cyan'
+  | 'green'
+  | 'purple'
+  | 'blue'
+  | 'red';
 
 export interface BracketProps {
   accent?: Accent;

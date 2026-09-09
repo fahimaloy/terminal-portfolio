@@ -1,5 +1,7 @@
 // src/components/ui/BootSequence.tsx
-/* Cinematic editorial boot — emblem line-draw, wordmark split, rule + status cascade, spring exit + confetti. */
+/* Premium HUD boot — ScopeRings + SignalTicks vector loader, wordmark split, loading rail, spring exit + confetti. */
+/* Stable overlay: single createScope at rootRef, timeline labels scope→rings→wordmark→rule→status→exit.
+   Flicker-free: overlay mounts hidden (opacity 0) and fades to 1 before timeline; sessionStorage check before mount. */
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
@@ -17,9 +19,11 @@ import {
   springs,
   isReducedMotion,
 } from '../../config/animations';
+import ScopeRings from './graphics/primitives/ScopeRings';
+import SignalTicks from './graphics/primitives/SignalTicks';
 
 const STORAGE_KEY = 'cyberpunk-boot-shown';
-const TOTAL_MS = 820;
+const TOTAL_MS = 860;
 const SKIPPABLE_AFTER_MS = 150;
 
 const CONFETTI_COLORS = [
@@ -30,10 +34,15 @@ const CONFETTI_COLORS = [
   'var(--ring-purple)',
 ] as const;
 
+interface BootScopeHandle {
+  revert: () => void;
+  add: (fn: () => void | Promise<void>) => void;
+}
+
 export default function BootSequence() {
   const [show, setShow] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
+  const scopeRef = useRef<BootScopeHandle | null>(null);
   const mountTime = useRef<number>(Date.now());
   const timersRef = useRef<number[]>([]);
 
@@ -57,14 +66,18 @@ export default function BootSequence() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (window.sessionStorage.getItem(STORAGE_KEY)) return;
+    try {
+      if (window.sessionStorage.getItem(STORAGE_KEY)) return;
+    } catch {
+      // storage blocked — still show once
+    }
 
     const reduced = isReducedMotion();
     setShow(true);
     mountTime.current = Date.now();
 
     if (reduced) {
-      const t = window.setTimeout(finish, 120);
+      const t = window.setTimeout(finish, 140);
       timersRef.current.push(t as unknown as number);
       return () => window.clearTimeout(t);
     }
@@ -75,35 +88,69 @@ export default function BootSequence() {
   useEffect(() => {
     if (!show || !rootRef.current || isReducedMotion()) return;
     const root = rootRef.current;
-    const scope = createScope({ root });
-    scopeRef.current = scope;
+    const scope = createScope({
+      root,
+      mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
+      defaults: { duration: durations.exit, ease: easings.outExpo },
+    } as Parameters<typeof createScope>[0]);
+    scopeRef.current = scope as unknown as BootScopeHandle;
 
     let wordSplitter: ReturnType<typeof splitText> | null = null;
-    let statusSplitter: ReturnType<typeof splitText> | null = null;
+    let subSplitter: ReturnType<typeof splitText> | null = null;
 
     scope.add(() => {
       const inner = root.querySelector<HTMLElement>('.boot-inner');
-      const emblemPaths =
-        root.querySelectorAll<SVGGeometryElement>('.boot-emblem-path');
+      const scopeRingStrokes = root.querySelectorAll<SVGGeometryElement>(
+        '.boot-scope-ring .grat-stroke',
+      );
+      const scopeFill = root.querySelector<HTMLElement>(
+        '.boot-scope-ring .grat-fill',
+      );
+      const tickLines = root.querySelectorAll<HTMLElement>(
+        '.boot-ticks .grat-tick',
+      );
+      const wordmark = root.querySelector<HTMLElement>('.boot-wordmark');
+      const sub = root.querySelector<HTMLElement>('.boot-sub');
+      const railFill = root.querySelector<HTMLElement>('.boot-rail-fill');
       const rulePath =
         root.querySelector<SVGGeometryElement>('.boot-rule-path');
-      const wordmark = root.querySelector<HTMLElement>('.boot-wordmark');
       const status = root.querySelector<HTMLElement>('.boot-status');
       const confettiDots =
         root.querySelectorAll<HTMLElement>('.boot-confetti-dot');
       const aurora = root.querySelector<HTMLElement>('.boot-aurora');
 
-      if (inner) inner.style.opacity = '1';
+      if (inner) inner.style.opacity = '0';
+      if (railFill) railFill.style.transform = 'scaleX(0)';
+      if (scopeFill) (scopeFill as HTMLElement).style.opacity = '0';
+
+      // Aurora in
       if (aurora) {
         animate(aurora, {
-          opacity: [0, 1],
-          duration: durations.enter * 1000 * 0.6,
+          opacity: [0, 0.9],
+          duration: durations.enter * 1000 * 0.55,
           ease: easings.smooth,
         } as any);
       }
 
-      const emblemDrawables =
-        emblemPaths.length > 0 ? createDrawable('.boot-emblem-path', 0, 0) : [];
+      // Root fade-in to hide flicker (overlay was opacity 0)
+      animate(root, {
+        opacity: [0, 1],
+        duration: 120,
+        ease: easings.smooth,
+      } as any);
+
+      if (inner) {
+        animate(inner, {
+          opacity: [0, 1],
+          duration: 140,
+          ease: easings.smooth,
+        } as any);
+      }
+
+      const ringDrawables =
+        scopeRingStrokes.length > 0
+          ? createDrawable('.boot-scope-ring .grat-stroke', 0, 0)
+          : [];
       const ruleDrawables = rulePath
         ? createDrawable('.boot-rule-path', 0, 0)
         : [];
@@ -117,8 +164,8 @@ export default function BootSequence() {
         }
       } catch {}
       try {
-        if (status) {
-          statusSplitter = splitText(status, {
+        if (sub) {
+          subSplitter = splitText(sub, {
             chars: true,
             words: { wrap: 'clip' },
           });
@@ -126,46 +173,77 @@ export default function BootSequence() {
       } catch {}
 
       const tl = createTimeline({
-        defaults: { ease: easings.expoOut },
+        defaults: { ease: easings.smooth },
       } as any);
 
-      tl.label('emblem', 0);
-      tl.label('wordmark', 90);
-      tl.label('rule', 220);
-      tl.label('status', 310);
-      tl.label('hold', 520);
-      tl.label('exit', 520);
+      tl.label('scope', 0);
+      tl.label('rings', 60);
+      tl.label('wordmark', 120);
+      tl.label('rule', 280);
+      tl.label('status', 340);
+      tl.label('rail', 360);
+      tl.label('hold', 560);
+      tl.label('exit', 560);
 
-      if (emblemDrawables.length) {
+      // Scope rings — draw outer → inner
+      if (ringDrawables.length) {
         tl.add(
-          emblemDrawables as unknown as HTMLElement[],
+          ringDrawables as unknown as HTMLElement[],
           {
             draw: ['0 0', '0 1'],
-            duration: durations.slide * 1000,
+            duration: durations.draw * 1000 * 0.42,
             ease: easings.smooth,
-            delay: stagger(28, { from: 'center' }),
+            delay: stagger(18, { from: 'center' }),
           } as any,
-          'emblem',
+          'scope',
         );
+      }
+      if (scopeRingStrokes.length) {
         tl.add(
-          emblemPaths as unknown as HTMLElement[],
+          scopeRingStrokes as unknown as HTMLElement[],
           {
             opacity: [0, 1],
-            duration: 60,
+            duration: 80,
             ease: easings.smooth,
           } as any,
-          'emblem',
+          'scope',
         );
-      } else if (emblemPaths.length) {
+      }
+      if (scopeFill) {
         tl.add(
-          emblemPaths as unknown as HTMLElement[],
+          scopeFill as unknown as HTMLElement,
           {
             opacity: [0, 1],
-            duration: durations.enter * 1000 * 0.35,
-            ease: easings.smooth,
+            scale: [0.92, 1],
+            duration: durations.enter * 1000 * 0.32,
+            ease: spring(springs.gentle) as unknown as string,
           } as any,
-          'emblem',
+          'rings',
         );
+      }
+      if (tickLines.length) {
+        tl.add(
+          tickLines as unknown as HTMLElement[],
+          {
+            opacity: [0, 1],
+            scale: [0.7, 1],
+            duration: durations.enter * 1000 * 0.28,
+            ease: easings.smooth,
+            delay: stagger(14, { from: 'first' }),
+          } as any,
+          'rings',
+        );
+        // gentle rotation of tick container for life
+        const tickWrap = root.querySelector<HTMLElement>('.boot-ticks');
+        if (tickWrap) {
+          animate(tickWrap, {
+            rotate: [0, 12],
+            duration: 2600,
+            ease: 'linear',
+            loop: true,
+            alternate: true,
+          } as any);
+        }
       }
 
       const wordChars = (wordSplitter?.chars as unknown as HTMLElement[]) ?? [];
@@ -175,8 +253,8 @@ export default function BootSequence() {
           {
             y: ['112%', '0%'],
             opacity: [0, 1],
-            duration: durations.enter * 1000 * 0.52,
-            ease: easings.expoOut,
+            duration: durations.enter * 1000 * 0.5,
+            ease: easings.smooth,
             delay: stagger(22, { from: 'first' }),
           } as any,
           'wordmark',
@@ -187,10 +265,36 @@ export default function BootSequence() {
           {
             opacity: [0, 1],
             y: [10, 0],
-            duration: durations.enter * 1000 * 0.5,
-            ease: easings.expoOut,
+            duration: durations.enter * 1000 * 0.45,
+            ease: easings.smooth,
           } as any,
           'wordmark',
+        );
+      }
+
+      const subChars = (subSplitter?.chars as unknown as HTMLElement[]) ?? [];
+      if (subChars.length) {
+        tl.add(
+          subChars,
+          {
+            y: ['100%', '0%'],
+            opacity: [0, 1],
+            duration: durations.enter * 1000 * 0.38,
+            ease: easings.smooth,
+            delay: stagger(16, { from: 'first' }),
+          } as any,
+          'wordmark+=60',
+        );
+      } else if (sub) {
+        tl.add(
+          sub,
+          {
+            opacity: [0, 1],
+            y: [6, 0],
+            duration: durations.enter * 1000 * 0.35,
+            ease: easings.smooth,
+          } as any,
+          'wordmark+=60',
         );
       }
 
@@ -220,39 +324,30 @@ export default function BootSequence() {
         }
       }
 
-      const statusChars =
-        (statusSplitter?.chars as unknown as HTMLElement[]) ?? [];
-      if (statusChars.length) {
+      const statusEl = status;
+      if (statusEl) {
         tl.add(
-          statusChars,
+          statusEl,
           {
-            y: ['100%', '0%'],
             opacity: [0, 1],
-            duration: durations.enter * 1000 * 0.42,
-            ease: easings.expoOut,
-            delay: stagger(18, { from: 'first' }),
-          } as any,
-          'status',
-        );
-        tl.add(
-          status as unknown as HTMLElement,
-          {
-            opacity: [0.7, 1],
-            duration: durations.enter * 1000 * 0.3,
+            y: [6, 0],
+            duration: durations.enter * 1000 * 0.36,
             ease: easings.smooth,
           } as any,
           'status',
         );
-      } else if (status) {
+      }
+
+      if (railFill) {
         tl.add(
-          status,
+          railFill,
           {
-            opacity: [0, 1],
-            y: [6, 0],
-            duration: durations.enter * 1000 * 0.42,
-            ease: easings.expoOut,
+            scaleX: [0, 1],
+            opacity: [0.55, 1],
+            duration: durations.enter * 1000 * 0.48,
+            ease: easings.smooth,
           } as any,
-          'status',
+          'rail',
         );
       }
 
@@ -260,16 +355,16 @@ export default function BootSequence() {
       const autoId = window.setTimeout(() => {
         if (inner) {
           animate(inner, {
-            scale: [1, 0.96],
+            scale: [1, 0.985],
             opacity: [1, 0],
             duration: 420,
-            ease: spring(springs.soft as any),
+            ease: spring(springs.gentle) as unknown as string,
           } as any);
         }
         animate(root, {
           opacity: [1, 0],
-          duration: 360,
-          ease: easings.expoIn,
+          duration: 320,
+          ease: easings.smooth,
         } as any).then(() => finish());
 
         if (confettiDots.length) {
@@ -290,7 +385,7 @@ export default function BootSequence() {
               scale: [0.6, 1],
               opacity: [1, 0],
               duration: 520,
-              ease: spring(springs.bouncy as any),
+              ease: spring(springs.bouncy) as unknown as string,
               delay: stagger(14, { from: 'center' }),
             } as any);
           });
@@ -306,7 +401,7 @@ export default function BootSequence() {
         wordSplitter?.revert();
       } catch {}
       try {
-        statusSplitter?.revert();
+        subSplitter?.revert();
       } catch {}
       scope.revert();
       scopeRef.current = null;
@@ -342,80 +437,32 @@ export default function BootSequence() {
       aria-label="Loading"
       data-testid="boot-sequence"
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: 'var(--bg-1)', color: 'var(--fg-1)' }}
+      style={{
+        background: 'var(--bg-1)',
+        color: 'var(--fg-1)',
+        opacity: 0,
+      }}
     >
       <div
         className="boot-aurora pointer-events-none absolute inset-0 opacity-0"
         aria-hidden="true"
         style={{
           background:
-            'radial-gradient(ellipse 70% 52% at 50% 18%, var(--aurora-1) 0%, transparent 58%), radial-gradient(ellipse 52% 44% at 78% 78%, var(--aurora-2) 0%, transparent 60%), radial-gradient(ellipse 48% 42% at 14% 82%, var(--aurora-3) 0%, transparent 62%)',
+            'radial-gradient(ellipse 72% 54% at 50% 16%, var(--aurora-1) 0%, transparent 58%), radial-gradient(ellipse 54% 44% at 78% 80%, var(--aurora-2) 0%, transparent 60%), radial-gradient(ellipse 48% 42% at 14% 82%, var(--aurora-3) 0%, transparent 62%)',
         }}
       />
 
-      <div className="boot-inner relative flex flex-col items-center opacity-0">
-        <div className="relative flex items-center justify-center">
-          <svg
-            width="56"
-            height="56"
-            viewBox="0 0 48 48"
-            fill="none"
-            aria-hidden="true"
-            className="boot-emblem overflow-visible"
+      <div className="boot-inner relative flex flex-col items-center opacity-0 w-full max-w-[420px] px-6">
+        <div className="relative flex items-center justify-center mb-1">
+          <div
+            className="boot-scope-ring relative"
+            style={{ width: 96, height: 96 }}
           >
-            <path
-              className="boot-emblem-path"
-              d="M 5 16 L 5 5 L 16 5"
-              stroke="var(--border-subtle)"
-              strokeWidth="1.2"
-              strokeLinecap="square"
-              strokeLinejoin="miter"
-              opacity="0"
-            />
-            <path
-              className="boot-emblem-path"
-              d="M 32 5 L 43 5 L 43 16"
-              stroke="var(--border-subtle)"
-              strokeWidth="1.2"
-              strokeLinecap="square"
-              strokeLinejoin="miter"
-              opacity="0"
-            />
-            <path
-              className="boot-emblem-path"
-              d="M 43 32 L 43 43 L 32 43"
-              stroke="var(--border-subtle)"
-              strokeWidth="1.2"
-              strokeLinecap="square"
-              strokeLinejoin="miter"
-              opacity="0"
-            />
-            <path
-              className="boot-emblem-path"
-              d="M 16 43 L 5 43 L 5 32"
-              stroke="var(--border-subtle)"
-              strokeWidth="1.2"
-              strokeLinecap="square"
-              strokeLinejoin="miter"
-              opacity="0"
-            />
-            <path
-              className="boot-emblem-path"
-              d="M 18 24 H 30"
-              stroke="var(--fg-3)"
-              strokeWidth="0.85"
-              strokeLinecap="square"
-              opacity="0"
-            />
-            <path
-              className="boot-emblem-path"
-              d="M 24 18 V 30"
-              stroke="var(--fg-3)"
-              strokeWidth="0.85"
-              strokeLinecap="square"
-              opacity="0"
-            />
-          </svg>
+            <ScopeRings accent="cyan" size={96} />
+            <div className="boot-ticks absolute inset-0">
+              <SignalTicks accent="cyan" size={96} />
+            </div>
+          </div>
 
           <div
             className="pointer-events-none absolute left-1/2 top-1/2 h-0 w-0"
@@ -438,24 +485,31 @@ export default function BootSequence() {
         </div>
 
         <div
-          className="boot-wordmark font-display mt-5 text-3xl md:text-4xl tracking-[0.18em] text-center"
+          className="boot-wordmark font-display mt-4 text-3xl md:text-4xl tracking-[0.18em] text-center"
           style={{ color: 'var(--fg-1)' }}
         >
           FAHIM
         </div>
 
-        <div className="boot-rule mt-3 flex justify-center">
+        <div
+          className="boot-sub font-mono text-[10px] tracking-[0.24em] text-center uppercase mt-1"
+          style={{ color: 'var(--fg-3)' }}
+        >
+          PORTFOLIO
+        </div>
+
+        <div className="boot-rule mt-4 flex justify-center w-full">
           <svg
-            width="96"
+            width="120"
             height="1"
-            viewBox="0 0 96 1"
+            viewBox="0 0 120 1"
             preserveAspectRatio="none"
             aria-hidden="true"
-            className="overflow-visible"
+            className="overflow-visible w-full max-w-[120px]"
           >
             <path
               className="boot-rule-path"
-              d="M 0 0.5 H 96"
+              d="M 0 0.5 H 120"
               stroke="var(--border-subtle)"
               strokeWidth="1"
               strokeLinecap="square"
@@ -464,11 +518,27 @@ export default function BootSequence() {
           </svg>
         </div>
 
+        {/* loading rail */}
         <div
-          className="boot-status mt-3 font-mono text-[10px] tracking-[0.22em] text-center uppercase"
-          style={{ color: 'var(--fg-3)' }}
+          className="mt-4 w-full max-w-[180px] h-[2px] overflow-hidden rounded-full"
+          style={{ background: 'var(--border-subtle)' }}
+          aria-hidden="true"
         >
-          Portfolio
+          <div
+            className="boot-rail-fill h-full w-full origin-left"
+            style={{
+              background: 'var(--neon-cyan)',
+              transform: 'scaleX(0)',
+              opacity: 0.9,
+            }}
+          />
+        </div>
+
+        <div
+          className="boot-status mt-3 font-mono text-[10px] tracking-[0.18em] text-center"
+          style={{ color: 'var(--fg-4)' }}
+        >
+          INITIALIZING — SYSTEMS ONLINE
         </div>
       </div>
     </div>

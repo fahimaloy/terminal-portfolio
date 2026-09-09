@@ -54,7 +54,8 @@ export default function BlogCard({ post, index = 0 }: Props) {
           <div
             className="relative overflow-hidden h-full rounded-[var(--radius-lg)] border transition-transform duration-200 hover:scale-[1.01]"
             style={{
-              background: 'var(--bg-2)',
+              backgroundColor: 'var(--bg-2)',
+              backgroundImage: `linear-gradient(var(--wash-${accent}), var(--wash-${accent}))`,
               borderColor: 'var(--border-subtle)',
             }}
           >

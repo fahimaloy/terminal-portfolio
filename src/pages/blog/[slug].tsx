@@ -362,7 +362,11 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
       <ReadingProgress targetRef={articleRef} />
       <LightningTransition trigger={boltTrigger} onMidpoint={handleMidpoint} />
 
-      <article ref={articleRef} className="relative z-10 min-h-screen">
+      <article
+        ref={articleRef}
+        className="relative z-10 min-h-screen"
+        data-theme="blog"
+      >
         {/* Full-screen hero — premium: aurora wash + parallax cover + splitText title + drawable rule */}
         <div
           ref={heroRef}

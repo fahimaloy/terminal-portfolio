@@ -25,5 +25,15 @@ export type { StaggerOptions, StaggerMode } from './useStagger';
 export { useScrollAnimation } from './useScrollAnimation';
 export type { ScrollAnimationOptions } from './useScrollAnimation';
 
+export { useMotionScope } from './useMotionScope';
+export type { MotionScopeOptions, MotionScopeHandle } from './useMotionScope';
+
+export { useFlashCurtain } from './useFlashCurtain';
+export type {
+  FlashDirection,
+  FlashCurtainOptions,
+  FlashScopeHandle,
+} from './useFlashCurtain';
+
 export { useTimeline } from './useTimeline';
 export type { TimelineParams, TimelineTarget } from './useTimeline';

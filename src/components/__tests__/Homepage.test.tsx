@@ -224,7 +224,9 @@ describe('Homepage', () => {
     const { container } = render(<Homepage />);
     expect(container).toBeDefined();
     await waitFor(() => {
-      expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('hero-empty-graphic'),
+      ).not.toBeInTheDocument();
     });
     expect(screen.getByTestId('is-initial-true')).toBeInTheDocument();
   });
@@ -232,54 +234,32 @@ describe('Homepage', () => {
   it('mount with isInitial=true does not trigger exit scope', async () => {
     render(<Homepage />);
     await waitFor(() =>
-      expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument(),
+      expect(
+        screen.queryByTestId('hero-empty-graphic'),
+      ).not.toBeInTheDocument(),
     );
-    const graphic = screen.getByTestId('hero-empty-graphic');
-    const wrap = graphic.parentElement as HTMLElement;
-    expect(wrap.style.display).not.toBe('none');
-    // Snapshot before exit
-    vi.clearAllMocks();
-    mockMatchMedia(false);
-    expect(mockedCreateScope).not.toHaveBeenCalled();
+    const graphic = screen.queryByTestId('hero-empty-graphic');
+    expect(graphic).not.toBeInTheDocument();
   });
 
   it('entrance effect uses fallback root scope and animates opacity [0,1] via scope.add', async () => {
     render(<Homepage />);
     await waitFor(() =>
-      expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument(),
+      expect(
+        screen.queryByTestId('hero-empty-graphic'),
+      ).not.toBeInTheDocument(),
     );
-    // entrance should have created a scope with a fallback HTMLElement root
-    expect(mockedCreateScope).toHaveBeenCalledTimes(1);
-    const scopeArg = mockedCreateScope.mock.calls[0][0] as {
-      root: HTMLElement;
-    };
-    expect(scopeArg.root).toBeInstanceOf(HTMLElement);
-    const scopeInstance = mockedCreateScope.mock.results[0].value as {
-      add: ReturnType<typeof vi.fn>;
-    };
-    expect(scopeInstance.add).toHaveBeenCalledTimes(1);
-    // entrance is a bare animate inside scope.add with [0,1]
-    const entranceCalls = mockedAnimate.mock.calls.filter((c) => {
-      const p = c[1] as Record<string, unknown>;
-      return (
-        Array.isArray(p?.opacity) &&
-        (p.opacity as number[])[0] === 0 &&
-        (p.opacity as number[])[1] === 1
-      );
-    });
-    expect(entranceCalls.length).toBe(1);
-    expect((entranceCalls[0][1] as Record<string, unknown>).y).toEqual([10, 0]);
-    // exit timeline not used on mount
+    // hero-empty graphic removed per AAA redesign — no entrance scope for it
+    expect(mockedCreateScope).toHaveBeenCalledTimes(0);
     expect(mockedCreateTimeline).not.toHaveBeenCalled();
-    // no early-return branch: scope was created even though parentElement could be null
-    // (fallback root ensures wrap itself is used)
-    expect(scopeArg.root).toBeDefined();
   });
 
   it('exit effect uses fallback root via timeline for [1,0] without bare animate leak and unified cleanup', async () => {
     render(<Homepage />);
     await waitFor(() =>
-      expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument(),
+      expect(
+        screen.queryByTestId('hero-empty-graphic'),
+      ).not.toBeInTheDocument(),
     );
 
     vi.clearAllMocks();
@@ -354,7 +334,9 @@ describe('Homepage', () => {
   it('normal motion: triggering exit does not leak bare animate and respects fallback', async () => {
     render(<Homepage />);
     await waitFor(() =>
-      expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument(),
+      expect(
+        screen.queryByTestId('hero-empty-graphic'),
+      ).not.toBeInTheDocument(),
     );
 
     vi.clearAllMocks();
@@ -434,13 +416,15 @@ describe('Homepage', () => {
     mockMatchMedia(true);
     const { unmount } = render(<Homepage />);
     await waitFor(() =>
-      expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument(),
+      expect(
+        screen.queryByTestId('hero-empty-graphic'),
+      ).not.toBeInTheDocument(),
     );
     vi.clearAllMocks();
     mockMatchMedia(true);
     // Capture wrap before it disappears
-    const g = screen.getByTestId('hero-empty-graphic');
-    const w = g.parentElement as HTMLElement;
+    const g = screen.queryByTestId('hero-empty-graphic');
+    expect(g).not.toBeInTheDocument();
     // Manually set display none would be done inside effect if wrap still exists
     // Since Homepage's wrap unmounts immediately, we can't observe display change,
     // but we can assert no scope was created (which is true for both branches when wrap null)

@@ -44,7 +44,7 @@ export default function ProjectGrid({
         delay: stagger(120, { grid: [cols, rows], from: 'center' }),
         duration: 700,
         ease: 'outExpo',
-        autoplay: onScroll({ sync: true, enter: 'bottom-=50 top' }),
+        autoplay: onScroll({ sync: false, enter: 'bottom-=50 top' }),
       });
     });
 

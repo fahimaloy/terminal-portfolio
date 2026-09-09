@@ -17,6 +17,9 @@ import {
 import { getBlogPost } from '../../utils/blogApi';
 import type { BlogListItem, BlogPost } from '../../types/blog';
 import { HudPanel, NeonChip, NeonButton, GlitchText } from '../ui';
+import { canAnimate, durations } from '../../config/animations';
+import { useFlashCurtain } from '../../hooks/useFlashCurtain';
+import FlashCurtain from './FlashCurtain';
 import LightningTransition from './LightningTransition';
 import RichTextRenderer from '../RichTextRenderer';
 
@@ -55,6 +58,12 @@ export default function BlogReels({
   const [detailCache, setDetailCache] = useState<Record<string, BlogPost>>({});
   const [detailLoading, setDetailLoading] = useState<string | null>(null);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const flashRef = useRef<HTMLDivElement>(null);
+  const { flash } = useFlashCurtain(containerRef, flashRef, {
+    durationMs: durations.exit * 1000,
+  });
+
   const coverUrls = items.map((p) => p.cover_image_url);
   useCoverPreload(coverUrls, active);
   useBulkCoverPreload(items.slice(0, 5).map((p) => p.cover_image_url));
@@ -81,14 +90,24 @@ export default function BlogReels({
     };
   }, [items.length, reduced]);
 
-  // Lightning per-card transition (not route change).
+  // Lightning per-card transition + flash curtain on snap change.
   const prevActiveRef = useRef(active);
   useEffect(() => {
-    if (prevActiveRef.current !== active && !reduced) {
-      prevActiveRef.current = active;
-      setBolt((t) => t + 1);
+    if (prevActiveRef.current === active) return;
+    if (!reduced) setBolt((t) => t + 1);
+    if (canAnimate()) {
+      const direction = active > prevActiveRef.current ? 'next' : 'prev';
+      const container = containerRef.current;
+      const incoming = container?.querySelector(
+        `[data-slide-index="${active}"]`,
+      ) as HTMLElement | null;
+      const outgoing = container?.querySelector(
+        `[data-slide-index="${prevActiveRef.current}"]`,
+      ) as HTMLElement | null;
+      flash(direction, incoming, outgoing);
     }
-  }, [active, reduced]);
+    prevActiveRef.current = active;
+  }, [active]);
 
   // Preload / buffer append when near end.
   useEffect(() => {
@@ -216,11 +235,18 @@ export default function BlogReels({
         style={{ scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }}
         aria-label="Blog reels"
       >
+        <div
+          ref={containerRef}
+          className="absolute inset-0 pointer-events-none"
+        >
+          <FlashCurtain ref={flashRef} />
+        </div>
         {items.map((post, i) => {
           const isActive = i === active;
           return (
             <section
               key={post.id}
+              data-slide-index={String(i)}
               className="relative flex items-center justify-center p-4 md:p-6"
               // @ts-ignore scrollSnapStop not in some csstype/React.CSSProperties lib versions — valid CSS at runtime
               style={
