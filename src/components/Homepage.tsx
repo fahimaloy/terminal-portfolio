@@ -178,23 +178,15 @@ export default function Homepage() {
   useEffect(() => {
     const wasInitial = prevInitialRef.current;
     const wrap = graphicWrapRef.current;
+    let cleanup: (() => void) | undefined;
     if (wasInitial && !isInitial && wrap) {
       if (isReducedMotion() || !canAnimate()) {
         wrap.style.display = 'none';
-        prevInitialRef.current = isInitial;
-        return;
-      }
-      const scopeTarget = (wrap.parentElement ??
-        homeRootRef.current) as HTMLElement | null;
-      if (!scopeTarget) {
-        animate(wrap, {
-          opacity: [1, 0],
-          y: [0, 12],
-          duration: durations.exit * 1000,
-          ease: (easings.smooth as unknown as string) ?? 'linear',
-        });
       } else {
-        const scope = createScope({ root: scopeTarget });
+        const scopeTarget = (wrap.parentElement ??
+          homeRootRef.current) as HTMLElement | null;
+        const root = scopeTarget ?? wrap;
+        const scope = createScope({ root });
         scope.add(() => {
           const tl = createTimeline({
             defaults: {
@@ -216,14 +208,14 @@ export default function Homepage() {
           () => scope.revert(),
           durations.exit * 1000 + 80,
         );
-        prevInitialRef.current = isInitial;
-        return () => {
+        cleanup = () => {
           window.clearTimeout(t);
           scope.revert();
         };
       }
     }
     prevInitialRef.current = isInitial;
+    return cleanup;
   }, [isInitial]);
 
   return (

@@ -1,5 +1,11 @@
 // src/components/ui/IconPicker.tsx
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
 import * as LucideIcons from 'lucide-react';
 import { TECH_ICONS, resolveTechIcon } from '../../lib/techIcons';
 
@@ -61,23 +67,30 @@ export default function IconPicker({
 
   // Keep active in sync when mode or value changes across mounts
   useEffect(() => {
-    if (!allowLucide && active !== 'stack') setActive('stack');
-    if (!allowTech && active !== 'general') setActive('general');
-  }, [allowLucide, allowTech, active]);
+    setActive((prev) => {
+      if (!allowLucide && prev !== 'stack') return 'stack';
+      if (!allowTech && prev !== 'general') return 'general';
+      return prev;
+    });
+  }, [allowLucide, allowTech]);
 
   useEffect(() => {
     setRecent(loadRecent());
   }, []);
 
+  const didPersistMountRef = useRef(false);
+  useEffect(() => {
+    if (!didPersistMountRef.current) {
+      didPersistMountRef.current = true;
+      return;
+    }
+    persistRecent(recent);
+  }, [recent]);
+
   const pushRecent = useCallback((nextVal: string) => {
-    setRecent((prev) => {
-      const next = [nextVal, ...prev.filter((v) => v !== nextVal)].slice(
-        0,
-        RECENT_MAX,
-      );
-      persistRecent(next);
-      return next;
-    });
+    setRecent((prev) =>
+      [nextVal, ...prev.filter((v) => v !== nextVal)].slice(0, RECENT_MAX),
+    );
   }, []);
 
   const handleSelect = useCallback(

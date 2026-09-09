@@ -53,20 +53,26 @@ export default function ChatInputBar({
     ) as unknown as string;
     const smoothEase = (easings.smooth as unknown as string) ?? 'linear';
     if (focused) {
-      (animate as any)(el, {
-        borderColor: 'var(--border-strong)',
-        boxShadow:
-          '0 0 0 1px var(--border-strong), 0 0 16px var(--glow-cyan-sm)',
-        duration: durations.hover * 1000,
-        ease: softSpring ?? smoothEase,
-      });
+      const anim = () =>
+        (animate as any)(el, {
+          borderColor: 'var(--border-strong)',
+          boxShadow:
+            '0 0 0 1px var(--border-strong), 0 0 16px var(--glow-cyan-sm)',
+          duration: durations.hover * 1000,
+          ease: softSpring ?? smoothEase,
+        });
+      if (scopeRef.current) scopeRef.current.add(anim);
+      else anim();
     } else {
-      (animate as any)(el, {
-        borderColor: 'var(--border-subtle)',
-        boxShadow: '0 0 0 0 var(--glow-cyan-sm)',
-        duration: durations.hover * 1000,
-        ease: smoothEase,
-      });
+      const anim = () =>
+        (animate as any)(el, {
+          borderColor: 'var(--border-subtle)',
+          boxShadow: '0 0 0 0 var(--glow-cyan-sm)',
+          duration: durations.hover * 1000,
+          ease: smoothEase,
+        });
+      if (scopeRef.current) scopeRef.current.add(anim);
+      else anim();
     }
   }, []);
 
@@ -77,12 +83,15 @@ export default function ChatInputBar({
     const easing =
       (spring(hard) as unknown as string) ??
       (easings.smooth as unknown as string);
-    (animate as any)(btn, {
-      scale: 0.96,
-      duration: durations.tap * 1000,
-      ease: easing,
-      composition: 'blend',
-    });
+    const anim = () =>
+      (animate as any)(btn, {
+        scale: 0.96,
+        duration: durations.tap * 1000,
+        ease: easing,
+        composition: 'blend',
+      });
+    if (scopeRef.current) scopeRef.current.add(anim);
+    else anim();
   }, []);
 
   const handlePressUp = useCallback(() => {
@@ -92,12 +101,15 @@ export default function ChatInputBar({
     const easing =
       (spring(bouncy) as unknown as string) ??
       (easings.smooth as unknown as string);
-    (animate as any)(btn, {
-      scale: 1,
-      duration: durations.tap * 1000 * 1.2,
-      ease: easing,
-      composition: 'blend',
-    });
+    const anim = () =>
+      (animate as any)(btn, {
+        scale: 1,
+        duration: durations.tap * 1000 * 1.2,
+        ease: easing,
+        composition: 'blend',
+      });
+    if (scopeRef.current) scopeRef.current.add(anim);
+    else anim();
   }, []);
 
   return (

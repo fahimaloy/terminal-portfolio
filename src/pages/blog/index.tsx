@@ -107,6 +107,43 @@ export default function BlogIndexPage() {
       const subcopy = root.querySelectorAll<HTMLElement>('.blog-empty-subcopy');
       const cta = root.querySelectorAll<HTMLElement>('.blog-empty-cta');
 
+      // Reset to initial hidden state so rapid isEmpty toggles always re-fade
+      if (reduced) {
+        graphic.forEach((el) => {
+          el.style.opacity = '0';
+          el.style.transform = '';
+        });
+        if (headlineEl) {
+          headlineEl.style.opacity = '0';
+          headlineEl.style.transform = 'translateY(8px)';
+        }
+        subcopy.forEach((el) => {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(8px)';
+        });
+        cta.forEach((el) => {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(8px)';
+        });
+      } else {
+        graphic.forEach((el) => {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(14px)';
+        });
+        if (headlineEl) {
+          headlineEl.style.opacity = '0';
+          headlineEl.style.transform = 'translateY(12px)';
+        }
+        subcopy.forEach((el) => {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(10px)';
+        });
+        cta.forEach((el) => {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(10px)';
+        });
+      }
+
       if (reduced) {
         const tl = createTimeline({
           defaults: { ease: (easings.smooth ?? 'outExpo') as string },
@@ -238,11 +275,21 @@ export default function BlogIndexPage() {
 
     return () => {
       try {
-        headlineSplitter?.revert();
+        if (
+          headlineSplitter &&
+          typeof (headlineSplitter as { revert?: unknown }).revert ===
+            'function'
+        ) {
+          headlineSplitter.revert();
+        }
       } catch {
-        // ignore revert failure
+        // splitText may have been GC'd after rapid unmount — ignore
       }
-      scope.revert();
+      try {
+        scope.revert();
+      } catch {
+        // ignore scope revert failure on rapid toggle
+      }
     };
   }, [isEmpty, search, tag]);
 
@@ -353,6 +400,7 @@ export default function BlogIndexPage() {
           </div>
         ) : isEmpty ? (
           <div
+            key={emptyVariant}
             ref={emptyRef}
             className="p-8 text-center rounded-[var(--radius-lg)] border"
             style={{

@@ -6,7 +6,6 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { HudPanel, NeonButton, StatBar } from '../components/ui';
 import {
-  animate,
   createScope,
   createTimeline,
   stagger,
@@ -71,12 +70,23 @@ export default function NotFoundPage() {
       );
       staticEls.forEach((el) => {
         el.style.opacity = '1';
+        el.style.transform = 'none';
       });
       const headers = root.querySelectorAll<HTMLElement>(
         '[data-notfound="404"], [data-notfound="signal"], [data-notfound="notfound"]',
       );
       headers.forEach((el) => {
         el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
+      // Clear any splitText char/word wrappers that may have been left from a
+      // prior render / HMR to avoid flash of opacity-0 clipped chars
+      const splitArtifacts = root.querySelectorAll<HTMLElement>(
+        '[data-notfound="404"] span, [data-notfound="signal"] span, [data-notfound="notfound"] span',
+      );
+      splitArtifacts.forEach((el) => {
+        el.style.opacity = '1';
+        el.style.transform = 'none';
       });
       const bracketStrokes = root.querySelectorAll<HTMLElement>(
         '.notfound-bracket [data-graphic="grat-stroke"]',
@@ -288,26 +298,30 @@ export default function NotFoundPage() {
         );
       }
 
-      // ScrambleText for subtitle — use animejs text module if available
+      // ScrambleText for subtitle — sequenced via tl to preserve stagger after headers
       if (subtitleEl) {
         const hasScramble = typeof scrambleText === 'function';
         if (hasScramble) {
           try {
             // Ensure starting content is the target so scramble knows end state
             subtitleEl.textContent = targetMsg;
-            animate(subtitleEl, {
-              innerHTML: scrambleText({
-                text: targetMsg,
-                chars: 'upper',
+            tl.add(
+              subtitleEl,
+              {
+                innerHTML: scrambleText({
+                  text: targetMsg,
+                  chars: 'upper',
+                  duration: durations.scramble * 1000,
+                  ease: easings.expoOut,
+                  from: 'left',
+                  revealRate: 60,
+                  settleDuration: 300,
+                }),
                 duration: durations.scramble * 1000,
                 ease: easings.expoOut,
-                from: 'left',
-                revealRate: 60,
-                settleDuration: 300,
-              }),
-              duration: durations.scramble * 1000,
-              ease: easings.expoOut,
-            } as any);
+              } as any,
+              stagger(70),
+            );
           } catch {
             // Fallback to static if scramble fails
             subtitleEl.textContent = targetMsg;

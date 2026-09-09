@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { createScope, animate, stagger } from 'animejs';
+import { createScope, animate } from 'animejs';
 import ChatMessage from '../ChatMessage';
 import { HudPanel } from '../ui';
 import {
@@ -53,29 +53,32 @@ export default function ChatStream({
     const root = listRef.current;
     if (!root || messages.length === 0) return;
     if (typeof window === 'undefined') return;
+    scopeRef.current?.revert();
+    scopeRef.current = null;
     if (isReducedMotion() || !canAnimate()) {
-      const items = root.querySelectorAll<HTMLElement>('[data-chat-msg]');
-      items.forEach((el) => {
-        el.style.opacity = '1';
-      });
+      const last = root.querySelector<HTMLElement>(
+        '[data-chat-msg]:last-child',
+      );
+      if (last) last.style.opacity = '1';
       return;
     }
     const scope = createScope({ root });
     scopeRef.current = scope;
     scope.add(() => {
-      const items = root.querySelectorAll<HTMLElement>('[data-chat-msg]');
-      if (!items.length) return;
-      (animate as any)(items, {
+      const last = root.querySelector<HTMLElement>(
+        '[data-chat-msg]:last-child',
+      );
+      if (!last) return;
+      (animate as any)(last, {
         y: [12, 0],
         opacity: [0, 1],
         duration: durations.enter * 1000 * 0.52,
         ease: (easings.expoOut as unknown as string) ?? 'outExpo',
-        delay: stagger(34, { from: 'first' }),
       });
     });
     return () => {
       scope.revert();
-      scopeRef.current = null;
+      if (scopeRef.current === scope) scopeRef.current = null;
     };
   }, [messages.length]);
 
