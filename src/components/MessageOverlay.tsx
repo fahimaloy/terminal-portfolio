@@ -4,13 +4,7 @@
    Spring entrance for quick suggestion chips, animated typing dots.
 ══════════════════════════════════════════════════════════════════════════════ */
 
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-  useCallback,
-} from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { FiSend, FiX, FiSliders } from 'react-icons/fi';
 import * as LucideIcons from 'lucide-react';
 import { createScope, animate, stagger } from 'animejs';
@@ -137,6 +131,7 @@ export default function MessageOverlay({
   const backdropRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
+  const [hasTypedSinceOpen, setHasTypedSinceOpen] = useState(false);
 
   const enhancedSuggestions = useEnhancedTypeaheadSuggestions(
     inputValue,
@@ -158,6 +153,23 @@ export default function MessageOverlay({
     : basicSuggestionPool;
 
   const filtered = useTypeaheadSuggestions(inputValue, suggestionPool, 8);
+
+  // Hardened quick-commands visibility (spec):
+  // - On open/focus with empty input -> section is empty (no cards mounted)
+  // - After user types "/" or any text and then erases to length 0 -> cards reappear
+  const isEmptyRaw = inputValue.length === 0;
+  const showQuickCommands = hasTypedSinceOpen && isEmptyRaw;
+
+  const prevOpenRef = useRef(isOpen);
+  useEffect(() => {
+    const wasOpen = prevOpenRef.current;
+    if (!wasOpen && isOpen) setHasTypedSinceOpen(false);
+    prevOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (inputValue.length > 0 && !hasTypedSinceOpen) setHasTypedSinceOpen(true);
+  }, [inputValue, hasTypedSinceOpen]);
 
   // Entrance animation for backdrop + panel
   useEffect(() => {
@@ -181,8 +193,14 @@ export default function MessageOverlay({
   }, [isOpen]);
 
   // Stagger entrance for quick suggestion chips — 30-40ms, expoOut, reduced-motion fallback
+  // Also clean up previous scope whenever visibility toggles off
   useEffect(() => {
-    if (!chipsRef.current || inputValue.length > 0) return;
+    if (!showQuickCommands) {
+      scopeRef.current?.revert();
+      scopeRef.current = null;
+      return;
+    }
+    if (!chipsRef.current) return;
     if (isReducedMotion() || !canAnimate()) {
       const chips =
         chipsRef.current.querySelectorAll<HTMLElement>('.suggestion-chip');
@@ -210,7 +228,7 @@ export default function MessageOverlay({
     });
 
     return () => scope.revert();
-  }, [inputValue]);
+  }, [showQuickCommands]);
 
   useEffect(() => {
     if (isOpen && mode === 'chat') {
@@ -241,6 +259,7 @@ export default function MessageOverlay({
     if (inputValue.trim() && !isLoading) {
       onSend(inputValue, skillFilter.length > 0 ? skillFilter : undefined);
       setSkillFilter([]);
+      setHasTypedSinceOpen(false);
     }
   };
 
@@ -259,6 +278,7 @@ export default function MessageOverlay({
   const handleQuickSuggestion = (label: string) => {
     onSend(label, skillFilter.length > 0 ? skillFilter : undefined);
     setSkillFilter([]);
+    setHasTypedSinceOpen(false);
   };
 
   return (
@@ -310,7 +330,7 @@ export default function MessageOverlay({
               >
                 <AdvancedFeaturesBar activeMode={mode} onModeChange={setMode} />
 
-                {inputValue.length === 0 && (
+                {showQuickCommands && (
                   <div className="p-3 border-t border-white/5">
                     <div className="text-[9px] font-display tracking-[2px] text-text-muted mb-2">
                       {'// QUICK COMMANDS'}
