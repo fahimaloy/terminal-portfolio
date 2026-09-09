@@ -1,9 +1,21 @@
 // src/pages/__tests__/blog-index.test.tsx
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
+import {
+  render,
+  screen,
+  waitFor,
+  act,
+  fireEvent,
+} from '@testing-library/react';
 import React from 'react';
 
-const { mockGetBlogPosts, mockScopeRevertBlog, mockTlAddBlog, mockSplitterRevertBlog, mockStaggerBlog } = vi.hoisted(() => ({
+const {
+  mockGetBlogPosts,
+  mockScopeRevertBlog,
+  mockTlAddBlog,
+  mockSplitterRevertBlog,
+  mockStaggerBlog,
+} = vi.hoisted(() => ({
   mockGetBlogPosts: vi.fn(),
   mockScopeRevertBlog: vi.fn(),
   mockTlAddBlog: vi.fn(),
@@ -25,7 +37,11 @@ vi.mock('../../components/blog/BlogReels', () => ({
   __esModule: true,
   default: (props: any) => {
     const React = require('react');
-    return React.createElement('div', { 'data-testid': 'blog-reels' }, `reels:${props.items.length}`);
+    return React.createElement(
+      'div',
+      { 'data-testid': 'blog-reels' },
+      `reels:${props.items.length}`,
+    );
   },
 }));
 
@@ -33,7 +49,14 @@ vi.mock('../../components/ui/graphics/compositions/BlogEmptyGraphic', () => ({
   __esModule: true,
   default: (props: any) => {
     const React = require('react');
-    return React.createElement('div', { 'data-testid': 'blog-empty-graphic-mock', 'data-variant': props.variant }, `variant:${props.variant}`);
+    return React.createElement(
+      'div',
+      {
+        'data-testid': 'blog-empty-graphic-mock',
+        'data-variant': props.variant,
+      },
+      `variant:${props.variant}`,
+    );
   },
 }));
 
@@ -54,12 +77,13 @@ vi.mock('../../components/blog/BlogSearch', () => ({
         'button',
         {
           'data-testid': 'blog-tag-foo-btn',
-          onClick: () => props.onTagChange(props.activeTag === 'foo' ? '' : 'foo'),
+          onClick: () =>
+            props.onTagChange(props.activeTag === 'foo' ? '' : 'foo'),
         },
-        'TOGGLE_FOO'
+        'TOGGLE_FOO',
       ),
       React.createElement('div', null, `tags:${props.tags?.join(',')}`),
-      `search:${props.value}|tag:${props.activeTag}`
+      `search:${props.value}|tag:${props.activeTag}`,
     );
   },
 }));
@@ -76,7 +100,14 @@ vi.mock('animejs', () => {
     __esModule: true,
     createScope: vi.fn(() => mockScope),
     createTimeline: vi.fn(() => ({ add: mockTlAddBlog } as any)),
-    splitText: vi.fn(() => ({ chars: [{ style: {} }] as any, words: [{ style: {} }], revert: mockSplitterRevertBlog } as any)),
+    splitText: vi.fn(
+      () =>
+        ({
+          chars: [{ style: {} }] as any,
+          words: [{ style: {} }],
+          revert: mockSplitterRevertBlog,
+        } as any),
+    ),
     stagger: mockStaggerBlog,
     animate: vi.fn(),
     createDrawable: vi.fn(() => []),
@@ -143,7 +174,8 @@ function mockMatchMedia(reduceMatches: boolean) {
     writable: true,
     configurable: true,
     value: vi.fn().mockImplementation((query: string) => ({
-      matches: query === '(prefers-reduced-motion: reduce)' ? reduceMatches : false,
+      matches:
+        query === '(prefers-reduced-motion: reduce)' ? reduceMatches : false,
       media: query,
       onchange: null,
       addListener: vi.fn(),
@@ -156,7 +188,7 @@ function mockMatchMedia(reduceMatches: boolean) {
 }
 
 function clearMatchMedia() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   delete (window as any).matchMedia;
 }
 
@@ -175,9 +207,13 @@ describe('BlogIndexPage', () => {
 
   it('empty-state: renders NO TRANSMISSIONS FOUND with key empty and opacity reset before timeline', async () => {
     render(<BlogIndexPage />);
-    await waitFor(() => expect(screen.getByText('NO TRANSMISSIONS FOUND')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText('NO TRANSMISSIONS FOUND')).toBeInTheDocument(),
+    );
 
-    const headline = document.querySelector<HTMLElement>('.blog-empty-headline');
+    const headline = document.querySelector<HTMLElement>(
+      '.blog-empty-headline',
+    );
     expect(headline).not.toBeNull();
     expect(headline!.textContent).toBe('NO TRANSMISSIONS FOUND');
 
@@ -193,12 +229,18 @@ describe('BlogIndexPage', () => {
     expect(mockedCreateTimeline).toHaveBeenCalled();
     expect(mockTlAddBlog).toHaveBeenCalled();
 
-    expect(screen.getByTestId('blog-empty-graphic-mock').getAttribute('data-variant')).toBe('empty');
+    expect(
+      screen
+        .getByTestId('blog-empty-graphic-mock')
+        .getAttribute('data-variant'),
+    ).toBe('empty');
   });
 
   it('hasFilters variant: switching search/tag remounts container and shows NO MATCHES', async () => {
     render(<BlogIndexPage />);
-    await waitFor(() => expect(screen.getByText('NO TRANSMISSIONS FOUND')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText('NO TRANSMISSIONS FOUND')).toBeInTheDocument(),
+    );
 
     const filterBtn = screen.getByText(/FILTER/);
     await act(async () => {
@@ -212,9 +254,13 @@ describe('BlogIndexPage', () => {
       fireEvent.change(input, { target: { value: 'hello' } });
     });
 
-    await waitFor(() => expect(screen.getByText('NO MATCHES')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText('NO MATCHES')).toBeInTheDocument(),
+    );
 
-    const headline = document.querySelector<HTMLElement>('.blog-empty-headline');
+    const headline = document.querySelector<HTMLElement>(
+      '.blog-empty-headline',
+    );
     expect(headline!.textContent).toBe('NO MATCHES');
 
     const graphicMock = screen.getByTestId('blog-empty-graphic-mock');
@@ -229,9 +275,13 @@ describe('BlogIndexPage', () => {
 
   it('before timeline elements are reset to opacity 0 translateY (no stuck)', async () => {
     render(<BlogIndexPage />);
-    await waitFor(() => expect(screen.getByText('NO TRANSMISSIONS FOUND')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText('NO TRANSMISSIONS FOUND')).toBeInTheDocument(),
+    );
 
-    const headline = document.querySelector<HTMLElement>('.blog-empty-headline')!;
+    const headline = document.querySelector<HTMLElement>(
+      '.blog-empty-headline',
+    )!;
     expect(headline.style.opacity).toBe('0');
 
     headline.style.opacity = '1';
@@ -245,8 +295,12 @@ describe('BlogIndexPage', () => {
     await act(async () => {
       fireEvent.click(tagBtn);
     });
-    await waitFor(() => expect(screen.getByText('NO MATCHES')).toBeInTheDocument());
-    const newHeadline = document.querySelector<HTMLElement>('.blog-empty-headline')!;
+    await waitFor(() =>
+      expect(screen.getByText('NO MATCHES')).toBeInTheDocument(),
+    );
+    const newHeadline = document.querySelector<HTMLElement>(
+      '.blog-empty-headline',
+    )!;
     expect(newHeadline.style.opacity).toBe('0');
     expect(newHeadline.style.transform).toContain('translateY');
     const graphic = document.querySelector<HTMLElement>('.blog-empty-graphic')!;
@@ -262,7 +316,9 @@ describe('BlogIndexPage', () => {
     });
 
     const { unmount } = render(<BlogIndexPage />);
-    await waitFor(() => expect(screen.getByText('NO TRANSMISSIONS FOUND')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText('NO TRANSMISSIONS FOUND')).toBeInTheDocument(),
+    );
 
     expect(() => unmount()).not.toThrow();
 
@@ -274,7 +330,11 @@ describe('BlogIndexPage', () => {
     mockSplitterRevertBlog.mockReturnValue(undefined);
     mockScopeRevertBlog.mockReturnValue(undefined);
     const { unmount: u2 } = render(<BlogIndexPage />);
-    await waitFor(() => expect(screen.getByText(/NO TRANSMISSIONS|NO MATCHES/)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(
+        screen.getByText(/NO TRANSMISSIONS|NO MATCHES/),
+      ).toBeInTheDocument(),
+    );
     expect(() => u2()).not.toThrow();
     expect(mockScopeRevertBlog).toHaveBeenCalled();
   });
@@ -289,7 +349,9 @@ describe('BlogIndexPage', () => {
     });
 
     render(<BlogIndexPage />);
-    await waitFor(() => expect(screen.getByText('NO TRANSMISSIONS FOUND')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText('NO TRANSMISSIONS FOUND')).toBeInTheDocument(),
+    );
 
     const filterBtn = screen.getByText(/FILTER/);
     await act(async () => {
@@ -299,15 +361,23 @@ describe('BlogIndexPage', () => {
     await act(async () => {
       fireEvent.change(input, { target: { value: 'a' } });
     });
-    await waitFor(() => expect(screen.getByTestId('blog-reels')).toBeInTheDocument());
-    expect(screen.queryByText('NO TRANSMISSIONS FOUND')).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByTestId('blog-reels')).toBeInTheDocument(),
+    );
+    expect(
+      screen.queryByText('NO TRANSMISSIONS FOUND'),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText('NO MATCHES')).not.toBeInTheDocument();
 
     await act(async () => {
       fireEvent.change(input, { target: { value: '' } });
     });
-    await waitFor(() => expect(screen.getByText('NO TRANSMISSIONS FOUND')).toBeInTheDocument());
-    const headline = document.querySelector<HTMLElement>('.blog-empty-headline')!;
+    await waitFor(() =>
+      expect(screen.getByText('NO TRANSMISSIONS FOUND')).toBeInTheDocument(),
+    );
+    const headline = document.querySelector<HTMLElement>(
+      '.blog-empty-headline',
+    )!;
     expect(headline.style.opacity).toBe('0');
     const graphic = document.querySelector<HTMLElement>('.blog-empty-graphic')!;
     expect(graphic.style.opacity).toBe('0');
@@ -316,8 +386,12 @@ describe('BlogIndexPage', () => {
   it('non-empty state does not render empty headline', async () => {
     mockGetBlogPosts.mockResolvedValue(nonEmptyResponse());
     render(<BlogIndexPage />);
-    await waitFor(() => expect(screen.getByTestId('blog-reels')).toBeInTheDocument());
-    expect(screen.queryByText('NO TRANSMISSIONS FOUND')).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByTestId('blog-reels')).toBeInTheDocument(),
+    );
+    expect(
+      screen.queryByText('NO TRANSMISSIONS FOUND'),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText('NO MATCHES')).not.toBeInTheDocument();
   });
 });

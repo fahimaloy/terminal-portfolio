@@ -176,11 +176,6 @@ export default function NotFoundPage() {
       const diagItems = root.querySelectorAll<HTMLElement>('.diag-item');
       const btns = root.querySelectorAll<HTMLElement>('.notfound-btn');
 
-      const softSpring = spring(
-        springs.soft as unknown as Record<string, number>,
-      ) as unknown as string;
-      void softSpring;
-
       const tl = createTimeline({
         defaults: { ease: easings.expoOut },
       });

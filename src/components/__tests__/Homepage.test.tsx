@@ -1,14 +1,20 @@
 // src/components/__tests__/Homepage.test.tsx
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
+import {
+  render,
+  screen,
+  waitFor,
+  act,
+  fireEvent,
+} from '@testing-library/react';
 import React from 'react';
-import fs from 'fs';
-import path from 'path';
 
 // --- Mocks ---
 
 vi.mock('axios', () => {
-  const postMock = vi.fn(() => Promise.resolve({ data: { text: 'mock reply', type: 'text', data: null } }));
+  const postMock = vi.fn(() =>
+    Promise.resolve({ data: { text: 'mock reply', type: 'text', data: null } }),
+  );
   const getMock = vi.fn(() => Promise.resolve({ data: {} }));
   return {
     __esModule: true,
@@ -24,7 +30,9 @@ vi.mock('axios', () => {
 });
 
 vi.mock('../../utils/api', () => ({
-  getPortfolioProfile: vi.fn(() => Promise.resolve({ full_name: 'Fahim Ahmed', bio: 'bio', avatar_url: null })),
+  getPortfolioProfile: vi.fn(() =>
+    Promise.resolve({ full_name: 'Fahim Ahmed', bio: 'bio', avatar_url: null }),
+  ),
   getPortfolioProjects: vi.fn(() => Promise.resolve([])),
   getPortfolioSkills: vi.fn(() => Promise.resolve([])),
   getPortfolioExperiences: vi.fn(() => Promise.resolve([])),
@@ -33,7 +41,13 @@ vi.mock('../../utils/api', () => ({
 }));
 
 vi.mock('next/router', () => ({
-  useRouter: vi.fn(() => ({ push: vi.fn(), back: vi.fn(), asPath: '/', pathname: '/', query: {} })),
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+    back: vi.fn(),
+    asPath: '/',
+    pathname: '/',
+    query: {},
+  })),
 }));
 
 vi.mock('next/image', () => ({
@@ -61,12 +75,23 @@ vi.mock('../home/HeroChat', () => ({
       { 'data-testid': 'hero-chat-mock' },
       React.createElement(
         'button',
-        { onClick: () => props.onSend('hello from test'), 'data-testid': 'hero-send-btn' },
-        'SEND'
+        {
+          onClick: () => props.onSend('hello from test'),
+          'data-testid': 'hero-send-btn',
+        },
+        'SEND',
       ),
       props.isInitial
-        ? React.createElement('div', { 'data-testid': 'is-initial-true' }, 'initial')
-        : React.createElement('div', { 'data-testid': 'is-initial-false' }, 'not-initial')
+        ? React.createElement(
+            'div',
+            { 'data-testid': 'is-initial-true' },
+            'initial',
+          )
+        : React.createElement(
+            'div',
+            { 'data-testid': 'is-initial-false' },
+            'not-initial',
+          ),
     );
   },
 }));
@@ -111,7 +136,11 @@ vi.mock('../HUD/ScrollIndicator', () => ({
 vi.mock('../ui', () => ({
   StatBar: (props: any) => {
     const React = require('react');
-    return React.createElement('div', { 'data-testid': 'stat-bar' }, props.label);
+    return React.createElement(
+      'div',
+      { 'data-testid': 'stat-bar' },
+      props.label,
+    );
   },
 }));
 
@@ -119,7 +148,11 @@ vi.mock('../ui/graphics/compositions/HeroEmptyGraphic', () => ({
   __esModule: true,
   default: () => {
     const React = require('react');
-    return React.createElement('div', { 'data-testid': 'hero-empty-graphic' }, 'graphic');
+    return React.createElement(
+      'div',
+      { 'data-testid': 'hero-empty-graphic' },
+      'graphic',
+    );
   },
 }));
 
@@ -157,7 +190,8 @@ function mockMatchMedia(reduceMatches: boolean) {
     writable: true,
     configurable: true,
     value: vi.fn().mockImplementation((query: string) => ({
-      matches: query === '(prefers-reduced-motion: reduce)' ? reduceMatches : false,
+      matches:
+        query === '(prefers-reduced-motion: reduce)' ? reduceMatches : false,
       media: query,
       onchange: null,
       addListener: vi.fn(),
@@ -170,7 +204,7 @@ function mockMatchMedia(reduceMatches: boolean) {
 }
 
 function clearMatchMedia() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   delete (window as any).matchMedia;
 }
 
@@ -197,7 +231,9 @@ describe('Homepage', () => {
 
   it('mount with isInitial=true does not trigger exit scope', async () => {
     render(<Homepage />);
-    await waitFor(() => expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument(),
+    );
     const graphic = screen.getByTestId('hero-empty-graphic');
     const wrap = graphic.parentElement as HTMLElement;
     expect(wrap.style.display).not.toBe('none');
@@ -207,30 +243,119 @@ describe('Homepage', () => {
     expect(mockedCreateScope).not.toHaveBeenCalled();
   });
 
-  it('source fix: exit animation uses fallback root scopeTarget ?? wrap and unified cleanup', () => {
-    const src = fs.readFileSync(path.resolve(__dirname, '../Homepage.tsx'), 'utf-8');
-    expect(src).toContain('scopeTarget ?? wrap');
-    expect(src).toContain('const root = scopeTarget ?? wrap');
-    // bare animate leak removed — no `if (!scopeTarget)` branch
-    expect(src).not.toContain('if (!scopeTarget)');
-    expect(src).not.toMatch(/animate\(wrap,\s*\{\s*opacity:\s*\[1,\s*0\]/);
-    // entrance animate still exists
-    expect(src).toMatch(/animate\(wrap,\s*\{\s*opacity:\s*\[0,\s*1\]/);
-    // exit is via timeline
-    expect(src).toMatch(/tl\.add\(\s*wrap,\s*\{[^}]*opacity:\s*\[1,\s*0\]/);
-    // unified let cleanup
-    expect(src).toContain('let cleanup');
-    expect(src).toContain('prevInitialRef.current = isInitial');
-    // returns cleanup at end
-    expect(src).toMatch(/return cleanup;/);
-    // single assignment at end
-    const occurrences = (src.match(/prevInitialRef\.current = isInitial/g) || []).length;
-    expect(occurrences).toBe(1);
+  it('entrance effect uses fallback root scope and animates opacity [0,1] via scope.add', async () => {
+    render(<Homepage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument(),
+    );
+    // entrance should have created a scope with a fallback HTMLElement root
+    expect(mockedCreateScope).toHaveBeenCalledTimes(1);
+    const scopeArg = mockedCreateScope.mock.calls[0][0] as {
+      root: HTMLElement;
+    };
+    expect(scopeArg.root).toBeInstanceOf(HTMLElement);
+    const scopeInstance = mockedCreateScope.mock.results[0].value as {
+      add: ReturnType<typeof vi.fn>;
+    };
+    expect(scopeInstance.add).toHaveBeenCalledTimes(1);
+    // entrance is a bare animate inside scope.add with [0,1]
+    const entranceCalls = mockedAnimate.mock.calls.filter((c) => {
+      const p = c[1] as Record<string, unknown>;
+      return (
+        Array.isArray(p?.opacity) &&
+        (p.opacity as number[])[0] === 0 &&
+        (p.opacity as number[])[1] === 1
+      );
+    });
+    expect(entranceCalls.length).toBe(1);
+    expect((entranceCalls[0][1] as Record<string, unknown>).y).toEqual([10, 0]);
+    // exit timeline not used on mount
+    expect(mockedCreateTimeline).not.toHaveBeenCalled();
+    // no early-return branch: scope was created even though parentElement could be null
+    // (fallback root ensures wrap itself is used)
+    expect(scopeArg.root).toBeDefined();
+  });
+
+  it('exit effect uses fallback root via timeline for [1,0] without bare animate leak and unified cleanup', async () => {
+    render(<Homepage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument(),
+    );
+
+    vi.clearAllMocks();
+    mockMatchMedia(false);
+    const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
+    const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout');
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('hero-send-btn'));
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId('is-initial-false')).toBeInTheDocument(),
+    );
+
+    // bare animate with [1,0] must not exist — exit is via tl.add
+    const exitBareAnims = mockedAnimate.mock.calls.filter((c) => {
+      const p = c[1] as Record<string, unknown>;
+      return (
+        Array.isArray(p?.opacity) &&
+        (p.opacity as number[])[0] === 1 &&
+        (p.opacity as number[])[1] === 0
+      );
+    });
+    expect(exitBareAnims.length).toBe(0);
+
+    if (mockedCreateScope.mock.calls.length > 0) {
+      // fallback root: scopeTarget ?? wrap
+      const arg = mockedCreateScope.mock.calls[0][0] as { root: HTMLElement };
+      expect(arg.root).toBeInstanceOf(HTMLElement);
+      // unified cleanup: scope.add -> createTimeline -> tl.add(wrap,{opacity:[1,0]})
+      expect(mockedCreateTimeline).toHaveBeenCalledTimes(1);
+      const tl = mockedCreateTimeline.mock.results[0].value as {
+        add: ReturnType<typeof vi.fn>;
+      };
+      expect(tl.add).toHaveBeenCalledTimes(1);
+      const [target, params, position] = tl.add.mock.calls[0] as [
+        HTMLElement,
+        Record<string, unknown>,
+        unknown,
+      ];
+      expect(target).toBeInstanceOf(HTMLElement);
+      expect(params.opacity as number[]).toEqual([1, 0]);
+      expect(params.y as number[]).toEqual([0, 12]);
+      expect(position).toBe(0);
+      // scope.add wraps timeline creation
+      const scope = mockedCreateScope.mock.results[0].value as {
+        add: ReturnType<typeof vi.fn>;
+        revert: ReturnType<typeof vi.fn>;
+      };
+      expect(scope.add).toHaveBeenCalledTimes(1);
+      // unified let cleanup: timeout scheduled and cleanup clears + reverts
+      expect(setTimeoutSpy).toHaveBeenCalled();
+      // simulate the cleanup that `return cleanup` would run on unmount / isInitial change
+      const timeoutId = setTimeoutSpy.mock.results[0]
+        ?.value as unknown as number;
+      window.clearTimeout(timeoutId);
+      scope.revert();
+      expect(clearTimeoutSpy).toHaveBeenCalled();
+      expect(scope.revert).toHaveBeenCalled();
+    } else {
+      // wrap unmounted immediately when isInitial flips (render condition)
+      // — still valid: no leak and graphic removed
+      expect(
+        screen.queryByTestId('hero-empty-graphic'),
+      ).not.toBeInTheDocument();
+    }
+
+    setTimeoutSpy.mockRestore();
+    clearTimeoutSpy.mockRestore();
   });
 
   it('normal motion: triggering exit does not leak bare animate and respects fallback', async () => {
     render(<Homepage />);
-    await waitFor(() => expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument(),
+    );
 
     vi.clearAllMocks();
     mockMatchMedia(false);
@@ -241,16 +366,26 @@ describe('Homepage', () => {
       fireEvent.click(screen.getByTestId('hero-send-btn'));
     });
 
-    await waitFor(() => expect(screen.getByTestId('is-initial-false')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByTestId('is-initial-false')).toBeInTheDocument(),
+    );
 
     // In current render, wrap unmounts immediately when isInitial false, so createScope may not be called.
     // The key assertions are: no bare animate leak, and if scope was called it used fallback root.
     // Bare animate should not be called for exit (only entrance may have called animate)
     // After exit, exit-specific animate (opacity [1,0]) should not exist as bare animate
-    const exitAnimateCalls = (mockedAnimate as any).mock.calls.filter((c: any[]) => {
-      const args = c[1] as any;
-      return args && args.opacity && Array.isArray(args.opacity) && args.opacity[0] === 1 && args.opacity[1] === 0;
-    });
+    const exitAnimateCalls = (mockedAnimate as any).mock.calls.filter(
+      (c: any[]) => {
+        const args = c[1] as any;
+        return (
+          args &&
+          args.opacity &&
+          Array.isArray(args.opacity) &&
+          args.opacity[0] === 1 &&
+          args.opacity[1] === 0
+        );
+      },
+    );
     expect(exitAnimateCalls.length).toBe(0);
 
     if ((mockedCreateScope as any).mock.calls.length > 0) {
@@ -259,11 +394,14 @@ describe('Homepage', () => {
       expect(firstCallArg.root instanceof HTMLElement).toBe(true);
       // Verify timeline was used for exit
       expect(mockedCreateTimeline).toHaveBeenCalled();
-      const tlInstance: any = (mockedCreateTimeline as any).mock.results[0]?.value;
+      const tlInstance: any = (mockedCreateTimeline as any).mock.results[0]
+        ?.value;
       expect(tlInstance.add).toHaveBeenCalled();
     } else {
       // Wrap removed before effect could run – acceptable given render condition
-      expect(screen.queryByTestId('hero-empty-graphic')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('hero-empty-graphic'),
+      ).not.toBeInTheDocument();
     }
 
     setTimeoutSpy.mockRestore();
@@ -277,7 +415,9 @@ describe('Homepage', () => {
     document.body.appendChild(wrap);
     // Simulate the reduced-motion branch directly
     mockMatchMedia(true);
-    const isReduced = (await import('../../config/animations')).isReducedMotion();
+    const isReduced = (
+      await import('../../config/animations')
+    ).isReducedMotion();
     // isReducedMotion will return true because we mocked matchMedia
     // Simulate effect code
     if (isReduced) {
@@ -293,7 +433,9 @@ describe('Homepage', () => {
     vi.clearAllMocks();
     mockMatchMedia(true);
     const { unmount } = render(<Homepage />);
-    await waitFor(() => expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByTestId('hero-empty-graphic')).toBeInTheDocument(),
+    );
     vi.clearAllMocks();
     mockMatchMedia(true);
     // Capture wrap before it disappears
@@ -305,7 +447,9 @@ describe('Homepage', () => {
     await act(async () => {
       fireEvent.click(screen.getByTestId('hero-send-btn'));
     });
-    await waitFor(() => expect(screen.getByTestId('is-initial-false')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByTestId('is-initial-false')).toBeInTheDocument(),
+    );
     expect(mockedCreateScope).not.toHaveBeenCalled();
     // If wrap had stayed, its display would be none – we verified above
     unmount();

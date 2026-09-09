@@ -159,18 +159,26 @@ export default function Homepage() {
   useEffect(() => {
     const wrap = graphicWrapRef.current;
     if (isInitial && !isDataLoading && wrap && graphicMounted) {
+      if (!wrap.isConnected) return;
       if (isReducedMotion() || !canAnimate()) {
         wrap.style.opacity = '1';
         return;
       }
       wrap.style.display = '';
-      animate(wrap, {
-        opacity: [0, 1],
-        y: [10, 0],
-        duration: durations.enter * 1000 * 0.55,
-        ease: (easings.smooth as unknown as string) ?? 'linear',
-        delay: durations.stagger * 1000 * 1.2,
+      const scopeTarget = (wrap.parentElement ??
+        homeRootRef.current) as HTMLElement | null;
+      const root = scopeTarget ?? wrap;
+      const scope = createScope({ root });
+      scope.add(() => {
+        animate(wrap, {
+          opacity: [0, 1],
+          y: [10, 0],
+          duration: durations.enter * 1000 * 0.55,
+          ease: (easings.smooth as unknown as string) ?? 'linear',
+          delay: durations.stagger * 1000 * 1.2,
+        });
       });
+      return () => scope.revert();
     }
   }, [isInitial, isDataLoading, graphicMounted]);
 

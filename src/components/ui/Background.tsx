@@ -118,7 +118,7 @@ export default function Background({ variant = 'default' }: BackgroundProps) {
   }, [variant]);
 
   // Whether aurora drift is active — blog is muted/static to reduce motion + composite cost
-  const driftActive = !isBlog;
+  const driftActive = !isBlog && !isReducedMotion() && canAnimate();
 
   // Opacities kept 0.06-0.12 spec; hero slightly higher, blog more muted
   const auroraOpacities = isHero
