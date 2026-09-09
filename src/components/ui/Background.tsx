@@ -88,24 +88,26 @@ export default function Background({ variant = 'default' }: BackgroundProps) {
         });
       }
 
-      // Aurora spring drift — blurred radial meshes (token-only var(--aurora-*))
-      const auroras =
-        bgRef.current!.querySelectorAll<HTMLElement>('.bg-aurora-blob');
-      if (auroras.length !== 0) {
-        const driftEase = spring(springs.soft) as unknown as string;
-        auroras.forEach((el, i) => {
-          const dx = i % 2 === 0 ? 18 : -16;
-          const dy = i % 2 === 0 ? -14 : 16;
-          animate(el, {
-            translateX: [0, dx, 0],
-            translateY: [0, dy, 0],
-            duration: 16000 + i * 1400,
-            loop: true,
-            alternate: true,
-            ease: driftEase ?? easings.smooth,
-            delay: i * 180,
+      // Aurora spring drift — gated: skip when prefers-reduced-motion or blog (muted)
+      if (!isBlog) {
+        const auroras =
+          bgRef.current!.querySelectorAll<HTMLElement>('.bg-aurora-blob');
+        if (auroras.length !== 0) {
+          const driftEase = spring(springs.soft) as unknown as string;
+          auroras.forEach((el, i) => {
+            const dx = i % 2 === 0 ? 18 : -16;
+            const dy = i % 2 === 0 ? -14 : 16;
+            animate(el, {
+              translateX: [0, dx, 0],
+              translateY: [0, dy, 0],
+              duration: 16000 + i * 1400,
+              loop: true,
+              alternate: true,
+              ease: driftEase ?? easings.smooth,
+              delay: i * 180,
+            });
           });
-        });
+        }
       }
     });
 
@@ -113,7 +115,10 @@ export default function Background({ variant = 'default' }: BackgroundProps) {
       scope.revert();
       scopeRef.current = null;
     };
-  }, []);
+  }, [variant]);
+
+  // Whether aurora drift is active — blog is muted/static to reduce motion + composite cost
+  const driftActive = !isBlog;
 
   // Opacities kept 0.06-0.12 spec; hero slightly higher, blog more muted
   const auroraOpacities = isHero
@@ -164,7 +169,7 @@ export default function Background({ variant = 'default' }: BackgroundProps) {
               'radial-gradient(ellipse at center, var(--aurora-1) 0%, transparent 72%)',
             filter: `blur(${auroraBlurs.b1})`,
             opacity: auroraOpacities.a1,
-            willChange: 'transform',
+            willChange: driftActive ? 'transform' : undefined,
           }}
         />
         <div
@@ -179,7 +184,7 @@ export default function Background({ variant = 'default' }: BackgroundProps) {
               'radial-gradient(ellipse at center, var(--aurora-2) 0%, transparent 72%)',
             filter: `blur(${auroraBlurs.b2})`,
             opacity: auroraOpacities.a2,
-            willChange: 'transform',
+            willChange: driftActive ? 'transform' : undefined,
           }}
         />
         <div
@@ -194,7 +199,7 @@ export default function Background({ variant = 'default' }: BackgroundProps) {
               'radial-gradient(ellipse at center, var(--aurora-3) 0%, transparent 72%)',
             filter: `blur(${auroraBlurs.b3})`,
             opacity: auroraOpacities.a3,
-            willChange: 'transform',
+            willChange: driftActive ? 'transform' : undefined,
           }}
         />
         <div
@@ -209,7 +214,7 @@ export default function Background({ variant = 'default' }: BackgroundProps) {
               'radial-gradient(ellipse at center, var(--aurora-4) 0%, transparent 72%)',
             filter: `blur(${auroraBlurs.b4})`,
             opacity: auroraOpacities.a4,
-            willChange: 'transform',
+            willChange: driftActive ? 'transform' : undefined,
           }}
         />
       </div>
