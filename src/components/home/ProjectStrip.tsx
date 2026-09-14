@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Code, Briefcase, ArrowUpRight } from 'lucide-react';
+import { resolveTechIcon } from '../../lib/techIcons';
 import { PortfolioProject } from '../../utils/api';
 import { HudPanel } from '../ui';
 import { springs } from '../../config/animations';
@@ -120,6 +121,26 @@ export function ProjectStrip({ projects, onSelect }: StripProps) {
                           {t}
                         </span>
                       ))}
+                      {project.languages && project.languages.length > 0
+                        ? project.languages
+                            .slice(0, 4)
+                            .map((l: string, i: number) => {
+                              const hit = resolveTechIcon(l);
+                              return hit ? (
+                                <span
+                                  key={i}
+                                  className="text-[9px] font-mono tracking-[0.12em] px-1.5 py-0.5 rounded-full border"
+                                  style={{
+                                    background: `var(--wash-cyan)`,
+                                    borderColor: 'var(--border-subtle)',
+                                    color: 'var(--fg-2)',
+                                  }}
+                                >
+                                  {hit.label}
+                                </span>
+                              ) : null;
+                            })
+                        : null}
                     </div>
                   )}
                 </div>
