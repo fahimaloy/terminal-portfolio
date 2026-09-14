@@ -403,8 +403,8 @@ Update these checkboxes as work merges. Do not delete rows — check them. Block
 ### Phase 5 — Chat Universe
 
 - [ ] **P5-T30** `MentionChip` kit (project/skill/experience) — P0 — uniform wash + icon
-- [ ] **P5-T31** Project list → expandable grid — P1 — grid 2-col + inline `Detail`
-- [ ] **P5-T32** Project mention → detail drawer (right) — P0 — `x [100%,0] spring(gentle)`
+- [x] **P5-T31** Project list → expandable grid — P1 — grid 2-col + inline `Detail`
+- [x] **P5-T32** Project mention → detail drawer (right) — P0 — `x [100%,0] spring(gentle)`
 - [ ] **P5-T33** Skill mention custom UI (brand wash + bar) — P1 — `stagger 60`
 - [ ] **P5-T34** Experience mention custom UI (rail + orbs) — P1 — `createDrawable` rail
 - [ ] **P5-T35** Chat atmosphere (vector backdrop + typing scope) — P1 — `GridLattice 4%`, mini `ScopeRings`
@@ -420,12 +420,13 @@ Update these checkboxes as work merges. Do not delete rows — check them. Block
 - [ ] **P6-T42** QA matrix + screen recordings — P0 — boot ×3, viewport 320/375/768/1024/1920, chat chips, blog swipe/fallback
 - [ ] **P6-T43** Architecture graph + docs — P2 — `architecture-graph.svg` updated, no stale refs
 
-**Progress:** `0 / 43` — execution not yet started. Update this count as boxes check.
+**Progress:** `2 / 43` — P5-T31/T32 done. Update this count as boxes check.
 
 **Daily Focus (engineer writes one line per work session):**
 
 ```
 YYYY-MM-DD — ~ P0-T01 — …
+2026-09-15 — ~ P5-T31/P5-T32 — grid+drawer verified (tsc/test/build/tokens), dead modal/table deleted, pushed newui.
 ```
 
 ---
