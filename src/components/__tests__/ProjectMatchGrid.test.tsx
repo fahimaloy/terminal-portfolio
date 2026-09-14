@@ -3,6 +3,20 @@ import { describe, it, expect, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
+import { animate } from 'animejs';
+
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  }),
+});
 
 vi.mock('animejs', () => ({
   animate: vi.fn(),
@@ -87,5 +101,6 @@ describe('ProjectMatchGrid', () => {
     fireEvent.click(screen.getByLabelText('Expand Project 1'));
     expect(screen.getByText('Project 1')).toBeInTheDocument();
     expect(screen.getByText('Description 1')).toBeInTheDocument();
+    expect(animate).toHaveBeenCalled();
   });
 });
