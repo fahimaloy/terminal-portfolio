@@ -53,7 +53,7 @@ export default function SkillGrid({ skills }: SkillGridProps) {
     >
       {skills.map((skill, idx) => (
         <div key={skill.id} className="skill-grid-item opacity-0">
-          <SkillCard skill={skill} delay={idx * 60} />
+          <SkillCard skill={skill} />
         </div>
       ))}
     </div>
