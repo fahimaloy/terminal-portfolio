@@ -8,7 +8,7 @@
    opacity-only, no spring.
 ═══════════════════════════════════════════════════════════════════════════════ */
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { animate, spring } from 'animejs';
 import { ChevronDown } from 'lucide-react';
 import { PortfolioProject, PortfolioSkill } from '../utils/api';
@@ -44,19 +44,13 @@ export default function ProjectMatchGrid({
     );
   }, [projects, skills, skillFilter]);
 
-  if (!filtered.length) {
-    return (
-      <div className="text-center text-text-muted py-8">
-        No projects found matching the selected filters.
-      </div>
-    );
-  }
+  const expanded =
+    expandedId !== null
+      ? filtered.find((p) => p.id === expandedId) ?? null
+      : null;
 
-  const toggle = (project: PortfolioProject) => {
-    const next = expandedId === project.id ? null : project.id;
-    setExpandedId(next);
-    onSelect?.(project);
-    if (next === null || !detailRef.current) return;
+  useEffect(() => {
+    if (expanded === null || !detailRef.current) return;
     const scope = motionScope.create();
     if (!scope) return;
     scope.add(() => {
@@ -66,13 +60,21 @@ export default function ProjectMatchGrid({
         ...spring(springs.card),
       });
     });
+    // motionScope holds the scope handle; re-fire when the expanded target changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expanded]);
+  const toggle = (project: PortfolioProject) => {
+    setExpandedId(expandedId === project.id ? null : project.id);
+    onSelect?.(project);
   };
 
-  const expanded =
-    expandedId !== null
-      ? filtered.find((p) => p.id === expandedId) ?? null
-      : null;
-
+  if (!filtered.length) {
+    return (
+      <div className="text-center text-text-muted py-8">
+        No projects found matching the selected filters.
+      </div>
+    );
+  }
   return (
     <div className="w-full">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
