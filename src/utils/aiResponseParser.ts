@@ -23,8 +23,23 @@ export type ParsedSegment =
  *   [[EXPERIENCE_TIMELINE]]    — full experience timeline
  *   [[PROJECT_TABLE]]          — project table view
  */
+export function parseIdList(value: string | undefined): number[] {
+  if (!value) return [];
+  const ids: number[] = [];
+  const seen: Record<number, true> = {};
+  for (const part of value.split(',')) {
+    const n = Number(part.trim());
+    if (Number.isInteger(n) && Number.isFinite(n) && !seen[n]) {
+      seen[n] = true;
+      ids.push(n);
+    }
+  }
+  return ids;
+}
+
 export function parseAiResponse(text: string): ParsedSegment[] {
   const segments: ParsedSegment[] = [];
+  if (typeof text !== 'string' || !text) return segments;
   const regex =
     /\[\[(PROJECT_LIST|PROJECT_SINGLE|PROJECT_REF|SKILL|SKILL_LIST|EXPERIENCE_TIMELINE|PROJECT_TABLE)(?::([^\]]*))?\]\]/g;
   let lastIndex = 0;
@@ -41,25 +56,37 @@ export function parseAiResponse(text: string): ParsedSegment[] {
     const [, type, value] = match;
     switch (type) {
       case 'PROJECT_LIST':
-        segments.push({
-          type: 'project_list',
-          ids: value ? value.split(',').map(Number) : [],
-        });
+        segments.push({ type: 'project_list', ids: parseIdList(value) });
         break;
-      case 'PROJECT_SINGLE':
-        segments.push({ type: 'project_single', id: Number(value) });
+      case 'PROJECT_SINGLE': {
+        const id = Number((value ?? '').trim());
+        if (Number.isInteger(id) && Number.isFinite(id)) {
+          segments.push({ type: 'project_single', id });
+        } else {
+          segments.push({ type: 'text', content: match[0] });
+        }
         break;
-      case 'PROJECT_REF':
-        segments.push({ type: 'project_ref', id: Number(value) });
+      }
+      case 'PROJECT_REF': {
+        const id = Number((value ?? '').trim());
+        if (Number.isInteger(id) && Number.isFinite(id)) {
+          segments.push({ type: 'project_ref', id });
+        } else {
+          segments.push({ type: 'text', content: match[0] });
+        }
         break;
-      case 'SKILL':
-        segments.push({ type: 'skill_ref', id: Number(value) });
+      }
+      case 'SKILL': {
+        const id = Number((value ?? '').trim());
+        if (Number.isInteger(id) && Number.isFinite(id)) {
+          segments.push({ type: 'skill_ref', id });
+        } else {
+          segments.push({ type: 'text', content: match[0] });
+        }
         break;
+      }
       case 'SKILL_LIST':
-        segments.push({
-          type: 'skill_list',
-          ids: value ? value.split(',').map(Number) : [],
-        });
+        segments.push({ type: 'skill_list', ids: parseIdList(value) });
         break;
       case 'EXPERIENCE_TIMELINE':
         segments.push({ type: 'experience_timeline' });

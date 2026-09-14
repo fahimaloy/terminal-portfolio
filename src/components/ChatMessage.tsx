@@ -16,8 +16,8 @@ import {
 } from '../utils/aiResponseParser';
 import ProjectPreview from './ProjectPreview';
 import ProjectInlineRef from './ProjectInlineRef';
-import ProjectTableView from './ProjectTableView';
-import ProjectDetailModal from './ProjectDetailModal';
+import ProjectMatchGrid from './ProjectMatchGrid';
+import ProjectDetailDrawer from './ProjectDetailDrawer';
 import InlineProjectCard from './InlineProjectCard';
 import SkillCard from './SkillCard';
 import SkillGrid from './SkillGrid';
@@ -124,7 +124,7 @@ export default React.memo(function ChatMessage({
             <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-3">
               {'> AI.RESPONSE'}
             </div>
-            <ProjectTableView
+            <ProjectMatchGrid
               projects={responseData.projects}
               skills={skills}
               skillFilter={responseData.skillFilter}
@@ -266,7 +266,7 @@ export default React.memo(function ChatMessage({
                   );
                 case 'project_table':
                   return (
-                    <ProjectTableView
+                    <ProjectMatchGrid
                       key={idx}
                       projects={projects}
                       skills={skills}
@@ -337,7 +337,7 @@ export default React.memo(function ChatMessage({
         )}
       </div>
 
-      <ProjectDetailModal
+      <ProjectDetailDrawer
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         projects={modalProjects}

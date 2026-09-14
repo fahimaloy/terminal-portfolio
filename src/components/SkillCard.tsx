@@ -1,107 +1,111 @@
 // src/components/SkillCard.tsx
 /* ═══════════════════════════════════════════════════════════════════════════════
-   SKILL CARD — Enhanced with anime.js animations
-   - 3D tilt on hover
-   - Icon bounce on hover
-   - Spring entrance animation
+   SKILL CARD — Token-washed HUD card with brand icon
+   - HudPanel wash+grid, accent cycles per id (matches InlineProjectCard)
+   - Brand icon via resolveTechIcon(icon_key ?? name), 14-20px + hex wash
+   - Level bar is static width — entrance motion owned by parent (SkillGrid
+     stagger), so no per-card scope/timers here
+   - inline: compact chip row (icon + name), no nested panel, no bar
+   Token-only styling; brand hex arrives at runtime via hit.hex (no literal).
 ═══════════════════════════════════════════════════════════════════════════════ */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useMemo } from 'react';
 import { PortfolioSkill } from '../utils/api';
-import { Tilt3D, NeonChip, StatBar } from './ui';
-import { animate } from 'animejs';
-import { isReducedMotion } from '../config/animations';
+import { Tilt3D, HudPanel } from './ui';
+import { resolveTechIcon } from '../lib/techIcons';
 
-const GRADIENTS = [
-  'from-purple-500/20 to-blue-500/20',
-  'from-cyan-500/20 to-teal-500/20',
-  'from-pink-500/20 to-rose-500/20',
-  'from-amber-500/20 to-orange-500/20',
-  'from-emerald-500/20 to-green-500/20',
-  'from-indigo-500/20 to-violet-500/20',
-  'from-fuchsia-500/20 to-pink-500/20',
-  'from-sky-500/20 to-cyan-500/20',
-];
+const ACCENTS = [
+  'cyan',
+  'magenta',
+  'yellow',
+  'green',
+  'purple',
+  'blue',
+] as const;
 
-function getGradient(id: number): string {
-  return GRADIENTS[id % GRADIENTS.length];
+type CardAccent = (typeof ACCENTS)[number];
+
+function accentFor(id: number): CardAccent {
+  return ACCENTS[Math.abs(id) % ACCENTS.length];
 }
 
 type SkillCardProps = {
   skill: PortfolioSkill;
   inline?: boolean;
-  delay?: number;
 };
 
-export default function SkillCard({
-  skill,
-  inline = false,
-  delay = 0,
-}: SkillCardProps) {
-  const gradient = getGradient(skill.id);
-  const ref = useRef<HTMLDivElement>(null);
-
-  // Animate skill level bar on mount
-  useEffect(() => {
-    if (!ref.current || isReducedMotion()) return;
-    const bar = ref.current.querySelector('.skill-level-bar');
-    if (!bar) return;
-
-    const level = skill.level ? parseInt(skill.level) || 70 : 70;
-    const obj = { val: 0 };
-    setTimeout(() => {
-      animate(obj, {
-        val: [0, level],
-        duration: 800,
-        delay: delay,
-        ease: 'outExpo',
-        onUpdate: () => {
-          (bar as HTMLElement).style.width = `${Math.round(obj.val)}%`;
-        },
-      });
-    }, delay);
-  }, [skill.level, delay]);
-
+export default function SkillCard({ skill, inline = false }: SkillCardProps) {
+  const accent = accentFor(skill.id);
   const levelValue = skill.level ? parseInt(skill.level) || 70 : 70;
+  const hit = useMemo(() => {
+    try {
+      return resolveTechIcon(skill.icon_key || skill.name);
+    } catch {
+      return null;
+    }
+  }, [skill.icon_key, skill.name]);
+  const Icon = hit?.Component ?? null;
+
+  if (inline) {
+    return (
+      <div
+        className="px-3 py-2 inline-flex items-center gap-2 rounded-[var(--radius-lg)] border"
+        style={{
+          background: `var(--wash-${accent})`,
+          borderColor: 'var(--border-subtle)',
+          color: 'var(--fg-1)',
+        }}
+      >
+        {Icon && hit && <Icon size={14} color={hit.hex} aria-hidden="true" />}
+        <span className="font-display text-sm">{skill.name}</span>
+      </div>
+    );
+  }
 
   return (
     <Tilt3D intensity={4}>
-      <div
-        ref={ref}
-        className={`bg-gradient-to-br ${gradient} border border-white/10 rounded-xl ${
-          inline
-            ? 'px-3 py-2 inline-flex items-center gap-2'
-            : 'p-4 flex flex-col items-center text-center'
-        } transition-all duration-200 hover:border-white/20 skill-card`}
+      <HudPanel
+        accent={accent}
+        wash
+        grid
+        innerClassName="p-4 flex flex-col items-center text-center"
       >
+        {Icon && hit && <Icon size={20} color={hit.hex} aria-hidden="true" />}
         <div
-          className={`font-display text-neon-cyan text-shadow-neon-cyan ${
-            inline ? 'text-sm' : 'text-lg mb-2'
-          }`}
+          className="font-display text-lg mt-2"
+          style={{ color: `var(--neon-${accent})` }}
         >
           {skill.name}
         </div>
-        {!inline && (
-          <div className="w-full mt-2">
-            <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-              <div
-                className="skill-level-bar h-full bg-gradient-to-r from-neon-cyan to-neon-magenta"
-                style={{ width: isReducedMotion() ? `${levelValue}%` : '0%' }}
-              />
-            </div>
+        <div className="w-full mt-2">
+          <div
+            className="h-1 rounded-full overflow-hidden"
+            style={{
+              background: 'var(--bg-3)',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${levelValue}%`,
+                background: `var(--neon-${accent})`,
+                boxShadow: `0 0 10px var(--glow-${accent})`,
+              }}
+            />
           </div>
-        )}
+        </div>
         {skill.duration && (
-          <div className="text-[10px] font-mono text-neon-yellow bg-neon-yellow/10 border border-neon-yellow/20 px-2 py-0.5 rounded-full mt-1">
+          <div className="text-[10px] font-mono text-neon-yellow bg-neon-yellow/10 border border-neon-yellow/20 px-2 py-0.5 rounded-full mt-2">
             {skill.duration}
           </div>
         )}
-        {skill.category && !inline && (
+        {skill.category && (
           <div className="text-[9px] text-text-muted mt-1">
             {skill.category}
           </div>
         )}
-      </div>
+      </HudPanel>
     </Tilt3D>
   );
 }

@@ -2,6 +2,8 @@ import React, { useRef, useEffect } from 'react';
 import { createScope, animate, stagger } from 'animejs';
 import ChatMessage from '../ChatMessage';
 import { HudPanel } from '../ui';
+import GridLattice from '../ui/graphics/primitives/GridLattice';
+import ScopeRings from '../ui/graphics/primitives/ScopeRings';
 import {
   PortfolioProject,
   PortfolioSkill,
@@ -41,12 +43,22 @@ export default function ChatStream({
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
   const prevRef = useRef(0);
 
+  // Autoscroll only when the newest message is >120px below the viewport
+  // bottom, so reading history is never yanked away mid-scroll.
   useEffect(() => {
-    if (messages.length > 0)
-      setTimeout(
-        () => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }),
-        100,
-      );
+    if (messages.length === 0) return;
+    const t = setTimeout(() => {
+      const el = bottomRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const distance = rect.top - window.innerHeight;
+      if (distance > 120) {
+        el.scrollIntoView({ block: 'end', behavior: 'smooth' });
+      } else if (distance > 0) {
+        el.scrollIntoView({ block: 'end' });
+      }
+    }, 100);
+    return () => clearTimeout(t);
   }, [messages]);
 
   // Message entrance — y+opacity stagger gated by reduced-motion.
@@ -112,11 +124,14 @@ export default function ChatStream({
 
   return (
     <div
-      className="w-full flex-1 overflow-y-auto mb-4 pr-2"
+      className="relative w-full flex-1 overflow-y-auto mb-4 pr-2"
       role="log"
       aria-live="polite"
     >
-      <div ref={listRef} className="flex flex-col gap-4 py-4">
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+        <GridLattice opacity={0.04} color="var(--grid-1)" />
+      </div>
+      <div ref={listRef} className="relative flex flex-col gap-4 py-4">
         {messages.map((msg, idx) => (
           <div key={idx} data-chat-msg>
             <ChatMessage
@@ -137,9 +152,13 @@ export default function ChatStream({
               notch="sm"
               className="px-4 py-3 flex items-center gap-2"
             >
-              <span className="w-2 h-2 rounded-full bg-neon-cyan animate-pulse-dot" />
-              <span className="w-2 h-2 rounded-full bg-neon-cyan animate-pulse-dot [animation-delay:0.2s]" />
-              <span className="w-2 h-2 rounded-full bg-neon-cyan animate-pulse-dot [animation-delay:0.4s]" />
+              <ScopeRings accent="cyan" size={20} />
+              <span
+                className="font-mono text-[10px] tracking-[0.18em]"
+                style={{ color: 'var(--fg-3)' }}
+              >
+                THINKING
+              </span>
             </HudPanel>
           </div>
         )}
