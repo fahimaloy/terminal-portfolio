@@ -12,6 +12,7 @@ module.exports = {
     'bg-elevated': '#1a1c2e',
     'bg-panel': 'rgba(19, 20, 31, 0.55)',
     'bg-panel-soft': 'rgba(24, 26, 40, 0.4)',
+    'bg-smoke': 'var(--bg-2)',
     'bg-surface': '#16182a',
     'bg-void': '#0b0c12',
     'neon-amber': '#f0a020',
