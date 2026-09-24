@@ -30,19 +30,19 @@ test.describe('Homepage', () => {
     });
   });
 
-  test('STATUS READY is present', async ({ page }) => {
+  test('HUD status uses the active label', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText('STATUS: READY').first()).toBeVisible({
+    await expect(page.getByText('ACTIVE').first()).toBeVisible({
       timeout: 15000,
     });
-    await expect(page.getByText('STATUS: READY').first()).toBeVisible({
+    await expect(page.getByText('ACTIVE').first()).toBeVisible({
       timeout: 15000,
     });
   });
 
   test('stats section has PROJECTS text', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('body')).toContainHTML(
+    await expect(page.locator('body')).toContainText(
       /PROJECTS|SKILLS|EXPERIENCE/,
     );
     const html = await page.content();
@@ -107,7 +107,9 @@ test.describe('Accessibility', () => {
 
   test('buttons have accessible names', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('button')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('button').first()).toBeVisible({
+      timeout: 15000,
+    });
     const buttons = page.locator('button');
     const count = await buttons.count();
     for (let i = 0; i < count; i++) {
@@ -144,7 +146,7 @@ test.describe('Performance', () => {
       }
     });
     await page.goto('/');
-    await expect(page.locator('body')).toContainHTML(
+    await expect(page.locator('body')).toContainText(
       /PROJECTS|SKILLS|EXPERIENCE/,
     );
     expect(errors).toHaveLength(0);

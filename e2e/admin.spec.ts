@@ -87,10 +87,15 @@ test.describe('Admin Panel', () => {
     await page.goto('/sudosuperuser-ostaad/login');
     await expect(page.locator('#password')).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
+    await page.waitForLoadState('networkidle');
     await page.locator('#username').fill('wronguser');
     await page.locator('#password').fill('wrongpassword');
-    await page.locator('button[type="submit"]').click({ force: true });
-    await expect(page.locator('body')).toContainHTML(
+    const responsePromise = page.waitForResponse((response) =>
+      response.url().endsWith('/api/admin/login'),
+    );
+    await page.locator('button[type="submit"]').click();
+    await responsePromise;
+    await expect(page.locator('body')).toContainText(
       /Invalid|error|incorrect|Failed|Server error|Missing server config|Failed to fetch|AUTHENTICATION FAILED/,
     );
     const html = await page.content();
@@ -110,13 +115,29 @@ test.describe('Admin Panel', () => {
     await page.goto('/sudosuperuser-ostaad/login');
     await expect(page.locator('#password')).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
+    await page.waitForLoadState('networkidle');
+    const username = page.locator('#username');
+    const password = page.locator('#password');
+    const submit = page.locator('button[type="submit"]');
+
     for (let i = 0; i < 6; i++) {
-      await page.locator('#username').fill('wronguser');
-      await page.locator('#password').fill('wrongpassword');
-      await page.locator('button[type="submit"]').click({ force: true });
-      await expect(page.locator('#username')).toBeVisible();
+      if (!(await username.isEnabled())) break;
+      await username.fill('wronguser');
+      await password.fill('wrongpassword');
+      const responsePromise = page.waitForResponse((response) =>
+        response.url().endsWith('/api/admin/login'),
+      );
+      await submit.click();
+      const response = await responsePromise;
+      expect([401, 429]).toContain(response.status());
+      await expect(page.getByText('AUTHENTICATION FAILED')).toBeVisible({
+        timeout: 15000,
+      });
+      if (await page.getByText(/Locked for/).isVisible()) break;
+      await expect(username).toBeEnabled({ timeout: 15000 });
     }
-    await expect(page.locator('body')).toContainHTML(
+
+    await expect(page.locator('body')).toContainText(
       /Too many|attempts|locked|Locked|ACCOUNT TEMPORARILY LOCKED/,
     );
     const html = await page.content();
