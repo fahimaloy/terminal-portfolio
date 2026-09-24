@@ -1,6 +1,17 @@
 import React from 'react';
 
-type Accent = 'yellow' | 'magenta' | 'cyan' | 'green' | 'purple' | 'blue';
+type Accent =
+  | 'yellow'
+  | 'magenta'
+  | 'cyan'
+  | 'green'
+  | 'purple'
+  | 'blue'
+  | 'violet'
+  | 'amber'
+  | 'rose'
+  | 'lime'
+  | 'ice';
 
 export interface MorphOrbProps {
   accent?: Accent;

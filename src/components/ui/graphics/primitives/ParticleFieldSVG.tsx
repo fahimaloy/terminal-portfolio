@@ -180,9 +180,9 @@ export default function ParticleFieldSVG({
         aria-hidden="true"
         style={{
           background: `
-            radial-gradient(ellipse at 20% 20%, rgba(34, 211, 227, 0.06) 0%, transparent 50%),
-            radial-gradient(ellipse at 80% 80%, rgba(255, 0, 128, 0.04) 0%, transparent 50%),
-            radial-gradient(ellipse at 50% 50%, rgba(168, 85, 247, 0.03) 0%, transparent 60%)
+            radial-gradient(ellipse at 20% 20%, var(--field-glow-cyan) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 80%, var(--field-glow-magenta) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 50%, var(--field-glow-violet) 0%, transparent 60%)
           `,
           animation: 'aurora-drift 20s ease-in-out infinite alternate',
           ...style,

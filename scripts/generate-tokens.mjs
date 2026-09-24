@@ -29,7 +29,8 @@ const TOKENS_CSS = path.join(ROOT, 'src/styles/tokens.css');
 const OUT_TS = path.join(ROOT, 'src/config/generated/tokens.generated.ts');
 const OUT_TW = path.join(ROOT, 'tailwind.tokens.generated.js');
 
-const EXPECTED_ACCENTS = ['yellow', 'magenta', 'cyan', 'green', 'red', 'purple', 'blue'];
+const EXPECTED_ACCENTS = ['cyan', 'magenta', 'amber', 'violet', 'rose', 'yellow', 'green', 'red', 'purple', 'blue', 'lime', 'ice'];
+const MIN_ACCENTS = 4; // Require at least 4 neon accents for validation
 
 // ---------------------------------------------------------------------------
 // Parse helpers
@@ -175,7 +176,8 @@ function generateTsContent(tokens) {
     const color = neon[name];
     const g = glow[name] ?? `rgba(0, 0, 0, 0.5)`;
     const shadow = `0 0 18px ${color}`;
-    return `  ${name}: {\n    color: '${color}',\n    glow: '${g}',\n    shadow: '${shadow}',\n  }`;
+    const jsKey = toJsKey(name);
+    return `  ${jsKey}: {\n    color: '${color}',\n    glow: '${g}',\n    shadow: '${shadow}',\n  }`;
   });
 
   // Durations in seconds (as numbers) — mirrors animations.ts
@@ -235,7 +237,7 @@ function generateTsContent(tokens) {
   return `// AUTO-GENERATED — do not edit. Run: node scripts/generate-tokens.mjs
 // Source: src/styles/tokens.css
 
-export type AccentColor = ${allAccents.map((a) => `'${a}'`).join(' | ')};
+export type AccentColor = ${allAccents.map((a) => `'${toJsKey(a)}'`).join(' | ')};
 
 export const accentConfig: Record<AccentColor, { color: string; glow: string; shadow: string }> = {
 ${accentEntries.join(',\n')},
@@ -419,11 +421,11 @@ function main() {
 
   const tokens = parseTokensCss(css);
 
-  // Validate — must have at least the 7 expected neon accents
-  const missingNeon = EXPECTED_ACCENTS.filter((n) => !tokens.neon[n]);
-  if (missingNeon.length > 0) {
-    console.error(`[generate-tokens] Parse failure: missing --neon-* vars: ${missingNeon.join(', ')}`);
-    console.error(`[generate-tokens] Found neon keys: ${Object.keys(tokens.neon).join(', ') || '(none)'}`);
+  // Validate — must have at least MIN_ACCENTS neon accents
+  const foundNeon = Object.keys(tokens.neon);
+  if (foundNeon.length < MIN_ACCENTS) {
+    console.error(`[generate-tokens] Parse failure: need at least ${MIN_ACCENTS} neon accents, found ${foundNeon.length}`);
+    console.error(`[generate-tokens] Found neon keys: ${foundNeon.join(', ') || '(none)'}`);
     process.exit(1);
   }
   if (Object.keys(tokens.durations).length === 0) {

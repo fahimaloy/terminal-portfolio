@@ -5,9 +5,14 @@ type Accent =
   | 'magenta'
   | 'cyan'
   | 'green'
+  | 'red'
   | 'purple'
   | 'blue'
-  | 'red';
+  | 'violet'
+  | 'amber'
+  | 'rose'
+  | 'lime'
+  | 'ice';
 
 export interface SignalTicksProps {
   accent?: Accent;

@@ -23,7 +23,7 @@ import HeroChat from './home/HeroChat';
 import { ProjectStrip, ProjectInlineDetail } from './home/ProjectStrip';
 import ChatModalHost from './home/ChatModalHost';
 import ThreeBackground from './ui/ThreeBackground';
-import { StatBar } from './ui';
+import { StatBar, Background } from './ui';
 type Message = {
   role: 'user' | 'model';
   text: string;
@@ -139,12 +139,7 @@ export default function Homepage() {
       ref={homeRootRef}
       className="h-[100dvh] min-h-[100dvh] flex flex-col overflow-hidden relative z-10"
     >
-      <ThreeBackground
-        particleCount={1000}
-        color="#22d3e3"
-        size={1.5}
-        opacity={0.4}
-      />
+      <Background variant="hero" intensity="high" />
       <SEOMeta
         title={profile?.full_name || config.name || 'Fahim Ahmed'}
         description={

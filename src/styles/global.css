@@ -304,3 +304,10 @@ body {
     border-radius: var(--radius-sm);
   }
 }
+/* Premium ambient float animation for vector graphics */
+@keyframes float-ambient {
+  0% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(1deg); }
+  66% { transform: translateY(4px) rotate(-0.5deg); }
+  100% { transform: translateY(-6px) rotate(0.5deg); }
+}

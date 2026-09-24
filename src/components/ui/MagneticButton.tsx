@@ -35,8 +35,8 @@ export default function MagneticButton({
       animatableRef.current = createSafeAnimatable(ref.current, {
         x: 0,
         y: 0,
-        duration: 200,
-        ease: 'outExpo',
+        duration: 250,
+        ease: 'spring(soft)',
       });
     }
     return () => {
