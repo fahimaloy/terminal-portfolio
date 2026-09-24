@@ -70,7 +70,6 @@ export default function PremiumBackground({
           delay: stagger(100, { from: 'first' }),
           loop: true,
           autoplay: onScroll({
-            container: window,
             sync: true,
             target: root,
           }),
@@ -85,7 +84,6 @@ export default function PremiumBackground({
           ease: 'outExpo',
           duration: durations.enter * 1000,
           autoplay: onScroll({
-            container: window,
             sync: false,
             target: grids[0],
           }),
@@ -101,7 +99,6 @@ export default function PremiumBackground({
           duration: durations.enter * 1000,
           delay: stagger(50, { from: 'first' }),
           autoplay: onScroll({
-            container: window,
             sync: true,
             target: root,
           }),
@@ -124,7 +121,6 @@ export default function PremiumBackground({
           loop: true,
           alternate: true,
           autoplay: onScroll({
-            container: window,
             sync: true,
             target: root,
           }),
@@ -186,8 +182,8 @@ export default function PremiumBackground({
                   i % 3 === 0
                     ? 'var(--particle-cyan)'
                     : i % 3 === 1
-                    ? 'var(--particle-magenta)'
-                    : 'var(--particle-violet)',
+                      ? 'var(--particle-magenta)'
+                      : 'var(--particle-violet)',
                 opacity: 0.15 + rand(5) * 0.25,
                 filter: 'blur(1px)',
                 animationDelay: `${rand(6) * 8}s`,

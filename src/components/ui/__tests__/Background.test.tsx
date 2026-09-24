@@ -73,14 +73,14 @@ describe('Background', () => {
     const scrollCalls = (onScroll as unknown as ReturnType<typeof vi.fn>).mock
       .calls as Array<[Record<string, unknown>]>;
 
-    // Assert: particles, grid, aurora, and orbs share window as the scroll
-    // container; only the grid uses its own element as the trigger target.
+    // Assert: particles, grid, aurora, and orbs use the default document
+    // scroll container; only the grid uses its own element as the trigger target.
     expect(grid).not.toBeNull();
     expect(scrollCalls.map(([options]) => options)).toEqual([
-      { container: window, sync: true, target: root },
-      { container: window, sync: false, target: grid },
-      { container: window, sync: true, target: root },
-      { container: window, sync: true, target: root },
+      { sync: true, target: root },
+      { sync: false, target: grid },
+      { sync: true, target: root },
+      { sync: true, target: root },
     ]);
   });
 
