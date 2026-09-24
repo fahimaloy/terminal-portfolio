@@ -220,10 +220,14 @@ describe('BlogIndexPage', () => {
     const graphic = document.querySelector<HTMLElement>('.blog-empty-graphic');
     expect(graphic).not.toBeNull();
     expect(graphic!.classList.contains('opacity-0')).toBe(true);
-    expect(graphic!.style.transform).toContain('translateY');
+    await waitFor(() =>
+      expect(graphic!.style.transform).toContain('translateY'),
+    );
 
     expect(headline!.classList.contains('opacity-0')).toBe(true);
-    expect(headline!.style.transform).toContain('translateY');
+    await waitFor(() =>
+      expect(headline!.style.transform).toContain('translateY'),
+    );
 
     expect(mockedCreateScope).toHaveBeenCalled();
     expect(mockedCreateTimeline).toHaveBeenCalled();
