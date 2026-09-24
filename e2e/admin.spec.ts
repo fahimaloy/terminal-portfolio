@@ -6,6 +6,10 @@ async function dismissBootSequence(context: BrowserContext) {
   });
 }
 
+function makeUniqueClientIp(label: string): string {
+  return `${label}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 // Helper to dismiss Next.js dev portal if present
 async function dismissNextPortal(page: any) {
   const portal = page.locator('nextjs-portal');
@@ -84,72 +88,122 @@ test.describe('Admin Panel', () => {
   });
 
   test('login form shows error on wrong password', async ({ page }) => {
+    await page.context().clearCookies();
+    await page.setExtraHTTPHeaders({
+      'x-forwarded-for': makeUniqueClientIp('e2e-wrong-password'),
+    });
     await page.goto('/sudosuperuser-ostaad/login');
     await expect(page.locator('#password')).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
     await page.waitForLoadState('networkidle');
     await page.locator('#username').fill('wronguser');
     await page.locator('#password').fill('wrongpassword');
-    const responsePromise = page.waitForResponse((response) =>
-      response.url().endsWith('/api/admin/login'),
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        response.url().endsWith('/api/admin/login'),
     );
     await page.locator('button[type="submit"]').click();
-    await responsePromise;
-    await expect(page.locator('body')).toContainText(
-      /Invalid|error|incorrect|Failed|Server error|Missing server config|Failed to fetch|AUTHENTICATION FAILED/,
-    );
-    const html = await page.content();
-    const hasError =
-      html.includes('Invalid') ||
-      html.includes('error') ||
-      html.includes('incorrect') ||
-      html.includes('Failed') ||
-      html.includes('Server error') ||
-      html.includes('Missing server config') ||
-      html.includes('Failed to fetch') ||
-      html.includes('AUTHENTICATION FAILED');
-    expect(hasError).toBeTruthy();
+    const response = await responsePromise;
+    expect(response.status()).toBe(401);
+    const body = await response.json();
+    expect(body).toMatchObject({ ok: false, message: 'Invalid credentials' });
+    await expect(
+      page.getByText('Invalid credentials', { exact: false }),
+    ).toBeVisible({ timeout: 15000 });
+
+    const sessionCookies = await page.context().cookies();
+    expect(
+      sessionCookies.find(
+        (cookie) => cookie.name === 'portfolio_admin_session',
+      ),
+    ).toBeUndefined();
   });
 
-  test('login form has rate limiting', async ({ page }) => {
+  test('login form locks after five failed attempts', async ({ page }) => {
+    await page.context().clearCookies();
+    await page.setExtraHTTPHeaders({
+      'x-forwarded-for': makeUniqueClientIp('e2e-client-lock'),
+    });
     await page.goto('/sudosuperuser-ostaad/login');
     await expect(page.locator('#password')).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
-    await page.waitForLoadState('networkidle');
+    await page.evaluate(() => {
+      localStorage.removeItem('admin_login_lock');
+      localStorage.removeItem('admin_login_attempts');
+    });
+    await page.reload();
+    await expect(page.locator('#password')).toBeVisible({ timeout: 15000 });
+
     const username = page.locator('#username');
     const password = page.locator('#password');
     const submit = page.locator('button[type="submit"]');
 
-    for (let i = 0; i < 6; i++) {
-      if (!(await username.isEnabled())) break;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await expect(username).toBeEnabled();
+      await expect(password).toBeEnabled();
+      await expect(submit).toBeEnabled();
       await username.fill('wronguser');
       await password.fill('wrongpassword');
-      const responsePromise = page.waitForResponse((response) =>
-        response.url().endsWith('/api/admin/login'),
+      const responsePromise = page.waitForResponse(
+        (response) =>
+          response.request().method() === 'POST' &&
+          response.url().endsWith('/api/admin/login'),
       );
       await submit.click();
       const response = await responsePromise;
-      expect([401, 429]).toContain(response.status());
-      await expect(page.getByText('AUTHENTICATION FAILED')).toBeVisible({
-        timeout: 15000,
-      });
-      if (await page.getByText(/Locked for/).isVisible()) break;
-      await expect(username).toBeEnabled({ timeout: 15000 });
+      expect(response.status()).toBe(401);
+      const body = await response.json();
+      expect(body).toMatchObject({ ok: false, message: 'Invalid credentials' });
     }
 
-    await expect(page.locator('body')).toContainText(
-      /Too many|attempts|locked|Locked|ACCOUNT TEMPORARILY LOCKED/,
-    );
-    const html = await page.content();
-    const hasRateLimit =
-      html.includes('Too many') ||
-      html.includes('attempts') ||
-      html.includes('locked') ||
-      html.includes('Locked') ||
-      html.includes('Invalid') ||
-      html.includes('Server error') ||
-      html.includes('ACCOUNT TEMPORARILY LOCKED');
-    expect(hasRateLimit).toBeTruthy();
+    await expect(page.getByText(/Locked for/)).toBeVisible({
+      timeout: 15000,
+    });
+    await expect(username).toBeDisabled();
+    await expect(password).toBeDisabled();
+    await expect(submit).toBeDisabled();
+
+    const persistedLock = await page.evaluate(() => {
+      const raw = localStorage.getItem('admin_login_lock');
+      if (!raw) return null;
+      try {
+        return JSON.parse(raw) as { until?: number };
+      } catch {
+        return null;
+      }
+    });
+    expect(persistedLock?.until).toBeGreaterThan(Date.now());
+
+    await page.reload();
+    await expect(
+      page.getByText('ACCOUNT TEMPORARILY LOCKED', { exact: true }),
+    ).toBeVisible({ timeout: 15000 });
+    await expect(username).toBeDisabled();
+    await expect(password).toBeDisabled();
+    await expect(submit).toBeDisabled();
+  });
+
+  test('login API rate limits repeated POST requests', async ({ request }) => {
+    const clientIp = makeUniqueClientIp('e2e-server-rate-limit');
+    const headers = { 'x-forwarded-for': clientIp };
+    const data = { username: 'wronguser', password: 'wrongpassword' };
+
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const response = await request.post('/api/admin/login', {
+        headers,
+        data,
+      });
+      expect(response.status()).toBe(401);
+    }
+
+    const response = await request.post('/api/admin/login', { headers, data });
+    expect(response.status()).toBe(429);
+    const body = await response.json();
+    expect(body).toMatchObject({
+      ok: false,
+      message: 'Too many login attempts. Please try again later.',
+    });
   });
 });
 
