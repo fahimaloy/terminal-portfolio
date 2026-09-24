@@ -127,7 +127,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
         root,
         mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
         defaults: {
-          duration: durations[700] ? durations[700] * 1000 : 700,
+          duration: durations[700] * 1000,
           ease: easings.outExpo ?? 'outExpo',
           composition: 'blend',
         },

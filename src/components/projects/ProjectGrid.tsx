@@ -272,7 +272,11 @@ function ProjectCard({
   );
 
   if (reduced || !animateEnabled) {
-    return cardContent;
+    return (
+      <Tilt3D key={project.id} intensity={0}>
+        {cardContent}
+      </Tilt3D>
+    );
   }
 
   return (

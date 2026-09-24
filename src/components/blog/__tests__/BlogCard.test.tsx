@@ -8,7 +8,7 @@ vi.mock('next/link', () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => {
     const React = require('react');
-    return React.createElement('a', null, children);
+    return React.createElement(React.Fragment, null, children);
   },
 }));
 

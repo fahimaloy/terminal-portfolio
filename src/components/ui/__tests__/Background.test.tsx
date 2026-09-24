@@ -110,7 +110,7 @@ describe('Background', () => {
     const { rerender } = render(<Background variant="hero" />);
     let orbs = rerender(<Background variant="blog" />);
     expect(rerender).toBeDefined();
-    
+
     vi.clearAllMocks();
     mockMatchMedia(false);
     rerender(<Background variant="default" />);

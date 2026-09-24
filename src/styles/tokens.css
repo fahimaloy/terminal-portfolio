@@ -14,6 +14,9 @@
   --bg-4: #1c1e2a;
   --bg-panel: rgba(19, 20, 31, 0.55);
   --bg-panel-soft: rgba(24, 26, 40, 0.4);
+  --bg-ash: var(--bg-4);
+  --selection-bg: var(--neon-cyan);
+  --selection-fg: var(--bg-void);
   --bg-surface: #16182a;
   --bg-elevated: #1a1c2e;
 
@@ -26,11 +29,11 @@
   --text-muted: #7a7c92;
   --text-muted-light: #9a9cb0;
 
-  --border-subtle: rgba(255,255,255,0.06);
-  --border-strong: rgba(255,255,255,0.12);
-  --shadow-deep: rgba(0,0,0,0.75);
-  --shadow-soft: rgba(0,0,0,0.25);
-  --shadow-glow: rgba(0,220,240,0.15);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --shadow-deep: rgba(0, 0, 0, 0.75);
+  --shadow-soft: rgba(0, 0, 0, 0.25);
+  --shadow-glow: rgba(0, 220, 240, 0.15);
 
   /* ── ELECTRIC ACCENTS — high-saturation cyan/magenta core ───────────────── */
   --neon-cyan: #00f0ff;
@@ -42,45 +45,66 @@
   --neon-lime: #c0ff30;
   --neon-rose: #ff2a7a;
   --neon-ice: #7ee0ff;
+  --neon-yellow: #f7d038;
+  --neon-green: #3dff88;
+  --neon-red: #ff3355;
+  --neon-purple: #c05cff;
+  --neon-blue: #3f9dff;
 
   /* ── GLOW HALOS — vibrant, not muted (premium bloom) ────────────────────── */
-  --glow-cyan: rgba(0,240,255,0.35);
-  --glow-cyan-sm: rgba(0,240,255,0.15);
-  --glow-cyan-30: rgba(0,240,255,0.30);
-  --glow-cyan-60: rgba(0,240,255,0.60);
-  --glow-magenta: rgba(255,0,136,0.35);
-  --glow-magenta-sm: rgba(255,0,136,0.15);
-  --glow-violet: rgba(160,32,240,0.35);
-  --glow-violet-sm: rgba(160,32,240,0.15);
-  --glow-amber: rgba(240,160,32,0.35);
-  --glow-amber-sm: rgba(240,160,32,0.15);
-  --glow-rose: rgba(255,42,122,0.35);
-  --glow-rose-sm: rgba(255,42,122,0.15);
-  --glow-magenta-30: rgba(255,0,136,0.30);
-  --glow-text-cyan: rgba(0,240,255,0.45);
-  --glow-text-magenta: rgba(255,0,136,0.20);
-  --glow-text-violet: rgba(160,32,240,0.30);
-  --glow-focus: rgba(0,240,255,0.30);
-  --glow-focus-strong: rgba(0,240,255,0.50);
+  --glow-cyan: rgba(0, 240, 255, 0.35);
+  --glow-cyan-sm: rgba(0, 240, 255, 0.15);
+  --glow-cyan-30: rgba(0, 240, 255, 0.3);
+  --glow-cyan-60: rgba(0, 240, 255, 0.6);
+  --glow-magenta: rgba(255, 0, 136, 0.35);
+  --glow-magenta-sm: rgba(255, 0, 136, 0.15);
+  --glow-violet: rgba(160, 32, 240, 0.35);
+  --glow-violet-sm: rgba(160, 32, 240, 0.15);
+  --glow-amber: rgba(240, 160, 32, 0.35);
+  --glow-amber-sm: rgba(240, 160, 32, 0.15);
+  --glow-rose: rgba(255, 42, 122, 0.35);
+  --glow-rose-sm: rgba(255, 42, 122, 0.15);
+  --glow-yellow: rgba(247, 208, 56, 0.35);
+  --glow-yellow-sm: rgba(247, 208, 56, 0.15);
+  --glow-green: rgba(61, 255, 136, 0.35);
+  --glow-green-sm: rgba(61, 255, 136, 0.15);
+  --glow-red: rgba(255, 51, 85, 0.35);
+  --glow-red-sm: rgba(255, 51, 85, 0.15);
+  --glow-purple: rgba(192, 92, 255, 0.35);
+  --glow-purple-sm: rgba(192, 92, 255, 0.15);
+  --glow-blue: rgba(63, 157, 255, 0.35);
+  --glow-blue-sm: rgba(63, 157, 255, 0.15);
+  --glow-lime: rgba(192, 255, 48, 0.35);
+  --glow-lime-sm: rgba(192, 255, 48, 0.15);
+  --glow-ice: rgba(126, 224, 255, 0.35);
+  --glow-ice-sm: rgba(126, 224, 255, 0.15);
+  --glow-cyan-faint: rgba(0, 240, 255, 0.1);
+  --glow-yellow-soft: rgba(247, 208, 56, 0.25);
+  --glow-magenta-30: rgba(255, 0, 136, 0.3);
+  --glow-text-cyan: rgba(0, 240, 255, 0.45);
+  --glow-text-magenta: rgba(255, 0, 136, 0.2);
+  --glow-text-violet: rgba(160, 32, 240, 0.3);
+  --glow-focus: rgba(0, 240, 255, 0.3);
+  --glow-focus-strong: rgba(0, 240, 255, 0.5);
 
   /* ── WASH SURFACES — translucent accent fills ──────────────────────────── */
-  --wash-cyan: rgba(0,240,255,0.08);
-  --wash-cyan-strong: rgba(0,240,255,0.15);
-  --wash-magenta: rgba(255,0,136,0.08);
-  --wash-magenta-strong: rgba(255,0,136,0.15);
-  --wash-violet: rgba(160,32,240,0.08);
-  --wash-violet-strong: rgba(160,32,240,0.15);
-  --wash-amber: rgba(240,160,32,0.08);
-  --wash-amber-strong: rgba(240,160,32,0.15);
-  --wash-rose: rgba(255,42,122,0.08);
-  --wash-rose-strong: rgba(255,42,122,0.15);
-  --wash-amber-soft: rgba(255,140,42,0.14);
-  --wash-amber-strong-blog: rgba(255,140,42,0.22);
+  --wash-cyan: rgba(0, 240, 255, 0.08);
+  --wash-cyan-strong: rgba(0, 240, 255, 0.15);
+  --wash-magenta: rgba(255, 0, 136, 0.08);
+  --wash-magenta-strong: rgba(255, 0, 136, 0.15);
+  --wash-violet: rgba(160, 32, 240, 0.08);
+  --wash-violet-strong: rgba(160, 32, 240, 0.15);
+  --wash-amber: rgba(240, 160, 32, 0.08);
+  --wash-amber-strong: rgba(240, 160, 32, 0.15);
+  --wash-rose: rgba(255, 42, 122, 0.08);
+  --wash-rose-strong: rgba(255, 42, 122, 0.15);
+  --wash-amber-soft: rgba(255, 140, 42, 0.14);
+  --wash-amber-strong-blog: rgba(255, 140, 42, 0.22);
 
   /* ── GRID LATTICE — refined hairline grid ───────────────────────────────── */
-  --grid-1: rgba(232,232,240,0.035);
-  --grid-2: rgba(232,232,240,0.06);
-  --grid-3: rgba(232,232,240,0.08);
+  --grid-1: rgba(232, 232, 240, 0.035);
+  --grid-2: rgba(232, 232, 240, 0.06);
+  --grid-3: rgba(232, 232, 240, 0.08);
 
   /* ── SURFACE ELEVATION — stepped depth for cards/panels ─────────────────── */
   --surface-0: var(--bg-void);
@@ -88,7 +112,7 @@
   --surface-2: var(--bg-2);
   --surface-3: var(--bg-3);
   --surface-raised: #1e2035;
-  --surface-overlay: rgba(11,12,18,0.88);
+  --surface-overlay: rgba(11, 12, 18, 0.88);
   --surface-dark-1: #353432;
   --surface-dark-2: #3f3e3d;
   --surface-dark-3: #252423;
@@ -97,11 +121,11 @@
 
   /* ── CARD/COMPONENT SURFACES — premium glass variants ───────────────────── */
   --card-bg: rgba(19, 20, 31, 0.55);
-  --card-bg-hover: rgba(255,255,255,0.02);
-  --card-border: rgba(255,255,255,0.06);
-  --card-shadow-inner: rgba(255,255,255,0.08);
-  --card-shadow-outer: rgba(0,0,0,0.3);
-  --card-shadow-elevated: rgba(0,0,0,0.25);
+  --card-bg-hover: rgba(255, 255, 255, 0.02);
+  --card-border: rgba(255, 255, 255, 0.06);
+  --card-shadow-inner: rgba(255, 255, 255, 0.08);
+  --card-shadow-outer: rgba(0, 0, 0, 0.3);
+  --card-shadow-elevated: rgba(0, 0, 0, 0.25);
 
   /* ── RETRO BLOG (preserved, refined) ─────────────────────────────────────── */
   --retro-paper: #f5f2e8;
@@ -109,21 +133,21 @@
   --retro-ink: #1e1e20;
   --retro-ink-soft: #3a3936;
   --retro-amber: #ff8c2a;
-  --retro-amber-soft: rgba(255,140,42,0.14);
-  --retro-amber-strong: rgba(255,140,42,0.22);
+  --retro-amber-soft: rgba(255, 140, 42, 0.14);
+  --retro-amber-strong: rgba(255, 140, 42, 0.22);
 
   /* ── ZONE TINTS — ambient ambient washes ─────────────────────────────────── */
-  --glow-cyan-zone: rgba(0,240,255,0.06);
-  --glow-magenta-zone: rgba(255,0,136,0.06);
-  --glow-violet-zone: rgba(160,32,240,0.05);
-  --glow-cyan-soft: rgba(0,240,255,0.12);
-  --glow-magenta-soft: rgba(255,0,136,0.12);
+  --glow-cyan-zone: rgba(0, 240, 255, 0.06);
+  --glow-magenta-zone: rgba(255, 0, 136, 0.06);
+  --glow-violet-zone: rgba(160, 32, 240, 0.05);
+  --glow-cyan-soft: rgba(0, 240, 255, 0.12);
+  --glow-magenta-soft: rgba(255, 0, 136, 0.12);
 
   /* ── AURORA MESH — large blurred washes for background depth ─────────────── */
-  --aurora-1: rgba(0,240,255,0.07);
-  --aurora-2: rgba(255,0,136,0.06);
-  --aurora-3: rgba(160,32,240,0.05);
-  --aurora-4: rgba(240,160,32,0.04);
+  --aurora-1: rgba(0, 240, 255, 0.07);
+  --aurora-2: rgba(255, 0, 136, 0.06);
+  --aurora-3: rgba(160, 32, 240, 0.05);
+  --aurora-4: rgba(240, 160, 32, 0.04);
 
   /* ── RING / STROKE ALIASES — hairline + accent strokes for drawable SVGs ──────── */
   --ring-cyan: var(--neon-cyan);
@@ -136,25 +160,26 @@
   --ring-red: var(--neon-lime);
 
   /* ── OVERLAYS ────────────────────────────────────────────────────────────── */
-  --overlay-white-015: rgba(232,232,240,0.015);
-  --overlay-white-02: rgba(232,232,240,0.02);
-  --overlay-white-05: rgba(232,232,240,0.05);
-  --overlay-white-40: rgba(232,232,240,0.4);
-  --overlay-white-90: rgba(232,232,240,0.9);
-  --overlay-black-40: rgba(11,12,18,0.4);
-  --overlay-void-50: rgba(11,12,18,0.5);
-  --overlay-void-75: rgba(11,12,18,0.75);
-  --overlay-void-96: rgba(11,12,18,0.96);
-  --overlay-void-97: rgba(11,12,18,0.97);
-  --overlay-card-bg: rgba(255,255,255,0.015);
-  --overlay-card-bg-hover: rgba(255,255,255,0.02);
-  --overlay-card-border: rgba(255,255,255,0.06);
-  --overlay-card-shadow-inner: rgba(255,255,255,0.08);
-  --overlay-card-shadow-outer: rgba(0,0,0,0.3);
-  --overlay-black-soft: rgba(0,0,0,0.25);
-  --overlay-black-medium: rgba(0,0,0,0.30);
-  --overlay-black-strong: rgba(0,0,0,0.40);
-  --overlay-black-deep: rgba(0,0,0,0.50);
+  --overlay-scanline: rgba(255, 255, 255, 0.008);
+  --overlay-white-015: rgba(232, 232, 240, 0.015);
+  --overlay-white-02: rgba(232, 232, 240, 0.02);
+  --overlay-white-05: rgba(232, 232, 240, 0.05);
+  --overlay-white-40: rgba(232, 232, 240, 0.4);
+  --overlay-white-90: rgba(232, 232, 240, 0.9);
+  --overlay-black-40: rgba(11, 12, 18, 0.4);
+  --overlay-void-50: rgba(11, 12, 18, 0.5);
+  --overlay-void-75: rgba(11, 12, 18, 0.75);
+  --overlay-void-96: rgba(11, 12, 18, 0.96);
+  --overlay-void-97: rgba(11, 12, 18, 0.97);
+  --overlay-card-bg: rgba(255, 255, 255, 0.015);
+  --overlay-card-bg-hover: rgba(255, 255, 255, 0.02);
+  --overlay-card-border: rgba(255, 255, 255, 0.06);
+  --overlay-card-shadow-inner: rgba(255, 255, 255, 0.08);
+  --overlay-card-shadow-outer: rgba(0, 0, 0, 0.3);
+  --overlay-black-soft: rgba(0, 0, 0, 0.25);
+  --overlay-black-medium: rgba(0, 0, 0, 0.3);
+  --overlay-black-strong: rgba(0, 0, 0, 0.4);
+  --overlay-black-deep: rgba(0, 0, 0, 0.5);
 
   /* ── STATUS ───────────────────────────────────────────────────────────────── */
   --status-success: #c0ff30;
@@ -171,24 +196,81 @@
   --gradient-cyan-magenta: linear-gradient(135deg, #00f0ff 0%, #ff0088 100%);
   --gradient-violet-rose: linear-gradient(135deg, #a020f0 0%, #ff2a7a 100%);
   --gradient-icy: linear-gradient(90deg, #7ee0ff, #00f0ff);
-  --gradient-glow-card: linear-gradient(135deg, rgba(0,240,255,0.08), rgba(255,0,136,0.08));
-  --gradient-bg-overlay: radial-gradient(ellipse at center, rgba(11,12,18,0.3) 0%, rgba(11,12,18,0.95) 70%);
-  --gradient-name: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-magenta) 60%, var(--neon-violet) 100%);
-  --gradient-hero-name: linear-gradient(135deg, #00f0ff 0%, #ff0088 60%, #8a00ff 100%);
-  --gradient-teal-cyan: linear-gradient(135deg, var(--neon-cyan-teal), var(--neon-cyan));
-  --gradient-card-glow: linear-gradient(135deg, var(--wash-cyan), var(--wash-magenta));
-  --gradient-aurora-1: radial-gradient(ellipse at center, var(--aurora-1) 0%, transparent 72%);
-  --gradient-aurora-2: radial-gradient(ellipse at center, var(--aurora-2) 0%, transparent 72%);
-  --gradient-aurora-3: radial-gradient(ellipse at center, var(--aurora-3) 0%, transparent 72%);
-  --gradient-aurora-4: radial-gradient(ellipse at center, var(--aurora-4) 0%, transparent 72%);
-  --gradient-overlay-hero: linear-gradient(180deg, var(--overlay-void-75) 0%, var(--overlay-void-50) 45%, var(--overlay-void-97) 100%);
-  --gradient-bg-void: linear-gradient(180deg, var(--bg-void) 0%, var(--bg-1) 40%, var(--bg-void) 100%);
+  --gradient-glow-card: linear-gradient(
+    135deg,
+    rgba(0, 240, 255, 0.08),
+    rgba(255, 0, 136, 0.08)
+  );
+  --gradient-bg-overlay: radial-gradient(
+    ellipse at center,
+    rgba(11, 12, 18, 0.3) 0%,
+    rgba(11, 12, 18, 0.95) 70%
+  );
+  --gradient-name: linear-gradient(
+    135deg,
+    var(--neon-cyan) 0%,
+    var(--neon-magenta) 60%,
+    var(--neon-violet) 100%
+  );
+  --gradient-hero-name: linear-gradient(
+    135deg,
+    #00f0ff 0%,
+    #ff0088 60%,
+    #8a00ff 100%
+  );
+  --gradient-teal-cyan: linear-gradient(
+    135deg,
+    var(--neon-cyan-teal),
+    var(--neon-cyan)
+  );
+  --gradient-card-glow: linear-gradient(
+    135deg,
+    var(--wash-cyan),
+    var(--wash-magenta)
+  );
+  --gradient-aurora-1: radial-gradient(
+    ellipse at center,
+    var(--aurora-1) 0%,
+    transparent 72%
+  );
+  --gradient-aurora-2: radial-gradient(
+    ellipse at center,
+    var(--aurora-2) 0%,
+    transparent 72%
+  );
+  --gradient-aurora-3: radial-gradient(
+    ellipse at center,
+    var(--aurora-3) 0%,
+    transparent 72%
+  );
+  --gradient-aurora-4: radial-gradient(
+    ellipse at center,
+    var(--aurora-4) 0%,
+    transparent 72%
+  );
+  --gradient-overlay-hero: linear-gradient(
+    180deg,
+    var(--overlay-void-75) 0%,
+    var(--overlay-void-50) 45%,
+    var(--overlay-void-97) 100%
+  );
+  --gradient-bg-void: linear-gradient(
+    180deg,
+    var(--bg-void) 0%,
+    var(--bg-1) 40%,
+    var(--bg-void) 100%
+  );
 
   /* ── SHAPE ────────────────────────────────────────────────────────────────── */
   --clip-notch-sm: 6px;
   --clip-notch-md: 10px;
   --clip-notch-lg: 14px;
   --clip-notch-xl: 18px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --hairline: rgba(232, 232, 240, 0.14);
   --br-xs: 4px;
   --br-sm: 6px;
   --br-md: 10px;
@@ -199,7 +281,7 @@
 
   /* ── GLASS / BLUR — frosted glass, premium ───────────────────────────────── */
   --glass-bg: rgba(19, 20, 31, 0.55);
-  --glass-border: rgba(255,255,255,0.08);
+  --glass-border: rgba(255, 255, 255, 0.08);
   --glass-blur: blur(20px) saturate(140%);
   --glass-backdrop-alpha: 0.55;
 
@@ -261,15 +343,15 @@
   --border-2: 2px;
 
   /* ── OPAQUE OVERLAYS ─────────────────────────────────────────────────────── */
-  --overlay-5: rgba(11,12,18,0.05);
-  --overlay-10: rgba(11,12,18,0.1);
-  --overlay-20: rgba(11,12,18,0.2);
-  --overlay-30: rgba(11,12,18,0.3);
-  --overlay-50: rgba(11,12,18,0.5);
-  --overlay-60: rgba(11,12,18,0.6);
-  --overlay-70: rgba(11,12,18,0.7);
-  --overlay-80: rgba(11,12,18,0.8);
-  --overlay-90: rgba(11,12,18,0.9);
+  --overlay-5: rgba(11, 12, 18, 0.05);
+  --overlay-10: rgba(11, 12, 18, 0.1);
+  --overlay-20: rgba(11, 12, 18, 0.2);
+  --overlay-30: rgba(11, 12, 18, 0.3);
+  --overlay-50: rgba(11, 12, 18, 0.5);
+  --overlay-60: rgba(11, 12, 18, 0.6);
+  --overlay-70: rgba(11, 12, 18, 0.7);
+  --overlay-80: rgba(11, 12, 18, 0.8);
+  --overlay-90: rgba(11, 12, 18, 0.9);
 
   /* ── MOTION DURATIONS ─────────────────────────────────────────────────────── */
   --dur-tap: 100ms;
@@ -287,6 +369,7 @@
   --dur-spring: 900ms;
   --dur-scroll: 800ms;
   --dur-counter: 2400ms;
+  --dur-drift: 12000ms;
   --dur-150: 150ms;
   --dur-200: 200ms;
   --dur-300: 300ms;
@@ -319,131 +402,187 @@
   --spring-hard: '{"stiffness":300,"damping":20}';
   --spring-quads: '{"stiffness":240,"damping":12}';
   --spring-elastic: '{"stiffness":180,"damping":6}';
+  --spring-card: '{"stiffness":150,"damping":14}';
+  --spring-snappy: '{"stiffness":240,"damping":18}';
 }
 
-  /* ── PARTICLE/FIELD — for SVG and canvas graphics ───────────────────────── */
-  --particle-cyan: var(--neon-cyan);
-  --particle-cyan-teal: var(--neon-cyan-teal);
-  --particle-magenta: var(--neon-magenta);
-  --particle-violet: var(--neon-violet);
-  --particle-amber: var(--neon-amber);
-  --particle-rose: var(--neon-rose);
-  --particle-lime: var(--neon-lime);
-  --particle-ice: var(--neon-ice);
-  --particle-alpha-low: 0.15;
-  --particle-alpha-mid: 0.35;
-  --particle-alpha-high: 0.50;
-  --particle-size-sm: 1;
-  --particle-size-md: 1.5;
-  --particle-size-lg: 2;
-  --field-line-cyan: rgba(0,240,255,0.15);
-  --field-line-magenta: rgba(255,0,136,0.12);
-  --field-line-violet: rgba(160,32,240,0.10);
-  --field-glow-cyan: rgba(0,240,255,0.08);
-  --field-glow-magenta: rgba(255,0,136,0.06);
-  --field-glow-violet: rgba(160,32,240,0.05);
+/* ── PARTICLE/FIELD — for SVG and canvas graphics ───────────────────────── */
+--particle-cyan: var(--neon-cyan);
+--particle-cyan-teal: var(--neon-cyan-teal);
+--particle-magenta: var(--neon-magenta);
+--particle-violet: var(--neon-violet);
+--particle-amber: var(--neon-amber);
+--particle-rose: var(--neon-rose);
+--particle-lime: var(--neon-lime);
+--particle-ice: var(--neon-ice);
+--particle-alpha-low: 0.15;
+--particle-alpha-mid: 0.35;
+--particle-alpha-high: 0.5;
+--particle-size-sm: 1;
+--particle-size-md: 1.5;
+--particle-size-lg: 2;
+--field-line-cyan: rgba(0, 240, 255, 0.15);
+--field-line-magenta: rgba(255, 0, 136, 0.12);
+--field-line-violet: rgba(160, 32, 240, 0.1);
+--field-glow-cyan: rgba(0, 240, 255, 0.08);
+--field-glow-magenta: rgba(255, 0, 136, 0.06);
+--field-glow-violet: rgba(160, 32, 240, 0.05);
 
-  /* ── ADVANCED GLASS VARIANTS — premium frosted glass ───────────────────────── */
-  --glass-bg-subtle: rgba(19, 20, 31, 0.35);
-  --glass-bg-strong: rgba(19, 20, 31, 0.75);
-  --glass-border-subtle: rgba(255,255,255,0.04);
-  --glass-border-strong: rgba(255,255,255,0.15);
-  --glass-blur-sm: blur(8px) saturate(120%);
-  --glass-blur-md: blur(16px) saturate(130%);
-  --glass-blur-lg: blur(32px) saturate(150%);
-  --glass-blur-xl: blur(48px) saturate(160%);
-  --glass-highlight: rgba(255,255,255,0.08);
-  --glass-shadow: rgba(0,0,0,0.4);
-  --glass-shadow-strong: rgba(0,0,0,0.6);
+/* ── ADVANCED GLASS VARIANTS — premium frosted glass ───────────────────────── */
+--glass-bg-subtle: rgba(19, 20, 31, 0.35);
+--glass-bg-strong: rgba(19, 20, 31, 0.75);
+--glass-border-subtle: rgba(255, 255, 255, 0.04);
+--glass-border-strong: rgba(255, 255, 255, 0.15);
+--glass-blur-sm: blur(8px) saturate(120%);
+--glass-blur-md: blur(16px) saturate(130%);
+--glass-blur-lg: blur(32px) saturate(150%);
+--glass-blur-xl: blur(48px) saturate(160%);
+--glass-highlight: rgba(255, 255, 255, 0.08);
+--glass-shadow: rgba(0, 0, 0, 0.4);
+--glass-shadow-strong: rgba(0, 0, 0, 0.6);
 
-  /* ── PREMIUM SHADOWS — layered depth system ─────────────────────────────────── */
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.15);
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.25);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.3);
-  --shadow-xl: 0 16px 48px rgba(0,0,0,0.35);
-  --shadow-2xl: 0 24px 64px rgba(0,0,0,0.4);
-  --shadow-glow-sm: 0 0 12px var(--glow-cyan-sm);
-  --shadow-glow-md: 0 0 24px var(--glow-cyan);
-  --shadow-glow-lg: 0 0 48px var(--glow-cyan-60);
-  --shadow-glow-magenta: 0 0 24px var(--glow-magenta);
-  --shadow-glow-violet: 0 0 24px var(--glow-violet);
-  --shadow-inner: inset 0 1px 2px rgba(255,255,255,0.05);
-  --shadow-inner-strong: inset 0 2px 8px rgba(255,255,255,0.08);
+/* ── PREMIUM SHADOWS — layered depth system ─────────────────────────────────── */
+--shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
+--shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+--shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
+--shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+--shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.35);
+--shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.4);
+--shadow-glow-sm: 0 0 12px var(--glow-cyan-sm);
+--shadow-glow-md: 0 0 24px var(--glow-cyan);
+--shadow-glow-lg: 0 0 48px var(--glow-cyan-60);
+--shadow-glow-magenta: 0 0 24px var(--glow-magenta);
+--shadow-glow-violet: 0 0 24px var(--glow-violet);
+--shadow-inner: inset 0 1px 2px rgba(255, 255, 255, 0.05);
+--shadow-inner-strong: inset 0 2px 8px rgba(255, 255, 255, 0.08);
 
-  /* ── BORDER / RING VARIANTS — premium edges ─────────────────────────────────── */
-  --ring-width-1: 1px;
-  --ring-width-2: 2px;
-  --ring-width-3: 3px;
-  --ring-offset-1: 2px;
-  --ring-offset-2: 4px;
-  --ring-offset-3: 6px;
-  --border-gradient-cyan: linear-gradient(90deg, var(--neon-cyan), var(--neon-violet));
-  --border-gradient-magenta: linear-gradient(90deg, var(--neon-magenta), var(--neon-rose));
-  --border-gradient-rainbow: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta), var(--neon-amber), var(--neon-violet));
+/* ── BORDER / RING VARIANTS — premium edges ─────────────────────────────────── */
+--ring-width-1: 1px;
+--ring-width-2: 2px;
+--ring-width-3: 3px;
+--ring-offset-1: 2px;
+--ring-offset-2: 4px;
+--ring-offset-3: 6px;
+--border-gradient-cyan: linear-gradient(
+  90deg,
+  var(--neon-cyan),
+  var(--neon-violet)
+);
+--border-gradient-magenta: linear-gradient(
+  90deg,
+  var(--neon-magenta),
+  var(--neon-rose)
+);
+--border-gradient-rainbow: linear-gradient(
+  90deg,
+  var(--neon-cyan),
+  var(--neon-magenta),
+  var(--neon-amber),
+  var(--neon-violet)
+);
 
-  /* ── FOCUS / ACTIVE STATES — accessible interaction ─────────────────────────── */
-  --focus-ring: 0 0 0 3px var(--glow-cyan-sm);
-  --focus-ring-strong: 0 0 0 4px var(--glow-cyan);
-  --focus-ring-magenta: 0 0 0 3px var(--glow-magenta-sm);
-  --active-scale: 0.98;
-  --active-scale-sm: 0.96;
+/* ── FOCUS / ACTIVE STATES — accessible interaction ─────────────────────────── */
+--focus-ring: 0 0 0 3px var(--glow-cyan-sm);
+--focus-ring-strong: 0 0 0 4px var(--glow-cyan);
+--focus-ring-magenta: 0 0 0 3px var(--glow-magenta-sm);
+--active-scale: 0.98;
+--active-scale-sm: 0.96;
 
-  /* ── TEXT SHADOWS — premium typography depth ────────────────────────────────── */
-  --text-shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-  --text-shadow-md: 0 2px 8px rgba(0,0,0,0.4);
-  --text-shadow-lg: 0 4px 16px rgba(0,0,0,0.5);
-  --text-shadow-glow-cyan: 0 0 8px var(--glow-cyan), 0 0 16px var(--glow-cyan-30);
-  --text-shadow-glow-magenta: 0 0 8px var(--glow-magenta), 0 0 16px var(--glow-magenta-30);
-  --text-shadow-glow-violet: 0 0 8px var(--glow-violet), 0 0 16px var(--glow-violet-zone);
-  --text-shadow-glow-rainbow: 0 0 8px var(--glow-cyan), 0 0 16px var(--glow-magenta), 0 0 24px var(--glow-violet);
+/* ── TEXT SHADOWS — premium typography depth ────────────────────────────────── */
+--text-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+--text-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+--text-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+--text-shadow-glow-cyan: 0 0 8px var(--glow-cyan), 0 0 16px var(--glow-cyan-30);
+--text-shadow-glow-magenta: 0 0 8px var(--glow-magenta),
+  0 0 16px var(--glow-magenta-30);
+--text-shadow-glow-violet: 0 0 8px var(--glow-violet),
+  0 0 16px var(--glow-violet-zone);
+--text-shadow-glow-rainbow: 0 0 8px var(--glow-cyan),
+  0 0 16px var(--glow-magenta), 0 0 24px var(--glow-violet);
 
-  /* ── TRANSITION TOKENS — consistent motion timing ───────────────────────────── */
-  --transition-fast: 100ms var(--ease-out);
-  --transition-normal: 200ms var(--ease-out);
-  --transition-slow: 300ms var(--ease-smooth);
-  --transition-slower: 500ms var(--ease-smooth);
-  --transition-spring: 400ms var(--ease-back-out);
-  --transition-elastic: 500ms var(--ease-elastic-out);
+/* ── TRANSITION TOKENS — consistent motion timing ───────────────────────────── */
+--transition-fast: 100ms var(--ease-out);
+--transition-normal: 200ms var(--ease-out);
+--transition-slow: 300ms var(--ease-smooth);
+--transition-slower: 500ms var(--ease-smooth);
+--transition-spring: 400ms var(--ease-back-out);
+--transition-elastic: 500ms var(--ease-elastic-out);
 
-  /* ── CURSOR TOKENS — custom cursor system ───────────────────────────────────── */
-  --cursor-default: auto;
-  --cursor-pointer: pointer;
-  --cursor-text: text;
-  --cursor-grab: grab;
-  --cursor-grabbing: grabbing;
-  --cursor-zoom-in: zoom-in;
-  --cursor-zoom-out: zoom-out;
-  --cursor-not-allowed: not-allowed;
+/* ── CURSOR TOKENS — custom cursor system ───────────────────────────────────── */
+--cursor-default: auto;
+--cursor-pointer: pointer;
+--cursor-text: text;
+--cursor-grab: grab;
+--cursor-grabbing: grabbing;
+--cursor-zoom-in: zoom-in;
+--cursor-zoom-out: zoom-out;
+--cursor-not-allowed: not-allowed;
 
-  /* ── ANIMATION PRESETS — keyframe definitions ───────────────────────────────── */
-  --anim-duration-fast: 200ms;
-  --anim-duration-normal: 400ms;
-  --anim-duration-slow: 600ms;
-  --anim-ease-standard: var(--ease-smooth);
-  --anim-ease-entrance: var(--ease-expo-out);
-  --anim-ease-exit: var(--ease-in);
-  --anim-ease-spring: var(--ease-back-out);
-  --anim-ease-elastic: var(--ease-elastic-out);
+/* ── ANIMATION PRESETS — keyframe definitions ───────────────────────────────── */
+--anim-duration-fast: 200ms;
+--anim-duration-normal: 400ms;
+--anim-duration-slow: 600ms;
+--anim-ease-standard: var(--ease-smooth);
+--anim-ease-entrance: var(--ease-expo-out);
+--anim-ease-exit: var(--ease-in);
+--anim-ease-spring: var(--ease-back-out);
+--anim-ease-elastic: var(--ease-elastic-out);
 
-  /* ── REDUCED MOTION ─────────────────────────────────────────────────────────── */
+/* ── REDUCED MOTION ─────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --dur-tap: 0ms; --dur-hover: 0ms; --dur-enter: 0ms; --dur-exit: 0ms;
-    --dur-stagger: 0ms; --dur-slide: 0ms; --dur-pulse: 0ms;
-    --dur-typing: 0ms; --dur-scramble: 0ms; --dur-draw: 0ms;
-    --dur-morph: 0ms; --dur-transition: 0ms; --dur-spring: 0ms;
-    --dur-scroll: 0ms; --dur-counter: 0ms;
+    --dur-tap: 0ms;
+    --dur-hover: 0ms;
+    --dur-enter: 0ms;
+    --dur-exit: 0ms;
+    --dur-stagger: 0ms;
+    --dur-slide: 0ms;
+    --dur-pulse: 0ms;
+    --dur-typing: 0ms;
+    --dur-scramble: 0ms;
+    --dur-draw: 0ms;
+    --dur-morph: 0ms;
+    --dur-transition: 0ms;
+    --dur-spring: 0ms;
+    --dur-scroll: 0ms;
+    --dur-counter: 0ms;
   }
 }
 
 /* ── COLOR ACCENT MAP (for JS access via CSS variable lookup) ───────────────── */
-[data-accent='cyan'] { --accent-color: var(--neon-cyan); --accent-glow: var(--glow-cyan-sm); }
-[data-accent='magenta'] { --accent-color: var(--neon-magenta); --accent-glow: var(--glow-magenta-sm); }
-[data-accent='violet'] { --accent-color: var(--neon-violet); --accent-glow: var(--glow-violet-sm); }
-[data-accent='amber'] { --accent-color: var(--neon-amber); --accent-glow: var(--glow-amber-sm); }
-[data-accent='rose'] { --accent-color: var(--neon-rose); --accent-glow: var(--glow-rose-sm); }
-[data-accent='yellow'] { --accent-color: var(--neon-yellow); --accent-glow: var(--glow-yellow-sm); }
-[data-accent='green'] { --accent-color: var(--neon-lime); --accent-glow: var(--glow-lime-sm); }
-[data-accent='red'] { --accent-color: var(--neon-red); --accent-glow: var(--glow-red-sm); }
-[data-accent='blue'] { --accent-color: var(--neon-ice); --accent-glow: var(--glow-ice-sm); }
+[data-accent='cyan'] {
+  --accent-color: var(--neon-cyan);
+  --accent-glow: var(--glow-cyan-sm);
+}
+[data-accent='magenta'] {
+  --accent-color: var(--neon-magenta);
+  --accent-glow: var(--glow-magenta-sm);
+}
+[data-accent='violet'] {
+  --accent-color: var(--neon-violet);
+  --accent-glow: var(--glow-violet-sm);
+}
+[data-accent='amber'] {
+  --accent-color: var(--neon-amber);
+  --accent-glow: var(--glow-amber-sm);
+}
+[data-accent='rose'] {
+  --accent-color: var(--neon-rose);
+  --accent-glow: var(--glow-rose-sm);
+}
+[data-accent='yellow'] {
+  --accent-color: var(--neon-yellow);
+  --accent-glow: var(--glow-yellow-sm);
+}
+[data-accent='green'] {
+  --accent-color: var(--neon-lime);
+  --accent-glow: var(--glow-lime-sm);
+}
+[data-accent='red'] {
+  --accent-color: var(--neon-red);
+  --accent-glow: var(--glow-red-sm);
+}
+[data-accent='blue'] {
+  --accent-color: var(--neon-ice);
+  --accent-glow: var(--glow-ice-sm);
+}
