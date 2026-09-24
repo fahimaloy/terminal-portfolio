@@ -72,6 +72,7 @@ export default function PremiumBackground({
           autoplay: onScroll({
             container: window,
             sync: true,
+            target: root,
           }),
         });
       }
@@ -102,6 +103,7 @@ export default function PremiumBackground({
           autoplay: onScroll({
             container: window,
             sync: true,
+            target: root,
           }),
         });
       }
@@ -124,6 +126,7 @@ export default function PremiumBackground({
           autoplay: onScroll({
             container: window,
             sync: true,
+            target: root,
           }),
         });
       }
@@ -136,6 +139,7 @@ export default function PremiumBackground({
 
   return (
     <div
+      ref={containerRef}
       aria-hidden="true"
       className={`absolute inset-0 overflow-hidden pointer-events-none z-0 ${className}`}
       style={{

@@ -265,7 +265,7 @@ export const generatedRing: Record<string, string> = {
   offset1: '2px',
   offset2: '4px',
   offset3: '6px',
-  red: 'var(--neon-lime)',
+  red: 'var(--neon-red)',
   rose: 'var(--neon-rose)',
   violet: 'var(--neon-violet)',
   width1: '1px',

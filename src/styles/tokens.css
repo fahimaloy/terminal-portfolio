@@ -157,7 +157,7 @@
   --ring-green: var(--neon-lime);
   --ring-rose: var(--neon-rose);
   --ring-blue: var(--neon-ice);
-  --ring-red: var(--neon-lime);
+  --ring-red: var(--neon-red);
 
   /* ── OVERLAYS ────────────────────────────────────────────────────────────── */
   --overlay-scanline: rgba(255, 255, 255, 0.008);
@@ -404,129 +404,130 @@
   --spring-elastic: '{"stiffness":180,"damping":6}';
   --spring-card: '{"stiffness":150,"damping":14}';
   --spring-snappy: '{"stiffness":240,"damping":18}';
+
+  /* ── PARTICLE/FIELD — for SVG and canvas graphics ───────────────────────── */
+  --particle-cyan: var(--neon-cyan);
+  --particle-cyan-teal: var(--neon-cyan-teal);
+  --particle-magenta: var(--neon-magenta);
+  --particle-violet: var(--neon-violet);
+  --particle-amber: var(--neon-amber);
+  --particle-rose: var(--neon-rose);
+  --particle-lime: var(--neon-lime);
+  --particle-ice: var(--neon-ice);
+  --particle-alpha-low: 0.15;
+  --particle-alpha-mid: 0.35;
+  --particle-alpha-high: 0.5;
+  --particle-size-sm: 1;
+  --particle-size-md: 1.5;
+  --particle-size-lg: 2;
+  --field-line-cyan: rgba(0, 240, 255, 0.15);
+  --field-line-magenta: rgba(255, 0, 136, 0.12);
+  --field-line-violet: rgba(160, 32, 240, 0.1);
+  --field-glow-cyan: rgba(0, 240, 255, 0.08);
+  --field-glow-magenta: rgba(255, 0, 136, 0.06);
+  --field-glow-violet: rgba(160, 32, 240, 0.05);
+
+  /* ── ADVANCED GLASS VARIANTS — premium frosted glass ───────────────────────── */
+  --glass-bg-subtle: rgba(19, 20, 31, 0.35);
+  --glass-bg-strong: rgba(19, 20, 31, 0.75);
+  --glass-border-subtle: rgba(255, 255, 255, 0.04);
+  --glass-border-strong: rgba(255, 255, 255, 0.15);
+  --glass-blur-sm: blur(8px) saturate(120%);
+  --glass-blur-md: blur(16px) saturate(130%);
+  --glass-blur-lg: blur(32px) saturate(150%);
+  --glass-blur-xl: blur(48px) saturate(160%);
+  --glass-highlight: rgba(255, 255, 255, 0.08);
+  --glass-shadow: rgba(0, 0, 0, 0.4);
+  --glass-shadow-strong: rgba(0, 0, 0, 0.6);
+
+  /* ── PREMIUM SHADOWS — layered depth system ─────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.35);
+  --shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.4);
+  --shadow-glow-sm: 0 0 12px var(--glow-cyan-sm);
+  --shadow-glow-md: 0 0 24px var(--glow-cyan);
+  --shadow-glow-lg: 0 0 48px var(--glow-cyan-60);
+  --shadow-glow-magenta: 0 0 24px var(--glow-magenta);
+  --shadow-glow-violet: 0 0 24px var(--glow-violet);
+  --shadow-inner: inset 0 1px 2px rgba(255, 255, 255, 0.05);
+  --shadow-inner-strong: inset 0 2px 8px rgba(255, 255, 255, 0.08);
+
+  /* ── BORDER / RING VARIANTS — premium edges ─────────────────────────────────── */
+  --ring-width-1: 1px;
+  --ring-width-2: 2px;
+  --ring-width-3: 3px;
+  --ring-offset-1: 2px;
+  --ring-offset-2: 4px;
+  --ring-offset-3: 6px;
+  --border-gradient-cyan: linear-gradient(
+    90deg,
+    var(--neon-cyan),
+    var(--neon-violet)
+  );
+  --border-gradient-magenta: linear-gradient(
+    90deg,
+    var(--neon-magenta),
+    var(--neon-rose)
+  );
+  --border-gradient-rainbow: linear-gradient(
+    90deg,
+    var(--neon-cyan),
+    var(--neon-magenta),
+    var(--neon-amber),
+    var(--neon-violet)
+  );
+
+  /* ── FOCUS / ACTIVE STATES — accessible interaction ─────────────────────────── */
+  --focus-ring: 0 0 0 3px var(--glow-cyan-sm);
+  --focus-ring-strong: 0 0 0 4px var(--glow-cyan);
+  --focus-ring-magenta: 0 0 0 3px var(--glow-magenta-sm);
+  --active-scale: 0.98;
+  --active-scale-sm: 0.96;
+
+  /* ── TEXT SHADOWS — premium typography depth ────────────────────────────────── */
+  --text-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --text-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --text-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --text-shadow-glow-cyan: 0 0 8px var(--glow-cyan),
+    0 0 16px var(--glow-cyan-30);
+  --text-shadow-glow-magenta: 0 0 8px var(--glow-magenta),
+    0 0 16px var(--glow-magenta-30);
+  --text-shadow-glow-violet: 0 0 8px var(--glow-violet),
+    0 0 16px var(--glow-violet-zone);
+  --text-shadow-glow-rainbow: 0 0 8px var(--glow-cyan),
+    0 0 16px var(--glow-magenta), 0 0 24px var(--glow-violet);
+
+  /* ── TRANSITION TOKENS — consistent motion timing ───────────────────────────── */
+  --transition-fast: 100ms var(--ease-out);
+  --transition-normal: 200ms var(--ease-out);
+  --transition-slow: 300ms var(--ease-smooth);
+  --transition-slower: 500ms var(--ease-smooth);
+  --transition-spring: 400ms var(--ease-back-out);
+  --transition-elastic: 500ms var(--ease-elastic-out);
+
+  /* ── CURSOR TOKENS — custom cursor system ───────────────────────────────────── */
+  --cursor-default: auto;
+  --cursor-pointer: pointer;
+  --cursor-text: text;
+  --cursor-grab: grab;
+  --cursor-grabbing: grabbing;
+  --cursor-zoom-in: zoom-in;
+  --cursor-zoom-out: zoom-out;
+  --cursor-not-allowed: not-allowed;
+
+  /* ── ANIMATION PRESETS — keyframe definitions ───────────────────────────────── */
+  --anim-duration-fast: 200ms;
+  --anim-duration-normal: 400ms;
+  --anim-duration-slow: 600ms;
+  --anim-ease-standard: var(--ease-smooth);
+  --anim-ease-entrance: var(--ease-expo-out);
+  --anim-ease-exit: var(--ease-in);
+  --anim-ease-spring: var(--ease-back-out);
+  --anim-ease-elastic: var(--ease-elastic-out);
 }
-
-/* ── PARTICLE/FIELD — for SVG and canvas graphics ───────────────────────── */
---particle-cyan: var(--neon-cyan);
---particle-cyan-teal: var(--neon-cyan-teal);
---particle-magenta: var(--neon-magenta);
---particle-violet: var(--neon-violet);
---particle-amber: var(--neon-amber);
---particle-rose: var(--neon-rose);
---particle-lime: var(--neon-lime);
---particle-ice: var(--neon-ice);
---particle-alpha-low: 0.15;
---particle-alpha-mid: 0.35;
---particle-alpha-high: 0.5;
---particle-size-sm: 1;
---particle-size-md: 1.5;
---particle-size-lg: 2;
---field-line-cyan: rgba(0, 240, 255, 0.15);
---field-line-magenta: rgba(255, 0, 136, 0.12);
---field-line-violet: rgba(160, 32, 240, 0.1);
---field-glow-cyan: rgba(0, 240, 255, 0.08);
---field-glow-magenta: rgba(255, 0, 136, 0.06);
---field-glow-violet: rgba(160, 32, 240, 0.05);
-
-/* ── ADVANCED GLASS VARIANTS — premium frosted glass ───────────────────────── */
---glass-bg-subtle: rgba(19, 20, 31, 0.35);
---glass-bg-strong: rgba(19, 20, 31, 0.75);
---glass-border-subtle: rgba(255, 255, 255, 0.04);
---glass-border-strong: rgba(255, 255, 255, 0.15);
---glass-blur-sm: blur(8px) saturate(120%);
---glass-blur-md: blur(16px) saturate(130%);
---glass-blur-lg: blur(32px) saturate(150%);
---glass-blur-xl: blur(48px) saturate(160%);
---glass-highlight: rgba(255, 255, 255, 0.08);
---glass-shadow: rgba(0, 0, 0, 0.4);
---glass-shadow-strong: rgba(0, 0, 0, 0.6);
-
-/* ── PREMIUM SHADOWS — layered depth system ─────────────────────────────────── */
---shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
---shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
---shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
---shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
---shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.35);
---shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.4);
---shadow-glow-sm: 0 0 12px var(--glow-cyan-sm);
---shadow-glow-md: 0 0 24px var(--glow-cyan);
---shadow-glow-lg: 0 0 48px var(--glow-cyan-60);
---shadow-glow-magenta: 0 0 24px var(--glow-magenta);
---shadow-glow-violet: 0 0 24px var(--glow-violet);
---shadow-inner: inset 0 1px 2px rgba(255, 255, 255, 0.05);
---shadow-inner-strong: inset 0 2px 8px rgba(255, 255, 255, 0.08);
-
-/* ── BORDER / RING VARIANTS — premium edges ─────────────────────────────────── */
---ring-width-1: 1px;
---ring-width-2: 2px;
---ring-width-3: 3px;
---ring-offset-1: 2px;
---ring-offset-2: 4px;
---ring-offset-3: 6px;
---border-gradient-cyan: linear-gradient(
-  90deg,
-  var(--neon-cyan),
-  var(--neon-violet)
-);
---border-gradient-magenta: linear-gradient(
-  90deg,
-  var(--neon-magenta),
-  var(--neon-rose)
-);
---border-gradient-rainbow: linear-gradient(
-  90deg,
-  var(--neon-cyan),
-  var(--neon-magenta),
-  var(--neon-amber),
-  var(--neon-violet)
-);
-
-/* ── FOCUS / ACTIVE STATES — accessible interaction ─────────────────────────── */
---focus-ring: 0 0 0 3px var(--glow-cyan-sm);
---focus-ring-strong: 0 0 0 4px var(--glow-cyan);
---focus-ring-magenta: 0 0 0 3px var(--glow-magenta-sm);
---active-scale: 0.98;
---active-scale-sm: 0.96;
-
-/* ── TEXT SHADOWS — premium typography depth ────────────────────────────────── */
---text-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
---text-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
---text-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
---text-shadow-glow-cyan: 0 0 8px var(--glow-cyan), 0 0 16px var(--glow-cyan-30);
---text-shadow-glow-magenta: 0 0 8px var(--glow-magenta),
-  0 0 16px var(--glow-magenta-30);
---text-shadow-glow-violet: 0 0 8px var(--glow-violet),
-  0 0 16px var(--glow-violet-zone);
---text-shadow-glow-rainbow: 0 0 8px var(--glow-cyan),
-  0 0 16px var(--glow-magenta), 0 0 24px var(--glow-violet);
-
-/* ── TRANSITION TOKENS — consistent motion timing ───────────────────────────── */
---transition-fast: 100ms var(--ease-out);
---transition-normal: 200ms var(--ease-out);
---transition-slow: 300ms var(--ease-smooth);
---transition-slower: 500ms var(--ease-smooth);
---transition-spring: 400ms var(--ease-back-out);
---transition-elastic: 500ms var(--ease-elastic-out);
-
-/* ── CURSOR TOKENS — custom cursor system ───────────────────────────────────── */
---cursor-default: auto;
---cursor-pointer: pointer;
---cursor-text: text;
---cursor-grab: grab;
---cursor-grabbing: grabbing;
---cursor-zoom-in: zoom-in;
---cursor-zoom-out: zoom-out;
---cursor-not-allowed: not-allowed;
-
-/* ── ANIMATION PRESETS — keyframe definitions ───────────────────────────────── */
---anim-duration-fast: 200ms;
---anim-duration-normal: 400ms;
---anim-duration-slow: 600ms;
---anim-ease-standard: var(--ease-smooth);
---anim-ease-entrance: var(--ease-expo-out);
---anim-ease-exit: var(--ease-in);
---anim-ease-spring: var(--ease-back-out);
---anim-ease-elastic: var(--ease-elastic-out);
 
 /* ── REDUCED MOTION ─────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

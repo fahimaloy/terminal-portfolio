@@ -304,6 +304,7 @@ body {
     border-radius: var(--radius-sm);
   }
 }
+
 /* Ripple-out for button press feedback (NeonButton) */
 @keyframes ripple-out {
   from {
@@ -312,11 +313,12 @@ body {
     opacity: 0.6;
   }
   to {
-    width: 240px;
-    height: 240px;
+    width: 300%;
+    height: 300%;
     opacity: 0;
   }
 }
+
 /* Premium ambient float animation for vector graphics */
 @keyframes float-ambient {
   0% {
