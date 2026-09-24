@@ -3,7 +3,7 @@
    Aurora mesh layer (var(--aurora-*), blur 40-80px, 0.06-0.12) drifts with spring
    easing behind morph shapes; TronGrid/ParticleField softened for hero readability. */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   animate,
   createScope,
@@ -43,9 +43,14 @@ type BackgroundProps = {
 export default function Background({ variant = 'default' }: BackgroundProps) {
   const bgRef = useRef<HTMLDivElement>(null);
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const isHero = variant === 'hero';
   const isBlog = variant === 'blog';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!bgRef.current) return;
@@ -74,52 +79,31 @@ export default function Background({ variant = 'default' }: BackgroundProps) {
           0,
         );
 
-        // Scroll-scrubbed morph — warm washes, not neon zones (preserve shapes[3] logic)
-        shapes.forEach((shape, i) => {
-          tl.add(
-            shape,
-            {
-              d: morphTo(`#bg-morph-target-${(i + 1) % MORPH_PATHS.length}`),
-              duration: durations.morph * 1000,
-              ease: morphPreset.ease,
-              autoplay: onScroll({ sync: true }),
-            } as any,
-            0,
+        const morphTl = createTimeline({
+          defaults: { ease: morphPreset.ease },
+          loop: true,
+        });
+        MORPH_PATHS.forEach((path, i) => {
+          morphTl.add(
+            shapes,
+            { d: path, duration: morphPreset.duration * 1000 },
+            i === 0 ? 0 : `+=${morphPreset.duration * 1000}`,
           );
         });
-      }
 
-      // Aurora spring drift — gated: skip when prefers-reduced-motion or blog (muted)
-      if (!isBlog) {
-        const auroras =
-          bgRef.current!.querySelectorAll<HTMLElement>('.bg-aurora-blob');
-        if (auroras.length !== 0) {
-          const driftEase = spring(springs.soft) as unknown as string;
-          auroras.forEach((el, i) => {
-            const dx = i % 2 === 0 ? 18 : -16;
-            const dy = i % 2 === 0 ? -14 : 16;
-            animate(el, {
-              translateX: [0, dx, 0],
-              translateY: [0, dy, 0],
-              duration: 16000 + i * 1400,
-              loop: true,
-              alternate: true,
-              ease: driftEase ?? easings.smooth,
-              delay: i * 180,
-            });
-          });
-        }
+        return () => {
+          tl.revert();
+          morphTl.revert();
+        };
       }
     });
 
-    return () => {
-      scope.revert();
-      scopeRef.current = null;
-    };
+    return () => scope.revert();
   }, [variant]);
 
   // Whether aurora drift is active — blog is muted/static to reduce motion + composite cost
-  const driftActive = !isBlog && !isReducedMotion() && canAnimate();
+  // Only evaluate on client after mount to avoid hydration mismatch
+  const driftActive = mounted && !isBlog && !isReducedMotion() && canAnimate();
 
   // Opacities kept 0.06-0.12 spec; hero slightly higher, blog more muted
   const auroraOpacities = isHero
@@ -238,49 +222,24 @@ export default function Background({ variant = 'default' }: BackgroundProps) {
           </linearGradient>
           {MORPH_PATHS.map((d, i) => (
             <path
-              key={`bg-morph-target-${i}`}
-              id={`bg-morph-target-${i}`}
+              key={i}
+              className="bg-morph-shape"
               d={d}
+              stroke="url(#bg-shape-grad)"
+              strokeWidth={isHero ? '0.8' : '0.5'}
               fill="none"
-              stroke="none"
+              style={{
+                filter: isHero
+                  ? 'drop-shadow(0 0 4px var(--glow-cyan-sm))'
+                  : 'none',
+              }}
             />
           ))}
         </defs>
-        <path
-          className="bg-morph-shape"
-          d={MORPH_PATHS[0]}
-          fill="none"
-          stroke="url(#bg-shape-grad)"
-          strokeWidth="0.5"
-          transform="translate(100, 100) scale(1.5)"
-        />
-        <path
-          className="bg-morph-shape"
-          d={MORPH_PATHS[1]}
-          fill="none"
-          stroke="url(#bg-shape-grad)"
-          strokeWidth="0.5"
-          transform="translate(600, 300) scale(2)"
-        />
-        <path
-          className="bg-morph-shape"
-          d={MORPH_PATHS[2]}
-          fill="none"
-          stroke="url(#bg-shape-grad)"
-          strokeWidth="0.5"
-          transform="translate(300, 600) scale(1.8)"
-        />
       </svg>
-
       <TronGrid />
       <ParticleField />
       <ScanlineOverlay />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.035]"
-        aria-hidden="true"
-      >
-        <GridLattice opacity={1} color="var(--grid-1)" />
-      </div>
 
       {/* Vignette — warm */}
       <div

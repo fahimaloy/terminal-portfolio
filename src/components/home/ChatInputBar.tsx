@@ -45,6 +45,26 @@ export default function ChatInputBar({
     };
   }, []);
 
+  // Keyboard shortcuts: / to focus input, double Esc to unfocus
+  useEffect(() => {
+    let lastEsc = 0;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === '/' && document.activeElement !== inputRef.current) {
+        e.preventDefault();
+        inputRef.current?.focus();
+        onOpen();
+      }
+      if (e.key === 'Escape' && document.activeElement === inputRef.current) {
+        const now = Date.now();
+        if (now - lastEsc < 350) {
+          inputRef.current?.blur();
+        }
+        lastEsc = now;
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [inputRef, onOpen]);
   const animateFocus = useCallback((focused: boolean) => {
     const el = wrapRef.current;
     if (!el || isReducedMotion() || !canAnimate()) return;
@@ -140,7 +160,7 @@ export default function ChatInputBar({
             type="text"
             className="w-full bg-transparent border-none px-2 py-2.5 focus:outline-none text-sm font-body cursor-text"
             style={{ color: 'var(--fg-1)' } as React.CSSProperties}
-            placeholder="Ask about my development work..."
+            placeholder="Type a message... (Press / to focus, Esc to unfocus)"
             value={input}
             onChange={(e) => onInputChange(e.target.value)}
             onFocus={() => {

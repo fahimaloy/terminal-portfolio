@@ -359,15 +359,6 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
         className="flex flex-col items-center w-full"
         id="hero"
       >
-        {/* Label */}
-        <div
-          data-hero="label"
-          className="hero-label text-[10px] font-mono tracking-[0.32em] opacity-0"
-          style={{ color: 'var(--fg-4)' }}
-        >
-          {'// ' + (siteTexts.developer_profile_label || 'DEVELOPER PROFILE')}
-        </div>
-
         {/* Hairline divider drawable under label/name */}
         <HairlineDivider className="hero-hairline w-24 mx-auto mt-2 opacity-0" />
         {/* Name — plain editorial, no glitch */}
@@ -381,7 +372,9 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               WebkitTextFillColor: 'transparent',
             }}
           >
-            {profile?.full_name?.toUpperCase() || 'FAHIM AHMED'}
+            {profile?.full_name?.toUpperCase() ||
+              config.name?.toUpperCase() ||
+              'FAHIM AHMED'}
           </h1>
         </div>
 
@@ -476,48 +469,6 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               EXPERIENCE
             </div>
           </div>
-        </div>
-
-        {/* CTA Buttons — AAA spring hover */}
-        <div className="flex flex-wrap gap-3 mt-7 justify-center">
-          <button
-            data-hero="cta"
-            onClick={onOpenChat}
-            className="hero-btn opacity-0 inline-flex items-center justify-center px-5 py-2.5 font-mono text-[11px] tracking-[0.16em] border rounded-[var(--radius-md)] transition-colors duration-200 hover:scale-102 hover:transition-transform duration-200 ease-in-out"
-            style={{
-              background: 'var(--wash-yellow)',
-              color: 'var(--bg-1)',
-              borderColor: 'var(--neon-cyan)',
-            }}
-          >
-            START CHAT
-          </button>
-          <button
-            data-hero="cta"
-            onClick={() =>
-              window.open('https://github.com/fahimaloy', '_blank')
-            }
-            className="hero-btn opacity-0 inline-flex items-center justify-center px-5 py-2.5 font-mono text-[11px] tracking-[0.16em] border rounded-[var(--radius-md)] transition-colors duration-200 hover:scale-102 hover:transition-transform duration-200 ease-in-out"
-            style={{
-              background: 'transparent',
-              color: 'var(--fg-1)',
-              borderColor: 'var(--neon-cyan)',
-            }}
-          >
-            VIEW CODE
-          </button>
-          <button
-            data-hero="cta"
-            onClick={() => router.push('/blog')}
-            className="hero-btn opacity-0 inline-flex items-center justify-center px-5 py-2.5 font-mono text-[11px] tracking-[0.16em] border rounded-[var(--radius-md)] transition-colors duration-200 hover:scale-102 hover:transition-transform duration-200 ease-in-out"
-            style={{
-              background: 'transparent',
-              color: 'var(--fg-2)',
-              borderColor: 'var(--border-subtle)',
-            }}
-          >
-            READ BLOG
-          </button>
         </div>
 
         {/* Quick access cards */}

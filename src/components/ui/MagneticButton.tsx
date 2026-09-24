@@ -4,20 +4,28 @@ import React, { useRef, useCallback } from 'react';
 import { createSafeAnimatable } from '../../utils/animatable';
 import { isReducedMotion } from '../../config/animations';
 
-interface MagneticButtonProps {
+type MagneticButtonBaseProps = {
   children: React.ReactNode;
   className?: string;
   strength?: number;
-  onClick?: () => void;
-}
+  as?: React.ElementType;
+};
+
+type MagneticButtonProps = MagneticButtonBaseProps &
+  (
+    | React.ButtonHTMLAttributes<HTMLButtonElement>
+    | React.AnchorHTMLAttributes<HTMLAnchorElement>
+  );
 
 export default function MagneticButton({
   children,
   className = '',
   strength = 0.18,
   onClick,
+  as: Component = 'button',
+  ...rest
 }: MagneticButtonProps) {
-  const ref = useRef<HTMLButtonElement>(null);
+  const ref = useRef<any>(null);
   const animatableRef = useRef<ReturnType<typeof createSafeAnimatable> | null>(
     null,
   );
@@ -68,14 +76,15 @@ export default function MagneticButton({
   }, []);
 
   return (
-    <button
+    <Component
       ref={ref}
       className={className}
       onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      {...rest}
     >
       {children}
-    </button>
+    </Component>
   );
 }
