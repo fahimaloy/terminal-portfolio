@@ -10,6 +10,7 @@
   --bg-void: #0b0c12;
   --bg-1: #0f1017;
   --bg-2: #13141f;
+  --bg-smoke: var(--bg-2);
   --bg-3: #181a28;
   --bg-4: #1c1e2a;
   --bg-panel: rgba(19, 20, 31, 0.55);
@@ -491,14 +492,15 @@
   --text-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --text-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
   --text-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --text-shadow-glow-cyan: 0 0 8px var(--glow-cyan),
-    0 0 16px var(--glow-cyan-30);
-  --text-shadow-glow-magenta: 0 0 8px var(--glow-magenta),
-    0 0 16px var(--glow-magenta-30);
-  --text-shadow-glow-violet: 0 0 8px var(--glow-violet),
-    0 0 16px var(--glow-violet-zone);
-  --text-shadow-glow-rainbow: 0 0 8px var(--glow-cyan),
-    0 0 16px var(--glow-magenta), 0 0 24px var(--glow-violet);
+  --text-shadow-glow-cyan:
+    0 0 8px var(--glow-cyan), 0 0 16px var(--glow-cyan-30);
+  --text-shadow-glow-magenta:
+    0 0 8px var(--glow-magenta), 0 0 16px var(--glow-magenta-30);
+  --text-shadow-glow-violet:
+    0 0 8px var(--glow-violet), 0 0 16px var(--glow-violet-zone);
+  --text-shadow-glow-rainbow:
+    0 0 8px var(--glow-cyan), 0 0 16px var(--glow-magenta),
+    0 0 24px var(--glow-violet);
 
   /* ── TRANSITION TOKENS — consistent motion timing ───────────────────────────── */
   --transition-fast: 100ms var(--ease-out);
