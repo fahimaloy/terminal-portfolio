@@ -116,6 +116,7 @@ describe('IconPicker', () => {
     // didPersistMountRef skips first persist — verify no write before any selection on seeded mount
     unmount();
     window.localStorage.setItem(RECENT_KEY, JSON.stringify(['Star']));
+    setItemSpy.mockRestore();
     const setItemSpy2 = vi.spyOn(Storage.prototype, 'setItem');
     // fresh spy sees the mount writes for the seeded value — capture then clear
     render(<IconPicker mode="all" value={null} onChange={vi.fn()} />);

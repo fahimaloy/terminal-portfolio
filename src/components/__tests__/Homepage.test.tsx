@@ -1,5 +1,6 @@
 // src/components/__tests__/Homepage.test.tsx
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { Mock } from 'vitest';
 import {
   render,
   screen,
@@ -179,11 +180,11 @@ vi.mock('animejs', () => {
     __esModule: true,
     animate: vi.fn(),
     createScope: vi.fn(() => mockScope),
-    createTimeline: vi.fn(() => ({ add: mockTlAdd } as any)),
+    createTimeline: vi.fn(() => ({ add: mockTlAdd }) as any),
     stagger: vi.fn((v: any) => v),
     spring: vi.fn(() => 'spring'),
     createDrawable: vi.fn(() => [] as any),
-    splitText: vi.fn(() => ({ chars: [], words: [], revert: vi.fn() } as any)),
+    splitText: vi.fn(() => ({ chars: [], words: [], revert: vi.fn() }) as any),
     scrambleText: vi.fn(() => 'SCRAMBLE'),
   };
 });
@@ -318,8 +319,8 @@ describe('Homepage', () => {
       expect(position).toBe(0);
       // scope.add wraps timeline creation
       const scope = mockedCreateScope.mock.results[0].value as {
-        add: ReturnType<typeof vi.fn>;
-        revert: ReturnType<typeof vi.fn>;
+        add: Mock<(...args: never[]) => unknown>;
+        revert: Mock<() => void>;
       };
       expect(scope.add).toHaveBeenCalledTimes(1);
       // unified let cleanup: timeout scheduled and cleanup clears + reverts
