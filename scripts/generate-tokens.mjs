@@ -387,7 +387,13 @@ function toJsKey(cssKey) {
 }
 
 function escapeSingle(s) {
-  return s.replace(/'/g, "\\'");
+  return s
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }
 
 function ensureDir(filePath) {

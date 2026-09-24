@@ -121,7 +121,7 @@ module.exports = {
     'ring-offset-1': '2px',
     'ring-offset-2': '4px',
     'ring-offset-3': '6px',
-    'ring-red': 'var(--neon-lime)',
+    'ring-red': 'var(--neon-red)',
     'ring-rose': 'var(--neon-rose)',
     'ring-violet': 'var(--neon-violet)',
     'ring-width-1': '1px',
@@ -133,23 +133,9 @@ module.exports = {
     'border-0': '0',
     'border-1': '1px',
     'border-2': '2px',
-    'border-gradient-cyan': 'linear-gradient(
-  90deg,
-  var(--neon-cyan),
-  var(--neon-violet)
-)',
-    'border-gradient-magenta': 'linear-gradient(
-  90deg,
-  var(--neon-magenta),
-  var(--neon-rose)
-)',
-    'border-gradient-rainbow': 'linear-gradient(
-  90deg,
-  var(--neon-cyan),
-  var(--neon-magenta),
-  var(--neon-amber),
-  var(--neon-violet)
-)',
+    'border-gradient-cyan': 'linear-gradient(\n    90deg,\n    var(--neon-cyan),\n    var(--neon-violet)\n  )',
+    'border-gradient-magenta': 'linear-gradient(\n    90deg,\n    var(--neon-magenta),\n    var(--neon-rose)\n  )',
+    'border-gradient-rainbow': 'linear-gradient(\n    90deg,\n    var(--neon-cyan),\n    var(--neon-magenta),\n    var(--neon-amber),\n    var(--neon-violet)\n  )',
     'border-strong': 'rgba(255, 255, 255, 0.12)',
     'border-subtle': 'rgba(255, 255, 255, 0.06)',
   },

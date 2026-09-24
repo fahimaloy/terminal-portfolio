@@ -4,37 +4,32 @@ import { render } from '@testing-library/react';
 
 // fully mock animejs — all exports vi.fn(), scope.add executes callback immediately
 vi.mock('animejs', () => {
-  const mockRevert = vi.fn();
-  const mockAdd: any = vi.fn((cb: () => void) => {
-    cb();
-    return mockScope;
-  });
-  const mockScope: any = { add: mockAdd, revert: mockRevert };
+  const scope = {
+    add: (callback: () => void) => {
+      callback();
+    },
+    revert: vi.fn(),
+  };
   return {
     animate: vi.fn(),
-    createScope: vi.fn(() => mockScope),
+    createScope: vi.fn(() => scope),
     createTimeline: vi.fn(() => ({ add: vi.fn() })),
     createDrawable: vi.fn(() => ({})),
     morphTo: vi.fn((s: string) => s),
-    onScroll: vi.fn((o: unknown) => o),
+    onScroll: vi.fn((options: unknown) => options),
     spring: vi.fn(() => 'spring-ease'),
-    stagger: vi.fn((v: unknown) => v),
+    stagger: vi.fn((value: unknown) => value),
   };
 });
 
-// isolate Background from child-particle animations so animate counts reflect aurora drift only
-vi.mock('../TronGrid', () => ({
-  default: () => <div data-testid="tron-grid" />,
-}));
-vi.mock('../ScanlineOverlay', () => ({
-  default: () => <div data-testid="scanline" />,
-}));
-vi.mock('../ParticleField', () => ({
-  default: () => <div data-testid="particles" />,
+// The aurora primitive supplies the background layer; expose only the
+// selector contract consumed by Background, not its internal markup.
+vi.mock('../graphics/primitives/AuroraMesh', () => ({
+  default: () => <div className="bg-aurora-layer" />,
 }));
 
 import Background from '../Background';
-import { animate, createScope, spring } from 'animejs';
+import { animate, createScope, onScroll } from 'animejs';
 
 function mockMatchMedia(reduceMatches: boolean) {
   Object.defineProperty(window, 'matchMedia', {
@@ -55,9 +50,8 @@ function mockMatchMedia(reduceMatches: boolean) {
 }
 
 function clearMatchMedia() {
-  // jsdom has no matchMedia by default — remove mocked property so isReducedMotion/canAnimate return false
-  // eslint-disable-next-line
-  delete (window as any).matchMedia;
+  // jsdom has no matchMedia by default — remove the mocked property.
+  Reflect.deleteProperty(window, 'matchMedia');
 }
 
 describe('Background', () => {
@@ -69,6 +63,39 @@ describe('Background', () => {
   afterEach(() => {
     vi.clearAllMocks();
     clearMatchMedia();
+  });
+
+  it('configures every scroll animation with the current background targets', () => {
+    // Arrange + Act: render with motion enabled so the scope queries the current markup.
+    const { container } = render(<Background variant="hero" />);
+    const root = container.firstElementChild as HTMLElement;
+    const grid = root.querySelector<HTMLElement>('.bg-grid-lattice');
+    const scrollCalls = (onScroll as unknown as ReturnType<typeof vi.fn>).mock
+      .calls as Array<[Record<string, unknown>]>;
+
+    // Assert: particles, grid, aurora, and orbs share window as the scroll
+    // container; only the grid uses its own element as the trigger target.
+    expect(grid).not.toBeNull();
+    expect(scrollCalls.map(([options]) => options)).toEqual([
+      { container: window, sync: true, target: root },
+      { container: window, sync: false, target: grid },
+      { container: window, sync: true, target: root },
+      { container: window, sync: true, target: root },
+    ]);
+  });
+
+  it('reduced-motion still renders MorphOrb elements without scroll animations', () => {
+    // Arrange
+    mockMatchMedia(true);
+
+    // Act
+    const { container } = render(<Background variant="hero" />);
+
+    // Assert
+    expect(container.querySelectorAll('.grat-orb')).toHaveLength(3);
+    expect(createScope).not.toHaveBeenCalled();
+    expect(animate).not.toHaveBeenCalled();
+    expect(onScroll).not.toHaveBeenCalled();
   });
 
   it('hero/default render MorphOrb elements', () => {
@@ -97,19 +124,10 @@ describe('Background', () => {
     expect(orbs.length).toBe(3);
   });
 
-  it('reduced-motion still renders MorphOrb elements statically', () => {
-    vi.clearAllMocks();
-    mockMatchMedia(true);
-    const { container } = render(<Background variant="hero" />);
-    // MorphOrb elements still rendered statically
-    const orbs = container.querySelectorAll<HTMLElement>('.grat-orb');
-    expect(orbs.length).toBe(3);
-  });
-
   it('rerender with different variant re-renders MorphOrb elements', () => {
-    const { rerender } = render(<Background variant="hero" />);
-    let orbs = rerender(<Background variant="blog" />);
-    expect(rerender).toBeDefined();
+    const { container, rerender } = render(<Background variant="hero" />);
+    rerender(<Background variant="blog" />);
+    expect(container.querySelectorAll('.grat-orb')).toHaveLength(3);
 
     vi.clearAllMocks();
     mockMatchMedia(false);

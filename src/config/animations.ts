@@ -19,9 +19,17 @@ type EasingFunction = string | number | ((v: number) => number);
 
 // ── Accent Types ─────────────────────────────────────────────────────────────
 export type AccentColor =
-  | 'yellow'
-  | 'magenta'
   | 'cyan'
+  | 'magenta'
+  | 'amber'
+  | 'violet'
+  | 'rose'
+  | 'lime'
+  | 'ice'
+  | 'cyanAlt'
+  | 'cyanTeal'
+  // Legacy accents for backward compatibility
+  | 'yellow'
   | 'green'
   | 'red'
   | 'purple'

@@ -1,7 +1,7 @@
 // src/components/ui/NeonButton.tsx
 // Premium button component with multiple variants, ripple effects, and micro-interactions
 import React, { useRef, useEffect, useState } from 'react';
-import { animate, createScope, stagger, spring } from 'animejs';
+import { animate, createScope, spring } from 'animejs';
 import {
   durations,
   easings,
@@ -103,8 +103,6 @@ export default function NeonButton({
   const accentGlow = GLOW_MAP[accent];
   const buttonRef = useRef<HTMLButtonElement>(null);
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
-  const [hovered, setHovered] = useState(false);
-  const [pressed, setPressed] = useState(false);
   const [ripplePos, setRipplePos] = useState<{ x: number; y: number } | null>(
     null,
   );
@@ -124,7 +122,6 @@ export default function NeonButton({
 
   const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (isDisabled) return;
-    setPressed(true);
     if (ripple && animateEnabled && !reduced) {
       const rect = buttonRef.current?.getBoundingClientRect();
       if (rect) {
@@ -146,7 +143,6 @@ export default function NeonButton({
 
   const handleMouseUp = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (isDisabled) return;
-    setPressed(false);
     setRipplePos(null);
     onMouseUp?.(e);
     // Release animation
@@ -163,15 +159,12 @@ export default function NeonButton({
 
   const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (isDisabled) return;
-    setPressed(false);
     setRipplePos(null);
-    setHovered(false);
     onMouseLeave?.(e);
   };
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (isDisabled) return;
-    setHovered(true);
     if (!reduced && animateEnabled) {
       const easing = spring(springs.soft);
       const smoothEase = easings.smooth ?? 'linear';
@@ -182,18 +175,6 @@ export default function NeonButton({
             : `0 0 0 1px var(--border-strong), 0 0 16px var(--glow-cyan-sm)`,
         duration: durations.hover * 1000,
         ease: easing ?? smoothEase,
-      });
-    }
-  };
-
-  const handleMouseLeaveBlur = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (isDisabled) return;
-    setHovered(false);
-    if (!reduced && animateEnabled) {
-      animate(buttonRef.current!, {
-        boxShadow: variant === 'filled' ? 'none' : 'none',
-        duration: durations.hover * 1000,
-        ease: easings.smooth,
       });
     }
   };
