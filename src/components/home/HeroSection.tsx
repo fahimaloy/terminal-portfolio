@@ -365,7 +365,6 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
                   ease: 'outExpo',
                   delay: i * 80,
                   autoplay: onScroll({
-                    container: window,
                     sync: false,
                   }),
                 });
