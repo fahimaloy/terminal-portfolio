@@ -6,6 +6,22 @@ import * as THREE from 'three';
 import { isReducedMotion, canAnimate } from '../../config/animations';
 import ParticleFieldSVG from './graphics/primitives/ParticleFieldSVG';
 
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      group: any;
+      mesh: any;
+      sphereGeometry: any;
+      boxGeometry: any;
+      cylinderGeometry: any;
+      meshStandardMaterial: any;
+      ambientLight: any;
+      directionalLight: any;
+      pointLight: any;
+    }
+  }
+}
+
 type StandardMaterialProps = {
   color: string;
   roughness: number;
@@ -13,23 +29,23 @@ type StandardMaterialProps = {
 };
 
 const standardMaterialProps = (props: StandardMaterialProps) =>
-  props as JSX.IntrinsicElements['meshStandardMaterial'];
+  props as Record<string, unknown>;
 
 const ambientLightProps = (props: { intensity: number; color: string }) =>
-  props as JSX.IntrinsicElements['ambientLight'];
+  props as Record<string, unknown>;
 
 const directionalLightProps = (props: {
   position: [number, number, number];
   intensity: number;
   color: string;
-}) => props as JSX.IntrinsicElements['directionalLight'];
+}) => props as Record<string, unknown>;
 
 const pointLightProps = (props: {
   position: [number, number, number];
   intensity: number;
   color: string;
   decay: number;
-}) => props as JSX.IntrinsicElements['pointLight'];
+}) => props as Record<string, unknown>;
 
 // Floating particles in 3D space — code-like glyphs
 function CodeParticles() {

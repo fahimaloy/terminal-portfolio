@@ -23,7 +23,7 @@ export default function ThreeBackground({
   opacity = 0.35,
 }: ThreeBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const frameRef = useRef<number>();
+  const frameRef = useRef<number | undefined>(undefined);
   const [webglFailed, setWebglFailed] = useState(false);
   const webglFailedRef = useRef(false);
   const reducedMotion = isReducedMotion();

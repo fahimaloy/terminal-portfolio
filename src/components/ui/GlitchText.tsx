@@ -23,7 +23,7 @@ export type GlitchAccent =
 type Props = {
   children: React.ReactNode;
   accent?: GlitchAccent;
-  as?: keyof JSX.IntrinsicElements;
+  as?: keyof React.JSX.IntrinsicElements;
   className?: string;
   shift?: boolean;
   underline?: boolean;
