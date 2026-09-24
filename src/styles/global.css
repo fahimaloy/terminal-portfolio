@@ -1,8 +1,8 @@
+@import './tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import './tokens.css';
 
 /* ── VIEWPORT + SAFE-AREA — dvh truth (fixes input-below-fold) ──────────────── */
 html {
@@ -271,7 +271,8 @@ body {
     @apply bg-bg-smoke border text-text-primary placeholder:text-text-muted;
     border-radius: var(--radius-md);
     border-color: var(--border-subtle);
-    transition: border-color var(--dur-transition) var(--ease-out),
+    transition:
+      border-color var(--dur-transition) var(--ease-out),
       box-shadow var(--dur-transition) var(--ease-out);
   }
   .form-premium-input:focus {
