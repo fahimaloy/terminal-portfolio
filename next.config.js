@@ -12,18 +12,11 @@ module.exports = {
       { protocol: 'https', hostname: '*.supabase.co' },
       { protocol: 'https', hostname: '*.supabase.in' },
     ],
-    // Fallback allowlist for Next 12 image loader (remotePatterns is 13+).
-    // Keep both so unoptimized:false works whichever loader checks.
-    domains: [
-      'supabase-200880.appspot.com',
-      'ztuoepusomprvmbzwdkg.supabase.co',
-    ],
+    // Explicit legacy host is covered by the wildcard Supabase patterns above.
   },
   compress: true,
   productionBrowserSourceMaps: false,
   poweredByHeader: false,
-  swcMinify: true,
-  optimizeFonts: true,
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
