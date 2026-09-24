@@ -10,7 +10,11 @@ vi.mock('lucide-react', () => {
   const ReactMod = require('react');
   const make = (name: string) => {
     const C: any = ReactMod.forwardRef((props: any, ref: any) =>
-      ReactMod.createElement('svg', { ref, 'data-testid': `lucide-${name}`, ...props }),
+      ReactMod.createElement('svg', {
+        ref,
+        'data-testid': `lucide-${name}`,
+        ...props,
+      }),
     );
     C.displayName = name;
     return C;
@@ -75,14 +79,18 @@ describe('IconPicker', () => {
     expect(lastCall[0]).toBe(RECENT_KEY);
     expect(JSON.parse(lastCall[1] as string)).toEqual(['Search']);
     // also verify real storage
-    expect(JSON.parse(window.localStorage.getItem(RECENT_KEY)!)).toEqual(['Search']);
+    expect(JSON.parse(window.localStorage.getItem(RECENT_KEY)!)).toEqual([
+      'Search',
+    ]);
   });
 
   it('persistRecent is not in updater: selecting two icons writes once per selection via effect (didPersistMountRef skips first)', async () => {
     const onChange = vi.fn();
     const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
 
-    const { unmount } = render(<IconPicker mode="all" value={null} onChange={onChange} />);
+    const { unmount } = render(
+      <IconPicker mode="all" value={null} onChange={onChange} />,
+    );
     await flush();
     // after mount with empty storage the persist effect writes "[]" once — clear before counting selections
     setItemSpy.mockClear();
@@ -92,7 +100,9 @@ describe('IconPicker', () => {
     });
     await flush();
     expect(setItemSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(setItemSpy.mock.calls[0][1] as string)).toEqual(['Search']);
+    expect(JSON.parse(setItemSpy.mock.calls[0][1] as string)).toEqual([
+      'Search',
+    ]);
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Heart' }));
@@ -114,7 +124,9 @@ describe('IconPicker', () => {
     // (first effect invocation was skipped via didPersistMountRef). So <=1 writes.
     expect(setItemSpy2.mock.calls.length).toBeLessThanOrEqual(2);
     // filter to RECENT_KEY writes
-    const recentWrites = setItemSpy2.mock.calls.filter((c) => c[0] === RECENT_KEY);
+    const recentWrites = setItemSpy2.mock.calls.filter(
+      (c) => c[0] === RECENT_KEY,
+    );
     expect(recentWrites.length).toBeLessThanOrEqual(1);
     if (recentWrites.length === 1) {
       expect(JSON.parse(recentWrites[0][1] as string)).toEqual(['Star']);
@@ -125,16 +137,22 @@ describe('IconPicker', () => {
     });
     await flush();
     expect(setItemSpy2).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(setItemSpy2.mock.calls[0][1] as string)[0]).toBe('Search');
+    expect(JSON.parse(setItemSpy2.mock.calls[0][1] as string)[0]).toBe(
+      'Search',
+    );
   });
 
   it('mode switching: mode=tech -> active stack, mode=lucide -> active general, rerender updates', async () => {
     const onChange = vi.fn();
 
-    const { rerender } = render(<IconPicker mode="tech" value={null} onChange={onChange} />);
+    const { rerender } = render(
+      <IconPicker mode="tech" value={null} onChange={onChange} />,
+    );
     await flush();
     expect(document.getElementById('icon-grid-stack')).toBeInTheDocument();
-    expect(document.getElementById('icon-grid-general')).not.toBeInTheDocument();
+    expect(
+      document.getElementById('icon-grid-general'),
+    ).not.toBeInTheDocument();
 
     rerender(<IconPicker mode="lucide" value={null} onChange={onChange} />);
     await act(async () => {});
@@ -143,14 +161,22 @@ describe('IconPicker', () => {
 
     rerender(<IconPicker mode="all" value={null} onChange={onChange} />);
     await act(async () => {});
-    expect(screen.getByRole('tab', { name: 'General' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tab', { name: 'Stack' })).toHaveAttribute('aria-selected', 'false');
+    expect(screen.getByRole('tab', { name: 'General' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(screen.getByRole('tab', { name: 'Stack' })).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
     expect(document.getElementById('icon-grid-general')).toBeInTheDocument();
 
     rerender(<IconPicker mode="tech" value={null} onChange={onChange} />);
     await act(async () => {});
     expect(document.getElementById('icon-grid-stack')).toBeInTheDocument();
-    expect(document.getElementById('icon-grid-general')).not.toBeInTheDocument();
+    expect(
+      document.getElementById('icon-grid-general'),
+    ).not.toBeInTheDocument();
 
     rerender(<IconPicker mode="lucide" value={null} onChange={onChange} />);
     await act(async () => {});
@@ -165,7 +191,17 @@ describe('IconPicker', () => {
     await flush();
     setItemSpy.mockClear();
 
-    const icons = ['Search', 'Heart', 'Home', 'Star', 'User', 'Settings', 'Bell', 'Calendar', 'Mail'];
+    const icons = [
+      'Search',
+      'Heart',
+      'Home',
+      'Star',
+      'User',
+      'Settings',
+      'Bell',
+      'Calendar',
+      'Mail',
+    ];
     for (const name of icons) {
       await act(async () => {
         fireEvent.click(screen.getByRole('button', { name }));
@@ -173,7 +209,9 @@ describe('IconPicker', () => {
       await flush();
     }
 
-    let lastPersisted: string[] = JSON.parse(setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1][1] as string);
+    let lastPersisted: string[] = JSON.parse(
+      setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1][1] as string,
+    );
     expect(lastPersisted.length).toBe(8);
     expect(lastPersisted[0]).toBe('Mail');
     expect(lastPersisted).not.toContain('Search');
@@ -183,7 +221,9 @@ describe('IconPicker', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Heart' }));
     });
     await flush();
-    lastPersisted = JSON.parse(setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1][1] as string);
+    lastPersisted = JSON.parse(
+      setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1][1] as string,
+    );
     expect(lastPersisted.length).toBe(8);
     expect(lastPersisted[0]).toBe('Heart');
     expect(lastPersisted.filter((v) => v === 'Heart').length).toBe(1);
@@ -192,18 +232,24 @@ describe('IconPicker', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Heart' }));
     });
     await flush();
-    lastPersisted = JSON.parse(setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1][1] as string);
+    lastPersisted = JSON.parse(
+      setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1][1] as string,
+    );
     expect(lastPersisted.length).toBe(8);
     expect(lastPersisted[0]).toBe('Heart');
     expect(lastPersisted.filter((v) => v === 'Heart').length).toBe(1);
 
-    const recentButtons = document.querySelectorAll('button[aria-label^="Recent "]');
+    const recentButtons = document.querySelectorAll(
+      'button[aria-label^="Recent "]',
+    );
     expect(recentButtons.length).toBe(8);
   });
 
   it('recent persists across remount via localStorage', async () => {
     const onChange = vi.fn();
-    const { unmount } = render(<IconPicker mode="all" value={null} onChange={onChange} />);
+    const { unmount } = render(
+      <IconPicker mode="all" value={null} onChange={onChange} />,
+    );
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Search' }));
     });

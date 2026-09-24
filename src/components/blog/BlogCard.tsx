@@ -48,24 +48,23 @@ export default function BlogCard({ post, index = 0 }: Props) {
   const reduced = isReducedMotion();
 
   return (
-    <div className="rounded-[var(--radius-lg)] border transition-transform hover:scale-[1.01] group">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--border-subtle)] transition-transform hover:scale-[1.01] group overflow-hidden">
       <Link href={`/blog/${post.slug}`} legacyBehavior>
-        <a
-          className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-          aria-label={`Read ${post.title}`}
-        >
+        <a className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2">
           <div
-            className="relative overflow-hidden rounded-[var(--radius-lg)] border"
+            className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-subtle)]"
             style={{
-              backgroundColor: 'var(--bg-2)',
-              borderColor: 'var(--border-subtle)',
+              background:
+                'radial-gradient(circle at 20% 10%, rgba(34,211,227,0.12), transparent 35%), radial-gradient(circle at 90% 100%, rgba(255,0,128,0.08), transparent 45%), var(--bg-2)',
+              boxShadow:
+                '0 0 0 1px rgba(34,211,227,0.05), 0 16px 40px rgba(0,0,0,0.25)',
             }}
           >
             {/* Cover */}
             <div
               className="relative aspect-[4/3] min-h-[240px] overflow-hidden"
               style={{
-                background: `var(--wash-${accent})`,
+                background: `radial-gradient(circle at 30% 20%, rgba(34,211,227,0.16), transparent 55%), var(--bg-3)`,
               }}
             >
               {post.cover_image_url ? (
@@ -75,14 +74,11 @@ export default function BlogCard({ post, index = 0 }: Props) {
                   width={800}
                   height={600}
                   className="w-full h-full object-cover transition-opacity duration-500"
-                  style={{ opacity: reduced ? 0.7 : 1 }}
+                  style={{ opacity: reduced ? 0.65 : 1 }}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <span
-                    className="font-display text-3xl"
-                    style={{ color: 'var(--fg-4)' }}
-                  >
+                  <span className="font-display text-4xl text-[var(--fg-4)]">
                     {post.title.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -92,9 +88,9 @@ export default function BlogCard({ post, index = 0 }: Props) {
                   <span
                     className="inline-flex items-center gap-1 px-2 py-1 rounded-[var(--radius-sm)] font-mono text-[9px] tracking-[0.14em] border"
                     style={{
-                      background: 'var(--bg-2)',
-                      borderColor: 'var(--border-subtle)',
-                      color: 'var(--fg-2)',
+                      background: 'rgba(34,211,227,0.12)',
+                      borderColor: 'var(--neon-cyan)',
+                      color: 'var(--fg-1)',
                     }}
                   >
                     <Star size={9} /> FEATURED

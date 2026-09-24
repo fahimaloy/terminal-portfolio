@@ -22,6 +22,7 @@ import { useFlashCurtain } from '../../hooks/useFlashCurtain';
 import FlashCurtain from './FlashCurtain';
 import LightningTransition from './LightningTransition';
 import RichTextRenderer from '../RichTextRenderer';
+import { animate, onScroll, createScope } from 'animejs';
 
 function formatDate(iso: string | null): string {
   if (!iso) return 'DRAFT';
@@ -89,31 +90,69 @@ export default function BlogReels({
       if (raf) cancelAnimationFrame(raf);
     };
   }, [items.length, reduced]);
-
-  // Lightning per-card transition + flash curtain on snap change.
-  const prevActiveRef = useRef(active);
+  // Horizontal swipe drag (touch + mouse pointer) — scrolls scroller
   useEffect(() => {
-    if (prevActiveRef.current === active) return;
-    if (!reduced) setBolt((t) => t + 1);
-    if (canAnimate()) {
-      const direction = active > prevActiveRef.current ? 'next' : 'prev';
-      const container = containerRef.current;
-      const incoming = container?.querySelector(
-        `[data-slide-index="${active}"]`,
-      ) as HTMLElement | null;
-      const outgoing = container?.querySelector(
-        `[data-slide-index="${prevActiveRef.current}"]`,
-      ) as HTMLElement | null;
-      flash(direction, incoming, outgoing);
-    }
-    prevActiveRef.current = active;
-  }, [active]);
+    const el = scrollerRef.current;
+    if (!el || reduced) return;
+    let startY = 0;
+    let startTop = 0;
+    let tracking = false;
+    const isInteractive = (t: EventTarget | null) => {
+      if (!t) return false;
+      const n = t as HTMLElement;
+      return !!n.closest(
+        'a,button,input,textarea,[role="button"],[data-no-swipe]',
+      );
+    };
+    const onDown = (e: PointerEvent) => {
+      if (isInteractive(e.target)) return;
+      tracking = true;
+      startY = e.clientY;
+      startTop = el.scrollTop;
+      el.setPointerCapture(e.pointerId);
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!tracking) return;
+      el.scrollTop = startTop - (e.clientY - startY);
+    };
+    const onUp = () => {
+      tracking = false;
+    };
+    el.addEventListener('pointerdown', onDown, { passive: false });
+    el.addEventListener('pointermove', onMove, { passive: true });
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onUp);
+    return () => {
+      el.removeEventListener('pointerdown', onDown);
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onUp);
+    };
+  }, [reduced]);
 
-  // Preload / buffer append when near end.
+  // Scroll-driven parallax on card covers via animejs onScroll
   useEffect(() => {
-    if (!hasMore || loading) return;
-    if (active >= items.length - 2) onLoadMore();
-  }, [active, hasMore, loading, items.length, onLoadMore]);
+    const el = scrollerRef.current;
+    if (!el || reduced || !items.length) return;
+    const scope = createScope({ root: el }).add(() => {
+      const covers = el.querySelectorAll('[data-reel-cover]');
+      covers.forEach((cover) => {
+        animate(cover, {
+          translateY: [30, -20],
+          ease: 'outExpo',
+          duration: 1000,
+          autoplay: onScroll({
+            container: el,
+            sync: true,
+            target: cover,
+            start: 'top bottom',
+            end: 'bottom top',
+          } as any),
+        });
+      });
+    });
+    return () => scope.revert();
+  }, [reduced, items.length]);
 
   const openExpanded = useCallback(
     async (slug: string) => {
@@ -272,7 +311,10 @@ export default function BlogReels({
                   className="overflow-hidden flex flex-col max-h-[min(78dvh,720px)]"
                 >
                   {/* Cover — next/image + preload; bottleneck solved as data fetch */}
-                  <div className="relative aspect-[16/9] md:aspect-[16/7] overflow-hidden bg-black/40 shrink-0">
+                  <div
+                    className="relative aspect-[16/9] md:aspect-[16/7] overflow-hidden bg-black/40 shrink-0"
+                    data-reel-cover
+                  >
                     {post.cover_image_url ? (
                       <Image
                         src={post.cover_image_url}

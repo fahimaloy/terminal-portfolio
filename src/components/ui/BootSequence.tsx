@@ -1,7 +1,9 @@
 // src/components/ui/BootSequence.tsx
-/* Premium HUD boot — ScopeRings + SignalTicks vector loader, wordmark split, loading rail, spring exit + confetti. */
-/* Stable overlay: single createScope at rootRef, timeline labels scope→rings→wordmark→rule→status→exit.
-   Flicker-free: overlay mounts hidden (opacity 0) and fades to 1 before timeline; sessionStorage check before mount. */
+/* Premium Workspace Reveal Splash — 4s fixed, shows every refresh.
+   Three.js Canvas background (desk/monitor/keyboard) + SVG foreground (tech graphics).
+   Timeline: aurora glow → screen boot → keyboard lights → tech graphics → code stream → wordmark → username → rail → exit.
+   No sessionStorage — always runs. Respects prefers-reduced-motion.
+*/
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
@@ -19,12 +21,16 @@ import {
   springs,
   isReducedMotion,
 } from '../../config/animations';
-import ScopeRings from './graphics/primitives/ScopeRings';
-import SignalTicks from './graphics/primitives/SignalTicks';
+import CodeBrackets from './graphics/primitives/CodeBrackets';
+import TerminalPrompt from './graphics/primitives/TerminalPrompt';
+import GitBranch from './graphics/primitives/GitBranch';
+import FileTree from './graphics/primitives/FileTree';
+import CircuitTraces from './graphics/primitives/CircuitTraces';
+import BinaryRain from './graphics/primitives/BinaryRain';
+import WorkspaceCanvas from './WorkspaceCanvas';
 
-const STORAGE_KEY = 'cyberpunk-boot-shown';
-const TOTAL_MS = 860;
-const SKIPPABLE_AFTER_MS = 150;
+const TOTAL_MS = 4000;
+const SKIPPABLE_AFTER_MS = 1000;
 
 const CONFETTI_COLORS = [
   'var(--ring-yellow)',
@@ -53,9 +59,6 @@ export default function BootSequence() {
     scopeRef.current = null;
     if (rootRef.current) rootRef.current.style.opacity = '';
     setShow(false);
-    try {
-      window.sessionStorage.setItem(STORAGE_KEY, '1');
-    } catch {}
   }, []);
 
   const skip = useCallback(() => {
@@ -64,13 +67,9 @@ export default function BootSequence() {
     finish();
   }, [show, finish]);
 
+  // Always mount — no sessionStorage guard
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    try {
-      if (window.sessionStorage.getItem(STORAGE_KEY)) return;
-    } catch {
-      // storage blocked — still show once
-    }
 
     const reduced = isReducedMotion();
     setShow(true);
@@ -84,55 +83,47 @@ export default function BootSequence() {
     return undefined;
   }, [finish]);
 
-  // Cinematic sequence once overlay is mounted
+  // Cinematic workspace reveal sequence
   useEffect(() => {
     if (!show || !rootRef.current || isReducedMotion()) return;
     const root = rootRef.current;
     const scope = createScope({
       root,
       mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
-      defaults: { duration: durations.exit, ease: easings.outExpo },
+      defaults: { duration: durations.enter * 1000, ease: easings.outExpo },
     } as Parameters<typeof createScope>[0]);
     scopeRef.current = scope as unknown as BootScopeHandle;
 
     let wordSplitter: ReturnType<typeof splitText> | null = null;
-    let subSplitter: ReturnType<typeof splitText> | null = null;
+    let usernameSplitter: ReturnType<typeof splitText> | null = null;
 
     scope.add(() => {
       const inner = root.querySelector<HTMLElement>('.boot-inner');
-      const scopeRingStrokes = root.querySelectorAll<SVGGeometryElement>(
-        '.boot-scope-ring .grat-stroke',
-      );
-      const scopeFill = root.querySelector<HTMLElement>(
-        '.boot-scope-ring .grat-fill',
-      );
-      const tickLines = root.querySelectorAll<HTMLElement>(
-        '.boot-ticks .grat-tick',
-      );
+      const aurora = root.querySelector<HTMLElement>('.boot-aurora');
+      const screenGlow = root.querySelector<HTMLElement>('.boot-screen-glow');
       const wordmark = root.querySelector<HTMLElement>('.boot-wordmark');
-      const sub = root.querySelector<HTMLElement>('.boot-sub');
+      const username = root.querySelector<HTMLElement>('.boot-username');
       const railFill = root.querySelector<HTMLElement>('.boot-rail-fill');
       const rulePath =
         root.querySelector<SVGGeometryElement>('.boot-rule-path');
       const status = root.querySelector<HTMLElement>('.boot-status');
       const confettiDots =
         root.querySelectorAll<HTMLElement>('.boot-confetti-dot');
-      const aurora = root.querySelector<HTMLElement>('.boot-aurora');
+      const keyboardKeys = root.querySelectorAll<HTMLElement>('.boot-key');
+      const codeLines = root.querySelectorAll<HTMLElement>('.boot-code-line');
+
+      // Tech graphics elements
+      const binaryRain = root.querySelector<HTMLElement>('.grat-binary');
+      const circuitTraces = root.querySelector<HTMLElement>('.grat-circuit');
+      const codeBrackets = root.querySelector<HTMLElement>('.grat-brackets');
+      const terminalPrompt = root.querySelector<HTMLElement>('.grat-terminal');
+      const gitBranch = root.querySelector<HTMLElement>('.grat-git');
+      const fileTree = root.querySelector<HTMLElement>('.grat-filetree');
 
       if (inner) inner.style.opacity = '0';
       if (railFill) railFill.style.transform = 'scaleX(0)';
-      if (scopeFill) (scopeFill as HTMLElement).style.opacity = '0';
 
-      // Aurora in
-      if (aurora) {
-        animate(aurora, {
-          opacity: [0, 0.9],
-          duration: durations.enter * 1000 * 0.55,
-          ease: easings.smooth,
-        });
-      }
-
-      // Root fade-in to hide flicker (overlay was opacity 0)
+      // Initial fade-in to hide flicker (overlay was opacity 0)
       animate(root, {
         opacity: [0, 1],
         duration: 120,
@@ -147,14 +138,73 @@ export default function BootSequence() {
         });
       }
 
-      const ringDrawables =
-        scopeRingStrokes.length > 0
-          ? createDrawable('.boot-scope-ring .grat-stroke', 0, 0)
-          : [];
-      const ruleDrawables = rulePath
-        ? createDrawable('.boot-rule-path', 0, 0)
-        : [];
+      // Aurora background fade in
+      if (aurora) {
+        animate(aurora, {
+          opacity: [0, 0.9],
+          duration: durations.enter * 1000 * 0.55,
+          ease: easings.smooth,
+        });
+      }
 
+      // Screen glow effect
+      if (screenGlow) {
+        animate(screenGlow, {
+          opacity: [0, 1],
+          duration: durations.enter * 1000 * 0.4,
+          ease: easings.smooth,
+          delay: 200,
+        });
+      }
+
+      // Tech graphics entrance sequence
+      const techGraphics = [
+        { el: binaryRain, delay: 300, duration: 800 },
+        { el: circuitTraces, delay: 500, duration: 1000 },
+        { el: codeBrackets, delay: 700, duration: 900 },
+        { el: terminalPrompt, delay: 900, duration: 600 },
+        { el: gitBranch, delay: 1100, duration: 800 },
+        { el: fileTree, delay: 1300, duration: 800 },
+      ];
+
+      techGraphics.forEach(({ el, delay, duration }) => {
+        if (el) {
+          animate(el, {
+            opacity: [0, 1],
+            scale: [0.9, 1],
+            duration,
+            ease: spring(
+              springs.soft as unknown as Record<string, number>,
+            ) as unknown as string,
+            delay,
+          });
+        }
+      });
+
+      // Keyboard keys ripple entrance
+      if (keyboardKeys.length) {
+        animate(keyboardKeys, {
+          opacity: [0, 1],
+          scale: [0.8, 1],
+          backgroundColor: ['rgba(38, 242, 213, 0.3)', 'rgba(52, 51, 50, 0.8)'],
+          duration: 400,
+          ease: easings.outExpo,
+          delay: stagger(40, { from: 'first' }),
+        });
+      }
+
+      // Code lines typewriter effect
+      if (codeLines.length) {
+        animate(codeLines, {
+          opacity: [0, 1],
+          translateY: [10, 0],
+          duration: 500,
+          ease: easings.outExpo,
+          delay: stagger(600, { from: 'first' }),
+        });
+      }
+
+      // Wordmark splitText
       try {
         if (wordmark) {
           wordSplitter = splitText(wordmark, {
@@ -164,159 +214,40 @@ export default function BootSequence() {
         }
       } catch {}
       try {
-        if (sub) {
-          subSplitter = splitText(sub, {
+        if (username) {
+          usernameSplitter = splitText(username, {
             chars: true,
             words: { wrap: 'clip' },
           });
         }
       } catch {}
 
-      const tl = createTimeline({
-        defaults: { ease: easings.smooth },
-      });
-
-      tl.label('scope', 0);
-      tl.label('rings', 60);
-      tl.label('wordmark', 120);
-      tl.label('rule', 280);
-      tl.label('status', 340);
-      tl.label('rail', 360);
-      tl.label('hold', 560);
-      tl.label('exit', 560);
-
-      // Scope rings — draw outer → inner
-      if (ringDrawables.length) {
-        tl.add(
-          ringDrawables as unknown as HTMLElement[],
-          {
-            draw: ['0 0', '0 1'],
-            duration: durations.draw * 1000 * 0.42,
-            ease: easings.smooth,
-            delay: stagger(18, { from: 'center' }),
-          },
-          'scope',
-        );
-      }
-      if (scopeRingStrokes.length) {
-        tl.add(
-          scopeRingStrokes as unknown as HTMLElement[],
-          {
-            opacity: [0, 1],
-            duration: 80,
-            ease: easings.smooth,
-          },
-          'scope',
-        );
-      }
-      if (scopeFill) {
-        tl.add(
-          scopeFill as unknown as HTMLElement,
-          {
-            opacity: [0, 1],
-            scale: [0.92, 1],
-            duration: durations.enter * 1000 * 0.32,
-            ease: spring(springs.gentle) as unknown as string,
-          },
-          'rings',
-        );
-      }
-      if (tickLines.length) {
-        tl.add(
-          tickLines as unknown as HTMLElement[],
-          {
-            opacity: [0, 1],
-            scale: [0.7, 1],
-            duration: durations.enter * 1000 * 0.28,
-            ease: easings.smooth,
-            delay: stagger(14, { from: 'first' }),
-          },
-          'rings',
-        );
-        // gentle rotation of tick container for life
-        const tickWrap = root.querySelector<HTMLElement>('.boot-ticks');
-        if (tickWrap) {
-          animate(tickWrap, {
-            rotate: [0, 12],
-            duration: 2600,
-            ease: 'linear',
-            loop: true,
-            alternate: true,
-          });
-        }
-      }
-
       const wordChars = (wordSplitter?.chars as unknown as HTMLElement[]) ?? [];
-      if (wordChars.length) {
-        tl.add(
-          wordChars,
-          {
-            y: ['112%', '0%'],
-            opacity: [0, 1],
-            duration: durations.enter * 1000 * 0.5,
-            ease: easings.smooth,
-            delay: stagger(22, { from: 'first' }),
-          },
-          'wordmark',
-        );
-      } else if (wordmark) {
-        tl.add(
-          wordmark,
-          {
-            opacity: [0, 1],
-            y: [10, 0],
-            duration: durations.enter * 1000 * 0.45,
-            ease: easings.smooth,
-          },
-          'wordmark',
-        );
-      }
+      const usernameChars =
+        (usernameSplitter?.chars as unknown as HTMLElement[]) ?? [];
 
-      const subChars = (subSplitter?.chars as unknown as HTMLElement[]) ?? [];
-      if (subChars.length) {
-        tl.add(
-          subChars,
-          {
-            y: ['100%', '0%'],
-            opacity: [0, 1],
-            duration: durations.enter * 1000 * 0.38,
-            ease: easings.smooth,
-            delay: stagger(16, { from: 'first' }),
-          },
-          'wordmark+=60',
-        );
-      } else if (sub) {
-        tl.add(
-          sub,
-          {
-            opacity: [0, 1],
-            y: [6, 0],
-            duration: durations.enter * 1000 * 0.35,
-            ease: easings.smooth,
-          },
-          'wordmark+=60',
-        );
-      }
+      const tl = createTimeline({ defaults: { ease: easings.outExpo } });
 
-      if (ruleDrawables.length) {
-        tl.add(
-          ruleDrawables as unknown as HTMLElement[],
-          {
-            draw: ['0 0', '0 1'],
-            duration: durations.hover * 1000,
-            ease: easings.smooth,
-          },
-          'rule',
-        );
-      } else {
-        const fallbackRule = root.querySelector<HTMLElement>('.boot-rule');
-        if (fallbackRule) {
+      tl.label('tech', 0);
+      tl.label('keyboard', 600);
+      tl.label('code', 1000);
+      tl.label('wordmark', 1600);
+      tl.label('username', 1800);
+      tl.label('rule', 2200);
+      tl.label('rail', 2400);
+      tl.label('status', 2600);
+      tl.label('hold', 3000);
+      tl.label('exit', 3200);
+
+      // Rule line draw
+      if (rulePath) {
+        const ruleDrawables = createDrawable('.boot-rule-path', 0, 0);
+        if (ruleDrawables.length) {
           tl.add(
-            fallbackRule,
+            ruleDrawables as unknown as HTMLElement[],
             {
-              scaleX: [0, 1],
-              opacity: [0, 1],
-              duration: durations.hover * 1000,
+              draw: ['0 0', '0 1'],
+              duration: durations.draw * 1000,
               ease: easings.smooth,
             },
             'rule',
@@ -324,33 +255,68 @@ export default function BootSequence() {
         }
       }
 
-      const statusEl = status;
-      if (statusEl) {
+      // Wordmark chars clip cascade
+      if (wordChars.length) {
         tl.add(
-          statusEl,
+          wordChars,
           {
+            y: ['112%', '0%'],
             opacity: [0, 1],
-            y: [6, 0],
-            duration: durations.enter * 1000 * 0.36,
-            ease: easings.smooth,
+            duration: durations.enter * 1000 * 0.52,
+            ease: easings.expoOut ?? 'outExpo',
+            delay: stagger(18, { from: 'first' }),
           },
-          'status',
+          'wordmark',
+        );
+      } else if (wordmark) {
+        tl.add(
+          wordmark,
+          { opacity: [0, 1], y: [10, 0], duration: 400 },
+          'wordmark',
         );
       }
 
+      // Username chars clip cascade
+      if (usernameChars.length) {
+        tl.add(
+          usernameChars,
+          {
+            y: ['100%', '0%'],
+            opacity: [0, 1],
+            duration: durations.enter * 1000 * 0.4,
+            ease: easings.expoOut ?? 'outExpo',
+            delay: stagger(16, { from: 'first' }),
+          },
+          'username',
+        );
+      } else if (username) {
+        tl.add(
+          username,
+          { opacity: [0, 1], y: [6, 0], duration: 350 },
+          'username',
+        );
+      }
+
+      // Rail fill
       if (railFill) {
         tl.add(
           railFill,
           {
             scaleX: [0, 1],
             opacity: [0.55, 1],
-            duration: durations.enter * 1000 * 0.48,
+            duration: durations.enter * 1000 * 0.6,
             ease: easings.smooth,
           },
           'rail',
         );
       }
 
+      // Status text
+      if (status) {
+        tl.add(status, { opacity: [0, 1], y: [6, 0], duration: 350 }, 'status');
+      }
+
+      // Auto-exit after TOTAL_MS
       const exitDelay = Math.max(80, TOTAL_MS - 320);
       const autoId = window.setTimeout(() => {
         if (inner) {
@@ -358,7 +324,9 @@ export default function BootSequence() {
             scale: [1, 0.985],
             opacity: [1, 0],
             duration: 420,
-            ease: spring(springs.gentle) as unknown as string,
+            ease: spring(
+              springs.gentle as unknown as Record<string, number>,
+            ) as unknown as string,
           });
         }
         animate(root, {
@@ -385,7 +353,9 @@ export default function BootSequence() {
               scale: [0.6, 1],
               opacity: [1, 0],
               duration: 520,
-              ease: spring(springs.bouncy) as unknown as string,
+              ease: spring(
+                springs.bouncy as unknown as Record<string, number>,
+              ) as unknown as string,
               delay: stagger(14, { from: 'center' }),
             });
           });
@@ -401,7 +371,7 @@ export default function BootSequence() {
         wordSplitter?.revert();
       } catch {}
       try {
-        subSplitter?.revert();
+        usernameSplitter?.revert();
       } catch {}
       scope.revert();
       scopeRef.current = null;
@@ -409,6 +379,7 @@ export default function BootSequence() {
     };
   }, [show, finish]);
 
+  // Skip on any key/click after SKIPPABLE_AFTER_MS
   useEffect(() => {
     if (!show) return;
     const handler = (e: KeyboardEvent | MouseEvent) => {
@@ -434,7 +405,7 @@ export default function BootSequence() {
       ref={rootRef}
       role="status"
       aria-live="polite"
-      aria-label="Loading"
+      aria-label="Loading workspace"
       data-testid="boot-sequence"
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
       style={{
@@ -443,6 +414,12 @@ export default function BootSequence() {
         opacity: 0,
       }}
     >
+      {/* Three.js Workspace Canvas — behind everything */}
+      <div className="absolute inset-0 -z-10" aria-hidden="true">
+        <WorkspaceCanvas />
+      </div>
+
+      {/* Aurora gradient background */}
       <div
         className="boot-aurora pointer-events-none absolute inset-0 opacity-0"
         aria-hidden="true"
@@ -452,18 +429,63 @@ export default function BootSequence() {
         }}
       />
 
-      <div className="boot-inner relative flex flex-col items-center opacity-0 w-full max-w-[420px] px-6">
-        <div className="relative flex items-center justify-center mb-1">
-          <div
-            className="boot-scope-ring relative"
-            style={{ width: 96, height: 96 }}
-          >
-            <ScopeRings accent="cyan" size={96} />
-            <div className="boot-ticks absolute inset-0">
-              <SignalTicks accent="cyan" size={96} />
-            </div>
+      {/* Screen glow effect (monitor turning on) */}
+      <div
+        className="boot-screen-glow pointer-events-none absolute inset-0 opacity-0"
+        aria-hidden="true"
+        style={{
+          background:
+            'radial-gradient(ellipse 60% 40% at 50% 30%, rgba(38, 242, 213, 0.15) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      <div className="boot-inner relative flex flex-col items-center opacity-0 w-full max-w-[480px] px-6">
+        {/* Tech graphics stack — layered with staggered entrance */}
+        <div
+          className="relative flex items-center justify-center mb-3"
+          style={{ height: 140 }}
+        >
+          {/* Binary rain background */}
+          <div className="absolute inset-0 opacity-30 pointer-events-none">
+            <BinaryRain accent="green" size={140} />
           </div>
 
+          {/* Circuit traces */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ opacity: 0.4 }}
+          >
+            <CircuitTraces accent="yellow" size={140} />
+          </div>
+
+          {/* Code brackets — center focus */}
+          <div
+            className="relative flex items-center justify-center"
+            style={{ zIndex: 10 }}
+          >
+            <CodeBrackets accent="cyan" size={104} />
+          </div>
+
+          {/* Terminal prompt — lower */}
+          <div
+            className="absolute bottom-8 left-1/2 -translate-x-1/2"
+            style={{ zIndex: 5 }}
+          >
+            <TerminalPrompt accent="green" size={80} />
+          </div>
+
+          {/* Git branch — upper right */}
+          <div className="absolute top-4 right-4" style={{ zIndex: 5 }}>
+            <GitBranch accent="magenta" size={72} />
+          </div>
+
+          {/* File tree — upper left */}
+          <div className="absolute top-4 left-4" style={{ zIndex: 5 }}>
+            <FileTree accent="blue" size={72} />
+          </div>
+
+          {/* Confetti dots (exit burst) */}
           <div
             className="pointer-events-none absolute left-1/2 top-1/2 h-0 w-0"
             aria-hidden="true"
@@ -484,32 +506,98 @@ export default function BootSequence() {
           </div>
         </div>
 
+        {/* Keyboard visualization with per-key ripple */}
         <div
-          className="boot-wordmark font-display mt-4 text-3xl md:text-4xl tracking-[0.18em] text-center"
+          className="boot-keyboard flex items-center justify-center gap-1 mb-3 p-2 rounded-lg"
+          style={{
+            background: 'rgba(37, 36, 35, 0.6)',
+            border: '1px solid var(--border-subtle)',
+            backdropFilter: 'blur(8px)',
+          }}
+          aria-hidden="true"
+        >
+          {['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map(
+            (k, idx) => (
+              <span
+                key={k}
+                className="boot-key font-mono text-[9px] px-1.5 py-0.5 rounded"
+                style={{
+                  color: 'var(--fg-3)',
+                  background: 'rgba(52, 51, 50, 0.8)',
+                  animationDelay: `${idx * 40}ms`,
+                }}
+              >
+                {k}
+              </span>
+            ),
+          )}
+        </div>
+
+        {/* Code streaming on screen — typewriter effect */}
+        <div
+          className="boot-code-container font-mono text-[11px] leading-relaxed mb-3 text-left w-full max-w-[380px]"
+          style={{
+            color: 'var(--neon-cyan)',
+            fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+            minHeight: '4.5em',
+            background: 'rgba(37, 36, 35, 0.4)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-md)',
+            padding: '8px 12px',
+            overflow: 'hidden',
+          }}
+          aria-hidden="true"
+        >
+          <div className="boot-code-line" style={{ opacity: 0 }}>
+            <span style={{ color: 'var(--neon-green)' }}>const</span> developer
+            ={' '}
+            <span style={{ color: 'var(--neon-yellow)' }}>
+              &apos;Fahim Ahmed&apos;
+            </span>
+            ;
+          </div>
+          <div className="boot-code-line" style={{ opacity: 0 }}>
+            <span style={{ color: 'var(--neon-green)' }}>const</span> username ={' '}
+            <span style={{ color: 'var(--neon-yellow)' }}>
+              &apos;@fahimaloy&apos;
+            </span>
+            ;
+          </div>
+          <div className="boot-code-line" style={{ opacity: 0 }}>
+            <span style={{ color: 'var(--neon-magenta)' }}>developer</span>
+            .initialize();
+          </div>
+        </div>
+
+        {/* Wordmark — full name with splitText animation */}
+        <div
+          className="boot-wordmark font-display mt-2 text-3xl md:text-4xl tracking-[0.18em] text-center"
           style={{ color: 'var(--fg-1)' }}
         >
-          FAHIM
+          Fahim Ahmed
         </div>
 
+        {/* Username sub */}
         <div
-          className="boot-sub font-mono text-[10px] tracking-[0.24em] text-center uppercase mt-1"
-          style={{ color: 'var(--fg-3)' }}
+          className="boot-username font-mono text-[12px] tracking-[0.16em] text-center mt-1"
+          style={{ color: 'var(--neon-cyan)' }}
         >
-          PORTFOLIO
+          @fahimaloy
         </div>
 
-        <div className="boot-rule mt-4 flex justify-center w-full">
+        {/* Rule line */}
+        <div className="boot-rule mt-3 flex justify-center w-full">
           <svg
-            width="120"
+            width="140"
             height="1"
-            viewBox="0 0 120 1"
+            viewBox="0 0 140 1"
             preserveAspectRatio="none"
             aria-hidden="true"
-            className="overflow-visible w-full max-w-[120px]"
+            className="overflow-visible w-full max-w-[140px]"
           >
             <path
               className="boot-rule-path"
-              d="M 0 0.5 H 120"
+              d="M 0 0.5 H 140"
               stroke="var(--border-subtle)"
               strokeWidth="1"
               strokeLinecap="square"
@@ -518,9 +606,9 @@ export default function BootSequence() {
           </svg>
         </div>
 
-        {/* loading rail */}
+        {/* Loading rail */}
         <div
-          className="mt-4 w-full max-w-[180px] h-[2px] overflow-hidden rounded-full"
+          className="mt-3 w-full max-w-[200px] h-[2px] overflow-hidden rounded-full"
           style={{ background: 'var(--border-subtle)' }}
           aria-hidden="true"
         >
@@ -535,10 +623,10 @@ export default function BootSequence() {
         </div>
 
         <div
-          className="boot-status mt-3 font-mono text-[10px] tracking-[0.18em] text-center"
+          className="boot-status mt-2 font-mono text-[10px] tracking-[0.18em] text-center"
           style={{ color: 'var(--fg-4)' }}
         >
-          INITIALIZING — SYSTEMS ONLINE
+          INITIALIZING WORKSPACE — SYSTEMS ONLINE
         </div>
       </div>
     </div>

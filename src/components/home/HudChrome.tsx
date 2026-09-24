@@ -1,8 +1,6 @@
-// src/components/home/HudChrome.tsx
-// Fixed HUD overlays: identity badge, status/clock, last command, system info.
-// Identity badge is context-aware: hides when hero is visible and no messages (dedup hero name).
-
 import React, { useEffect, useState } from 'react';
+import { MagneticButton } from '../../components/ui';
+import { RiGithubLine, RiFileTextLine } from 'react-icons/ri';
 
 type HudChromeProps = {
   profileName: string;
@@ -79,28 +77,65 @@ export default function HudChrome({
         </div>
       </div>
 
-      {/* Top-right: status + clock */}
-      <div className="absolute top-4 right-4 pointer-events-auto flex flex-col items-end gap-2">
-        <div
-          className="px-3 py-1.5 rounded-[var(--radius-md)] border inline-flex items-center gap-2 backdrop-blur-sm"
-          style={{
-            background: 'var(--surface-overlay)',
-            borderColor: 'var(--border-subtle)',
-          }}
-        >
-          <span
-            className="w-2 h-2 rounded-full animate-pulse-dot"
-            style={{ background: 'var(--status-success)' }}
-          />
-          <span
-            className="text-[10px] font-mono tracking-[0.18em]"
-            style={{ color: 'var(--fg-2)' }}
+      {/* Top-right: icon buttons + status + clock */}
+      <div className="absolute top-4 right-4 pointer-events-auto flex items-center gap-3">
+        {/* Source Code & Blog icon buttons */}
+        <div className="flex items-center gap-1.5">
+          <MagneticButton
+            as="a"
+            href="https://github.com/fahimaloy"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Source Code on GitHub"
+            className="p-2 rounded-[var(--radius-md)] transition-colors duration-200"
+            style={{
+              background: 'transparent',
+              color: 'var(--fg-2)',
+              borderColor: 'transparent',
+            }}
           >
-            {siteTexts.active_label || 'ACTIVE'}
-          </span>
+            <RiGithubLine size={16} />
+          </MagneticButton>
+          <MagneticButton
+            as="a"
+            href="/blog"
+            aria-label="Blog"
+            className="p-2 rounded-[var(--radius-md)] transition-colors duration-200"
+            style={{
+              background: 'transparent',
+              color: 'var(--fg-2)',
+              borderColor: 'transparent',
+            }}
+          >
+            <RiFileTextLine size={16} />
+          </MagneticButton>
         </div>
-        <div className="text-[10px] font-mono" style={{ color: 'var(--fg-4)' }}>
-          {now}
+        {/* Status + clock */}
+        <div className="flex flex-col items-end gap-2 ml-3 border-l border-[var(--border-subtle)] pl-3">
+          <div
+            className="px-3 py-1.5 rounded-[var(--radius-md)] border inline-flex items-center gap-2 backdrop-blur-sm"
+            style={{
+              background: 'var(--surface-overlay)',
+              borderColor: 'var(--border-subtle)',
+            }}
+          >
+            <span
+              className="w-2 h-2 rounded-full animate-pulse-dot"
+              style={{ background: 'var(--status-success)' }}
+            />
+            <span
+              className="text-[10px] font-mono tracking-[0.18em]"
+              style={{ color: 'var(--fg-2)' }}
+            >
+              {siteTexts.active_label || 'ACTIVE'}
+            </span>
+          </div>
+          <div
+            className="text-[10px] font-mono"
+            style={{ color: 'var(--fg-4)' }}
+          >
+            {now}
+          </div>
         </div>
       </div>
 
@@ -129,30 +164,6 @@ export default function HudChrome({
           </div>
         </div>
       )}
-
-      {/* Bottom-right: system */}
-      <div className="absolute bottom-24 right-4 pointer-events-auto hidden md:block">
-        <div
-          className="p-3 text-right rounded-[var(--radius-lg)] border backdrop-blur-sm"
-          style={{
-            background: 'var(--surface-overlay)',
-            borderColor: 'var(--border-subtle)',
-          }}
-        >
-          <div
-            className="text-[9px] font-mono tracking-[0.24em]"
-            style={{ color: 'var(--fg-4)' }}
-          >
-            {siteTexts.terminal_version || 'TERMINAL v4.0.0'}
-          </div>
-          <div
-            className="text-[9px] font-mono mt-0.5"
-            style={{ color: 'var(--fg-4)' }}
-          >
-            {siteTexts.status_ready || 'STATUS: READY'}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
