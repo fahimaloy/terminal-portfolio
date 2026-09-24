@@ -1,6 +1,6 @@
 // src/components/home/HeroSection.tsx
 // Hero: label, name, title, bio, stats, CTA buttons, quick-access cards.
-import React, { forwardRef, useEffect, useRef } from 'react';
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   Briefcase,
@@ -9,12 +9,16 @@ import {
   Mail,
   GitBranch,
   Link as LinkIcon,
+  MousePointer,
+  Keyboard,
 } from 'lucide-react';
 import {
+  animate,
   createScope,
   createTimeline,
   stagger,
   createDrawable,
+  onScroll,
   spring,
 } from 'animejs';
 import { splitText } from 'animejs';
@@ -53,31 +57,37 @@ const QUICK_CARDS = [
     label: 'MY GITHUB',
     icon: <GitBranch size={20} />,
     message: 'Show me your GitHub',
+    shortcut: 'G',
   },
   {
     label: 'MY LINKEDIN',
     icon: <LinkIcon size={20} />,
     message: 'Show me your LinkedIn',
+    shortcut: 'L',
   },
   {
     label: 'EMAIL ME',
     icon: <Mail size={20} />,
     message: 'How can I contact you?',
+    shortcut: 'E',
   },
   {
     label: 'MY PROJECTS',
     icon: <Briefcase size={20} />,
     message: 'Show me your projects',
+    shortcut: 'P',
   },
   {
     label: 'MY SKILLSETS',
     icon: <Code size={20} />,
     message: 'Show me your skills',
+    shortcut: 'S',
   },
   {
     label: 'MY EXPERIENCE',
     icon: <Clock size={20} />,
     message: 'Show me your experience',
+    shortcut: 'X',
   },
 ];
 
@@ -99,6 +109,13 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
   ) => {
     const router = useRouter();
     const innerRef = useRef<HTMLDivElement>(null);
+    const cardRefs = useRef<Record<string, HTMLElement>>({});
+    const [reduced, setReduced] = useState(false);
+
+    // Check reduced motion preference
+    useEffect(() => {
+      setReduced(isReducedMotion());
+    }, []);
 
     useEffect(() => {
       const root = innerRef.current;
@@ -332,6 +349,30 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
         }
 
         // Reference canAnimate to guard any future draggable wiring without dead-code lint.
+        // Scroll-driven stats reveal (premium anime.js v4 pattern with onScroll)
+        if (!reduced && stats.length && typeof onScroll === 'function') {
+          const statsContainer = root.querySelector('[data-hero="stats"]');
+          if (statsContainer) {
+            scope.add('scroll-stats', (scopeRef: any) => {
+              const statEls = root.querySelectorAll(
+                '[data-hero="stats"] > div',
+              );
+              statEls.forEach((el, i) => {
+                animate(el as HTMLElement, {
+                  opacity: [0, 1],
+                  y: [20, 0],
+                  duration: 550,
+                  ease: 'outExpo',
+                  delay: i * 80,
+                  autoplay: onScroll({
+                    container: window,
+                    sync: false,
+                  }),
+                });
+              });
+            });
+          }
+        }
         void canAnimate;
       });
 
@@ -361,15 +402,17 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
       >
         {/* Hairline divider drawable under label/name */}
         <HairlineDivider className="hero-hairline w-24 mx-auto mt-2 opacity-0" />
-        {/* Name — plain editorial, no glitch */}
-        <div data-hero="name" className="hero-name opacity-0 mt-1">
+        {/* Name — premium gradient display typography */}
+        <div data-hero="name" className="hero-name opacity-0 mt-2">
           <h1
-            className="text-7xl font-display font-semibold tracking-[-0.02em] leading-none text-neon-cyan"
+            className="text-6xl md:text-8xl lg:text-9xl font-display font-bold tracking-[-0.05em] leading-[0.82]"
             style={{
-              color: 'var(--neon-cyan)',
-              background: 'var(--wash-cyan)',
+              background: 'var(--gradient-hero-name)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              filter:
+                'drop-shadow(0 0 25px var(--glow-text-cyan)) drop-shadow(0 2px 30px var(--glow-text-magenta))',
             }}
           >
             {profile?.full_name?.toUpperCase() ||
@@ -414,11 +457,13 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
           />
           <div className="text-center opacity-0">
             <div
-              className="text-2xl font-display font-medium"
+              className="text-2xl font-display font-bold"
               style={{
                 color: 'var(--fg-1)',
-                background: 'var(--wash-yellow-strong)',
-                padding: '8px 12px',
+                background: 'var(--overlay-card-bg)',
+                backdropFilter: 'blur(12px)',
+                padding: '8px 16px',
+                boxShadow: '0 4px 30px var(--overlay-black-medium)',
                 borderRadius: 'var(--radius-sm)',
               }}
             >
@@ -436,8 +481,11 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               className="text-2xl font-display font-medium"
               style={{
                 color: 'var(--fg-1)',
-                background: 'var(--wash-cyan-strong)',
-                padding: '8px 12px',
+                background: 'var(--overlay-card-bg)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid var(--overlay-card-border)',
+                padding: '8px 16px',
+                boxShadow: '0 4px 30px var(--overlay-black-medium)',
                 borderRadius: 'var(--radius-sm)',
               }}
             >
@@ -455,8 +503,11 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               className="text-2xl font-display font-medium"
               style={{
                 color: 'var(--fg-1)',
-                background: 'var(--wash-green-strong)',
-                padding: '8px 12px',
+                background: 'var(--overlay-card-bg)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid var(--overlay-card-border)',
+                padding: '8px 16px',
+                boxShadow: '0 4px 30px var(--overlay-black-medium)',
                 borderRadius: 'var(--radius-sm)',
               }}
             >
@@ -488,11 +539,50 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
                 key={card.label}
                 data-hero="card"
                 onClick={() => onSend(card.message)}
-                className="quick-card text-left p-4 cursor-pointer border rounded-[var(--radius-lg)] transition-colors duration-200 opacity-0"
+                onMouseEnter={() => {
+                  if (!reduced && canAnimate()) {
+                    animate(cardRefs.current[card.label], {
+                      scale: 1.02,
+                      boxShadow:
+                        '0 0 30px var(--glow-cyan-sm), inset 0 1px 0 var(--overlay-card-shadow-inner)',
+                      duration: durations.hover * 1000,
+                      ease: easings.smooth,
+                    });
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (!reduced && canAnimate()) {
+                    animate(cardRefs.current[card.label], {
+                      scale: 1,
+                      boxShadow:
+                        'inset 0 1px 0 var(--overlay-card-shadow-inner), 0 8px 32px var(--overlay-card-shadow-outer)',
+                      duration: durations.hover * 1000,
+                      ease: easings.smooth,
+                    });
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSend(card.message);
+                  }
+                }}
+                tabIndex={0}
+                role="button"
+                aria-label={`${card.label}, press ${card.shortcut}`}
+                ref={(el) => {
+                  if (el) cardRefs.current[card.label] = el;
+                }}
+                className="quick-card text-left p-4 cursor-pointer border rounded-[var(--radius-lg)] transition-all duration-300 hover:shadow-[0_0_25px_var(--glow-cyan-sm)] hover:-translate-y-0.5 opacity-0 hover:border-[var(--glow-cyan-30)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-1)]"
                 style={{
-                  background: 'var(--wash-yellow)',
-                  borderColor: 'var(--neon-cyan)',
+                  background: 'var(--overlay-card-bg)',
+                  backdropFilter: 'blur(20px) saturate(1.2)',
+                  borderColor: 'var(--glow-cyan-zone)',
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
                   color: 'var(--fg-1)',
+                  boxShadow:
+                    'inset 0 1px 0 var(--overlay-card-shadow-inner), 0 8px 32px var(--overlay-card-shadow-outer)',
                 }}
               >
                 <div className="text-center">

@@ -252,7 +252,7 @@ describe('ChatInputBar', () => {
     );
 
     const input = screen.getByPlaceholderText(
-      'Ask about my development work...',
+      'Type a message... (Press / to focus, Esc to unfocus)',
     ) as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'hello' } });
     expect(onInputChange).toHaveBeenCalledWith('hello');

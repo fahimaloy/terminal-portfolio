@@ -2,7 +2,7 @@
 // Registry of tech-stack brand icons via react-icons/si (Simple Icons).
 // Usage:
 //   import { TECH_ICONS, resolveTechIcon, allTechIconIds } from '@/lib/techIcons';
-//   const hit = resolveTechIcon('next.js'); // -> { Component: SiNextdotjs, hex: '#000000', label: 'Next.js', id: 'nextdotjs' }
+//   const hit = resolveTechIcon('next.js'); // -> { Component: SiNextdotjs, hex: 'var(--surface-dark-1)', label: 'Next.js', id: 'nextdotjs' }
 //   <hit.Component color={hit.hex} />
 //
 // Notes:

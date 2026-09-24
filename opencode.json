@@ -1,0 +1,32 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "portfolio-developer",
+  "instructions": [
+    "AGENTS.md",
+    ".opencode/context/portfolio/navigation.md",
+    ".opencode/context/portfolio/tech-stack.md",
+    ".opencode/context/portfolio/design-system.md"
+  ],
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "rm -rf *": "deny",
+      "sudo *": "deny",
+      "npm run dev": "allow",
+      "npm run build": "allow",
+      "npm run typecheck": "allow",
+      "npm run lint": "allow",
+      "npm test": "allow",
+      "npm run tokens:generate": "allow",
+      "npm run tokens:check": "allow"
+    },
+    "edit": {
+      "**/*.env*": "deny",
+      "**/*.key": "deny",
+      "**/*.secret": "deny",
+      "**/tokens.generated.*": "deny",
+      "node_modules/**": "deny",
+      ".git/**": "deny"
+    }
+  }
+}

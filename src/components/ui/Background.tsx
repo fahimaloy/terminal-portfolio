@@ -1,254 +1,269 @@
-// src/components/ui/Background.tsx
-/* Warm ambient background — soft washes, scroll-scrubbed morph dekor, no neon zones.
-   Aurora mesh layer (var(--aurora-*), blur 40-80px, 0.06-0.12) drifts with spring
-   easing behind morph shapes; TronGrid/ParticleField softened for hero readability. */
+/* Premium Vector Background — pure SVG, no WebGL dependency.
+Uses layered SVG primitives: AuroraMesh (ambient glow), MorphOrb (organic blobs),
+ParticleField (floating particles), ScopeRings (HUD scopes), SignalTicks (data cascade),
+GridLattice (HUD grid), ScanlineOverlay (CRT effect). All animated via CSS
+keyframes and anime.js for scroll-driven effects. Glass gradient overlay for depth. */
 
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  animate,
-  createScope,
-  createTimeline,
-  createDrawable,
-  morphTo,
-  onScroll,
-  spring,
-  stagger,
-} from 'animejs';
-import {
-  isReducedMotion,
-  canAnimate,
-  drawPreset,
-  morphPreset,
-  durations,
-  easings,
-  springs,
-} from '../../config/animations';
-import TronGrid from './TronGrid';
-import ScanlineOverlay from './ScanlineOverlay';
-import ParticleField from './ParticleField';
+import React, { useEffect, useRef } from 'react';
+import { animate, createScope, stagger, onScroll } from 'animejs';
+import { isReducedMotion, canAnimate } from '../../config/animations';
+import AuroraMesh from './graphics/primitives/AuroraMesh';
+import MorphOrb from './graphics/primitives/MorphOrb';
+import ScopeRings from './graphics/primitives/ScopeRings';
+import SignalTicks from './graphics/primitives/SignalTicks';
 import GridLattice from './graphics/primitives/GridLattice';
 
-export type BackgroundVariant = 'default' | 'hero' | 'blog';
+interface PremiumBackgroundProps {
+  className?: string;
+  variant?: 'default' | 'hero' | 'blog';
+  intensity?: 'low' | 'medium' | 'high';
+}
 
-const MORPH_PATHS = [
-  'M50,10 C80,10 90,30 90,50 C90,70 80,90 50,90 C20,90 10,70 10,50 C10,30 20,10 50,10',
-  'M50,5 C90,15 95,50 85,80 C75,95 40,95 20,80 C5,65 5,35 15,20 C25,10 40,5 50,5',
-  'M50,15 C75,15 85,35 85,55 C85,75 70,85 50,85 C30,85 15,70 15,50 C15,30 30,15 50,15',
-];
-
-type BackgroundProps = {
-  variant?: BackgroundVariant;
-};
-
-export default function Background({ variant = 'default' }: BackgroundProps) {
-  const bgRef = useRef<HTMLDivElement>(null);
+export default function PremiumBackground({
+  className = '',
+  variant = 'default',
+  intensity = 'medium',
+}: PremiumBackgroundProps) {
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
-  const [mounted, setMounted] = useState(false);
-
   const isHero = variant === 'hero';
   const isBlog = variant === 'blog';
+  const reduced = isReducedMotion();
+  const animateEnabled = canAnimate();
 
+  const opacityBase = isBlog ? 0.04 : isHero ? 0.1 : 0.06;
+  const intensityMult = intensity === 'high' ? 1.5 : intensity === 'low' ? 0.5 : 1;
+
+  // Initialize anime.js scope for scroll-driven animations
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (reduced || !animateEnabled || typeof window === 'undefined') return;
 
-  useEffect(() => {
-    if (!bgRef.current) return;
-    if (isReducedMotion() || !canAnimate()) return;
+    const scope = createScope({
+      root: document.body,
+      mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
+      defaults: {
+        duration: 800,
+        ease: 'outExpo',
+      },
+    });
 
-    const scope = createScope({ root: bgRef.current });
     scopeRef.current = scope;
 
     scope.add(() => {
-      const shapes =
-        bgRef.current!.querySelectorAll<SVGPathElement>('.bg-morph-shape');
-      if (shapes.length !== 0) {
-        const tl = createTimeline({
-          defaults: { ease: drawPreset.ease },
-        });
-
-        const drawables = createDrawable('.bg-morph-shape');
-        tl.add(
-          drawables,
-          {
-            draw: ['0 0', drawPreset.draw],
-            duration: durations.draw * 1000,
-            ease: drawPreset.ease,
-            delay: stagger(durations.stagger * 1000, { from: 'first' }),
-          },
-          0,
-        );
-
-        const morphTl = createTimeline({
-          defaults: { ease: morphPreset.ease },
+      // Scroll-driven particle field animation
+      const particles = document.querySelectorAll<HTMLElement>('.bg-particle');
+      if (particles.length > 0) {
+        animate(particles, {
+          translateY: ['-50%', '50%'],
+          translateX: [-20, 20],
+          opacity: [0.3, 0.8, 0.3],
+          ease: 'smooth',
+          duration: 12000,
+          delay: stagger(100, { from: 'first' }),
           loop: true,
+          autoplay: onScroll({
+            container: window,
+            sync: true,
+          }),
         });
-        MORPH_PATHS.forEach((path, i) => {
-          morphTl.add(
-            shapes,
-            { d: path, duration: morphPreset.duration * 1000 },
-            i === 0 ? 0 : `+=${morphPreset.duration * 1000}`,
-          );
-        });
+      }
 
-        return () => {
-          tl.revert();
-          morphTl.revert();
-        };
+      // Scroll-driven grid lattice reveal
+      const grids = document.querySelectorAll<HTMLElement>('.bg-grid-lattice');
+      if (grids.length > 0) {
+        animate(grids, {
+          opacity: [0.02, 0.06],
+          ease: 'outExpo',
+          duration: 800,
+          autoplay: onScroll({
+            container: window,
+            sync: false,
+            target: grids[0],
+          }),
+        });
+      }
+
+      // Parallax aurora mesh on scroll
+      const auroras = document.querySelectorAll<HTMLElement>('.bg-aurora-layer');
+      if (auroras.length > 0) {
+        animate(auroras, {
+          translateY: [0, 100],
+          ease: 'outExpo',
+          duration: 1000,
+          delay: stagger(50, { from: 'first' }),
+          autoplay: onScroll({
+            container: window,
+            sync: true,
+          }),
+        });
+      }
+
+      // MorphOrb organic morphing on scroll
+      const orbs = document.querySelectorAll<HTMLElement>('.grat-orb path.grat-fill');
+      if (orbs.length > 0) {
+        animate(orbs, {
+          d: [
+            'M 50 8 C 72 10 88 24 88 48 C 88 72 72 90 50 90 C 28 90 12 72 12 48 C 12 24 28 6 50 8 Z',
+            'M 50 12 C 68 14 85 28 85 48 C 85 68 68 86 50 86 C 32 86 15 68 15 48 C 15 28 32 10 50 12 Z',
+          ],
+          ease: 'smooth',
+          duration: 4000,
+          delay: stagger(800, { from: 'first' }),
+          loop: true,
+          alternate: true,
+          autoplay: onScroll({
+            container: window,
+            sync: true,
+          }),
+        });
       }
     });
 
-    return () => scope.revert();
-  }, [variant]);
-
-  // Whether aurora drift is active — blog is muted/static to reduce motion + composite cost
-  // Only evaluate on client after mount to avoid hydration mismatch
-  const driftActive = mounted && !isBlog && !isReducedMotion() && canAnimate();
-
-  // Opacities kept 0.06-0.12 spec; hero slightly higher, blog more muted
-  const auroraOpacities = isHero
-    ? { a1: 0.12, a2: 0.1, a3: 0.09, a4: 0.09 }
-    : isBlog
-    ? { a1: 0.06, a2: 0.05, a3: 0.05, a4: 0.04 }
-    : { a1: 0.09, a2: 0.08, a3: 0.07, a4: 0.06 };
-
-  const auroraBlurs = isHero
-    ? { b1: '64px', b2: '72px', b3: '80px', b4: '56px' }
-    : isBlog
-    ? { b1: '40px', b2: '48px', b3: '40px', b4: '40px' }
-    : { b1: '48px', b2: '56px', b3: '40px', b4: '48px' };
+    return () => {
+      scopeRef.current?.revert();
+    };
+  }, [variant, intensity, reduced, animateEnabled]);
 
   return (
-    <div ref={bgRef} className="fixed inset-0 z-0" aria-hidden="true">
-      {/* Base — warm charcoal washes */}
+    <div
+      aria-hidden="true"
+      className={`absolute inset-0 overflow-hidden pointer-events-none z-0 ${className}`}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        overflow: 'hidden',
+        pointerEvents: 'none',
+      }}
+    >
+      {/* Deep void base gradient */}
       <div
         className="absolute inset-0"
         style={{
-          background:
-            'radial-gradient(ellipse at center, var(--bg-2) 0%, var(--bg-1) 62%, var(--bg-1) 100%)',
-        }}
-      />
-      {/* Subtle warm vignette wash */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 90% 70% at 50% 18%, var(--bg-3) 0%, transparent 55%), radial-gradient(ellipse 70% 60% at 80% 85%, var(--overlay-white-015) 0%, transparent 60%)',
+          background: 'var(--gradient-bg-void)',
         }}
       />
 
-      {/* Aurora mesh — premium depth washes behind morph shapes (blur 40-80px, token-only) */}
+      {/* Ambient aurora mesh washes with scroll parallax */}
+      <AuroraMesh
+        variant={isHero ? 'hero' : 'subtle'}
+        className="absolute inset-0 opacity-100"
+      />
+
+      {/* Particle field - floating SVG particles */}
+      <div className="absolute inset-0 bg-particle-field">
+        {Array.from({ length: isHero ? 60 : 30 }, (_, i) => (
+          <div
+            key={i}
+            className="bg-particle"
+            style={{
+              position: 'absolute',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${2 + Math.random() * 3}px`,
+              height: `${2 + Math.random() * 3}px`,
+              borderRadius: '50%',
+              background: i % 3 === 0 ? 'var(--particle-cyan)' : i % 3 === 1 ? 'var(--particle-magenta)' : 'var(--particle-violet)',
+              opacity: 0.15 + Math.random() * 0.25,
+              filter: 'blur(1px)',
+              animationDelay: `${Math.random() * 8}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Organic morph blobs — floating, low opacity with CSS animation */}
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 overflow-hidden"
+        className="absolute inset-0"
+        style={{ opacity: opacityBase * intensityMult }}
       >
-        <div
-          className="bg-aurora-blob absolute rounded-full"
+        <MorphOrb
+          accent="cyan"
+          size={isHero ? 320 : 180}
+          className="absolute -top-16 -left-20"
           style={{
-            top: isHero ? '-10%' : '-6%',
-            left: isHero ? '-6%' : '-2%',
-            width: isHero ? '58%' : '48%',
-            height: isHero ? '62%' : '52%',
-            borderRadius: '9999px',
-            background:
-              'radial-gradient(ellipse at center, var(--aurora-1) 0%, transparent 72%)',
-            filter: `blur(${auroraBlurs.b1})`,
-            opacity: auroraOpacities.a1,
-            willChange: driftActive ? 'transform' : undefined,
+            animation: 'float-ambient 12s ease-in-out infinite alternate',
           }}
         />
-        <div
-          className="bg-aurora-blob absolute rounded-full"
+        <MorphOrb
+          accent="magenta"
+          size={isHero ? 260 : 140}
+          className="absolute top-1/3 -right-16"
           style={{
-            top: isHero ? '-8%' : '-4%',
-            right: isHero ? '-8%' : '-4%',
-            width: isHero ? '52%' : '42%',
-            height: isHero ? '56%' : '44%',
-            borderRadius: '9999px',
-            background:
-              'radial-gradient(ellipse at center, var(--aurora-2) 0%, transparent 72%)',
-            filter: `blur(${auroraBlurs.b2})`,
-            opacity: auroraOpacities.a2,
-            willChange: driftActive ? 'transform' : undefined,
+            animation: 'float-ambient 15s ease-in-out infinite alternate-reverse',
           }}
         />
-        <div
-          className="bg-aurora-blob absolute rounded-full"
+        <MorphOrb
+          accent="violet"
+          size={isHero ? 220 : 120}
+          className="absolute bottom-16 left-10"
           style={{
-            bottom: isHero ? '-12%' : '-8%',
-            left: isHero ? '8%' : '12%',
-            width: isHero ? '60%' : '46%',
-            height: isHero ? '54%' : '40%',
-            borderRadius: '9999px',
-            background:
-              'radial-gradient(ellipse at center, var(--aurora-3) 0%, transparent 72%)',
-            filter: `blur(${auroraBlurs.b3})`,
-            opacity: auroraOpacities.a3,
-            willChange: driftActive ? 'transform' : undefined,
-          }}
-        />
-        <div
-          className="bg-aurora-blob absolute rounded-full"
-          style={{
-            bottom: isHero ? '-10%' : '-6%',
-            right: isHero ? '6%' : '10%',
-            width: isHero ? '48%' : '38%',
-            height: isHero ? '48%' : '36%',
-            borderRadius: '9999px',
-            background:
-              'radial-gradient(ellipse at center, var(--aurora-4) 0%, transparent 72%)',
-            filter: `blur(${auroraBlurs.b4})`,
-            opacity: auroraOpacities.a4,
-            willChange: driftActive ? 'transform' : undefined,
+            animation: 'float-ambient 18s ease-in-out infinite alternate',
           }}
         />
       </div>
 
-      {/* Morphing SVG shapes — warm border-subtle, very low opacity */}
-      <svg
-        className="absolute inset-0 w-full h-full opacity-[0.035]"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <defs>
-          <linearGradient
-            id="bg-shape-grad"
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="100%"
-          >
-            <stop offset="0%" stopColor="var(--border-subtle)" />
-            <stop offset="100%" stopColor="var(--fg-3)" />
-          </linearGradient>
-          {MORPH_PATHS.map((d, i) => (
-            <path
-              key={i}
-              className="bg-morph-shape"
-              d={d}
-              stroke="url(#bg-shape-grad)"
-              strokeWidth={isHero ? '0.8' : '0.5'}
-              fill="none"
-              style={{
-                filter: isHero
-                  ? 'drop-shadow(0 0 4px var(--glow-cyan-sm))'
-                  : 'none',
-              }}
-            />
-          ))}
-        </defs>
-      </svg>
-      <TronGrid />
-      <ParticleField />
-      <ScanlineOverlay />
+      {/* HUD grid lattice — subtle, scroll-revealed */}
+      <GridLattice
+        className="absolute inset-0 bg-grid-lattice pointer-events-none"
+        opacity={isHero ? 0.06 : isBlog ? 0.03 : 0.04}
+        color="var(--grid-1)"
+        aria-hidden="true"
+      />
 
-      {/* Vignette — warm */}
+      {/* HUD scope rings — decorative, minimal */}
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ opacity: 0.03 + (intensityMult - 1) * 0.02 }}
+      >
+        <ScopeRings accent="cyan" size={isHero ? 280 : 160} />
+      </div>
+
+      {/* Signal tick cascade — subtle vertical data stream */}
+      <SignalTicks
+        accent="cyan"
+        count={isHero ? 24 : 12}
+        className="absolute left-6 md:left-12 top-0 bottom-0"
+      />
+      <SignalTicks
+        accent="magenta"
+        count={isHero ? 20 : 10}
+        className="absolute right-6 md:right-12 top-0 bottom-0"
+        style={{ transform: 'scaleX(-1)' }}
+      />
+
+      {/* Scanline overlay for subtle CRT aesthetic */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          // token-lint-ignore -- scanline gradient uses raw rgba for subtle CRT effect
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 4px)',
+          opacity: isHero ? 0.15 : 0.08,
+          animation: 'scanline-drift 8s linear infinite',
+        }}
+      />
+
+      {/* Glass gradient overlay for depth */}
       <div
         className="absolute inset-0"
         style={{
-          background:
-            'radial-gradient(ellipse at center, transparent 42%, var(--overlay-60) 92%)',
+          background: 'var(--gradient-overlay-hero)',
+          backdropFilter: 'blur(0px)',
         }}
       />
+
+      {/* CSS animations for background elements */}
+      <style jsx>{`
+        @keyframes float-ambient {
+          0% { transform: translateY(0) rotate(0deg) scale(1); }
+          25% { transform: translateY(-20px) rotate(1deg) scale(1.02); }
+          50% { transform: translateY(-10px) rotate(-0.5deg) scale(0.98); }
+          75% { transform: translateY(-25px) rotate(0.5deg) scale(1.01); }
+          100% { transform: translateY(-15px) rotate(0.5deg) scale(1); }
+        }
+        @keyframes scanline-drift {
+          0% { background-position: 0 0; }
+          100% { background-position: 0 40px; }
+        }
+      `}</style>
     </div>
   );
 }

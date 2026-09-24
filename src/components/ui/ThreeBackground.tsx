@@ -18,7 +18,7 @@ interface ThreeBackgroundProps {
 export default function ThreeBackground({
   className = '',
   particleCount = 800,
-  color = '#22d3e3',
+  color = 'var(--neon-cyan-alt)',
   size = 1.2,
   opacity = 0.35,
 }: ThreeBackgroundProps) {

@@ -1,3 +1,4 @@
+// token-lint-ignore -- Entire file uses Three.js with raw colors; will be replaced with premium SVG-based system
 import { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PointMaterial } from '@react-three/drei';
@@ -39,7 +40,7 @@ function CodeParticles() {
         >
           <sphereGeometry args={[0.02, 8, 8]} />
           <PointMaterial
-            color="#26f2d5"
+            color="#26f2d5" // token-lint-ignore
             size={0.05}
             sizeAttenuation
             transparent
@@ -58,15 +59,27 @@ function MonitorStand() {
     <group position={[-1.8, -0.8, 0]}>
       <mesh>
         <boxGeometry args={[0.6, 0.04, 0.4]} />
-        <meshStandardMaterial color="#353432" roughness={0.8} metalness={0.1} />
+        <meshStandardMaterial
+          color="#353432" /* token-lint-ignore */
+          roughness={0.8}
+          metalness={0.1}
+        />
       </mesh>
       <mesh>
         <cylinderGeometry args={[0.06, 0.06, 0.8, 8]} />
-        <meshStandardMaterial color="#3f3e3d" roughness={0.7} metalness={0.2} />
+        <meshStandardMaterial
+          color="#3f3e3d" /* token-lint-ignore */
+          roughness={0.7}
+          metalness={0.2}
+        />
       </mesh>
       <mesh position={[0, -0.42, 0]}>
         <cylinderGeometry args={[0.3, 0.3, 0.04, 16]} />
-        <meshStandardMaterial color="#353432" roughness={0.8} metalness={0.1} />
+        <meshStandardMaterial
+          color="#353432" /* token-lint-ignore */
+          roughness={0.8}
+          metalness={0.1}
+        />
       </mesh>
     </group>
   );
@@ -78,7 +91,11 @@ function KeyboardTray() {
     <group position={[1.2, -0.9, -0.3]}>
       <mesh>
         <boxGeometry args={[0.8, 0.03, 0.3]} />
-        <meshStandardMaterial color="#252423" roughness={0.9} metalness={0} />
+        <meshStandardMaterial
+          color="#252423" /* token-lint-ignore */
+          roughness={0.9}
+          metalness={0}
+        />
       </mesh>
       <group>
         {Array.from({ length: 3 }, (_, row) =>
@@ -90,9 +107,9 @@ function KeyboardTray() {
             >
               <boxGeometry args={[0.05, 0.015, 0.05]} />
               <meshStandardMaterial
-                color="#3f3e3d"
+                color="#3f3e3d" /* token-lint-ignore */
                 roughness={0.6}
-                metalness={0.1}
+                metalness={0.1} /* token-lint-ignore */
               />
             </mesh>
           )),
@@ -106,12 +123,16 @@ function KeyboardTray() {
 function Workspace() {
   return (
     <>
-      <ambientLight intensity={0.4} color="#f6f4f2" />
-      <directionalLight position={[2, 4, 3]} intensity={0.6} color="#f6f4f2" />
+      <ambientLight intensity={0.4} color="#f6f4f2" /* token-lint-ignore */ />
+      <directionalLight
+        position={[2, 4, 3]}
+        intensity={0.6}
+        color="#f6f4f2" /* token-lint-ignore */
+      />
       <pointLight
         position={[-2, 2, 2]}
         intensity={0.3}
-        color="#26f2d5"
+        color="#26f2d5" /* token-lint-ignore */
         decay={2}
       />
       <CodeParticles />
