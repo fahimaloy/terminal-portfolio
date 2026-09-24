@@ -14,6 +14,21 @@ async function dismissNextPortal(page: any) {
   }
 }
 
+function makeUniqueClientIp(label: string): string {
+  return `${label}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+async function mockChatSuccess(page: any, text: string) {
+  await page.route('**/api/chat', async (route: any) => {
+    expect(route.request().method()).toBe('POST');
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ text, type: 'ai' }),
+    });
+  });
+}
+
 test.describe('Chat Interface', () => {
   test.beforeEach(async ({ context }) => {
     await dismissBootSequence(context);
@@ -52,6 +67,8 @@ test.describe('Chat Interface', () => {
   });
 
   test('sending a message shows response', async ({ page }) => {
+    const responseText = 'Deterministic portfolio response for the test.';
+    await mockChatSuccess(page, responseText);
     await page.goto('/');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
@@ -64,17 +81,30 @@ test.describe('Chat Interface', () => {
     await expect(input).toBeVisible({ timeout: 5000 });
     await input.fill('Hello');
     await page.keyboard.press('Enter');
-    await expect(page.locator('[data-chat-msg]').first()).toBeVisible({
-      timeout: 15000,
-    });
+
+    const userMessage = page
+      .locator('[data-chat-msg]')
+      .filter({ hasText: '>> YOU' })
+      .filter({ hasText: 'Hello' });
+    await expect(userMessage).toHaveCount(1, { timeout: 15000 });
+    await expect(userMessage).not.toContainText('> AI.RESPONSE');
+
+    const modelMessage = page
+      .locator('[data-chat-msg]')
+      .filter({ hasText: '> AI.RESPONSE' });
+    await expect(modelMessage).toHaveCount(1, { timeout: 15000 });
+    await expect(modelMessage).toContainText(responseText);
+    await expect(modelMessage).not.toContainText(
+      /Oops!|Something went wrong|couldn't reach the server/i,
+    );
     await expect(
-      page.locator('[data-chat-msg]').filter({ hasText: 'Hello' }),
-    ).toHaveCount(1, {
-      timeout: 15000,
-    });
+      page.locator('[data-chat-msg]').filter({ hasText: 'THINKING' }),
+    ).toHaveCount(0, { timeout: 15000 });
   });
 
   test('quick cards send messages', async ({ page }) => {
+    const responseText = 'Deterministic GitHub response for the test.';
+    await mockChatSuccess(page, responseText);
     await page.goto('/');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
@@ -82,11 +112,25 @@ test.describe('Chat Interface', () => {
     await expect(githubCard).toBeVisible({ timeout: 15000 });
     await githubCard.click();
     await expect(page).toHaveURL(/\/$/);
+
+    const userMessage = page
+      .locator('[data-chat-msg]')
+      .filter({ hasText: '>> YOU' })
+      .filter({ hasText: 'Show me your GitHub' });
+    await expect(userMessage).toHaveCount(1, { timeout: 15000 });
+    await expect(userMessage).not.toContainText('> AI.RESPONSE');
+
+    const modelMessage = page
+      .locator('[data-chat-msg]')
+      .filter({ hasText: '> AI.RESPONSE' });
+    await expect(modelMessage).toHaveCount(1, { timeout: 15000 });
+    await expect(modelMessage).toContainText(responseText);
+    await expect(modelMessage).not.toContainText(
+      /Oops!|Something went wrong|couldn't reach the server/i,
+    );
     await expect(
-      page
-        .locator('[data-chat-msg]')
-        .filter({ hasText: 'Show me your GitHub' }),
-    ).toHaveCount(1, { timeout: 15000 });
+      page.locator('[data-chat-msg]').filter({ hasText: 'THINKING' }),
+    ).toHaveCount(0, { timeout: 15000 });
   });
 });
 
@@ -130,9 +174,14 @@ test.describe('API Endpoints', () => {
 
   test('POST /api/admin/login requires password', async ({ request }) => {
     const response = await request.post('/api/admin/login', {
-      data: { password: '' },
+      headers: {
+        'x-forwarded-for': makeUniqueClientIp('e2e-missing-password'),
+      },
+      data: { username: 'e2euser', password: '' },
     });
-    expect([200, 400, 429, 500]).toContain(response.status());
+    expect(response.status()).toBe(400);
+    const body = await response.json();
+    expect(body).toMatchObject({ ok: false, message: 'Password is required' });
   });
 });
 
