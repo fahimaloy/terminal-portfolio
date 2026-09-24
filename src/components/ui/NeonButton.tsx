@@ -1,26 +1,75 @@
 // src/components/ui/NeonButton.tsx
 // Premium button component with multiple variants, ripple effects, and micro-interactions
 import React, { useRef, useEffect, useState } from 'react';
-import { GlitchAccent } from './GlitchText';
 import { animate, createScope, stagger, spring } from 'animejs';
-import { durations, easings, springs, isReducedMotion, canAnimate } from '../../config/animations';
+import {
+  durations,
+  easings,
+  springs,
+  isReducedMotion,
+  canAnimate,
+} from '../../config/animations';
 
 type Variant = 'filled' | 'outline' | 'ghost' | 'glass' | 'gradient';
 type Size = 'sm' | 'md' | 'lg';
 
-const ACCENT_MAP: Record<GlitchAccent, string> = {
-  yellow: 'var(--neon-yellow)',
-  magenta: 'var(--neon-magenta)',
+// Updated accent map to match new tokens.css (neon-cyan, neon-magenta, neon-amber, neon-violet, neon-rose, neon-lime, neon-ice, neon-cyan-alt, neon-cyan-teal)
+// Also includes legacy accents for backward compatibility
+type NeonAccent =
+  | 'cyan'
+  | 'magenta'
+  | 'amber'
+  | 'violet'
+  | 'rose'
+  | 'lime'
+  | 'ice'
+  | 'cyanAlt'
+  | 'cyanTeal'
+  // Legacy accents for backward compatibility
+  | 'yellow'
+  | 'green'
+  | 'red'
+  | 'purple'
+  | 'blue';
+
+const ACCENT_MAP: Record<NeonAccent, string> = {
   cyan: 'var(--neon-cyan)',
+  magenta: 'var(--neon-magenta)',
+  amber: 'var(--neon-amber)',
+  violet: 'var(--neon-violet)',
+  rose: 'var(--neon-rose)',
+  lime: 'var(--neon-lime)',
+  ice: 'var(--neon-ice)',
+  cyanAlt: 'var(--neon-cyan-alt)',
+  cyanTeal: 'var(--neon-cyan-teal)',
+  // Legacy accents - map to new tokens
+  yellow: 'var(--neon-yellow)',
   green: 'var(--neon-green)',
   red: 'var(--neon-red)',
   purple: 'var(--neon-purple)',
   blue: 'var(--neon-blue)',
 };
 
+const GLOW_MAP: Record<NeonAccent, string> = {
+  cyan: 'var(--glow-cyan)',
+  magenta: 'var(--glow-magenta)',
+  amber: 'var(--glow-amber)',
+  violet: 'var(--glow-violet)',
+  rose: 'var(--glow-rose)',
+  lime: 'var(--glow-lime)',
+  ice: 'var(--glow-ice)',
+  cyanAlt: 'var(--glow-cyan)',
+  cyanTeal: 'var(--glow-cyan)',
+  yellow: 'var(--glow-yellow)',
+  green: 'var(--glow-green)',
+  red: 'var(--glow-red)',
+  purple: 'var(--glow-purple)',
+  blue: 'var(--glow-blue)',
+};
+
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant;
-  accent?: GlitchAccent;
+  accent?: NeonAccent;
   loading?: boolean;
   size?: Size;
   iconLeft?: React.ReactNode;
@@ -51,11 +100,14 @@ export default function NeonButton({
 }: Props) {
   const isDisabled = disabled || loading;
   const accentColor = ACCENT_MAP[accent];
+  const accentGlow = GLOW_MAP[accent];
   const buttonRef = useRef<HTMLButtonElement>(null);
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
-  const [ripplePos, setRipplePos] = useState<{ x: number; y: number } | null>(null);
+  const [ripplePos, setRipplePos] = useState<{ x: number; y: number } | null>(
+    null,
+  );
   const reduced = isReducedMotion();
   const animateEnabled = canAnimate();
 
@@ -82,8 +134,7 @@ export default function NeonButton({
     onMouseDown?.(e);
     // Press animation
     if (!reduced && animateEnabled) {
-      const hard = springs.hard as unknown as Record<string, number>;
-      const easing = (spring(hard) as unknown as string) ?? (easings.smooth as unknown as string);
+      const easing = spring(springs.hard);
       animate(buttonRef.current!, {
         scale: 0.96,
         duration: durations.tap * 1000,
@@ -100,8 +151,7 @@ export default function NeonButton({
     onMouseUp?.(e);
     // Release animation
     if (!reduced && animateEnabled) {
-      const bouncy = springs.bouncy as unknown as Record<string, number>;
-      const easing = (spring(bouncy) as unknown as string) ?? (easings.smooth as unknown as string);
+      const easing = spring(springs.bouncy);
       animate(buttonRef.current!, {
         scale: 1,
         duration: durations.tap * 1000 * 1.2,
@@ -123,16 +173,15 @@ export default function NeonButton({
     if (isDisabled) return;
     setHovered(true);
     if (!reduced && animateEnabled) {
-      const softSpring = spring(
-        springs.soft as unknown as Record<string, number>,
-      ) as unknown as string;
-      const smoothEase = (easings.smooth as unknown as string) ?? 'linear';
+      const easing = spring(springs.soft);
+      const smoothEase = easings.smooth ?? 'linear';
       animate(buttonRef.current!, {
-        boxShadow: variant === 'filled'
-          ? `0 0 0 1px ${accentColor}, 0 0 20px ${accentColor.replace(')', ',0.4)')}`
-          : `0 0 0 1px var(--border-strong), 0 0 16px var(--glow-cyan-sm)`,
+        boxShadow:
+          variant === 'filled'
+            ? `0 0 0 1px ${accentColor}, 0 0 20px ${accentGlow}`
+            : `0 0 0 1px var(--border-strong), 0 0 16px var(--glow-cyan-sm)`,
         duration: durations.hover * 1000,
-        ease: softSpring ?? smoothEase,
+        ease: easing ?? smoothEase,
       });
     }
   };
@@ -160,7 +209,7 @@ export default function NeonButton({
       background: accentColor,
       color: 'var(--bg-1)',
       border: `1px solid ${accentColor}`,
-      boxShadow: `0 0 0 1px ${accentColor}, 0 4px 16px ${accentColor.replace(')', ',0.3)')}`,
+      boxShadow: `0 0 0 1px ${accentColor}, 0 4px 16px ${accentGlow}`,
     },
     outline: {
       background: 'transparent',
@@ -209,12 +258,22 @@ export default function NeonButton({
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-1)]
         ${fullWidth ? 'w-full' : ''}
         ${className}`}
-      onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) => handleMouseDown(e)}
+      onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) =>
+        handleMouseDown(e)
+      }
       onMouseUp={(e: React.MouseEvent<HTMLButtonElement>) => handleMouseUp(e)}
-      onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => handleMouseLeave(e)}
-      onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => handleMouseEnter(e)}
-      onTouchStart={(e: React.TouchEvent<HTMLButtonElement>) => handleMouseDown(e as unknown as React.MouseEvent<HTMLButtonElement>)}
-      onTouchEnd={(e: React.TouchEvent<HTMLButtonElement>) => handleMouseUp(e as unknown as React.MouseEvent<HTMLButtonElement>)}
+      onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) =>
+        handleMouseLeave(e)
+      }
+      onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) =>
+        handleMouseEnter(e)
+      }
+      onTouchStart={(e: React.TouchEvent<HTMLButtonElement>) =>
+        handleMouseDown(e as unknown as React.MouseEvent<HTMLButtonElement>)
+      }
+      onTouchEnd={(e: React.TouchEvent<HTMLButtonElement>) =>
+        handleMouseUp(e as unknown as React.MouseEvent<HTMLButtonElement>)
+      }
     >
       {/* Ripple effect */}
       {ripple && ripplePos && animateEnabled && !reduced && (
@@ -228,7 +287,7 @@ export default function NeonButton({
             // token-lint-ignore -- ripple effect uses white overlay, acceptable as inline style
             background: 'rgba(255,255,255,0.3)',
             transform: 'translate(-50%, -50%)',
-            animation: `ripple 600ms ${easings.outExpo} forwards`,
+            animation: `ripple-out 600ms ${easings.outExpo} forwards`,
           }}
         />
       )}

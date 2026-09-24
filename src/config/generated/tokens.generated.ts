@@ -1,42 +1,67 @@
 // AUTO-GENERATED — do not edit. Run: node scripts/generate-tokens.mjs
 // Source: src/styles/tokens.css
 
-export type AccentColor = 'cyan' | 'magenta' | 'amber' | 'violet' | 'rose' | 'lime' | 'ice' | 'cyanAlt' | 'cyanTeal';
+export type AccentColor = 'cyan' | 'magenta' | 'amber' | 'violet' | 'rose' | 'yellow' | 'green' | 'red' | 'purple' | 'blue' | 'lime' | 'ice' | 'cyanAlt' | 'cyanTeal';
 
 export const accentConfig: Record<AccentColor, { color: string; glow: string; shadow: string }> = {
   cyan: {
     color: '#00f0ff',
-    glow: 'rgba(0,240,255,0.35)',
+    glow: 'rgba(0, 240, 255, 0.35)',
     shadow: '0 0 18px #00f0ff',
   },
   magenta: {
     color: '#ff0088',
-    glow: 'rgba(255,0,136,0.35)',
+    glow: 'rgba(255, 0, 136, 0.35)',
     shadow: '0 0 18px #ff0088',
   },
   amber: {
     color: '#f0a020',
-    glow: 'rgba(240,160,32,0.35)',
+    glow: 'rgba(240, 160, 32, 0.35)',
     shadow: '0 0 18px #f0a020',
   },
   violet: {
     color: '#a020f0',
-    glow: 'rgba(160,32,240,0.35)',
+    glow: 'rgba(160, 32, 240, 0.35)',
     shadow: '0 0 18px #a020f0',
   },
   rose: {
     color: '#ff2a7a',
-    glow: 'rgba(255,42,122,0.35)',
+    glow: 'rgba(255, 42, 122, 0.35)',
     shadow: '0 0 18px #ff2a7a',
+  },
+  yellow: {
+    color: '#f7d038',
+    glow: 'rgba(247, 208, 56, 0.35)',
+    shadow: '0 0 18px #f7d038',
+  },
+  green: {
+    color: '#3dff88',
+    glow: 'rgba(61, 255, 136, 0.35)',
+    shadow: '0 0 18px #3dff88',
+  },
+  red: {
+    color: '#ff3355',
+    glow: 'rgba(255, 51, 85, 0.35)',
+    shadow: '0 0 18px #ff3355',
+  },
+  purple: {
+    color: '#c05cff',
+    glow: 'rgba(192, 92, 255, 0.35)',
+    shadow: '0 0 18px #c05cff',
+  },
+  blue: {
+    color: '#3f9dff',
+    glow: 'rgba(63, 157, 255, 0.35)',
+    shadow: '0 0 18px #3f9dff',
   },
   lime: {
     color: '#c0ff30',
-    glow: 'rgba(0, 0, 0, 0.5)',
+    glow: 'rgba(192, 255, 48, 0.35)',
     shadow: '0 0 18px #c0ff30',
   },
   ice: {
     color: '#7ee0ff',
-    glow: 'rgba(0, 0, 0, 0.5)',
+    glow: 'rgba(126, 224, 255, 0.35)',
     shadow: '0 0 18px #7ee0ff',
   },
   cyanAlt: {
@@ -61,6 +86,7 @@ export const generatedDurations = {
   700: 0.7,
   counter: 2.4,
   draw: 1.4,
+  drift: 12,
   enter: 0.64,
   exit: 0.4,
   hover: 0.28,
@@ -86,6 +112,7 @@ export const generatedDurationsRaw = {
   700: '700ms',
   counter: '2400ms',
   draw: '1400ms',
+  drift: '12000ms',
   enter: '640ms',
   exit: '400ms',
   hover: '280ms',
@@ -122,66 +149,84 @@ export const generatedEasings = {
 
 // Glow halos (derived from --glow-*)
 export const generatedGlow = {
-  amber: 'rgba(240,160,32,0.35)',
-  cyan: 'rgba(0,240,255,0.35)',
-  cyan30: 'rgba(0,240,255,0.30)',
-  cyan60: 'rgba(0,240,255,0.60)',
-  cyanSoft: 'rgba(0,240,255,0.12)',
-  cyanZone: 'rgba(0,240,255,0.06)',
-  focus: 'rgba(0,240,255,0.30)',
-  focusStrong: 'rgba(0,240,255,0.50)',
-  magenta: 'rgba(255,0,136,0.35)',
-  magenta30: 'rgba(255,0,136,0.30)',
-  magentaSoft: 'rgba(255,0,136,0.12)',
-  magentaZone: 'rgba(255,0,136,0.06)',
-  rose: 'rgba(255,42,122,0.35)',
-  textCyan: 'rgba(0,240,255,0.45)',
-  textMagenta: 'rgba(255,0,136,0.20)',
-  textViolet: 'rgba(160,32,240,0.30)',
-  violet: 'rgba(160,32,240,0.35)',
-  violetZone: 'rgba(160,32,240,0.05)',
+  amber: 'rgba(240, 160, 32, 0.35)',
+  blue: 'rgba(63, 157, 255, 0.35)',
+  cyan: 'rgba(0, 240, 255, 0.35)',
+  cyan30: 'rgba(0, 240, 255, 0.3)',
+  cyan60: 'rgba(0, 240, 255, 0.6)',
+  cyanFaint: 'rgba(0, 240, 255, 0.1)',
+  cyanSoft: 'rgba(0, 240, 255, 0.12)',
+  cyanZone: 'rgba(0, 240, 255, 0.06)',
+  focus: 'rgba(0, 240, 255, 0.3)',
+  focusStrong: 'rgba(0, 240, 255, 0.5)',
+  green: 'rgba(61, 255, 136, 0.35)',
+  ice: 'rgba(126, 224, 255, 0.35)',
+  lime: 'rgba(192, 255, 48, 0.35)',
+  magenta: 'rgba(255, 0, 136, 0.35)',
+  magenta30: 'rgba(255, 0, 136, 0.3)',
+  magentaSoft: 'rgba(255, 0, 136, 0.12)',
+  magentaZone: 'rgba(255, 0, 136, 0.06)',
+  purple: 'rgba(192, 92, 255, 0.35)',
+  red: 'rgba(255, 51, 85, 0.35)',
+  rose: 'rgba(255, 42, 122, 0.35)',
+  textCyan: 'rgba(0, 240, 255, 0.45)',
+  textMagenta: 'rgba(255, 0, 136, 0.2)',
+  textViolet: 'rgba(160, 32, 240, 0.3)',
+  violet: 'rgba(160, 32, 240, 0.35)',
+  violetZone: 'rgba(160, 32, 240, 0.05)',
+  yellow: 'rgba(247, 208, 56, 0.35)',
+  yellowSoft: 'rgba(247, 208, 56, 0.25)',
 } as const;
 
 export const generatedGlowSm = {
-  amber: 'rgba(240,160,32,0.15)',
-  cyan: 'rgba(0,240,255,0.15)',
-  magenta: 'rgba(255,0,136,0.15)',
-  rose: 'rgba(255,42,122,0.15)',
-  violet: 'rgba(160,32,240,0.15)',
+  amber: 'rgba(240, 160, 32, 0.15)',
+  blue: 'rgba(63, 157, 255, 0.15)',
+  cyan: 'rgba(0, 240, 255, 0.15)',
+  green: 'rgba(61, 255, 136, 0.15)',
+  ice: 'rgba(126, 224, 255, 0.15)',
+  lime: 'rgba(192, 255, 48, 0.15)',
+  magenta: 'rgba(255, 0, 136, 0.15)',
+  purple: 'rgba(192, 92, 255, 0.15)',
+  red: 'rgba(255, 51, 85, 0.15)',
+  rose: 'rgba(255, 42, 122, 0.15)',
+  violet: 'rgba(160, 32, 240, 0.15)',
+  yellow: 'rgba(247, 208, 56, 0.15)',
 } as const;
 
 // Spring presets (derived from --spring-*)
 export const generatedSprings = {
   bouncy: {"stiffness":150,"damping":8},
+  card: {"stiffness":150,"damping":14},
   elastic: {"stiffness":180,"damping":6},
   gentle: {"stiffness":120,"damping":14},
   hard: {"stiffness":300,"damping":20},
   quads: {"stiffness":240,"damping":12},
+  snappy: {"stiffness":240,"damping":18},
   soft: {"stiffness":100,"damping":10},
   stiff: {"stiffness":200,"damping":15},
 } as const;
 
 // Wash surfaces (derived from --wash-*)
 export const generatedWash: Record<string, string> = {
-  amber: 'rgba(240,160,32,0.08)',
-  amberSoft: 'rgba(255,140,42,0.14)',
-  amberStrong: 'rgba(240,160,32,0.15)',
-  amberStrongBlog: 'rgba(255,140,42,0.22)',
-  cyan: 'rgba(0,240,255,0.08)',
-  cyanStrong: 'rgba(0,240,255,0.15)',
-  magenta: 'rgba(255,0,136,0.08)',
-  magentaStrong: 'rgba(255,0,136,0.15)',
-  rose: 'rgba(255,42,122,0.08)',
-  roseStrong: 'rgba(255,42,122,0.15)',
-  violet: 'rgba(160,32,240,0.08)',
-  violetStrong: 'rgba(160,32,240,0.15)',
+  amber: 'rgba(240, 160, 32, 0.08)',
+  amberSoft: 'rgba(255, 140, 42, 0.14)',
+  amberStrong: 'rgba(240, 160, 32, 0.15)',
+  amberStrongBlog: 'rgba(255, 140, 42, 0.22)',
+  cyan: 'rgba(0, 240, 255, 0.08)',
+  cyanStrong: 'rgba(0, 240, 255, 0.15)',
+  magenta: 'rgba(255, 0, 136, 0.08)',
+  magentaStrong: 'rgba(255, 0, 136, 0.15)',
+  rose: 'rgba(255, 42, 122, 0.08)',
+  roseStrong: 'rgba(255, 42, 122, 0.15)',
+  violet: 'rgba(160, 32, 240, 0.08)',
+  violetStrong: 'rgba(160, 32, 240, 0.15)',
 } as const;
 
 // Grid lattice (derived from --grid-*)
 export const generatedGrid: Record<string, string> = {
-  1: 'rgba(232,232,240,0.035)',
-  2: 'rgba(232,232,240,0.06)',
-  3: 'rgba(232,232,240,0.08)',
+  1: 'rgba(232, 232, 240, 0.035)',
+  2: 'rgba(232, 232, 240, 0.06)',
+  3: 'rgba(232, 232, 240, 0.08)',
 } as const;
 
 // Surface elevation (derived from --surface-*)
@@ -195,15 +240,15 @@ export const generatedSurface: Record<string, string> = {
   dark3: '#252423',
   light1: '#f6f4f2',
   light2: '#f6f4f2',
-  overlay: 'rgba(11,12,18,0.88)',
+  overlay: 'rgba(11, 12, 18, 0.88)',
   raised: '#1e2035',
 } as const;
 
 // Retro blog theme (derived from --retro-*)
 export const generatedRetro: Record<string, string> = {
   amber: '#ff8c2a',
-  amberSoft: 'rgba(255,140,42,0.14)',
-  amberStrong: 'rgba(255,140,42,0.22)',
+  amberSoft: 'rgba(255, 140, 42, 0.14)',
+  amberStrong: 'rgba(255, 140, 42, 0.22)',
   ink: '#1e1e20',
   inkSoft: '#3a3936',
   paper: '#f5f2e8',

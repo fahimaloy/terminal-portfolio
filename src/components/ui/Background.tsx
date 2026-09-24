@@ -6,7 +6,11 @@ keyframes and anime.js for scroll-driven effects. Glass gradient overlay for dep
 
 import React, { useEffect, useRef } from 'react';
 import { animate, createScope, stagger, onScroll } from 'animejs';
-import { isReducedMotion, canAnimate } from '../../config/animations';
+import {
+  isReducedMotion,
+  canAnimate,
+  durations,
+} from '../../config/animations';
 import AuroraMesh from './graphics/primitives/AuroraMesh';
 import MorphOrb from './graphics/primitives/MorphOrb';
 import ScopeRings from './graphics/primitives/ScopeRings';
@@ -24,6 +28,7 @@ export default function PremiumBackground({
   variant = 'default',
   intensity = 'medium',
 }: PremiumBackgroundProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
   const isHero = variant === 'hero';
   const isBlog = variant === 'blog';
@@ -31,14 +36,18 @@ export default function PremiumBackground({
   const animateEnabled = canAnimate();
 
   const opacityBase = isBlog ? 0.04 : isHero ? 0.1 : 0.06;
-  const intensityMult = intensity === 'high' ? 1.5 : intensity === 'low' ? 0.5 : 1;
+  const intensityMult =
+    intensity === 'high' ? 1.5 : intensity === 'low' ? 0.5 : 1;
 
   // Initialize anime.js scope for scroll-driven animations
   useEffect(() => {
     if (reduced || !animateEnabled || typeof window === 'undefined') return;
 
+    const root = containerRef.current;
+    if (!root) return;
+
     const scope = createScope({
-      root: document.body,
+      root,
       mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
       defaults: {
         duration: 800,
@@ -50,14 +59,14 @@ export default function PremiumBackground({
 
     scope.add(() => {
       // Scroll-driven particle field animation
-      const particles = document.querySelectorAll<HTMLElement>('.bg-particle');
+      const particles = root.querySelectorAll<HTMLElement>('.bg-particle');
       if (particles.length > 0) {
         animate(particles, {
           translateY: ['-50%', '50%'],
           translateX: [-20, 20],
           opacity: [0.3, 0.8, 0.3],
           ease: 'smooth',
-          duration: 12000,
+          duration: durations.drift * 1000,
           delay: stagger(100, { from: 'first' }),
           loop: true,
           autoplay: onScroll({
@@ -68,12 +77,12 @@ export default function PremiumBackground({
       }
 
       // Scroll-driven grid lattice reveal
-      const grids = document.querySelectorAll<HTMLElement>('.bg-grid-lattice');
+      const grids = root.querySelectorAll<HTMLElement>('.bg-grid-lattice');
       if (grids.length > 0) {
         animate(grids, {
           opacity: [0.02, 0.06],
           ease: 'outExpo',
-          duration: 800,
+          duration: durations.enter * 1000,
           autoplay: onScroll({
             container: window,
             sync: false,
@@ -83,12 +92,12 @@ export default function PremiumBackground({
       }
 
       // Parallax aurora mesh on scroll
-      const auroras = document.querySelectorAll<HTMLElement>('.bg-aurora-layer');
+      const auroras = root.querySelectorAll<HTMLElement>('.bg-aurora-layer');
       if (auroras.length > 0) {
         animate(auroras, {
           translateY: [0, 100],
           ease: 'outExpo',
-          duration: 1000,
+          duration: durations.enter * 1000,
           delay: stagger(50, { from: 'first' }),
           autoplay: onScroll({
             container: window,
@@ -98,7 +107,9 @@ export default function PremiumBackground({
       }
 
       // MorphOrb organic morphing on scroll
-      const orbs = document.querySelectorAll<HTMLElement>('.grat-orb path.grat-fill');
+      const orbs = root.querySelectorAll<HTMLElement>(
+        '.grat-orb path.grat-fill',
+      );
       if (orbs.length > 0) {
         animate(orbs, {
           d: [
@@ -106,7 +117,7 @@ export default function PremiumBackground({
             'M 50 12 C 68 14 85 28 85 48 C 85 68 68 86 50 86 C 32 86 15 68 15 48 C 15 28 32 10 50 12 Z',
           ],
           ease: 'smooth',
-          duration: 4000,
+          duration: durations.morph * 1000,
           delay: stagger(800, { from: 'first' }),
           loop: true,
           alternate: true,
@@ -148,26 +159,38 @@ export default function PremiumBackground({
         className="absolute inset-0 opacity-100"
       />
 
-      {/* Particle field - floating SVG particles */}
+      {/* Particle field - floating SVG particles (deterministic layout: no hydration mismatch) */}
       <div className="absolute inset-0 bg-particle-field">
-        {Array.from({ length: isHero ? 60 : 30 }, (_, i) => (
-          <div
-            key={i}
-            className="bg-particle"
-            style={{
-              position: 'absolute',
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              width: `${2 + Math.random() * 3}px`,
-              height: `${2 + Math.random() * 3}px`,
-              borderRadius: '50%',
-              background: i % 3 === 0 ? 'var(--particle-cyan)' : i % 3 === 1 ? 'var(--particle-magenta)' : 'var(--particle-violet)',
-              opacity: 0.15 + Math.random() * 0.25,
-              filter: 'blur(1px)',
-              animationDelay: `${Math.random() * 8}s`,
-            }}
-          />
-        ))}
+        {Array.from({ length: isHero ? 60 : 30 }, (_, i) => {
+          // Deterministic pseudo-random from index so SSR and client render identically
+          const rand = (salt: number) => {
+            const x = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453;
+            return x - Math.floor(x);
+          };
+          return (
+            <div
+              key={i}
+              className="bg-particle"
+              style={{
+                position: 'absolute',
+                left: `${rand(1) * 100}%`,
+                top: `${rand(2) * 100}%`,
+                width: `${2 + rand(3) * 3}px`,
+                height: `${2 + rand(4) * 3}px`,
+                borderRadius: '50%',
+                background:
+                  i % 3 === 0
+                    ? 'var(--particle-cyan)'
+                    : i % 3 === 1
+                    ? 'var(--particle-magenta)'
+                    : 'var(--particle-violet)',
+                opacity: 0.15 + rand(5) * 0.25,
+                filter: 'blur(1px)',
+                animationDelay: `${rand(6) * 8}s`,
+              }}
+            />
+          );
+        })}
       </div>
 
       {/* Organic morph blobs — floating, low opacity with CSS animation */}
@@ -188,7 +211,8 @@ export default function PremiumBackground({
           size={isHero ? 260 : 140}
           className="absolute top-1/3 -right-16"
           style={{
-            animation: 'float-ambient 15s ease-in-out infinite alternate-reverse',
+            animation:
+              'float-ambient 15s ease-in-out infinite alternate-reverse',
           }}
         />
         <MorphOrb
@@ -234,8 +258,8 @@ export default function PremiumBackground({
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          // token-lint-ignore -- scanline gradient uses raw rgba for subtle CRT effect
-          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 4px)',
+          backgroundImage:
+            'repeating-linear-gradient(0deg, transparent, transparent 2px, var(--overlay-scanline) 2px, var(--overlay-scanline) 4px)',
           opacity: isHero ? 0.15 : 0.08,
           animation: 'scanline-drift 8s linear infinite',
         }}
@@ -249,21 +273,6 @@ export default function PremiumBackground({
           backdropFilter: 'blur(0px)',
         }}
       />
-
-      {/* CSS animations for background elements */}
-      <style jsx>{`
-        @keyframes float-ambient {
-          0% { transform: translateY(0) rotate(0deg) scale(1); }
-          25% { transform: translateY(-20px) rotate(1deg) scale(1.02); }
-          50% { transform: translateY(-10px) rotate(-0.5deg) scale(0.98); }
-          75% { transform: translateY(-25px) rotate(0.5deg) scale(1.01); }
-          100% { transform: translateY(-15px) rotate(0.5deg) scale(1); }
-        }
-        @keyframes scanline-drift {
-          0% { background-position: 0 0; }
-          100% { background-position: 0 40px; }
-        }
-      `}</style>
     </div>
   );
 }
