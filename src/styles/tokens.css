@@ -5,7 +5,7 @@
    refined spring physics, and bespoke typography scale.
    All components MUST reference these tokens.
    ════════════════════════════════════════════════════════════════════════════════ */
-::root {
+:root {
   /* ── DEEP OBSIDIAN BASE (premium dark, not warm charcoal) ─────────────── */
   --bg-void: #0b0c12;
   --bg-1: #0f1017;
