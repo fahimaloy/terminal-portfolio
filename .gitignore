@@ -39,6 +39,7 @@ docker-data/
 # opencode
 .opencode/
 .tmp/
+.slim/deepwork/
 
 # playwright
 playwright-report/
