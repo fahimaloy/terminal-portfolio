@@ -99,14 +99,14 @@ vi.mock('animejs', () => {
   return {
     __esModule: true,
     createScope: vi.fn(() => mockScope),
-    createTimeline: vi.fn(() => ({ add: mockTlAddBlog } as any)),
+    createTimeline: vi.fn(() => ({ add: mockTlAddBlog }) as any),
     splitText: vi.fn(
       () =>
         ({
           chars: [{ style: {} }] as any,
           words: [{ style: {} }],
           revert: mockSplitterRevertBlog,
-        } as any),
+        }) as any,
     ),
     stagger: mockStaggerBlog,
     animate: vi.fn(),
@@ -286,7 +286,7 @@ describe('BlogIndexPage', () => {
     const headline = document.querySelector<HTMLElement>(
       '.blog-empty-headline',
     )!;
-    expect(headline.style.opacity).toBe('0');
+    await waitFor(() => expect(headline.style.opacity).toBe('0'));
 
     headline.style.opacity = '1';
     headline.style.transform = 'none';
