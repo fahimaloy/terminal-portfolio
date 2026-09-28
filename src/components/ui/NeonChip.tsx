@@ -62,7 +62,9 @@ export default function NeonChip({
         } as React.CSSProperties
       }
       className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-display tracking-[1px] transition-colors ${
-        onClick ? 'cursor-pointer hover:scale-[1.05]' : ''
+        onClick
+          ? 'cursor-pointer min-h-[44px] min-w-[44px] hover:scale-[1.05]'
+          : ''
       } ${className}`}
     >
       {icon && <span className="text-[10px]">{icon}</span>}
@@ -73,7 +75,7 @@ export default function NeonChip({
             e.stopPropagation();
             onRemove?.();
           }}
-          className="ml-0.5 hover:text-[var(--status-error)] transition-colors"
+          className="relative grid place-items-center w-5 h-5 ml-0.5 hover:text-[var(--status-error)] transition-colors after:absolute after:inset-[-12px] after:content-['']"
           aria-label="Remove"
         >
           ×

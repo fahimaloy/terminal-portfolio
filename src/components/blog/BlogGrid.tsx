@@ -67,7 +67,7 @@ export default function BlogGrid({
             type="button"
             onClick={onLoadMore}
             disabled={loading}
-            className="rounded-[var(--radius-md)] border px-6 py-2.5 font-mono text-[11px] tracking-[0.18em] transition-colors disabled:opacity-40"
+            className="rounded-[var(--radius-md)] border min-h-[44px] min-w-[44px] px-6 py-2.5 font-mono text-[11px] tracking-[0.18em] transition-colors disabled:opacity-40"
             style={{
               borderColor: 'var(--border-subtle)',
               color: 'var(--fg-2)',

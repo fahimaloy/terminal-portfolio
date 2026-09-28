@@ -94,7 +94,7 @@ export const MentionChip = ({
       role={role ?? 'button'}
       tabIndex={0}
       aria-label={tag}
-      className="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-cyan)] rounded-[var(--radius-lg)]"
+      className="cursor-pointer min-h-[44px] min-w-[44px] inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-cyan)] rounded-[var(--radius-lg)]"
       onClick={() => {
         press();
         onClick?.();

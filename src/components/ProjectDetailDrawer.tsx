@@ -132,7 +132,7 @@ export default function ProjectDetailDrawer({
         <div className="relative p-5 space-y-4">
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center border"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center border after:absolute after:inset-[-6px] after:content-['']"
             style={{
               background: 'var(--bg-3)',
               borderColor: 'var(--border-subtle)',
@@ -215,7 +215,7 @@ export default function ProjectDetailDrawer({
                 href={project.project_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs hover:underline"
+                className="flex items-center gap-1 min-h-[44px] min-w-[44px] text-xs hover:underline"
                 style={{ color: 'var(--neon-amber)' }}
               >
                 <ExternalLink size={12} /> Live Demo
@@ -226,7 +226,7 @@ export default function ProjectDetailDrawer({
                 href={project.repo_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs hover:underline"
+                className="flex items-center gap-1 min-h-[44px] min-w-[44px] text-xs hover:underline"
                 style={{ color: 'var(--neon-amber)' }}
               >
                 <Code size={12} /> Repository

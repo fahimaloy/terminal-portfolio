@@ -30,7 +30,7 @@ export default function Toggle({
       />
       <label
         htmlFor={id}
-        className={`relative mt-0.5 w-9 h-5 flex-shrink-0 border transition-colors cursor-pointer peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--border-strong)] peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[var(--bg-1)] ${
+        className={`relative mt-0.5 w-9 h-5 flex-shrink-0 border transition-colors cursor-pointer after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:h-11 after:min-w-[44px] after:content-[''] peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--border-strong)] peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[var(--bg-1)] ${
           disabled ? 'opacity-50 cursor-not-allowed' : ''
         }`}
         style={{

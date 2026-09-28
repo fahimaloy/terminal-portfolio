@@ -145,10 +145,34 @@ export default function NeonButton({
     }
   };
 
+  // WCAG 2.2 target size: every size preset is floored at 44x44 CSS px. The
+  // padding values still decide the *look*; minHeight/minWidth only guarantee the
+  // hit box, so `size="sm"` and `size="md"` (which measure ~28px and ~37px tall
+  // from their own padding) become operable without changing their typography.
+  // Props/signature are untouched, so all 76 call sites (including the admin
+  // panel) inherit this for free.
   const sizeStyles: Record<Size, React.CSSProperties> = {
-    sm: { padding: '0.5rem 1rem', fontSize: '0.625rem', gap: '0.375rem' },
-    md: { padding: '0.75rem 1.5rem', fontSize: '0.6875rem', gap: '0.5rem' },
-    lg: { padding: '1rem 2rem', fontSize: '0.75rem', gap: '0.75rem' },
+    sm: {
+      padding: '0.5rem 1rem',
+      fontSize: '0.625rem',
+      gap: '0.375rem',
+      minHeight: '44px',
+      minWidth: '44px',
+    },
+    md: {
+      padding: '0.75rem 1.5rem',
+      fontSize: '0.6875rem',
+      gap: '0.5rem',
+      minHeight: '44px',
+      minWidth: '44px',
+    },
+    lg: {
+      padding: '1rem 2rem',
+      fontSize: '0.75rem',
+      gap: '0.75rem',
+      minHeight: '44px',
+      minWidth: '44px',
+    },
   };
 
   const variantStyles: Record<Variant, React.CSSProperties> = {

@@ -53,8 +53,8 @@ export default function FileUpload({
           borderColor: dragging
             ? 'var(--border-strong)'
             : error
-            ? 'var(--status-error)'
-            : 'var(--border-subtle)',
+              ? 'var(--status-error)'
+              : 'var(--border-subtle)',
           background: dragging
             ? 'color-mix(in srgb, var(--fg-3) 6%, transparent)'
             : 'transparent',
@@ -81,7 +81,7 @@ export default function FileUpload({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={disabled}
-          className="font-display text-[10px] tracking-[2px] hover:opacity-70 transition-opacity"
+          className="min-h-[44px] min-w-[44px] px-2 font-display text-[10px] tracking-[2px] hover:opacity-70 transition-opacity"
           style={{ color: 'var(--fg-1)' }}
         >
           CHOOSE FILE{multiple ? 'S' : ''}

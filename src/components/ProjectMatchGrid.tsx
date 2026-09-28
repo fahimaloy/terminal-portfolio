@@ -96,7 +96,7 @@ export default function ProjectMatchGrid({
                       ? 'Collapse project'
                       : `Expand ${project.short_title || project.title}`
                   }
-                  className="mt-1 w-8 h-8 rounded-full flex items-center justify-center border shrink-0 transition-transform"
+                  className="relative mt-1 w-8 h-8 rounded-full flex items-center justify-center border shrink-0 transition-transform after:absolute after:inset-[-6px] after:content-['']"
                   style={{
                     background: 'var(--bg-2)',
                     borderColor: 'var(--border-subtle)',
