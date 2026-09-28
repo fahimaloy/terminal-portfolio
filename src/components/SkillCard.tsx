@@ -14,14 +14,7 @@ import { PortfolioSkill } from '../utils/api';
 import { Tilt3D, HudPanel } from './ui';
 import { resolveTechIcon } from '../lib/techIcons';
 
-const ACCENTS = [
-  'cyan',
-  'magenta',
-  'yellow',
-  'green',
-  'purple',
-  'blue',
-] as const;
+const ACCENTS = ['cyan', 'coral', 'amber', 'lime', 'violet', 'ice'] as const;
 
 type CardAccent = (typeof ACCENTS)[number];
 
@@ -96,7 +89,7 @@ export default function SkillCard({ skill, inline = false }: SkillCardProps) {
           </div>
         </div>
         {skill.duration && (
-          <div className="text-[10px] font-mono text-neon-yellow bg-neon-yellow/10 border border-neon-yellow/20 px-2 py-0.5 rounded-full mt-2">
+          <div className="text-[10px] font-mono text-neon-amber bg-neon-amber/10 border border-neon-amber/20 px-2 py-0.5 rounded-full mt-2">
             {skill.duration}
           </div>
         )}

@@ -39,35 +39,65 @@ log_step()  { echo -e "${CYAN}[STEP]${NC}  $1"; }
 LOCAL_COMPOSE_FILE="docker-compose.local.yml"
 has_local_backend() { [ -f "${LOCAL_COMPOSE_FILE}" ]; }
 
-# ─── Load nvm and use compatible Node.js ──────────────────────
+# ─── Load nvm and use the repository Node.js version ──────────
 setup_node() {
-  export NVM_DIR="$HOME/.nvm"
-  if [ -s "$NVM_DIR/nvm.sh" ]; then
-    # shellcheck disable=SC1091
-    . "$NVM_DIR/nvm.sh" 2>/dev/null
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
-    local current_version
-    current_version="$(node --version 2>/dev/null || echo "v0.0.0")"
-    local current_major="${current_version#v}"
-    current_major="${current_major%%.*}"
-
-    # Next.js 12 needs Node.js < 23 (jsonwebtoken uses Buffer.prototype.equal removed in Node 23+)
-    if [ "$current_major" -ge 23 ] 2>/dev/null; then
-      log_warn "Node.js ${current_version} is incompatible with Next.js 12 (jwt/Buffer issue)"
-      log_info "Switching to Node.js 20 via nvm..."
-
-      if nvm ls 20 &>/dev/null; then
-        nvm use 20
-        log_ok "Switched to $(node --version)"
-      elif nvm ls 22 &>/dev/null; then
-        nvm use 22
-        log_ok "Switched to $(node --version)"
-      else
-        log_error "No compatible Node.js found via nvm. Install one: nvm install 20"
-        exit 1
-      fi
-    fi
+  if [ ! -s ".nvmrc" ]; then
+    log_error ".nvmrc is missing; cannot select the required Node.js version"
+    exit 1
   fi
+
+  local required_version
+  required_version="$(tr -d '[:space:]' < .nvmrc)"
+  required_version="${required_version#v}"
+  if [ -z "$required_version" ]; then
+    log_error ".nvmrc does not contain a Node.js version"
+    exit 1
+  fi
+
+  if [ -s "$NVM_DIR/nvm.sh" ]; then
+    # shellcheck disable=SC1090,SC1091
+    if ! . "$NVM_DIR/nvm.sh"; then
+      log_error "Unable to source nvm from $NVM_DIR/nvm.sh"
+      exit 1
+    fi
+    if ! nvm use "$required_version"; then
+      log_error "Unable to select Node.js $required_version from .nvmrc via nvm"
+      exit 1
+    fi
+  else
+    log_warn "nvm is unavailable; validating the active Node.js against $required_version"
+  fi
+
+  local node_bin node_version
+  node_bin="$(command -v node 2>/dev/null || true)"
+  if [ -z "$node_bin" ]; then
+    log_error "No active Node.js executable is available"
+    exit 1
+  fi
+  node_version="$("$node_bin" --version 2>/dev/null || true)"
+  if [ -z "$node_version" ]; then
+    log_error "Unable to determine the active Node.js version"
+    exit 1
+  fi
+  if ! "$node_bin" -e '
+    var required = process.argv[1].replace(/^v/, "").split(".").map(Number);
+    var active = process.argv[2].replace(/^v/, "").split(".").map(Number);
+    function valid(version) {
+      return version.length >= 3 && version.every(function (part) { return !isNaN(part); });
+    }
+    if (!valid(required) || !valid(active) ||
+        active[0] < required[0] ||
+        (active[0] === required[0] && active[1] < required[1]) ||
+        (active[0] === required[0] && active[1] === required[1] && active[2] < required[2])) {
+      process.exit(1);
+    }
+  ' "$required_version" "$node_version"; then
+    log_error "Node.js $node_version does not satisfy the required version $required_version from .nvmrc"
+    exit 1
+  fi
+  log_ok "Node.js $node_version satisfies $required_version"
 }
 
 setup_node
@@ -241,9 +271,9 @@ check_prerequisites() {
 
   # node_modules
   if [ ! -d "node_modules" ]; then
-    log_warn "node_modules not found, running npm install..."
-    npm install
-    log_ok "Dependencies installed"
+    log_warn "node_modules not found, running npm ci..."
+    npm ci
+    log_ok "Dependencies installed from package-lock.json"
   else
     log_ok "node_modules found"
   fi

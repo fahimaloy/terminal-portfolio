@@ -1,0 +1,42 @@
+# Version control and local tooling
+.git
+.gitignore
+.github
+.husky
+.opencode
+.superpowers
+.vscode
+.idea
+
+# Secrets and local environment files
+.env*
+!.env.example
+.npmrc
+
+# Dependencies and package-manager state
+node_modules
+.pnpm-store
+.yarn
+.pnp.*
+
+# Build and test artifacts
+.next
+out
+build
+dist
+coverage
+playwright-report
+test-results
+storybook-static
+*.tsbuildinfo
+
+# Local deployment and scratch state
+.vercel
+docker-data
+supabase/.temp
+.cache
+.tmp
+tmp
+*.log
+*.report.md
+.DS_Store

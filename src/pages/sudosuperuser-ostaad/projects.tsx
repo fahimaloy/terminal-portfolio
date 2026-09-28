@@ -196,7 +196,7 @@ const ProjectsPage = () => {
       <AdminLayout user={user} isLoading={loading}>
         <div>
           <GlitchText
-            accent="magenta"
+            accent="coral"
             className="text-2xl font-display tracking-[2px] mb-6"
           >
             MANAGE PROJECTS
@@ -205,7 +205,7 @@ const ProjectsPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div ref={listRef} className="lg:col-span-2">
               {projects.length > 0 ? (
-                <HudPanel accent="magenta" notch="md" className="p-6">
+                <HudPanel accent="coral" notch="md" className="p-6">
                   <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
                     PROJECTS ({projects.length})
                   </div>
@@ -234,7 +234,7 @@ const ProjectsPage = () => {
                           </div>
                           <div className="flex gap-2">
                             {project.featured && (
-                              <NeonChip accent="magenta">FEATURED</NeonChip>
+                              <NeonChip accent="coral">FEATURED</NeonChip>
                             )}
                           </div>
                         </div>
@@ -250,7 +250,7 @@ const ProjectsPage = () => {
                           </NeonButton>
                           <NeonButton
                             variant="ghost"
-                            accent="red"
+                            accent="coral"
                             onClick={() => setConfirmDelete(project.id)}
                             disabled={isSaving}
                           >
@@ -262,11 +262,7 @@ const ProjectsPage = () => {
                   </div>
                 </HudPanel>
               ) : (
-                <HudPanel
-                  accent="magenta"
-                  notch="md"
-                  className="p-6 text-center"
-                >
+                <HudPanel accent="coral" notch="md" className="p-6 text-center">
                   <span className="font-body text-sm text-[var(--fg-3)]">
                     No projects yet.
                   </span>
@@ -274,7 +270,7 @@ const ProjectsPage = () => {
               )}
             </div>
 
-            <HudPanel accent="magenta" notch="md" className="p-6">
+            <HudPanel accent="coral" notch="md" className="p-6">
               <div ref={formRef}>
                 <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
                   {editingProjectId ? 'EDIT PROJECT' : 'ADD PROJECT'}

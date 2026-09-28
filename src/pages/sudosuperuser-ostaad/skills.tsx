@@ -156,15 +156,15 @@ const SkillsPage = () => {
       <AdminLayout user={user} isLoading={loading}>
         <div className="max-w-2xl">
           <GlitchText
-            accent="green"
+            accent="lime"
             className="text-2xl font-display tracking-[2px] mb-6"
           >
             MANAGE SKILLS
           </GlitchText>
 
-          <HudPanel accent="green" notch="md" className="p-6 mb-8">
+          <HudPanel accent="lime" notch="md" className="p-6 mb-8">
             <div ref={formRef}>
-              <div className="text-[10px] font-display tracking-[3px] text-neon-green mb-4">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-lime mb-4">
                 {editingId ? 'EDIT SKILL' : 'ADD NEW SKILL'}
               </div>
 
@@ -233,8 +233,8 @@ const SkillsPage = () => {
           </HudPanel>
 
           {skills.length > 0 ? (
-            <HudPanel accent="green" notch="md" className="p-6">
-              <div className="text-[10px] font-display tracking-[3px] text-neon-green mb-4">
+            <HudPanel accent="lime" notch="md" className="p-6">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-lime mb-4">
                 SKILLS ({skills.length})
               </div>
 
@@ -254,7 +254,7 @@ const SkillsPage = () => {
                   >
                     <div className="flex items-center gap-3 flex-1">
                       {skill.icon_key && (
-                        <div className="w-8 h-8 clip-notch-sm bg-neon-green/10 border border-neon-green/20 flex items-center justify-center text-neon-green font-display text-[10px]">
+                        <div className="w-8 h-8 clip-notch-sm bg-neon-lime/10 border border-neon-lime/20 flex items-center justify-center text-neon-lime font-display text-[10px]">
                           {skill.icon_key.slice(0, 2).toUpperCase()}
                         </div>
                       )}
@@ -279,7 +279,7 @@ const SkillsPage = () => {
                       </NeonButton>
                       <NeonButton
                         variant="ghost"
-                        accent="red"
+                        accent="coral"
                         onClick={() => setConfirmDelete(skill.id)}
                         disabled={isSaving}
                       >
@@ -291,7 +291,7 @@ const SkillsPage = () => {
               </div>
             </HudPanel>
           ) : (
-            <HudPanel accent="green" notch="md" className="p-6 text-center">
+            <HudPanel accent="lime" notch="md" className="p-6 text-center">
               <span className="font-body text-sm text-text-muted">
                 No skills yet. Add one to get started.
               </span>

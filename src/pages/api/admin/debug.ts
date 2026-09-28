@@ -4,7 +4,21 @@ import {
   ensureDefaultAdminSeeded,
   getDefaultAdminUsername,
 } from '../../../utils/adminAuth';
+import { requireAdmin } from '../../../utils/adminAuth';
 
+/**
+ * Admin diagnostics.
+ *
+ * SECURITY: this endpoint used to be reachable by any anonymous caller. It
+ * returned the admin row's username, email and id — a clean confirmation
+ * oracle for a login brute force — and it called `ensureDefaultAdminSeeded()`
+ * on the way, so it was also a write path that could re-seed the admin row
+ * from `ADMIN_DEFAULT_PASSWORD`.
+ *
+ * It is now gated exactly like every other route under /api/admin, and is
+ * refused outright in production. If you need a health check in production,
+ * expose one that reports only "reachable" / "not reachable" and nothing else.
+ */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -15,24 +29,32 @@ export default async function handler(
     return;
   }
 
+  if (process.env.NODE_ENV === 'production') {
+    res.status(404).json({ message: 'Not Found' });
+    return;
+  }
+
+  if (!(await requireAdmin(req, res))) return;
+
   if (!supabaseAdmin) {
     res.status(500).json({
       ok: false,
-      message: 'Missing server config - check SUPABASE_SERVICE_ROLE_KEY',
+      message:
+        'Missing server config — set SUPABASE_SECRET_KEY (server-only, never the NEXT_PUBLIC_ variant)',
     });
     return;
   }
 
   try {
-    // Try to seed the admin user first
     await ensureDefaultAdminSeeded();
 
     const username = getDefaultAdminUsername();
 
-    // Check if admin user exists
+    // Never select password_hash: this endpoint must not be able to leak
+    // even its length.
     const { data, error } = await supabaseAdmin
       .from('admin_users')
-      .select('id, username, email, is_active, password_hash')
+      .select('id, username, email, is_active')
       .eq('username', username)
       .limit(1)
       .maybeSingle();
@@ -41,8 +63,6 @@ export default async function handler(
       return res.status(500).json({
         ok: false,
         message: 'Database error',
-        error: error.message,
-        details: error,
       });
     }
 
@@ -53,7 +73,6 @@ export default async function handler(
       });
     }
 
-    // Return success without exposing password hash
     return res.status(200).json({
       ok: true,
       admin: {
@@ -61,14 +80,9 @@ export default async function handler(
         username: data.username,
         email: data.email,
         is_active: data.is_active,
-        password_hash_length: data.password_hash?.length || 0,
       },
     });
-  } catch (err: any) {
-    return res.status(500).json({
-      ok: false,
-      message: 'Unexpected error',
-      error: err.message,
-    });
+  } catch {
+    return res.status(500).json({ ok: false, message: 'Unexpected error' });
   }
 }

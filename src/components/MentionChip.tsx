@@ -12,13 +12,7 @@ import HudPanel from './ui/HudPanel';
 import { springs, isReducedMotion, canAnimate } from '../config/animations';
 
 type WashColor =
-  | 'yellow'
-  | 'magenta'
-  | 'cyan'
-  | 'green'
-  | 'red'
-  | 'purple'
-  | 'blue';
+  'amber' | 'coral' | 'cyan' | 'lime' | 'coral' | 'violet' | 'ice';
 
 type MentionChipProps = {
   tag: string;
@@ -78,8 +72,8 @@ export const MentionChip = ({
             size === 'sm'
               ? 'text-[8px]'
               : size === 'lg'
-              ? 'text-[11px]'
-              : 'text-[9px]'
+                ? 'text-[11px]'
+                : 'text-[9px]'
           }`}
         >
           {tag}

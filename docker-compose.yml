@@ -1,14 +1,17 @@
-version: "3.7"
 services:
   liveterm:
     build:
       context: .
       dockerfile: Dockerfile
-      target: base
+      target: production
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: '${NEXT_PUBLIC_SUPABASE_URL:?required}'
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: '${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:?required}'
+    environment:
+      NEXT_PUBLIC_SUPABASE_URL: '${NEXT_PUBLIC_SUPABASE_URL:?required}'
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: '${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:?required}'
+      SUPABASE_SECRET_KEY: '${SUPABASE_SECRET_KEY:?required}'
     expose:
       - '3000'
     ports:
       - '3000:3000'
-    volumes:
-      - ./src/:/home/node/app/src
-    command: npm run dev

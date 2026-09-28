@@ -14,85 +14,123 @@ async function dismissNextPortal(page: any) {
   }
 }
 
+function makeUniqueClientIp(label: string): string {
+  return `${label}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+async function mockChatSuccess(page: any, text: string) {
+  await page.route('**/api/chat', async (route: any) => {
+    expect(route.request().method()).toBe('POST');
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ text, type: 'ai' }),
+    });
+  });
+}
+
 test.describe('Chat Interface', () => {
   test.beforeEach(async ({ context }) => {
     await dismissBootSequence(context);
   });
 
-  test('chat overlay opens on START CHAT click', async ({ page }) => {
+  test('chat overlay opens from the chat input', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
-    const startChat = page.locator('text=START CHAT').first();
-    await startChat.click({ force: true });
-    await expect(page.locator('[role="dialog"]')).toBeVisible({
+    const chatInput = page.locator('input[aria-label="Open chat"]');
+    await expect(chatInput).toBeVisible({ timeout: 15000 });
+    await chatInput.click();
+    const textarea = page.locator(
+      'textarea[placeholder^="Ask about my development projects"]',
+    );
+    await expect(textarea).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('CLOSE', { exact: true })).toBeVisible({
       timeout: 5000,
     });
-    const overlay = page.locator('[role="dialog"]');
-    await expect(overlay.first()).toBeVisible({ timeout: 5000 });
   });
 
   test('chat overlay closes on escape', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('[role="dialog"]')).toBeVisible({
-      timeout: 5000,
-    });
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
-    await page.locator('text=START CHAT').first().click({ force: true });
-    await expect(page.locator('[role="dialog"]')).toBeVisible({
-      timeout: 5000,
-    });
+    const chatInput = page.locator('input[aria-label="Open chat"]');
+    await expect(chatInput).toBeVisible({ timeout: 15000 });
+    await chatInput.click();
+    const textarea = page.locator(
+      'textarea[placeholder^="Ask about my development projects"]',
+    );
+    await expect(textarea).toBeVisible({ timeout: 5000 });
     await page.keyboard.press('Escape');
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible();
+    await expect(textarea).not.toBeVisible();
+    await expect(page.getByText('CLOSE', { exact: true })).not.toBeVisible();
   });
 
   test('sending a message shows response', async ({ page }) => {
+    const responseText = 'Deterministic portfolio response for the test.';
+    await mockChatSuccess(page, responseText);
     await page.goto('/');
-    await expect(
-      page
-        .locator(
-          'input[placeholder*="message"], textarea[placeholder*="message"]',
-        )
-        .first(),
-    ).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
-    await page.locator('text=START CHAT').first().click({ force: true });
+    const chatInput = page.locator('input[aria-label="Open chat"]');
+    await expect(chatInput).toBeVisible({ timeout: 15000 });
+    await chatInput.click();
+    const input = page.locator(
+      'textarea[placeholder^="Ask about my development projects"]',
+    );
+    await expect(input).toBeVisible({ timeout: 5000 });
+    await input.fill('Hello');
+    await page.keyboard.press('Enter');
+
+    const userMessage = page
+      .locator('[data-chat-msg]')
+      .filter({ hasText: '>> YOU' })
+      .filter({ hasText: 'Hello' });
+    await expect(userMessage).toHaveCount(1, { timeout: 15000 });
+    await expect(userMessage).not.toContainText('> AI.RESPONSE');
+
+    const modelMessage = page
+      .locator('[data-chat-msg]')
+      .filter({ hasText: '> AI.RESPONSE' });
+    await expect(modelMessage).toHaveCount(1, { timeout: 15000 });
+    await expect(modelMessage).toContainText(responseText);
+    await expect(modelMessage).not.toContainText(
+      /Oops!|Something went wrong|couldn't reach the server/i,
+    );
     await expect(
-      page
-        .locator(
-          'input[placeholder*="message"], textarea[placeholder*="message"]',
-        )
-        .first(),
-    ).toBeVisible({ timeout: 15000 });
-    const input = page
-      .locator(
-        'input[placeholder*="message"], textarea[placeholder*="message"]',
-      )
-      .first();
-    if (await input.isVisible()) {
-      await input.fill('Hello');
-      await page.keyboard.press('Enter');
-      await expect(
-        page
-          .locator('[class*="message"], [class*="response"], [class*="chat"]')
-          .first(),
-      ).toBeVisible({ timeout: 15000 });
-    }
+      page.locator('[data-chat-msg]').filter({ hasText: 'THINKING' }),
+    ).toHaveCount(0, { timeout: 15000 });
   });
 
   test('quick cards send messages', async ({ page }) => {
+    const responseText = 'Deterministic GitHub response for the test.';
+    await mockChatSuccess(page, responseText);
     await page.goto('/');
-    await expect(
-      page
-        .locator(
-          'input[placeholder*="message"], textarea[placeholder*="message"]',
-        )
-        .first(),
-    ).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
     await dismissNextPortal(page);
-    const githubCard = page.getByText('MY GITHUB').first();
-    await githubCard.click({ force: true });
-    await expect(page).toHaveURL(/\/github|https:\/\/github\.com/);
+    const githubCard = page.getByRole('button', { name: /MY GITHUB/ });
+    await expect(githubCard).toBeVisible({ timeout: 15000 });
+    await githubCard.click();
+    await expect(page).toHaveURL(/\/$/);
+
+    const userMessage = page
+      .locator('[data-chat-msg]')
+      .filter({ hasText: '>> YOU' })
+      .filter({ hasText: 'Show me your GitHub' });
+    await expect(userMessage).toHaveCount(1, { timeout: 15000 });
+    await expect(userMessage).not.toContainText('> AI.RESPONSE');
+
+    const modelMessage = page
+      .locator('[data-chat-msg]')
+      .filter({ hasText: '> AI.RESPONSE' });
+    await expect(modelMessage).toHaveCount(1, { timeout: 15000 });
+    await expect(modelMessage).toContainText(responseText);
+    await expect(modelMessage).not.toContainText(
+      /Oops!|Something went wrong|couldn't reach the server/i,
+    );
+    await expect(
+      page.locator('[data-chat-msg]').filter({ hasText: 'THINKING' }),
+    ).toHaveCount(0, { timeout: 15000 });
   });
 });
 
@@ -136,9 +174,14 @@ test.describe('API Endpoints', () => {
 
   test('POST /api/admin/login requires password', async ({ request }) => {
     const response = await request.post('/api/admin/login', {
-      data: { password: '' },
+      headers: {
+        'x-forwarded-for': makeUniqueClientIp('e2e-missing-password'),
+      },
+      data: { username: 'e2euser', password: '' },
     });
-    expect([200, 400, 500]).toContain(response.status());
+    expect(response.status()).toBe(400);
+    const body = await response.json();
+    expect(body).toMatchObject({ ok: false, message: 'Password is required' });
   });
 });
 
@@ -192,8 +235,8 @@ test.describe('Animation & Motion', () => {
   test('elements have entrance animations', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
-    const heroLabel = page.locator('.hero-label');
-    await expect(heroLabel.first()).toBeVisible({ timeout: 15000 });
+    const heroName = page.locator('[data-hero="name"]');
+    await expect(heroName.first()).toBeVisible({ timeout: 15000 });
   });
 
   test('reduced motion disables animations', async ({ browser }) => {

@@ -46,22 +46,20 @@ export default function ProjectMatchGrid({
 
   const expanded =
     expandedId !== null
-      ? filtered.find((p) => p.id === expandedId) ?? null
+      ? (filtered.find((p) => p.id === expandedId) ?? null)
       : null;
 
   useEffect(() => {
     if (expanded === null || !detailRef.current) return;
-    const scope = motionScope.create();
-    if (!scope) return;
-    scope.add(() => {
+    motionScope.run((scope) => {
+      if (!scope) return;
       animate(detailRef.current!, {
         opacity: [0, 1],
         y: [12, 0],
         ...spring(springs.card),
       });
     });
-    // motionScope holds the scope handle; re-fire when the expanded target changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Re-fire when the expanded target changes; the hook itself is stable.
   }, [expanded]);
   const toggle = (project: PortfolioProject) => {
     setExpandedId(expandedId === project.id ? null : project.id);

@@ -179,7 +179,7 @@ export default function IconPicker({
                 </span>
               )
             ) : SelectedLucideIcon ? (
-              <SelectedLucideIcon size={20} className="text-neon-purple" />
+              <SelectedLucideIcon size={20} className="text-neon-violet" />
             ) : (
               <span className="w-5 h-5 flex items-center justify-center text-text-muted text-[10px]">
                 ?
@@ -189,7 +189,7 @@ export default function IconPicker({
             <button
               type="button"
               onClick={handleClear}
-              className="ml-auto text-xs text-text-muted hover:text-neon-red"
+              className="ml-auto text-xs text-text-muted hover:text-neon-coral"
               disabled={disabled}
               aria-label="Clear icon selection"
             >
@@ -230,7 +230,7 @@ export default function IconPicker({
               disabled={disabled || !allowLucide}
               className={`px-3 py-1 text-xs font-display tracking-[1px] uppercase transition-colors clip-notch-sm border ${
                 active === 'general'
-                  ? 'bg-neon-purple/20 border-neon-purple/50 text-neon-purple'
+                  ? 'bg-neon-violet/20 border-neon-violet/50 text-neon-violet'
                   : 'border-transparent text-text-muted hover:text-text-primary hover:bg-white/10'
               }`}
             >
@@ -246,7 +246,7 @@ export default function IconPicker({
               disabled={disabled || !allowTech}
               className={`px-3 py-1 text-xs font-display tracking-[1px] uppercase transition-colors clip-notch-sm border ${
                 active === 'stack'
-                  ? 'bg-neon-purple/20 border-neon-purple/50 text-neon-purple'
+                  ? 'bg-neon-violet/20 border-neon-violet/50 text-neon-violet'
                   : 'border-transparent text-text-muted hover:text-text-primary hover:bg-white/10'
               }`}
             >
@@ -348,7 +348,7 @@ export default function IconPicker({
                   aria-label={`Recent ${r}`}
                   className={`w-8 h-8 flex items-center justify-center clip-notch-sm border transition-colors ${
                     isSelected
-                      ? 'bg-neon-purple/20 border-neon-purple/50'
+                      ? 'bg-neon-violet/20 border-neon-violet/50'
                       : 'border-transparent bg-white/[0.03] hover:bg-white/10'
                   }`}
                 >
@@ -371,7 +371,7 @@ export default function IconPicker({
                     <LucideComp
                       size={16}
                       className={
-                        isSelected ? 'text-neon-purple' : 'text-text-muted'
+                        isSelected ? 'text-neon-violet' : 'text-text-muted'
                       }
                     />
                   ) : (
@@ -404,7 +404,7 @@ export default function IconPicker({
                     onClick={() => handleSelect(name)}
                     className={`p-2 clip-notch-sm hover:bg-white/10 transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:border focus-visible:border-neon-cyan focus-visible:shadow-[0_0_12px_var(--glow-cyan-sm)] ${
                       value === name
-                        ? 'bg-neon-purple/20 border border-neon-purple/50'
+                        ? 'bg-neon-violet/20 border border-neon-violet/50'
                         : 'border border-transparent'
                     }`}
                     title={name}
@@ -415,7 +415,7 @@ export default function IconPicker({
                     <Icon
                       size={18}
                       className={
-                        value === name ? 'text-neon-purple' : 'text-text-muted'
+                        value === name ? 'text-neon-violet' : 'text-text-muted'
                       }
                     />
                   </button>
@@ -449,7 +449,7 @@ export default function IconPicker({
                     onClick={() => handleSelect(val)}
                     className={`p-2 clip-notch-sm hover:bg-white/10 transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:border focus-visible:border-neon-cyan focus-visible:shadow-[0_0_12px_var(--glow-cyan-sm)] ${
                       isSelected
-                        ? 'bg-neon-purple/20 border border-neon-purple/50'
+                        ? 'bg-neon-violet/20 border border-neon-violet/50'
                         : 'border border-transparent'
                     }`}
                     title={`${entry.label} (${val})`}

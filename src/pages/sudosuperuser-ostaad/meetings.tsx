@@ -66,23 +66,23 @@ const MeetingsPage = () => {
       <AdminLayout user={user} isLoading={loading}>
         <div className="max-w-4xl">
           <GlitchText
-            accent="yellow"
+            accent="amber"
             className="text-2xl font-display tracking-[2px] mb-6"
           >
             MEETING REQUESTS
           </GlitchText>
 
           {statusMessage && (
-            <HudPanel accent="green" notch="sm" className="mb-4 p-3">
-              <span className="font-body text-sm text-neon-green">
+            <HudPanel accent="lime" notch="sm" className="mb-4 p-3">
+              <span className="font-body text-sm text-neon-lime">
                 {statusMessage}
               </span>
             </HudPanel>
           )}
 
           {meetings.length > 0 ? (
-            <HudPanel accent="yellow" notch="md" className="p-6">
-              <div className="text-[10px] font-display tracking-[3px] text-neon-yellow mb-4">
+            <HudPanel accent="amber" notch="md" className="p-6">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-amber mb-4">
                 REQUESTS ({meetings.length})
               </div>
               <div className="space-y-4">
@@ -128,7 +128,7 @@ const MeetingsPage = () => {
                       </select>
                       <NeonButton
                         variant="ghost"
-                        accent="red"
+                        accent="coral"
                         onClick={() => handleDeleteMeeting(meeting.id)}
                         disabled={isSaving}
                       >
@@ -140,7 +140,7 @@ const MeetingsPage = () => {
               </div>
             </HudPanel>
           ) : (
-            <HudPanel accent="yellow" notch="md" className="p-6 text-center">
+            <HudPanel accent="amber" notch="md" className="p-6 text-center">
               <span className="font-body text-sm text-text-muted">
                 No meeting requests yet.
               </span>

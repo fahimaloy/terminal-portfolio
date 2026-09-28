@@ -8,34 +8,34 @@ type Feature = {
   mode: FeatureMode;
   label: string;
   icon: React.ReactNode;
-  accent: 'magenta' | 'cyan' | 'green';
+  accent: 'coral' | 'cyan' | 'lime';
 };
 
 const FEATURES: Feature[] = [
-  { mode: 'contact', label: 'CONTACT', icon: <FiMail />, accent: 'magenta' },
+  { mode: 'contact', label: 'CONTACT', icon: <FiMail />, accent: 'coral' },
   { mode: 'meeting', label: 'MEETING', icon: <FiCalendar />, accent: 'cyan' },
   {
     mode: 'project_match',
     label: 'PROJECT MATCH',
     icon: <FiSearch />,
-    accent: 'green',
+    accent: 'lime',
   },
 ];
 
 const ACCENT_TEXT: Record<Feature['accent'], string> = {
-  magenta: 'text-neon-magenta text-shadow-neon-magenta',
+  coral: 'text-neon-coral text-shadow-neon-coral',
   cyan: 'text-neon-cyan text-shadow-neon-cyan',
-  green: 'text-neon-green text-shadow-neon-green',
+  lime: 'text-neon-lime text-shadow-neon-lime',
 };
 const ACCENT_BG: Record<Feature['accent'], string> = {
-  magenta: 'bg-neon-magenta/10 border-neon-magenta/40',
+  coral: 'bg-neon-coral/10 border-neon-coral/40',
   cyan: 'bg-neon-cyan/10 border-neon-cyan/40',
-  green: 'bg-neon-green/10 border-neon-green/40',
+  lime: 'bg-neon-lime/10 border-neon-lime/40',
 };
 const ACCENT_GLOW: Record<Feature['accent'], string> = {
-  magenta: 'hud-glow-magenta',
+  coral: 'hud-glow-coral',
   cyan: 'hud-glow-cyan',
-  green: 'hud-glow-green',
+  lime: 'hud-glow-lime',
 };
 
 type Props = {

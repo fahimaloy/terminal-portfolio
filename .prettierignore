@@ -31,3 +31,10 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# Generated from tokens.css — formatting is the generator's job, not prettier's
+src/config/generated/
+tailwind.tokens.generated.js
+
+# Scratch directory for local verification scripts
+.tmp/

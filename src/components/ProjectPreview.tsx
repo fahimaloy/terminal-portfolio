@@ -19,14 +19,14 @@ import { HudPanel, NeonButton, NeonChip, Ripple } from './ui';
 
 const COLOR_SETS = [
   {
-    accent: 'yellow' as const,
-    text: 'text-neon-yellow',
-    border: 'border-neon-yellow/30',
+    accent: 'amber' as const,
+    text: 'text-neon-amber',
+    border: 'border-neon-amber/30',
   },
   {
-    accent: 'magenta' as const,
-    text: 'text-neon-magenta',
-    border: 'border-neon-magenta/30',
+    accent: 'coral' as const,
+    text: 'text-neon-coral',
+    border: 'border-neon-coral/30',
   },
   {
     accent: 'cyan' as const,
@@ -34,9 +34,9 @@ const COLOR_SETS = [
     border: 'border-neon-cyan/30',
   },
   {
-    accent: 'yellow' as const,
-    text: 'text-neon-yellow',
-    border: 'border-neon-yellow/30',
+    accent: 'amber' as const,
+    text: 'text-neon-amber',
+    border: 'border-neon-amber/30',
   },
 ];
 const getColor = (i: number) => COLOR_SETS[i % COLOR_SETS.length];
@@ -109,7 +109,7 @@ export default function ProjectPreview({
         <div className="flex justify-end mb-2">
           <NeonButton
             variant="ghost"
-            accent="magenta"
+            accent="coral"
             onClick={onClose}
             iconLeft={<FiX />}
           >
@@ -310,7 +310,7 @@ export default function ProjectPreview({
               {activeProject.title}
             </h3>
             {activeProject.featured && (
-              <NeonChip accent="yellow">FEATURED</NeonChip>
+              <NeonChip accent="amber">FEATURED</NeonChip>
             )}
             {activeProject.short_title && (
               <NeonChip accent="cyan">{activeProject.short_title}</NeonChip>
@@ -340,7 +340,7 @@ export default function ProjectPreview({
                 href={activeProject.project_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neon-yellow/10 border border-neon-yellow/40 text-neon-yellow text-shadow-neon-yellow font-display text-[10px] tracking-[2px] hover:bg-neon-yellow/20 transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neon-amber/10 border border-neon-amber/40 text-neon-amber text-shadow-neon-amber font-display text-[10px] tracking-[2px] hover:bg-neon-amber/20 transition-all"
                 style={{
                   clipPath:
                     'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',

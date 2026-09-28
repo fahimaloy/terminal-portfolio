@@ -133,7 +133,7 @@ const ProfilePage = () => {
           </GlitchText>
 
           {statusMessage && (
-            <HudPanel accent="green" notch="sm" className="mb-4 p-3">
+            <HudPanel accent="lime" notch="sm" className="mb-4 p-3">
               <span className="font-body text-sm text-[var(--fg-2)]">
                 {statusMessage}
               </span>
@@ -352,7 +352,7 @@ const ProfilePage = () => {
             </NeonButton>
           </HudPanel>
 
-          <HudPanel accent="magenta" notch="md" className="p-6">
+          <HudPanel accent="coral" notch="md" className="p-6">
             <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
               ADMIN CREDENTIALS
             </div>
@@ -445,7 +445,7 @@ const ProfilePage = () => {
             </div>
 
             <NeonButton
-              accent="magenta"
+              accent="coral"
               onClick={handleCredentialsSave}
               disabled={isSaving}
               loading={isSaving}

@@ -40,13 +40,23 @@ export interface BlogPost {
 /** Lightweight shape used by listing/search endpoints (no content_html). */
 export type BlogListItem = Omit<BlogPost, 'content_html'>;
 
+export interface BlogTagFacet {
+  tag: string;
+  count: number;
+}
+
 export interface BlogListResponse {
   items: BlogListItem[];
   total: number;
   page: number;
   pageSize: number;
   hasMore: boolean;
+  /** Tag counts across the whole published set. Only present when requested. */
+  facets?: BlogTagFacet[];
 }
+
+export type BlogSort = 'recent' | 'popular';
+export type BlogView = 'grid' | 'reels';
 
 export interface BlogQuery {
   page?: number;
@@ -55,7 +65,9 @@ export interface BlogQuery {
   tag?: string;
   status?: BlogStatus;
   featured?: boolean;
-  sort?: 'recent' | 'popular';
+  sort?: BlogSort;
+  /** Ask the API to include tag facets in the response. */
+  facets?: boolean;
 }
 
 /** Payload accepted by create/update endpoints. */

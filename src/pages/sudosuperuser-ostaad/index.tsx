@@ -78,8 +78,8 @@ const DashboardPage = () => {
   if (!authorized && !loading && error) {
     return (
       <div className="min-h-screen bg-bg-void flex items-center justify-center px-4">
-        <HudPanel accent="red" notch="md" className="p-6 text-center">
-          <div className="font-display text-sm text-neon-red tracking-[3px]">
+        <HudPanel accent="coral" notch="md" className="p-6 text-center">
+          <div className="font-display text-sm text-neon-coral tracking-[3px]">
             SESSION ERROR
           </div>
           <p className="font-body text-sm text-text-secondary mt-2">{error}</p>
@@ -101,7 +101,7 @@ const DashboardPage = () => {
       label: 'SKILLS',
       value: skillCount,
       numeric: true as const,
-      accent: 'green' as const,
+      accent: 'lime' as const,
       link: '/sudosuperuser-ostaad/skills',
       action: 'Manage Skills',
     },
@@ -109,7 +109,7 @@ const DashboardPage = () => {
       label: 'PROJECTS',
       value: projectCount,
       numeric: true as const,
-      accent: 'magenta' as const,
+      accent: 'coral' as const,
       link: '/sudosuperuser-ostaad/projects',
       action: 'Manage Projects',
     },
@@ -117,7 +117,7 @@ const DashboardPage = () => {
       label: 'BLOG POSTS',
       value: blogCount,
       numeric: true as const,
-      accent: 'yellow' as const,
+      accent: 'amber' as const,
       link: '/sudosuperuser-ostaad/blogs',
       action: 'Manage Blogs',
     },
@@ -163,8 +163,8 @@ const DashboardPage = () => {
                         card.value
                       )}
                     </div>
-                    <Link href={card.link}>
-                      <a className="text-[10px] font-display tracking-[2px] text-neon-cyan hover:text-neon-yellow transition-colors">
+                    <Link href={card.link} legacyBehavior>
+                      <a className="text-[10px] font-display tracking-[2px] text-neon-cyan hover:text-neon-amber transition-colors">
                         {card.action.toUpperCase()} →
                       </a>
                     </Link>
@@ -184,7 +184,7 @@ const DashboardPage = () => {
             >
               <div className="space-y-2">
                 {QUICK_ACTIONS.map((action) => (
-                  <Link key={action.href} href={action.href}>
+                  <Link key={action.href} href={action.href} legacyBehavior>
                     <a className="block px-3 py-2.5 bg-white/[0.03] border border-white/10 text-text-secondary hover:text-text-primary hover:border-neon-cyan/30 hover:bg-neon-cyan/5 transition-all duration-200 text-xs font-body clip-notch-sm">
                       {action.label}
                     </a>
@@ -194,7 +194,7 @@ const DashboardPage = () => {
             </HudPanel>
 
             <HudPanel
-              accent="magenta"
+              accent="coral"
               notch="md"
               title="// SYSTEM_INFO"
               className="p-4"
@@ -204,7 +204,7 @@ const DashboardPage = () => {
                 <Row label="Email" value={user?.email || 'Not set'} />
                 <div className="flex justify-between items-center py-2 border-b border-white/5">
                   <span className="text-text-muted">Profile</span>
-                  <NeonChip accent={profile?.full_name ? 'green' : 'yellow'}>
+                  <NeonChip accent={profile?.full_name ? 'lime' : 'amber'}>
                     {profile?.full_name ? 'CONFIGURED' : 'INCOMPLETE'}
                   </NeonChip>
                 </div>
@@ -212,7 +212,7 @@ const DashboardPage = () => {
                   <span className="text-text-muted">Content</span>
                   <NeonChip
                     accent={
-                      skillCount > 0 && projectCount > 0 ? 'green' : 'yellow'
+                      skillCount > 0 && projectCount > 0 ? 'lime' : 'amber'
                     }
                   >
                     {skillCount > 0 && projectCount > 0

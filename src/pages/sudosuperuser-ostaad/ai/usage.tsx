@@ -475,7 +475,7 @@ const AiUsagePage = () => {
                 <div className="space-y-4">
                   {recentErrors.length === 0 ? (
                     <HudPanel
-                      accent="green"
+                      accent="lime"
                       notch="md"
                       className="p-8 text-center"
                     >
@@ -486,7 +486,7 @@ const AiUsagePage = () => {
                     </HudPanel>
                   ) : (
                     <HudPanel
-                      accent="red"
+                      accent="coral"
                       notch="md"
                       className="overflow-x-auto"
                     >

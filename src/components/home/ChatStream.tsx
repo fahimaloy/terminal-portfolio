@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import { createScope, animate, stagger } from 'animejs';
+import { animate, stagger } from 'animejs';
+import { useMotionScope } from '../../hooks/useMotionScope';
 import ChatMessage from '../ChatMessage';
 import { HudPanel } from '../ui';
 import GridLattice from '../ui/graphics/primitives/GridLattice';
@@ -9,12 +10,7 @@ import {
   PortfolioSkill,
   PortfolioExperience,
 } from '../../utils/api';
-import {
-  durations,
-  easings,
-  isReducedMotion,
-  canAnimate,
-} from '../../config/animations';
+import { durations, easings } from '../../config/animations';
 
 type Message = {
   role: 'user' | 'model';
@@ -40,8 +36,8 @@ export default function ChatStream({
 }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
   const prevRef = useRef(0);
+  const { run, revert } = useMotionScope(listRef);
 
   // Autoscroll only when the newest message is >120px below the viewport
   // bottom, so reading history is never yanked away mid-scroll.
@@ -61,34 +57,28 @@ export default function ChatStream({
     return () => clearTimeout(t);
   }, [messages]);
 
-  // Message entrance — y+opacity stagger gated by reduced-motion.
+  // Message entrance — y+opacity stagger, with reduced motion collapsing to a
+  // plain reveal. `run` owns the scope lifecycle: it reverts the previous one
+  // first, so rapid toggles and empty states can never leak a live scope.
   useEffect(() => {
-    // Revert any prior scope before early returns so rapid toggles / empty
-    // states don't leak a live anime scope.
-    scopeRef.current?.revert();
-    scopeRef.current = null;
     const root = listRef.current;
     if (!root || messages.length === 0) {
+      revert();
       prevRef.current = messages.length;
       return;
     }
-    if (typeof window === 'undefined') {
-      prevRef.current = messages.length;
-      return;
-    }
-    if (isReducedMotion() || !canAnimate()) {
-      const nodes = root.querySelectorAll<HTMLElement>('[data-chat-msg]');
-      nodes.forEach((el) => {
-        el.style.opacity = '1';
-      });
-      prevRef.current = messages.length;
-      return;
-    }
-    const scope = createScope({ root });
-    scopeRef.current = scope;
     const prevLen = prevRef.current;
     const delta = messages.length - prevLen;
-    scope.add(() => {
+    const revealAll = () =>
+      root.querySelectorAll<HTMLElement>('[data-chat-msg]').forEach((el) => {
+        el.style.opacity = '1';
+      });
+
+    run((scope) => {
+      if (!scope) {
+        revealAll();
+        return;
+      }
       if (delta > 1) {
         const all = root.querySelectorAll<HTMLElement>('[data-chat-msg]');
         const newNodes =
@@ -116,24 +106,26 @@ export default function ChatStream({
       }
     });
     prevRef.current = messages.length;
-    return () => {
-      scope.revert();
-      if (scopeRef.current === scope) scopeRef.current = null;
-    };
-  }, [messages.length]);
+  }, [messages.length, run, revert]);
 
   return (
     <div
-      className="relative w-full flex-1 overflow-y-auto mb-4 pr-2"
+      className="relative w-full flex-1 min-h-0 mb-4 pr-2"
       role="log"
-      aria-live="polite"
+      aria-busy={isLoading}
     >
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         <GridLattice opacity={0.04} color="var(--grid-1)" />
       </div>
       <div ref={listRef} className="relative flex flex-col gap-4 py-4">
         {messages.map((msg, idx) => (
-          <div key={idx} data-chat-msg>
+          <div
+            key={idx}
+            data-chat-msg
+            // Only the newest message is a live region. Announcing the whole
+            // log re-reads the entire conversation on every append.
+            aria-live={idx === messages.length - 1 ? 'polite' : 'off'}
+          >
             <ChatMessage
               role={msg.role}
               text={msg.text}

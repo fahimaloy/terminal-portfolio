@@ -40,12 +40,11 @@ export default function ProjectDetailDrawer({
       setIsVisible(true);
       return;
     }
-    const scope = motionScope.create();
-    if (!scope) {
-      setIsVisible(true);
-      return;
-    }
-    scope.add(() => {
+    motionScope.run((scope) => {
+      if (!scope) {
+        setIsVisible(true);
+        return;
+      }
       animate(backdropRef.current!, {
         opacity: [0, 1],
         duration: durations.enter * 1000 * 0.6,
@@ -217,7 +216,7 @@ export default function ProjectDetailDrawer({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 text-xs hover:underline"
-                style={{ color: 'var(--neon-yellow)' }}
+                style={{ color: 'var(--neon-amber)' }}
               >
                 <ExternalLink size={12} /> Live Demo
               </a>
@@ -228,7 +227,7 @@ export default function ProjectDetailDrawer({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 text-xs hover:underline"
-                style={{ color: 'var(--neon-yellow)' }}
+                style={{ color: 'var(--neon-amber)' }}
               >
                 <Code size={12} /> Repository
               </a>

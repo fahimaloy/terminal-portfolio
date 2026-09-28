@@ -83,16 +83,16 @@ export default function ExperienceTimeline({
   return (
     <div ref={timelineRef} className="relative pl-8">
       {/* Vertical line */}
-      <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-gradient-to-b from-neon-cyan via-neon-magenta to-neon-yellow" />
+      <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-gradient-to-b from-neon-cyan via-neon-coral to-neon-amber" />
 
       <div className="space-y-6">
         {experiences.map((exp, idx) => (
           <div key={exp.id} className="relative">
             {/* Circle node */}
-            <div className="timeline-node absolute -left-5 top-4 w-3 h-3 rounded-full bg-neon-cyan border-2 border-bg-void shadow-[0_0_8px_var(--neon-cyan)] opacity-0" />
+            <div className="timeline-node absolute -left-5 top-4 w-3 h-3 rounded-full bg-neon-cyan border-2 border-bg-void shadow-[0_0_8px_var(--neon-cyan)] reveal" />
 
             {/* Content card */}
-            <div className="timeline-content bg-white/5 border border-white/10 rounded-xl p-4 ml-2 opacity-0">
+            <div className="timeline-content bg-white/5 border border-white/10 rounded-xl p-4 ml-2 reveal">
               {/* Header row */}
               <div className="flex items-start gap-3">
                 {/* Company logo or initials */}
@@ -128,8 +128,8 @@ export default function ExperienceTimeline({
                       {exp.is_current
                         ? 'Present'
                         : exp.to_date
-                        ? formatDate(exp.to_date)
-                        : ''}
+                          ? formatDate(exp.to_date)
+                          : ''}
                     </span>
                     {exp.location && (
                       <span className="flex items-center gap-1">
@@ -171,7 +171,7 @@ export default function ExperienceTimeline({
                         {exp.projects.map((proj) => (
                           <div
                             key={proj.id}
-                            className="px-3 py-1.5 bg-neon-yellow/10 border border-neon-yellow/20 rounded-lg text-xs text-neon-yellow"
+                            className="px-3 py-1.5 bg-neon-amber/10 border border-neon-amber/20 rounded-lg text-xs text-neon-amber"
                           >
                             {proj.title}
                           </div>

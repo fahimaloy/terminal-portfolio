@@ -6,13 +6,12 @@ import { canAnimate, durations, easings } from '../../config/animations';
 import { useMotionScope } from '../../hooks/useMotionScope';
 
 const ACCENT_COLOR: Record<GlitchAccent, string> = {
-  yellow: 'var(--neon-yellow)',
-  magenta: 'var(--neon-magenta)',
   cyan: 'var(--neon-cyan)',
-  green: 'var(--neon-green)',
-  red: 'var(--neon-red)',
-  purple: 'var(--neon-purple)',
-  blue: 'var(--neon-blue)',
+  violet: 'var(--neon-violet)',
+  coral: 'var(--neon-coral)',
+  amber: 'var(--neon-amber)',
+  lime: 'var(--neon-lime)',
+  ice: 'var(--neon-ice)',
 };
 
 type Props = {
@@ -51,10 +50,11 @@ export default function StatBar({
     setIsVisible(true);
 
     proxyRef.current.val = 0;
-    const scope = motionScope.create();
-    if (!scope) return;
-
-    scope.add(() => {
+    motionScope.run((scope) => {
+      if (!scope) {
+        setDisplayValue(target);
+        return;
+      }
       animate(proxyRef.current, {
         val: [0, target],
         duration: durations.enter * 1000,
@@ -64,11 +64,7 @@ export default function StatBar({
         },
       });
     });
-
-    return () => {
-      scope.revert();
-    };
-  }, [value, delay]);
+  }, [value, delay, motionScope]);
 
   return (
     <div className={`font-body text-xs ${className}`}>

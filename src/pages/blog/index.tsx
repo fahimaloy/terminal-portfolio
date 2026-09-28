@@ -5,14 +5,22 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import SEOMeta from '../../components/SEOMeta';
-import BlogSearch from '../../components/blog/BlogSearch';
+import BlogHeader from '../../components/blog/BlogHeader';
+import BlogGrid from '../../components/blog/BlogGrid';
 import BlogReels from '../../components/blog/BlogReels';
 import { getBlogPosts } from '../../utils/blogApi';
-import type { BlogListItem } from '../../types/blog';
+import type {
+  BlogListItem,
+  BlogSort,
+  BlogTagFacet,
+  BlogView,
+} from '../../types/blog';
 import BlogEmptyGraphic from '../../components/ui/graphics/compositions/BlogEmptyGraphic';
 import { createScope, createTimeline, stagger } from 'animejs';
-import { splitText } from 'animejs';
+import { splitText, type TextSplitter } from 'animejs';
 import {
   isReducedMotion,
   canAnimate,
@@ -21,63 +29,101 @@ import {
 } from '../../config/animations';
 
 const REELS_PAGE_SIZE = 5;
+const GRID_PAGE_SIZE = 9;
+
+/** Reads a single query param without tripping Next's array|string union. */
+const q = (v: string | string[] | undefined): string =>
+  (Array.isArray(v) ? v[0] : v)?.trim() ?? '';
 
 export default function BlogIndexPage() {
+  const router = useRouter();
   const [items, setItems] = useState<BlogListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [tag, setTag] = useState('');
-  const [sort, setSort] = useState<'recent' | 'popular'>('recent');
+  const [sort, setSort] = useState<BlogSort>('recent');
+  const [view, setView] = useState<BlogView>('grid');
+  const [facets, setFacets] = useState<BlogTagFacet[]>([]);
   const [loading, setLoading] = useState(true);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const emptyRef = useRef<HTMLDivElement>(null);
 
-  // Filters reset pagination + replace buffer — preserves existing invariant.
+  const ready = router.isReady;
+  const pageSize = view === 'reels' ? REELS_PAGE_SIZE : GRID_PAGE_SIZE;
+
+  // Hydrate from the URL once, so a shared or bookmarked filtered view renders
+  // the same result. Filters are not stored in component state alone.
+  useEffect(() => {
+    if (!ready) return;
+    const r = router.query;
+    setSearch(q(r.q));
+    setTag(q(r.tag));
+    const s = q(r.sort);
+    setSort(s === 'popular' ? 'popular' : 'recent');
+    const v = q(r.view);
+    setView(v === 'reels' ? 'reels' : 'grid');
+  }, [ready]);
+
+  // Mirror state back into the URL (shallow — no data refetch from the router).
+  useEffect(() => {
+    if (!ready) return;
+    const next: Record<string, string> = {};
+    if (search) next.q = search;
+    if (tag) next.tag = tag;
+    if (sort !== 'recent') next.sort = sort;
+    if (view !== 'grid') next.view = view;
+    const qs = new URLSearchParams(next).toString();
+    const target = qs ? `/blog?${qs}` : '/blog';
+    if (router.asPath !== target) {
+      router.replace(target, undefined, { shallow: true, scroll: false });
+    }
+  }, [ready, search, tag, sort, view]);
+
+  // Filters reset pagination + replace the buffer.
   useEffect(() => {
     setPage(1);
-  }, [search, tag, sort]);
+  }, [search, tag, sort, view]);
 
   useEffect(() => {
+    if (!ready) return;
     let cancelled = false;
     setLoading(true);
-    getBlogPosts({ page, pageSize: REELS_PAGE_SIZE, search, tag, sort }).then(
-      (res) => {
-        if (cancelled) return;
-        setTotal(res.total);
-        setHasMore(res.hasMore);
-        if (page === 1) setItems(res.items);
-        else {
-          setItems((prev) => {
-            const seen = new Set(prev.map((p) => p.id));
-            return [...prev, ...res.items.filter((p) => !seen.has(p.id))];
-          });
-        }
-        setLoading(false);
-      },
-    );
+    getBlogPosts({
+      page,
+      pageSize,
+      search,
+      tag,
+      sort,
+      facets: true,
+    }).then((res) => {
+      if (cancelled) return;
+      setTotal(res.total);
+      setHasMore(res.hasMore);
+      if (res.facets) setFacets(res.facets);
+      if (page === 1) setItems(res.items);
+      else {
+        setItems((prev) => {
+          const seen = new Set(prev.map((p) => p.id));
+          return [...prev, ...res.items.filter((p) => !seen.has(p.id))];
+        });
+      }
+      setLoading(false);
+    });
     return () => {
       cancelled = true;
     };
-  }, [page, search, tag, sort]);
-
+  }, [ready, page, pageSize, search, tag, sort]);
   const onLoadMore = useCallback(() => {
     if (!hasMore || loading) return;
     setPage((p) => p + 1);
   }, [hasMore, loading]);
 
-  const tags = useMemo(() => {
-    const set = new Set<string>();
-    items.forEach((p) => p.tags?.forEach((t) => set.add(t)));
-    return Array.from(set).sort();
-  }, [items]);
-
   const isEmpty = !loading && items.length === 0;
-  const showReels = !isEmpty && (items.length > 0 || loading);
-  const hasFilters = Boolean(search || tag);
+  const showList = !isEmpty && (items.length > 0 || loading);
+  const hasFilters = Boolean(search || tag || sort !== 'recent');
   const emptyVariant = hasFilters ? 'no-results' : 'empty';
-  const headlineText = hasFilters ? 'NO MATCHES' : 'NO TRANSMISSIONS FOUND';
+  const headlineText = hasFilters ? 'NO MATCHES' : 'NO TRANSMISSIONS YET';
 
   // Empty-state entrance: headline splitText chars stagger + graphic/CTA via createTimeline
   useEffect(() => {
@@ -97,7 +143,7 @@ export default function BlogIndexPage() {
       },
     } as Parameters<typeof createScope>[0]);
 
-    let headlineSplitter: ReturnType<typeof splitText> | null = null;
+    let headlineSplitter: TextSplitter | null = null;
 
     scope.add(() => {
       const graphic = root.querySelectorAll<HTMLElement>('.blog-empty-graphic');
@@ -268,21 +314,18 @@ export default function BlogIndexPage() {
     });
 
     return () => {
-      try {
-        if (
-          headlineSplitter &&
-          typeof (headlineSplitter as { revert?: unknown }).revert ===
-            'function'
-        ) {
-          headlineSplitter.revert();
-        }
-      } catch {
-        // splitText may have been GC'd after rapid unmount — ignore
-      }
+      // Scope FIRST, then the splitter. Reverting the splitter rebuilds the
+      // DOM the scope is still bound to, so the order is load-bearing — the
+      // same rule HeroSection and useMotionScope document.
       try {
         scope.revert();
       } catch {
-        // ignore scope revert failure on rapid toggle
+        // scope may already be gone on a rapid empty ⇄ non-empty toggle
+      }
+      try {
+        headlineSplitter?.revert();
+      } catch {
+        // splitText may have been GC'd after rapid unmount — ignore
       }
     };
   }, [isEmpty, search, tag]);
@@ -297,89 +340,27 @@ export default function BlogIndexPage() {
 
       <main
         className="min-h-screen relative z-10 px-4 pt-24 pb-10 max-w-6xl mx-auto"
-        data-theme="blog"
+        data-theme=""
       >
-        <header className="text-center mb-6">
-          <div
-            className="text-[10px] font-mono tracking-[0.32em] mb-2"
-            style={{ color: 'var(--fg-4)' }}
-          >
-            {'// TRANSMISSION_LOG'}
-          </div>
-          <h1
-            className="text-4xl md:text-6xl font-display font-semibold tracking-[-0.02em] leading-none"
-            style={{ color: 'var(--fg-1)' }}
-          >
-            BLOG
-          </h1>
-          <p
-            className="font-body text-xs md:text-sm mt-4 max-w-lg mx-auto"
-            style={{ color: 'var(--fg-3)' }}
-          >
-            Build logs, engineering notes and deep dives from the terminal.
-          </p>
-        </header>
+        <BlogHeader
+          search={search}
+          onSearch={setSearch}
+          tag={tag}
+          onTag={setTag}
+          sort={sort}
+          onSort={setSort}
+          view={view}
+          onView={setView}
+          facets={facets}
+          total={total}
+        />
 
-        {/* Filter drawer affordance — keeps search/tag/sort without a second route */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => setDrawerOpen((v) => !v)}
-            className="inline-flex items-center justify-center px-4 py-2 font-mono text-[11px] tracking-[0.14em] border rounded-[var(--radius-md)] transition-colors duration-200"
-            style={
-              drawerOpen
-                ? {
-                    background: 'var(--fg-1)',
-                    color: 'var(--bg-1)',
-                    borderColor: 'var(--fg-1)',
-                  }
-                : {
-                    background: 'transparent',
-                    color: 'var(--fg-2)',
-                    borderColor: 'var(--border-subtle)',
-                  }
-            }
-          >
-            {drawerOpen
-              ? 'CLOSE FILTERS'
-              : `FILTER${tag || search ? ' • ACTIVE' : ''}`}
-          </button>
-        </div>
-
-        {drawerOpen && (
-          <div className="mb-6">
-            <div
-              className="p-4 rounded-[var(--radius-lg)] border"
-              style={{
-                background: 'var(--bg-2)',
-                borderColor: 'var(--border-subtle)',
-              }}
-            >
-              <div
-                className="text-[10px] font-mono tracking-[0.24em] mb-3"
-                style={{ color: 'var(--fg-4)' }}
-              >
-                {'// FILTER_DRAWER'}
-              </div>
-              <BlogSearch
-                value={search}
-                onChange={setSearch}
-                tags={tags}
-                activeTag={tag}
-                onTagChange={setTag}
-                sort={sort}
-                onSortChange={setSort}
-                resultCount={total}
-              />
-              <p
-                className="font-mono text-[10px] mt-3"
-                style={{ color: 'var(--fg-4)' }}
-              >
-                Filters apply in-place to the reels buffer (page resets to 1).
-                No secondary list route.
-              </p>
-            </div>
-          </div>
-        )}
+        <p
+          className="font-body text-xs md:text-sm mt-8 mb-8 max-w-lg mx-auto text-center"
+          style={{ color: 'var(--fg-3)' }}
+        >
+          Build logs, engineering notes and deep dives from the terminal.
+        </p>
 
         {/* Loading skeleton — initial buffer only */}
         {loading && items.length === 0 ? (
@@ -405,13 +386,13 @@ export default function BlogIndexPage() {
               borderColor: 'var(--border-subtle)',
             }}
           >
-            <div className="blog-empty-graphic max-w-md mx-auto opacity-0">
+            <div className="blog-empty-graphic max-w-md mx-auto reveal">
               <BlogEmptyGraphic
                 variant={emptyVariant as 'empty' | 'no-results'}
               />
             </div>
             <h2
-              className="blog-empty-headline font-display text-sm tracking-[0.16em] mt-6 opacity-0"
+              className="blog-empty-headline font-display text-sm tracking-[0.16em] mt-6 reveal"
               style={{ color: 'var(--fg-1)' }}
             >
               {headlineText}
@@ -419,12 +400,12 @@ export default function BlogIndexPage() {
             {hasFilters ? (
               <>
                 <p
-                  className="blog-empty-subcopy font-mono text-[11px] mt-2 opacity-0"
+                  className="blog-empty-subcopy font-mono text-[11px] mt-2 reveal"
                   style={{ color: 'var(--fg-4)' }}
                 >
                   {'>'} Adjust your search parameters and retry.
                 </p>
-                <div className="blog-empty-cta mt-4 flex justify-center gap-2 opacity-0">
+                <div className="blog-empty-cta mt-4 flex justify-center gap-2 reveal">
                   <button
                     onClick={() => {
                       setSearch('');
@@ -441,30 +422,48 @@ export default function BlogIndexPage() {
                   </button>
                 </div>
               </>
-            ) : null}
+            ) : (
+              <>
+                <p
+                  className="blog-empty-subcopy font-mono text-[11px] mt-2 reveal"
+                  style={{ color: 'var(--fg-3)' }}
+                >
+                  Nothing published yet — check back soon.
+                </p>
+                <div className="blog-empty-cta mt-4 flex justify-center gap-2 reveal">
+                  <Link
+                    href="/"
+                    className="inline-flex items-center justify-center px-4 py-2 font-mono text-[11px] tracking-[0.14em] border rounded-[var(--radius-md)]"
+                    style={{
+                      borderColor: 'var(--border-subtle)',
+                      color: 'var(--fg-2)',
+                    }}
+                  >
+                    BACK HOME
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
-        ) : showReels ? (
-          <BlogReels
-            items={items}
-            total={total}
-            hasMore={hasMore}
-            loading={loading}
-            onLoadMore={onLoadMore}
-            activeTag={tag}
-          />
+        ) : showList ? (
+          view === 'reels' ? (
+            <BlogReels
+              items={items}
+              total={total}
+              hasMore={hasMore}
+              loading={loading}
+              onLoadMore={onLoadMore}
+              activeTag={tag}
+            />
+          ) : (
+            <BlogGrid
+              items={items}
+              loading={loading}
+              onLoadMore={onLoadMore}
+              hasMore={hasMore}
+            />
+          )
         ) : null}
-
-        {/* Deep-link hint — reels overlay uses in-place expand; /blog/[slug] preserved for SEO/share */}
-        {!isEmpty && !loading && (
-          <p
-            className="font-mono text-[10px] text-center mt-6"
-            style={{ color: 'var(--fg-4)' }}
-          >
-            Tip: each card exposes a Permalink to{' '}
-            <span style={{ color: 'var(--fg-2)' }}>/blog/[slug]</span> for
-            sharing — reels view does not swap routes per swipe.
-          </p>
-        )}
       </main>
     </>
   );

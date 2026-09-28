@@ -17,7 +17,6 @@ import RichTextRenderer from '../../components/RichTextRenderer';
 import ReadingProgress from '../../components/blog/ReadingProgress';
 import LightningTransition from '../../components/blog/LightningTransition';
 import BlogCard from '../../components/blog/BlogCard';
-import { supabaseAdmin } from '../../utils/supabaseAdmin';
 import type { BlogPost, BlogListItem } from '../../types/blog';
 import {
   isReducedMotion,
@@ -365,7 +364,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
       <article
         ref={articleRef}
         className="relative z-10 min-h-screen"
-        data-theme="blog"
+        data-theme=""
       >
         {/* Full-screen hero — premium: aurora wash + parallax cover + splitText title + drawable rule */}
         <div
@@ -375,7 +374,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           {/* Soft aurora wash behind cover — token-only var(--aurora-*) */}
           <div
             aria-hidden="true"
-            className="reader-aurora pointer-events-none absolute inset-0 opacity-0 overflow-hidden"
+            className="reader-aurora pointer-events-none absolute inset-0 reveal overflow-hidden"
           >
             <div
               style={{
@@ -443,7 +442,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           <div className="relative max-w-3xl mx-auto w-full">
             <Link href="/blog" legacyBehavior>
               <a
-                className="reader-back inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.18em] mb-6 opacity-0 transition-colors hover:opacity-80"
+                className="reader-back inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.18em] mb-6 reveal transition-colors hover:opacity-80"
                 style={{ color: 'var(--fg-3)' }}
               >
                 <ArrowLeft size={12} /> BACK TO LOG
@@ -451,7 +450,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             </Link>
 
             <div
-              className="reader-meta flex flex-wrap items-center gap-3 text-[10px] font-mono mb-4 opacity-0"
+              className="reader-meta flex flex-wrap items-center gap-3 text-[10px] font-mono mb-4 reveal"
               style={{ color: 'var(--fg-4)' }}
             >
               <span className="inline-flex items-center gap-1">
@@ -468,10 +467,10 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             </div>
 
             {/* Drawable hairline rule under meta — animated via createDrawable draw ['0 0','0 1'] */}
-            <HairlineDivider className="reader-hairline w-full max-w-xl mb-5 opacity-0" />
+            <HairlineDivider className="reader-hairline w-full max-w-xl mb-5 reveal" />
 
             <h1
-              className="reader-title text-3xl md:text-5xl font-display font-semibold tracking-[-0.02em] leading-tight opacity-0"
+              className="reader-title text-3xl md:text-5xl font-display font-semibold tracking-[-0.02em] leading-tight reveal"
               style={{ color: 'var(--fg-1)' }}
             >
               {post.title}
@@ -479,7 +478,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
 
             {post.excerpt && (
               <p
-                className="reader-excerpt font-body text-sm md:text-base mt-5 max-w-2xl leading-relaxed opacity-0"
+                className="reader-excerpt font-body text-sm md:text-base mt-5 max-w-2xl leading-relaxed reveal"
                 style={{ color: 'var(--fg-2)' }}
               >
                 {post.excerpt}
@@ -487,11 +486,11 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             )}
 
             {post.tags?.length > 0 && (
-              <div className="reader-tags flex flex-wrap gap-1.5 mt-5 opacity-0">
+              <div className="reader-tags flex flex-wrap gap-1.5 mt-5 reveal">
                 {post.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="reader-tag inline-flex px-2.5 py-1 rounded-full font-mono text-[9px] tracking-[0.14em] border opacity-0"
+                    className="reader-tag inline-flex px-2.5 py-1 rounded-full font-mono text-[9px] tracking-[0.14em] border reveal"
                     style={{
                       background: 'var(--bg-2)',
                       borderColor: 'var(--border-subtle)',
@@ -613,6 +612,11 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
 
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const slug = String(ctx.params?.slug ?? '');
+
+  // Required here, inside the function, not at module top level: a top-level
+  // import of the server-only Supabase client lands in the client bundle.
+
+  const { supabaseAdmin } = await import('../../utils/supabaseAdmin');
 
   if (!supabaseAdmin || !slug) {
     return { notFound: true };

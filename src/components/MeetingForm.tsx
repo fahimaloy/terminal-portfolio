@@ -22,7 +22,7 @@ type MeetingFormProps = {
 type FormState = 'filling' | 'submitting' | 'submitted' | 'error';
 
 const inputClass =
-  'w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-yellow focus:shadow-[0_0_12px_var(--glow-yellow)] placeholder-text-muted transition-all duration-200 clip-notch-md [color-scheme:dark]';
+  'w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-amber focus:shadow-[0_0_12px_var(--glow-amber)] placeholder-text-muted transition-all duration-200 clip-notch-md [color-scheme:dark]';
 const inputStyle: React.CSSProperties = {};
 
 export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
@@ -99,12 +99,12 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
     return (
       <div className="space-y-4" data-testid="meeting-confirmation">
         <HudPanel
-          accent="green"
+          accent="lime"
           notch="md"
           className="p-4 flex items-center gap-3"
         >
-          <div className="w-10 h-10 rounded-full bg-neon-green/20 flex items-center justify-center flex-shrink-0">
-            <FiCheck className="w-5 h-5 text-neon-green" />
+          <div className="w-10 h-10 rounded-full bg-neon-lime/20 flex items-center justify-center flex-shrink-0">
+            <FiCheck className="w-5 h-5 text-neon-lime" />
           </div>
           <div>
             <GlitchText accent="cyan" className="font-display tracking-[2px]">
@@ -155,7 +155,7 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
             </div>
           )}
           <div className="flex flex-wrap gap-1.5 pt-1">
-            <NeonChip accent="yellow">
+            <NeonChip accent="amber">
               REQUEST_ID: {date.replaceAll('-', '')}-{time.replace(':', '')}
             </NeonChip>
           </div>
@@ -182,19 +182,21 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
       {errorMsg && (
         <div ref={errorRef}>
           <HudPanel
-            accent="red"
+            accent="coral"
             notch="sm"
             className="p-3 flex items-center gap-2"
           >
-            <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
-            <span className="font-body text-sm text-neon-red">{errorMsg}</span>
+            <FiAlertCircle className="w-4 h-4 text-neon-coral flex-shrink-0" />
+            <span className="font-body text-sm text-neon-coral">
+              {errorMsg}
+            </span>
           </HudPanel>
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="relative">
-          <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-yellow" />
+          <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-amber" />
           <input
             type="text"
             value={name}
@@ -206,7 +208,7 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
           />
         </div>
         <div className="relative">
-          <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-yellow" />
+          <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-amber" />
           <input
             type="email"
             value={email}
@@ -220,7 +222,7 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="relative">
-          <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-yellow" />
+          <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-amber" />
           <input
             type="date"
             value={date}
@@ -231,7 +233,7 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
           />
         </div>
         <div className="relative">
-          <FiClock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-yellow" />
+          <FiClock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-amber" />
           <input
             type="time"
             value={time}
@@ -243,7 +245,7 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
       </div>
 
       <div className="relative">
-        <FiMessageSquare className="absolute left-3 top-3 w-4 h-4 text-neon-yellow" />
+        <FiMessageSquare className="absolute left-3 top-3 w-4 h-4 text-neon-amber" />
         <textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
@@ -258,7 +260,7 @@ export default function MeetingForm({ onBackToChat }: MeetingFormProps) {
       <div className="flex gap-2">
         <NeonButton
           type="submit"
-          accent="yellow"
+          accent="amber"
           iconLeft={
             formState === 'submitting' ? undefined : (
               <FiCalendar className="w-4 h-4" />
@@ -289,10 +291,10 @@ function Row({
   text,
 }: {
   icon: React.ReactNode;
-  accent: 'cyan' | 'yellow';
+  accent: 'cyan' | 'amber';
   text: string;
 }) {
-  const color = accent === 'cyan' ? 'text-neon-cyan' : 'text-neon-yellow';
+  const color = accent === 'cyan' ? 'text-neon-cyan' : 'text-neon-amber';
   return (
     <div className="flex items-center gap-2 text-text-muted">
       <span className={`${color} w-4 h-4 flex items-center`}>{icon}</span>

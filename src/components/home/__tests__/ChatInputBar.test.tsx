@@ -251,8 +251,11 @@ describe('ChatInputBar', () => {
       />,
     );
 
+    // The placeholder is deliberately short: the old one carried the keyboard
+    // hints and truncated to about seven characters at 390px. The hints moved
+    // to an sr-only description referenced by aria-describedby.
     const input = screen.getByPlaceholderText(
-      'Ask about my development work...',
+      'Type a message…',
     ) as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'hello' } });
     expect(onInputChange).toHaveBeenCalledWith('hello');

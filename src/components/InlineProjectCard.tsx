@@ -13,11 +13,11 @@ type InlineProjectCardProps = {
 
 const ACCENT_BY_ID = [
   'cyan',
-  'magenta',
-  'yellow',
-  'green',
-  'purple',
-  'blue',
+  'coral',
+  'amber',
+  'lime',
+  'violet',
+  'ice',
 ] as const;
 
 export default function InlineProjectCard({
@@ -26,12 +26,7 @@ export default function InlineProjectCard({
   onClick,
 }: InlineProjectCardProps) {
   const accent = ACCENT_BY_ID[project.id % ACCENT_BY_ID.length] as unknown as
-    | 'cyan'
-    | 'magenta'
-    | 'yellow'
-    | 'green'
-    | 'purple'
-    | 'blue';
+    'cyan' | 'coral' | 'amber' | 'lime' | 'violet' | 'ice';
   const projectSkills = skills.filter((s) => project.tags?.includes(s.name));
 
   return (

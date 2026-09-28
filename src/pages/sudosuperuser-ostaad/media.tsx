@@ -324,8 +324,8 @@ const MediaPage = () => {
                 </div>
               </HudPanel>
 
-              <HudPanel accent="magenta" notch="md" className="p-6">
-                <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+              <HudPanel accent="coral" notch="md" className="p-6">
+                <div className="text-[10px] font-display tracking-[3px] text-neon-coral mb-4">
                   MEDIA ({filteredMedia.length})
                 </div>
 
@@ -360,7 +360,7 @@ const MediaPage = () => {
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
                           <NeonButton
                             variant="ghost"
-                            accent="red"
+                            accent="coral"
                             onClick={() => setConfirmDelete(media.id)}
                             disabled={isSaving}
                           >

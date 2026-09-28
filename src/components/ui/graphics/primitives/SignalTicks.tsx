@@ -1,13 +1,9 @@
 import React from 'react';
+import type { AccentColor } from '../../../../config/animations';
 
-type Accent =
-  | 'yellow'
-  | 'magenta'
-  | 'cyan'
-  | 'green'
-  | 'purple'
-  | 'blue'
-  | 'red';
+// Accent vocabulary is owned by the token pipeline; primitives must not
+// re-declare it or they drift the moment an accent is retired.
+type Accent = AccentColor;
 
 export interface SignalTicksProps {
   accent?: Accent;
@@ -40,10 +36,10 @@ export default function SignalTicks({
 
   const ticks = Array.from({ length: count }, (_, i) => {
     const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
-    const x1 = cx + Math.cos(angle) * inner;
-    const y1 = cy + Math.sin(angle) * inner;
-    const x2 = cx + Math.cos(angle) * outer;
-    const y2 = cy + Math.sin(angle) * outer;
+    const x1 = parseFloat((cx + Math.cos(angle) * inner).toFixed(6));
+    const y1 = parseFloat((cy + Math.sin(angle) * inner).toFixed(6));
+    const x2 = parseFloat((cx + Math.cos(angle) * outer).toFixed(6));
+    const y2 = parseFloat((cy + Math.sin(angle) * outer).toFixed(6));
     const isMajor = i % 3 === 0;
     return { x1, y1, x2, y2, isMajor, idx: i };
   });

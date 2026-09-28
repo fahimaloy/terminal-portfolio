@@ -1,13 +1,9 @@
 import React from 'react';
+import type { AccentColor } from '../../../../config/animations';
 
-type Accent =
-  | 'yellow'
-  | 'magenta'
-  | 'cyan'
-  | 'green'
-  | 'purple'
-  | 'blue'
-  | 'red';
+// Accent vocabulary is owned by the token pipeline; primitives must not
+// re-declare it or they drift the moment an accent is retired.
+type Accent = AccentColor;
 
 export interface ScopeRingsProps {
   accent?: Accent;

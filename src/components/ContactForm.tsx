@@ -66,15 +66,15 @@ export default function ContactForm({ onBackToChat }: Props) {
     return (
       <div className="space-y-4">
         <HudPanel
-          accent="green"
+          accent="lime"
           notch="md"
           className="p-4 flex items-center gap-3"
         >
-          <div className="w-10 h-10 rounded-full bg-neon-green/20 flex items-center justify-center flex-shrink-0">
-            <FiCheck className="w-5 h-5 text-neon-green" />
+          <div className="w-10 h-10 rounded-full bg-neon-lime/20 flex items-center justify-center flex-shrink-0">
+            <FiCheck className="w-5 h-5 text-neon-lime" />
           </div>
           <div>
-            <div className="font-display tracking-[2px] text-neon-green text-shadow-neon-green">
+            <div className="font-display tracking-[2px] text-neon-lime text-shadow-neon-lime">
               MESSAGE SENT
             </div>
             <div className="font-body text-sm text-text-muted">
@@ -109,12 +109,14 @@ export default function ContactForm({ onBackToChat }: Props) {
       {errorMsg && (
         <div ref={errorRef}>
           <HudPanel
-            accent="red"
+            accent="coral"
             notch="sm"
             className="p-3 flex items-center gap-2"
           >
-            <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
-            <span className="font-body text-sm text-neon-red">{errorMsg}</span>
+            <FiAlertCircle className="w-4 h-4 text-neon-coral flex-shrink-0" />
+            <span className="font-body text-sm text-neon-coral">
+              {errorMsg}
+            </span>
           </HudPanel>
         </div>
       )}
@@ -160,7 +162,7 @@ export default function ContactForm({ onBackToChat }: Props) {
       <div className="flex gap-2">
         <NeonButton
           type="submit"
-          accent="yellow"
+          accent="amber"
           iconLeft={formState === 'submitting' ? undefined : <FiSend />}
           loading={formState === 'submitting'}
         >
@@ -201,7 +203,7 @@ function FieldInput({
   const { focusIn, focusOut } = useFormAnimation();
   return (
     <div className="relative" ref={wrapRef}>
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neon-yellow">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neon-amber">
         {icon}
       </span>
       <input
@@ -213,7 +215,7 @@ function FieldInput({
         placeholder={placeholder}
         maxLength={maxLength}
         disabled={disabled}
-        className="w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-yellow focus:shadow-[0_0_12px_var(--glow-yellow)] placeholder-text-muted transition-all duration-200 clip-notch-md"
+        className="w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-amber focus:shadow-[0_0_12px_var(--glow-amber)] placeholder-text-muted transition-all duration-200 clip-notch-md"
       />
     </div>
   );
@@ -240,7 +242,7 @@ function FieldTextarea({
   const { focusIn, focusOut } = useFormAnimation();
   return (
     <div className="relative" ref={wrapRef}>
-      <span className="absolute left-3 top-3 text-neon-yellow">{icon}</span>
+      <span className="absolute left-3 top-3 text-neon-amber">{icon}</span>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -250,7 +252,7 @@ function FieldTextarea({
         maxLength={maxLength}
         rows={rows}
         disabled={disabled}
-        className="w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-yellow focus:shadow-[0_0_12px_var(--glow-yellow)] placeholder-text-muted resize-none transition-all duration-200 clip-notch-md"
+        className="w-full bg-bg-smoke border border-white/10 text-text-primary pl-10 pr-4 py-3 font-body text-sm focus:outline-none focus:border-neon-amber focus:shadow-[0_0_12px_var(--glow-amber)] placeholder-text-muted resize-none transition-all duration-200 clip-notch-md"
       />
     </div>
   );

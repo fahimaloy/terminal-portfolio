@@ -1,111 +1,114 @@
 // src/components/HUD/ScrollIndicator.tsx
 /* ═══════════════════════════════════════════════════════════════════════════════
-   SCROLL INDICATOR — Top-edge scroll progress bar with anime.js
-   Shows scroll progress and current section name.
+   SCROLL INDICATOR — top-edge progress rail bound to the real scroll container.
+   The landing page scrolls an inner div, not the window, so the previous
+   window.scrollY read always returned 0 and the bar never moved. A capture-phase
+   scroll listener sees scroll events from any descendant scroller, so one
+   implementation covers every route.
 ═══════════════════════════════════════════════════════════════════════════════ */
 
-import React, { useEffect, useRef, useState } from 'react';
-import { animate } from 'animejs';
-import { isReducedMotion } from '../../config/animations';
+import { useEffect, useRef, useState } from 'react';
 
 interface ScrollIndicatorProps {
   sections?: { id: string; label: string }[];
 }
 
+const DEFAULT_SECTIONS = [
+  { id: 'hero', label: 'DEVELOPER PROFILE' },
+  { id: 'blog-header', label: 'TRANSMISSION LOG' },
+  { id: 'blog-list', label: 'ARTICLES' },
+  { id: 'not-found', label: 'SIGNAL LOST' },
+];
+
 export default function ScrollIndicator({
-  sections = [
-    { id: 'hero', label: 'DEVELOPER_PROFILE' },
-    { id: 'projects', label: 'PROJECTS' },
-    { id: 'skills', label: 'SKILLSETS' },
-    { id: 'experience', label: 'EXPERIENCE' },
-    { id: 'contact', label: 'CONTACT' },
-  ],
+  sections = DEFAULT_SECTIONS,
 }: ScrollIndicatorProps) {
   const [progress, setProgress] = useState(0);
-  const [activeSection, setActiveSection] = useState(sections[0]?.label || '');
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
+  // Progress — capture phase catches scroll on nested scrollers.
   useEffect(() => {
-    if (isReducedMotion()) return;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const el = document.scrollingElement || document.documentElement;
+        const max = el.scrollHeight - window.innerHeight;
+        setProgress(max > 0 ? Math.min(1, Math.max(0, el.scrollTop / max)) : 0);
+      });
+    };
+    onScroll();
+    document.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', onScroll);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      document.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
 
-    // Use IntersectionObserver for section tracking (no window.addEventListener)
+  // Section tracking — only observed when the ids actually exist on the route.
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const targets = sections
+      .map((s) => document.getElementById(s.id))
+      .filter((el): el is HTMLElement => Boolean(el));
+    if (targets.length === 0) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            for (const section of sections) {
-              if (section.id === id) {
-                setActiveSection(section.label);
-                break;
-              }
-            }
-          }
+          if (!entry.isIntersecting) continue;
+          const match = sections.find((s) => s.id === entry.target.id);
+          if (match) setActiveSection(match.label);
         }
       },
-      {
-        root: document.body,
-        threshold: 0.5,
-      },
+      { threshold: 0.4 },
     );
-
-    // Observe all section elements
-    const scrollEffect = () => {
-      // Initialize observer for each section
-      const elements = sections.map((s) => document.getElementById(s.id));
-      elements.forEach((el) => {
-        if (el) observer.observe(el);
-      });
-
-      // Also update progress on scroll via requestAnimationFrame
-      let raf = 0;
-      const onScroll = () => {
-        if (raf) return;
-        raf = requestAnimationFrame(() => {
-          const scrollTop = window.scrollY;
-          const docHeight =
-            document.documentElement.scrollHeight - window.innerHeight;
-          const p = docHeight > 0 ? Math.min(1, scrollTop / docHeight) : 0;
-          setProgress(p);
-          raf = 0;
-        });
-      };
-
-      // Attach scroll listener (this is acceptable as it's the progress bar,
-      // but per contract we need to avoid window.addEventListener)
-      // Instead, we'll rely on the observer for section tracking
-      // and use a different approach for progress
-
-      return () => {
-        observer.disconnect();
-        // Note: we don't remove window scroll listener since we're not using one
-      };
-    };
-
-    scrollEffect();
+    targets.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
   }, [sections]);
 
+  // One tree, always. The previous version branched on `isReducedMotion()`
+  // here, which returns false on the server (no `window`) and the user's real
+  // preference in the browser — two different trees, so React threw
+  // "Hydration failed" on every load for reduced-motion users. The only
+  // difference between the branches was presentational, so CSS now owns it:
+  // `.scroll-rail__fill` and `.scroll-rail__label` are display:none under
+  // `prefers-reduced-motion: reduce`, which leaves exactly the plain 2px rail
+  // the old branch rendered. No JS, no mismatch, no post-mount swap.
   return (
-    <div className="fixed top-0 left-0 right-0 z-[60] pointer-events-none">
-      {/* Progress bar */}
-      <div className="h-[2px] bg-white/[0.03]">
+    <div
+      aria-hidden="true"
+      className="fixed top-0 left-0 right-0 z-[var(--z-hud)] pointer-events-none"
+    >
+      <div className="h-[2px] bg-[var(--overlay-white-05)]">
         <div
           ref={barRef}
-          className="h-full bg-gradient-to-r from-neon-cyan via-neon-yellow to-neon-magenta"
+          className="scroll-rail__fill h-full"
           style={{
             width: `${progress * 100}%`,
-            boxShadow: '0 0 8px var(--neon-cyan), 0 0 16px var(--neon-magenta)',
-            transition: 'width 0.1s linear',
+            background: 'var(--border-gradient-rainbow)',
+            boxShadow: '0 0 10px var(--glow-cyan-sm)',
+            transition: 'width 120ms linear',
           }}
         />
       </div>
 
-      {/* Section name — shows current section */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2">
-        <div className="font-mono text-[9px] tracking-[4px] text-text-muted opacity-60">
-          {'// ' + activeSection}
+      {/* Section name — only while a real section is in view, and never on
+          small screens where it collided with the HUD corner ornaments. */}
+      {activeSection && (
+        <div className="scroll-rail__label absolute top-3 left-1/2 -translate-x-1/2 hidden md:block">
+          <div
+            className="font-mono text-[9px] tracking-[0.32em]"
+            style={{ color: 'var(--fg-3)' }}
+          >
+            {'// ' + activeSection}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

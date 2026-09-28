@@ -79,7 +79,7 @@ export default function TypewriterText({
       {Array.from(text).map((ch, i) => (
         <span
           key={i}
-          className="tw-char inline-block opacity-0"
+          className="tw-char inline-block reveal"
           style={{ whiteSpace: ch === ' ' ? 'pre' : undefined }}
         >
           {ch === ' ' ? '\u00A0' : ch}

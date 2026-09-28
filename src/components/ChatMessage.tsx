@@ -96,11 +96,11 @@ export default React.memo(function ChatMessage({
     return (
       <div className="flex w-full justify-end">
         <HudPanel
-          accent="yellow"
+          accent="amber"
           notch="sm"
-          className="max-w-[85%] md:max-w-[75%] px-4 py-3 hud-glow-yellow"
+          className="max-w-[85%] md:max-w-[75%] px-4 py-3 hud-glow-amber"
         >
-          <div className="text-[10px] font-display tracking-[2px] text-neon-yellow text-shadow-neon-yellow mb-1">
+          <div className="text-[10px] font-display tracking-[2px] text-neon-amber text-shadow-neon-amber mb-1">
             {'>> YOU'}
           </div>
           <div className="font-body text-sm text-text-primary whitespace-pre-wrap">

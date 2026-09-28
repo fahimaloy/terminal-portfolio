@@ -304,7 +304,7 @@ const LoginPage = () => {
 
           {/* Error Message */}
           {errorMessage && (
-            <HudPanel accent="red" notch="sm" className="mb-6 p-4">
+            <HudPanel accent="coral" notch="sm" className="mb-6 p-4">
               <div className="flex items-start gap-3">
                 <span className="text-lg">⚠️</span>
                 <div>
@@ -319,7 +319,7 @@ const LoginPage = () => {
 
           {/* Success Message */}
           {status === 'success' && (
-            <HudPanel accent="green" notch="sm" className="mb-6 p-4">
+            <HudPanel accent="lime" notch="sm" className="mb-6 p-4">
               <div className="flex items-center gap-3">
                 <span className="text-lg animate-bounce">✓</span>
                 <div>
@@ -336,7 +336,7 @@ const LoginPage = () => {
 
           {/* Lockout Message */}
           {isLocked && (
-            <HudPanel accent="yellow" notch="sm" className="mb-6 p-4">
+            <HudPanel accent="amber" notch="sm" className="mb-6 p-4">
               <div className="flex items-center gap-3">
                 <span className="text-lg animate-pulse">🔒</span>
                 <div>
@@ -361,10 +361,10 @@ const LoginPage = () => {
                 status === 'loading'
                   ? 'bg-[var(--fg-3)] animate-pulse'
                   : status === 'success'
-                  ? 'bg-[var(--fg-1)]'
-                  : status === 'error'
-                  ? 'bg-[var(--fg-2)] animate-pulse'
-                  : 'bg-[var(--border-subtle)]'
+                    ? 'bg-[var(--fg-1)]'
+                    : status === 'error'
+                      ? 'bg-[var(--fg-2)] animate-pulse'
+                      : 'bg-[var(--border-subtle)]'
               }`}
             />
 
@@ -515,10 +515,10 @@ const LoginPage = () => {
                   {status === 'loading'
                     ? 'AUTHENTICATING…'
                     : status === 'success'
-                    ? 'SUCCESS!'
-                    : isLocked
-                    ? `LOCKED (${lockTimer}s)`
-                    : 'LOGIN'}
+                      ? 'SUCCESS!'
+                      : isLocked
+                        ? `LOCKED (${lockTimer}s)`
+                        : 'LOGIN'}
                 </NeonButton>
               </form>
 

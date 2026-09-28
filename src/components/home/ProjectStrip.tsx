@@ -6,7 +6,7 @@ import { resolveTechIcon } from '../../lib/techIcons';
 import { HudPanel } from '../ui';
 import { springs } from '../../config/animations';
 
-const ACCENTS = ['cyan', 'magenta', 'yellow', 'green'] as const;
+const ACCENTS = ['cyan', 'violet', 'coral', 'ice'] as const;
 
 export const projectCardSpring = springs.card as {
   stiffness: 150;
@@ -45,10 +45,7 @@ export function ProjectStrip({ projects, onSelect }: StripProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {projects.slice(0, 4).map((project, idx) => {
           const accent = ACCENTS[idx % ACCENTS.length] as unknown as
-            | 'cyan'
-            | 'magenta'
-            | 'yellow'
-            | 'green';
+            'cyan' | 'coral' | 'amber' | 'lime';
           const tags = (project.tags ?? project.languages ?? []).slice(0, 2);
           return (
             <button

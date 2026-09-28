@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 
 interface Props {
   /** Element whose scroll-through drives the bar. */
-  targetRef: React.RefObject<HTMLElement>;
+  targetRef: React.RefObject<HTMLElement | null>;
 }
 
 export default function ReadingProgress({ targetRef }: Props) {

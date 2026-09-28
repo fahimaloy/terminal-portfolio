@@ -106,12 +106,12 @@ export default function BlogForm({
       {error && (
         <div ref={errorRef}>
           <HudPanel
-            accent="red"
+            accent="coral"
             notch="sm"
             className="p-3 flex items-center gap-2"
           >
-            <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
-            <span className="font-body text-sm text-neon-red">{error}</span>
+            <FiAlertCircle className="w-4 h-4 text-neon-coral flex-shrink-0" />
+            <span className="font-body text-sm text-neon-coral">{error}</span>
           </HudPanel>
         </div>
       )}
@@ -175,7 +175,7 @@ export default function BlogForm({
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <span className={labelClass}>
-              Content <span className="text-neon-red">*</span>
+              Content <span className="text-neon-coral">*</span>
             </span>
             <span className="text-[9px] font-mono text-text-muted">
               ~{readingMinutes} MIN READ
@@ -191,7 +191,7 @@ export default function BlogForm({
 
       {/* Media + taxonomy */}
       <HudPanel
-        accent="magenta"
+        accent="coral"
         notch="md"
         title="// MEDIA_AND_TAGS"
         className="p-4 space-y-4"
@@ -237,7 +237,7 @@ export default function BlogForm({
 
       {/* SEO */}
       <HudPanel
-        accent="yellow"
+        accent="amber"
         notch="md"
         title="// SEO_METADATA"
         className="p-4 space-y-4"
@@ -274,7 +274,7 @@ export default function BlogForm({
 
       {/* Publish controls */}
       <HudPanel
-        accent="green"
+        accent="lime"
         notch="md"
         title="// PUBLISH"
         className="p-4 space-y-4"
@@ -312,7 +312,7 @@ export default function BlogForm({
         <div className="flex gap-2 pt-2 border-t border-white/5">
           <NeonButton
             type="submit"
-            accent="yellow"
+            accent="amber"
             iconLeft={submitting ? undefined : <FiSave />}
             loading={submitting}
           >

@@ -52,7 +52,7 @@ export default function SkillGrid({ skills }: SkillGridProps) {
       className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
     >
       {skills.map((skill, idx) => (
-        <div key={skill.id} className="skill-grid-item opacity-0">
+        <div key={skill.id} className="skill-grid-item reveal">
           <SkillCard skill={skill} />
         </div>
       ))}

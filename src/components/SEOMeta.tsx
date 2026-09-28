@@ -14,6 +14,29 @@ interface SEOMetaProps {
   noindex?: boolean;
 }
 
+/**
+ * JSON-LD is injected as a raw string, so it has to be HTML-safe, not just
+ * JSON-safe. `JSON.stringify` does not escape `<`, `>` or `&`, which means a
+ * CMS-controlled value containing `</script>` closes the script element and
+ * everything after it is parsed as live HTML — stored XSS through the blog
+ * title or the profile name. Escaping the three characters (plus U+2028/29,
+ * which break JS string literals) makes the payload inert while remaining
+ * valid JSON-LD for crawlers.
+ */
+function toJsonLd(value: unknown): string {
+  return JSON.stringify(value).replace(
+    /[<>&\u2028\u2029]/g,
+    (c) =>
+      ({
+        '<': '\\u003c',
+        '>': '\\u003e',
+        '&': '\\u0026',
+        '\u2028': '\\u2028',
+        '\u2029': '\\u2029',
+      })[c] as string,
+  );
+}
+
 export default function SEOMeta({
   title,
   description,
@@ -131,7 +154,11 @@ export default function SEOMeta({
 
   return (
     <Head>
-      <title>{title} | Fahimaloy Portfolio</title>
+      {/* A template string, not `{title} | Fahimaloy Portfolio`. Two children
+          make React see an Array, and it warns on every page load: browsers
+          treat all <title> children as text, so React cannot convert the
+          array. This fired on every route in dev. */}
+      <title>{`${title} | Fahimaloy Portfolio`}</title>
       <meta name="description" content={description} />
       <meta property="og:image" content={imageUrl} />
       <meta property="og:title" content={title} />
@@ -163,30 +190,30 @@ export default function SEOMeta({
       {personSchema && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+          dangerouslySetInnerHTML={{ __html: toJsonLd(personSchema) }}
         />
       )}
       {projectSchema && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(projectSchema) }}
+          dangerouslySetInnerHTML={{ __html: toJsonLd(projectSchema) }}
         />
       )}
       {blogSchema && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
+          dangerouslySetInnerHTML={{ __html: toJsonLd(blogSchema) }}
         />
       )}
       {breadcrumbSchema && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+          dangerouslySetInnerHTML={{ __html: toJsonLd(breadcrumbSchema) }}
         />
       )}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        dangerouslySetInnerHTML={{ __html: toJsonLd(websiteSchema) }}
       />
     </Head>
   );

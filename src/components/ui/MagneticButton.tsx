@@ -4,20 +4,33 @@ import React, { useRef, useCallback } from 'react';
 import { createSafeAnimatable } from '../../utils/animatable';
 import { isReducedMotion } from '../../config/animations';
 
-interface MagneticButtonProps {
+type MagneticButtonOwnProps = {
   children: React.ReactNode;
   className?: string;
   strength?: number;
-  onClick?: () => void;
-}
+};
+
+/**
+ * Polymorphic in `as`. A plain union of the two attribute bags collapses to
+ * `never` when spread onto a generic `ElementType`, so the variants are
+ * discriminated on `as` instead: a button gets button attributes, an anchor
+ * gets anchor attributes, and both are checked at the call site.
+ */
+type MagneticButtonProps = MagneticButtonOwnProps &
+  (
+    | ({ as?: 'button' } & React.ButtonHTMLAttributes<HTMLButtonElement>)
+    | ({ as: 'a' } & React.AnchorHTMLAttributes<HTMLAnchorElement>)
+  );
 
 export default function MagneticButton({
   children,
   className = '',
   strength = 0.18,
   onClick,
+  as: Component = 'button',
+  ...rest
 }: MagneticButtonProps) {
-  const ref = useRef<HTMLButtonElement>(null);
+  const ref = useRef<any>(null);
   const animatableRef = useRef<ReturnType<typeof createSafeAnimatable> | null>(
     null,
   );
@@ -27,8 +40,8 @@ export default function MagneticButton({
       animatableRef.current = createSafeAnimatable(ref.current, {
         x: 0,
         y: 0,
-        duration: 200,
-        ease: 'outExpo',
+        duration: 250,
+        ease: 'spring(soft)',
       });
     }
     return () => {
@@ -67,15 +80,18 @@ export default function MagneticButton({
     animatableRef.current.y(0);
   }, []);
 
+  // `as` is destructured above, so the tag is known and the remaining props
+  // are narrowed to that element's attribute bag.
   return (
-    <button
+    <Component
       ref={ref}
       className={className}
-      onClick={onClick}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onClick={onClick as never}
+      onMouseMove={handleMouseMove as never}
+      onMouseLeave={handleMouseLeave as never}
+      {...(rest as Record<string, unknown>)}
     >
       {children}
-    </button>
+    </Component>
   );
 }
