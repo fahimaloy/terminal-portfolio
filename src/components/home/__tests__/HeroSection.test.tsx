@@ -1,6 +1,6 @@
 // src/components/home/__tests__/HeroSection.test.tsx
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 
 vi.mock('animejs', () => {
   const scope = {
@@ -28,6 +28,12 @@ vi.mock('animejs', () => {
 
 import HeroSection from '../HeroSection';
 import { createScope } from 'animejs';
+import type { PortfolioProfile } from '../../../utils/api';
+import {
+  BOOT_COMPLETE_EVENT,
+  BOOT_DONE_ATTR,
+  type BootCompletionReason,
+} from '../../ui/BootSequence';
 
 const mockedCreateScope = vi.mocked(createScope);
 
@@ -53,7 +59,66 @@ function clearMatchMedia() {
   Reflect.deleteProperty(window, 'matchMedia');
 }
 
+/**
+ * The two read paths of the boot-gate contract documented in the HeroSection
+ * header, reproduced exactly as `_app.tsx` uses them — the live broadcast for a
+ * hero that is already mounted, the sticky `<html>` attribute for one that
+ * arrives after the splash. The entrance is deliberately parked until one of
+ * them fires, so any test that wants the animation must cross the gate first.
+ */
+function broadcastBootComplete(reason: BootCompletionReason = 'complete') {
+  act(() => {
+    document.documentElement.setAttribute(BOOT_DONE_ATTR, reason);
+    window.dispatchEvent(
+      new CustomEvent(BOOT_COMPLETE_EVENT, { detail: { reason } }),
+    );
+  });
+}
+
+function latchBootDone(reason: BootCompletionReason = 'complete') {
+  document.documentElement.setAttribute(BOOT_DONE_ATTR, reason);
+}
+
 const noop = vi.fn();
+
+/**
+ * `profiles.title` is the CMS role field behind the same `profile` prop that
+ * already drives the name, so the hero needed no second fetch path to stop
+ * hardcoding it. The Supabase row is the only variable under test, so it is
+ * built in full and cast nowhere.
+ */
+function profileWith(
+  title: string | null,
+  overrides: Partial<PortfolioProfile> = {},
+): PortfolioProfile {
+  return {
+    id: 'profile-1',
+    full_name: 'Fahim Ahmed',
+    title,
+    bio: null,
+    welcome_message: null,
+    summary: null,
+    phone: null,
+    email: null,
+    location: null,
+    website: null,
+    github: null,
+    linkedin: null,
+    resume_url: null,
+    avatar_url: null,
+    is_active: true,
+    ...overrides,
+  };
+}
+
+const heroProps = {
+  profile: null,
+  siteTexts: {},
+  projectCount: 0,
+  skillCount: 0,
+  expCount: 0,
+  onSend: noop,
+} as const;
 
 describe('HeroSection', () => {
   beforeEach(() => {
@@ -64,22 +129,16 @@ describe('HeroSection', () => {
   afterEach(() => {
     vi.clearAllMocks();
     clearMatchMedia();
+    // The latch is sticky for the life of an app mount; jsdom keeps <html>
+    // across tests, so a leaked attribute would silently un-gate the next one.
+    document.documentElement.removeAttribute(BOOT_DONE_ATTR);
   });
 
   // Regression guard: the quick cards were invisible because they carried a
   // Tailwind `opacity-0` class that survived every scope.revert(). If an
   // animated node ever regains a hiding class, this fails.
   it('never hides animated nodes with a utility opacity class', () => {
-    const { container } = render(
-      <HeroSection
-        profile={null}
-        siteTexts={{}}
-        projectCount={0}
-        skillCount={0}
-        expCount={0}
-        onSend={noop}
-      />,
-    );
+    const { container } = render(<HeroSection {...heroProps} />);
 
     const animated = container.querySelectorAll(
       '[data-hero="label"], [data-hero="name"], [data-hero="title"], ' +
@@ -97,12 +156,10 @@ describe('HeroSection', () => {
   it('renders six quick-command cards and three stats', () => {
     const { container } = render(
       <HeroSection
-        profile={null}
-        siteTexts={{}}
+        {...heroProps}
         projectCount={4}
         skillCount={12}
         expCount={3}
-        onSend={noop}
       />,
     );
     expect(container.querySelectorAll('[data-hero="card"]')).toHaveLength(6);
@@ -111,21 +168,117 @@ describe('HeroSection', () => {
     ).toHaveLength(3);
   });
 
+  // The gate is the contract, not an accident: the entrance must not run
+  // against a splash that still covers it.
+  it('holds the entrance until the splash reports boot complete', () => {
+    render(<HeroSection {...heroProps} />);
+    expect(mockedCreateScope).not.toHaveBeenCalled();
+
+    broadcastBootComplete();
+    expect(mockedCreateScope).toHaveBeenCalledTimes(1);
+  });
+
+  // A listener can miss the broadcast; the latch cannot be missed.
+  it('reveals immediately when the hero mounts after the splash already cleared', () => {
+    latchBootDone('timeout');
+    render(<HeroSection {...heroProps} />);
+    expect(mockedCreateScope).toHaveBeenCalledTimes(1);
+  });
+
   it('reverts its scope on unmount', () => {
-    const { unmount } = render(
-      <HeroSection
-        profile={null}
-        siteTexts={{}}
-        projectCount={0}
-        skillCount={0}
-        expCount={0}
-        onSend={noop}
-      />,
-    );
+    const { unmount } = render(<HeroSection {...heroProps} />);
+    broadcastBootComplete();
+
     const scope = mockedCreateScope.mock.results[0].value as {
       revert: ReturnType<typeof vi.fn>;
     };
     unmount();
     expect(scope.revert).toHaveBeenCalledTimes(1);
+  });
+
+  // ── P3.8 — hero content integrity ────────────────────────────────────────
+  it('renders the role line from the CMS profile title', () => {
+    const { container } = render(
+      <HeroSection
+        {...heroProps}
+        profile={profileWith('Realtime Systems Engineer')}
+      />,
+    );
+    const roleEl = container.querySelector('[data-hero="title"]');
+    expect(roleEl?.textContent).toContain('Realtime Systems Engineer');
+    // The last word stays set apart so an *edited* title still reads as a
+    // lockup rather than a sentence.
+    expect(roleEl?.querySelector('span')?.textContent).toBe('Engineer');
+  });
+
+  // The CMS can be empty, missing, or whitespace-padded. The one thing it may
+  // never do is leave the hero blank.
+  it.each([
+    ['null', null],
+    ['an empty string', ''],
+    ['whitespace only', '   '],
+  ])('falls back to a static role when the CMS title is %s', (_case, title) => {
+    const { container } = render(
+      <HeroSection {...heroProps} profile={profileWith(title)} />,
+    );
+    const roleEl = container.querySelector('[data-hero="title"]');
+    expect(roleEl?.textContent?.trim()).toBe('FULL-STACK DEVELOPER');
+  });
+
+  it('still renders a role when the profile itself has not loaded', () => {
+    const { container } = render(<HeroSection {...heroProps} />);
+    const roleEl = container.querySelector('[data-hero="title"]');
+    expect(roleEl?.textContent?.trim()).toBe('FULL-STACK DEVELOPER');
+  });
+
+  // The hierarchy inversion, pinned. Emphasis moved on three axes at once:
+  // the number dropped 3xl→xl and the label 9px→xs so the pair reads as one
+  // unit, the number gave up the bright token (fg-1→fg-3), the label took it
+  // (fg-3→fg-2), and `flex-col-reverse` lifted the label above the number.
+  // DOM order stays value-first so the row still reads "12+ PROJECTS" aloud.
+  it('leads each stat with its label and supports it with the number', () => {
+    const { container } = render(
+      <HeroSection
+        {...heroProps}
+        projectCount={4}
+        skillCount={12}
+        expCount={3}
+      />,
+    );
+    const cell = container.querySelector('[data-hero="stats"] > div');
+    expect(cell?.classList.contains('flex-col-reverse')).toBe(true);
+
+    const [value, label] = Array.from(cell?.children ?? []);
+    expect(label?.textContent).toBe('PROJECTS');
+    expect(value?.textContent).toContain('4');
+
+    // The label is the higher-contrast token; the number recedes to the quiet one.
+    expect(label?.getAttribute('style')).toContain('var(--fg-2)');
+    expect(value?.getAttribute('style')).toContain('var(--fg-3)');
+    // Neither the number nor the label is back to its old shouting size.
+    expect(value?.className).toContain('text-xl');
+    expect(label?.className).toContain('text-xs');
+  });
+
+  // ── P3.11 — the type-voice decision, pinned ──────────────────────────────
+  // The hero is deliberately a mono lockup (see the NAME_TYPE comment). If a
+  // later edit restores `font-display` here, the page silently reverts to the
+  // stock cyberpunk voice this decision was made to leave, and the reasoning
+  // above quietly stops being true.
+  it('sets the hero in the mono face, not the display face', () => {
+    const { container } = render(<HeroSection {...heroProps} />);
+    const name = container.querySelector('.hero-name-el');
+    expect(name?.classList.contains('font-mono')).toBe(true);
+    expect(container.querySelectorAll('.font-display')).toHaveLength(0);
+  });
+
+  // JetBrains Mono is requested at 400 and 500 only, so a 700 would be a faux
+  // bold — smeared strokes on a 7rem monospaced face.
+  it('never asks the mono face for a weight it was not loaded at', () => {
+    const { container } = render(<HeroSection {...heroProps} />);
+    container.querySelectorAll('.font-mono').forEach((el) => {
+      expect(el.className).not.toContain('font-bold');
+      expect(el.className).not.toContain('font-semibold');
+    });
   });
 });
