@@ -42,21 +42,40 @@ export type ScenePointer = {
   movedAt: number;
 };
 
-const IDLE: ScenePointer = {
+/**
+ * The pristine idle template. Frozen so it cannot itself be mutated into a
+ * shared singleton again — every instance gets its own copy via
+ * `createIdlePointer()` below, never this object.
+ */
+const IDLE: ScenePointer = Object.freeze({
   x: 0,
   y: 0,
   clientX: 0,
   clientY: 0,
   active: false,
   movedAt: 0,
-};
+});
+
+/**
+ * Per-instance idle pointer. A hook instance mutates its own object for the
+ * lifetime of the mount, so seeding a ref with the module-level `IDLE` would
+ * let the FIRST `pointermove` from ANY mount flip `IDLE.active = true` for the
+ * whole module — and every later fresh mount would then read a stale, already
+ * active pointer. Each instance therefore starts from its own copy.
+ */
+const createIdlePointer = (): ScenePointer => ({ ...IDLE });
 
 /**
  * The default is a usable idle ref rather than `null`, so a scene component
  * read outside a provider degrades to "no pointer" instead of throwing. That
  * keeps every call site a plain `useContext(ScenePointerContext)`.
+ *
+ * It is a copy, not `IDLE` itself: it is handed to every unprovided consumer,
+ * and the effect below must never be able to write through it.
  */
-const IDLE_REF = { current: IDLE } as React.RefObject<ScenePointer>;
+const IDLE_REF = {
+  current: createIdlePointer(),
+} as React.RefObject<ScenePointer>;
 
 export const ScenePointerContext =
   createContext<React.RefObject<ScenePointer>>(IDLE_REF);
@@ -74,7 +93,7 @@ export const ScenePointerProvider = ScenePointerContext.Provider;
  * expected to be stable; flipping it later re-runs the effect correctly.
  */
 export function useScenePointer(enabled = true): React.RefObject<ScenePointer> {
-  const ref = useRef<ScenePointer>(IDLE);
+  const ref = useRef<ScenePointer>(createIdlePointer());
 
   useEffect(() => {
     if (!enabled) return;
