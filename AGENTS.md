@@ -1,119 +1,176 @@
 # AGENTS.md — Portfolio
 
-> Read this before writing code. Stack facts last verified against `package.json` on 2026-09-27. Do not drift.
+> Read this before writing code. Stack facts verified against `package.json` and the
+> working tree on 2026-09-28. If this file and `package.json` disagree, **`package.json`
+> wins** — and fix this file in the same commit.
 
 ## Project
 
-Cyberpunk portfolio for Fahim Ahmed — Pages Router chat experience (AI chat, project matching), filterable project grid, blog (`/blog`, `/blog/[slug]`), and an admin panel at `/sudosuperuser-ostaad` (projects, skills, blogs, site-texts, profile, meetings, knowledge, media, AI providers/models/usage). Persistence is entirely Supabase.
+Cyberpunk portfolio for Fahim Ahmed. Pages Router chat experience (AI chat, project
+matching), filterable project grid, blog (`/blog`, `/blog/[slug]`), and an admin panel
+at `/sudosuperuser-ostaad`. Persistence is entirely Supabase.
 
-**Stack (exact):** `next@16.3.6` (Pages Router, `distDir: build`), `react@19.3.0` / `react-dom@19.3.0`, `animejs@4.5.0` (v4 API), `three@0.186` + `@react-three/fiber@9.8` + `@react-three/drei@10.7` (the scene layer), `tailwindcss@3.4` + `postcss@8.5`, `@supabase/supabase-js@2.99`, `vitest@4.1` (+ `jsdom@24`, `@testing-library/react@16`), `@playwright/test@1.63`, `typescript@5.9`, `eslint@9.39` (flat config) + `eslint-config-next@16.3`.
+**Stack (exact):** `next@16.3.6` (Pages Router, `distDir: build`), `react@19.3.0` /
+`react-dom@19.3.0`, `animejs@4.5.0` (v4 API), `three@0.186` + `@react-three/fiber@9.8` +
+`@react-three/drei@10.7` (the scene layer), `tailwindcss@3.4` + `postcss@8.5`,
+`@supabase/supabase-js@2.99`, `vitest@4.1` (+ `jsdom@24`, `@testing-library/react@16`),
+`@playwright/test@1.63`, `typescript@5.9`, `eslint@9.39` (flat config) +
+`eslint-config-next@16.3`.
 
-> ⚠️ The previous revision of this file claimed `next@12.1.6 / react@18.1 / typescript@4.6`. That was wrong by three major versions and cost real debugging time. **Read `package.json`, not this file, when the two disagree.**
+> ⚠️ An earlier revision of this file claimed `next@12.1.6 / react@18.1 / typescript@4.6`.
+> That was wrong by three major versions and cost real debugging time. **Read
+> `package.json`, not this file, when the two disagree.**
 
 ## Directory map
 
-| Path                          | What lives there                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/pages/`                  | Pages Router — `index.tsx`, `_app.tsx`, `_document.tsx`, `404.tsx`, `sitemap.xml.ts`, `blog/index.tsx`, `blog/[slug].tsx`, `sudosuperuser-ostaad/**` (admin, 10+ sub-pages), `api/**`                                                                                                                                                                                                                                           |
-| `src/components/scene/`       | The single background owner — `SceneLayer.tsx` (route-aware host, picks the variant and decides WebGL vs fallback), `SceneCanvas.tsx` (r3f canvas + per-variant art direction), `ParticleField.tsx` (GPU points, custom vertex/fragment shader, message shockwave), `FloorGrid.tsx` (shader perspective floor), `CoreObject.tsx` (fresnel icosahedron + `ParallaxRig`). `StaticField` inside `SceneLayer` is the no-WebGL path. |
-| `src/components/ui/`          | `BootSequence.tsx` (splash timeline), `HudPanel.tsx`, `NeonButton.tsx`, `NeonChip.tsx`, `GlitchText.tsx`, `StatBar.tsx`, `Tilt3D.tsx`, `CursorGlow.tsx`, `TypewriterText.tsx`, `AnimatedCounter.tsx`, `ScanlineOverlay.tsx`, `Ripple.tsx`, `MagneticButton.tsx`, `Toast.tsx`, `Tooltip.tsx`, `IconPicker.tsx`, `SearchableMultiSelect.tsx`, `RichTextEditor.tsx`, `useTypeaheadSuggestions.ts`, plus `forms/`                   |
-| `src/components/home/`        | `HeroSection.tsx` (**sole owner of hero choreography**), `HeroChat.tsx` (counters + state switch only), `HudChrome.tsx`, `ChatStream.tsx`, `ChatInputBar.tsx`, `ChatModalHost.tsx`, `ProjectStrip.tsx`                                                                                                                                                                                                                          |
-| `src/components/blog/`        | `BlogHeader.tsx` (sticky header: search + filter icon buttons), `BlogGrid.tsx` (default view), `BlogReels.tsx` (opt-in view), `BlogCard.tsx`, `ReadingProgress.tsx`, `LightningTransition.tsx`, `FlashCurtain.tsx`                                                                                                                                                                                                              |
-| `src/components/admin/`       | `AdminLayout.tsx`, `AuthScreens.tsx`, `BlogForm.tsx`, `ConfirmDeleteModal.tsx`                                                                                                                                                                                                                                                                                                                                                  |
-| `src/hooks/`                  | `useSceneQuality.ts` (WebGL probe + device tier + tab visibility), `useMotionScope.ts`, `useScrollAnimation.ts`, `useHover.ts`, `useDraggableCard.ts`, `useTimeline.ts`, `useStagger.ts`, `useTypewriter.ts`, `useTextScramble.ts`, `useFormAnimation.ts`, `useBoot.ts`, `useEnhancedSuggestions.ts`, `useFlashCurtain.ts`, `useCoverPreload.ts`, `index.ts`                                                                    |
-| `src/config/identity.ts`      | **Single source of truth for the site owner name/handle.** `config.json` → Supabase, with CMS placeholders ("Your Name") rejected. Every surface reads this.                                                                                                                                                                                                                                                                    |
-| `src/config/animations.ts`    | Duration/easing/spring/accent presets — **generated from `tokens.css`** (see contract)                                                                                                                                                                                                                                                                                                                                          |
-| `src/styles/tokens.css`       | Single source of truth — v5 "Aurora Nocturne". 3 primary accents (`--neon-cyan` `--neon-violet` `--neon-coral`) + 3 supports (`--neon-amber` `--neon-lime` `--neon-ice`), plus `--key-light` / `--rim-light` / `--scene-*` depth tokens                                                                                                                                                                                         |
-| `src/styles/global.css`       | Tailwind layers + utilities (`.clip-notch-*`, `.hud-glow-*`, `.glass`, `.text-shadow-neon-*`) — imports `tokens.css`                                                                                                                                                                                                                                                                                                            |
-| `src/utils/api.ts`            | Public data layer — `getPortfolio*`, `clearPortfolioCache()` (20 call sites), legacy `getProjects`/`getSkills`                                                                                                                                                                                                                                                                                                                  |
-| `src/utils/supabase.ts`       | Browser Supabase client (anon / RLS)                                                                                                                                                                                                                                                                                                                                                                                            |
-| `src/utils/supabaseAdmin.ts`  | Server-only `supabaseAdmin`                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `install/supabase/`           | Canonical SQL — `schema.sql`, `ai_schema.sql`, `experiences_schema.sql`                                                                                                                                                                                                                                                                                                                                                         |
-| `supabase/`                   | Local Supabase config / migrations (if present)                                                                                                                                                                                                                                                                                                                                                                                 |
-| `e2e/`                        | Playwright specs — `homepage.spec.ts`, `chat-api.spec.ts`, `admin.spec.ts`, `blog-admin.spec.ts`, `global-setup.ts`                                                                                                                                                                                                                                                                                                             |
-| `src/types/`                  | Shared types (`blog.ts`)                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `scripts/generate-tokens.mjs` | Token codegen (CSS → TS + Tailwind)                                                                                                                                                                                                                                                                                                                                                                                             |
-| `scripts/token-lint.mjs`      | Pre-commit token guard                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Path                       | What lives there                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/pages/`               | Pages Router — `index.tsx`, `_app.tsx`, `_document.tsx`, `404.tsx`, `sitemap.xml.ts`, `blog/index.tsx`, `blog/[slug].tsx`, `sudosuperuser-ostaad/**` (admin), `api/**`                                                                                                                                                                                                                                                                                                                                        |
+| `src/components/` (root)   | `Homepage.tsx` (chat orchestration + project grid), `AdvancedFeaturesBar.tsx`, `ContactForm.tsx`, `MeetingForm.tsx`, `ProjectMatchForm.tsx`, `ProjectMatchGrid.tsx`, `ProjectDetailDrawer.tsx`, `ProjectInlineRef.tsx`, `InlineProjectCard.tsx`, `ProjectPreview.tsx`, `SkillCard/SkillFilterPanel/SkillGrid.tsx`, `ChatMessage.tsx`, `MessageOverlay.tsx`, `MentionChip.tsx`, `ExperienceTimeline.tsx`, `RichTextRenderer.tsx`, `SEOMeta.tsx`, `ErrorBoundary.tsx`                                           |
+| `src/components/home/`     | `HeroSection.tsx` (**sole owner of hero choreography**), `HeroChat.tsx` (counters + state switch only), `HudChrome.tsx`, `ChatStream.tsx`, `ChatInputBar.tsx`, `ChatModalHost.tsx`, `ProjectStrip.tsx`                                                                                                                                                                                                                                                                                                        |
+| `src/components/scene/`    | The single background owner — `SceneLayer.tsx` (route-aware host, picks the variant and decides WebGL vs fallback), `SceneCanvas.tsx` (r3f canvas + per-variant art direction), `ParticleField.tsx` (GPU points, custom vertex/fragment shader, message shockwave), `FloorGrid.tsx` (shader perspective floor), `CoreObject.tsx` (fresnel icosahedron + `ParallaxRig`), `NeonTubes.tsx`, `TubeStrip.tsx`, `palette.ts`                                                                                        |
+| `src/components/ui/`       | `BootSequence.tsx` (splash timeline), `HudPanel.tsx`, `NeonButton.tsx`, `NeonChip.tsx`, `GlitchText.tsx`, `StatBar.tsx`, `Tilt3D.tsx`, `CursorGlow.tsx`, `TypewriterText.tsx`, `AnimatedCounter.tsx`, `ScanlineOverlay.tsx`, `Ripple.tsx`, `MagneticButton.tsx`, `Toast.tsx`, `Tooltip.tsx`, `IconPicker.tsx`, `SearchableMultiSelect.tsx`, `RichTextEditor.tsx`, `TypeaheadSuggestions.tsx`, `useTypeaheadSuggestions.ts`, plus `forms/` and `graphics/` (`primitives/`, `compositions/`, `seededRandom.ts`) |
+| `src/components/blog/`     | `BlogHeader.tsx` (sticky header: search + filter icon buttons), `BlogGrid.tsx` (default view), `BlogReels.tsx` (opt-in view), `BlogCard.tsx`, `ReadingProgress.tsx`, `LightningTransition.tsx`, `FlashCurtain.tsx`                                                                                                                                                                                                                                                                                            |
+| `src/components/admin/`    | `AdminLayout.tsx`, `AuthScreens.tsx`, `BlogForm.tsx`, `ConfirmDeleteModal.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `src/components/HUD/`      | `ScrollIndicator.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `src/hooks/`               | `useSceneQuality.ts` (WebGL probe + device tier + tab visibility), `useMotionScope.ts`, `useScrollAnimation.ts`, `useHover.ts`, `useDraggableCard.ts`, `useTimeline.ts`, `useStagger.ts`, `useTypewriter.ts`, `useTextScramble.ts`, `useFormAnimation.ts`, `useBoot.ts`, `useEnhancedSuggestions.ts`, `useFlashCurtain.ts`, `useCoverPreload.ts`, `useMotionPreference.ts`, `useScenePointer.ts`, `index.ts`                                                                                                  |
+| `src/utils/`               | Public data layer `api.ts`; browser client `supabase.ts`; **server-only** `supabaseAdmin.ts`; `aiService.ts`, `aiApi.ts`, `aiResponseParser.ts`, `intentDetection.ts`, `suggestionGenerator.ts`; `adminAuth.ts`, `adminPageGuard.ts`, `blogApi.ts`, `csrf.ts`, `rateLimit.ts`, `errorMessage.ts`, `animatable.ts`                                                                                                                                                                                             |
+| `src/config/identity.ts`   | **Single source of truth for the site owner name/handle.** `config.json` → Supabase, with CMS placeholders ("Your Name") rejected. Every surface reads this.                                                                                                                                                                                                                                                                                                                                                  |
+| `src/config/animations.ts` | Duration/easing/spring/accent presets — **generated from `tokens.css`** (see contract)                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `src/lib/techIcons.ts`     | Tech-name → icon mapping                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `src/types/`               | Shared types (`blog.ts`, `project.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `src/styles/tokens.css`    | Single source of truth — v5 "Aurora Nocturne". 3 primary accents (`--neon-cyan` `--neon-violet` `--neon-coral`) + 3 supports (`--neon-amber` `--neon-lime` `--neon-ice`), plus `--key-light` / `--rim-light` / `--scene-*` depth tokens                                                                                                                                                                                                                                                                       |
+| `src/styles/global.css`    | Tailwind layers + utilities (`.clip-notch-*`, `.hud-glow-*`, `.glass`, `.text-shadow-neon-*`) — imports `tokens.css`                                                                                                                                                                                                                                                                                                                                                                                          |
+| `install/supabase/`        | Canonical SQL — `schema.sql`, `ai_schema.sql`, `blog_schema.sql`, `experiences_schema.sql`                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `supabase/migrations/`     | `001_mask_ai_keys.sql`, `002_increment_view_count.sql`, `003_reorder_experiences.sql`                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `e2e/`                     | Playwright specs — `homepage.spec.ts`, `chat-api.spec.ts`, `admin.spec.ts`, `blog-admin.spec.ts`, `global-setup.ts`                                                                                                                                                                                                                                                                                                                                                                                           |
+| `scripts/`                 | `generate-tokens.mjs` (codegen), `token-lint.mjs` (guard), `dev.sh`, `build.sh`                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 ## Design-token contract
 
-**`src/styles/tokens.css` is the ONLY source of truth** for color (`--neon-*`, `--glow-*`, `--bg-*`, `--text-*`, `--glass-*`), duration (`--dur-*`), easing (`--ease-*`), and spring (`--spring-*`) tokens.
+**`src/styles/tokens.css` is the ONLY source of truth** for color (`--neon-*`, `--glow-*`,
+`--bg-*`, `--text-*`, `--glass-*`), duration (`--dur-*`), easing (`--ease-*`), and spring
+(`--spring-*`) tokens.
 
 Derived files are **generated** — never hand-edited:
 
-- `tailwind.tokens.generated.js` (`colors` + `fontFamily` + `transitionDuration` + `transitionTimingFunction`) ← `src/styles/tokens.css` via `scripts/generate-tokens.mjs`
-- `src/config/animations.ts#accentConfig` (+ `durations`/`easings`/`springs`) ← `src/styles/tokens.css` via `scripts/generate-tokens.mjs` → `src/config/generated/tokens.generated.ts`
+- `tailwind.tokens.generated.js` (`colors` + `fontFamily` + `transitionDuration` +
+  `transitionTimingFunction`) ← `src/styles/tokens.css` via `scripts/generate-tokens.mjs`
+- `src/config/generated/tokens.generated.ts` (+ `accentConfig`, `durations`, `easings`,
+  `springs`, re-exported by `src/config/animations.ts`) ← same generator
 
-**Accent vocabulary:** exactly six names — `cyan`, `violet`, `coral` (primary) and `amber`, `lime`, `ice` (support). They are declared once in `scripts/generate-tokens.mjs#EXPECTED_ACCENTS` and re-exported as `AccentColor` from `src/config/animations.ts`. **Components import that type; they never declare their own union and never add a "legacy alias" branch.** Twelve duplicate local unions plus a 14-entry `NeonButton` map were the reason a 15-hue palette existed. To add an accent: add `--neon-x` + `--glow-x` + `--glow-x-sm` to `tokens.css`, add the name to `EXPECTED_ACCENTS`, add a `[data-accent='x']` block, regenerate.
+**Accent vocabulary:** exactly six names — `cyan`, `violet`, `coral` (primary) and `amber`,
+`lime`, `ice` (support). They are declared once in
+`scripts/generate-tokens.mjs:34` (`EXPECTED_ACCENTS`) and re-exported as `AccentColor` from
+`src/config/animations.ts`. **Components import that type; they never declare their own
+union and never add a "legacy alias" branch.** Twelve duplicate local unions plus a
+14-entry `NeonButton` map were the reason a 15-hue palette existed. To add an accent: add
+`--neon-x` + `--glow-x` + `--glow-x-sm` to `tokens.css`, add the name to
+`EXPECTED_ACCENTS`, add a `[data-accent='x']` block, regenerate.
+
+`token-lint` fails on raw `#[0-9a-fA-F]{3,8}` and raw `rgba(` outside `tokens.css`, and on
+ad-hoc `duration-*`/`ease-*` Tailwind classes not backed by `--dur-*`/`--ease-*`. Escape a
+single line with a `// token-lint-ignore` comment.
 
 ## Scene contract (Three.js)
 
-`src/components/scene/SceneLayer.tsx` is mounted **once**, from `_app.tsx`. No page or component may mount a second background — doing so doubled the particle field, grid, scanlines and aurora.
+`src/components/scene/SceneLayer.tsx` is mounted **once**, from `_app.tsx`. No page or
+component may mount a second background — doing so doubled the particle field, grid,
+scanlines and aurora.
 
-- **One canvas per route.** `SceneLayer` picks `hero | chat | blog` and hands it to `SceneCanvas`, which owns the per-variant art direction (density, size, grid strength, camera distance). Do not scatter those numbers into components.
-- **Fail closed.** `useSceneQuality` probes for WebGL and falls back to the static `StaticField` SVG on failure, on `prefers-reduced-motion`, and on low-power devices. It fails to _no scene_, never to a thrown error — this repo has been bitten by WebGL in headless environments before.
-- **Shaders must not need extensions.** An `fwidth()` call in `FloorGrid` needed the derivatives extension on WebGL1 and silently took the whole floor offline. Anti-alias by passing a width uniform instead.
-- **Uniforms live in a `useMemo`, not in a ref effect.** r3f's material ref is null on the first effect pass.
-- **Chat ties into the scene via window events.** `Homepage` dispatches `portfolio:chat-mode` (hero → chat) and `portfolio:chat-send` (shockwave); `_app` owns the listener.
-
-**Hard rule:** change a token in `tokens.css` then run `npm run tokens:generate`. Never patch `tailwind.config.js` or `animations.ts` to tweak a color/duration/easing directly — CI (`tokens:check`) will fail the PR.
-
-```
-tokens.css  ──generate-tokens.mjs──►  tailwind.tokens.generated.js
-                                └──►  src/config/generated/tokens.generated.ts  (re-exported by animations.ts)
-```
-
-`global.css` utilities (`clip-notch-*`, `hud-glow-*`, `glass`, `text-shadow-neon-*`) consume `var(--*)` — they are not a second source of truth.
+- **One canvas per route.** `SceneLayer` picks `hero | chat | blog` and hands it to
+  `SceneCanvas`, which owns the per-variant art direction (density, size, grid strength,
+  camera distance). Do not scatter those numbers into components.
+- **Fail closed.** `useSceneQuality.ts:32-34` probes `webgl2` → `webgl` →
+  `experimental-webgl`, reads `prefers-reduced-motion` at `:95`, and falls back to
+  `StaticField` (defined inside `SceneLayer.tsx:114`) on failure, on reduced motion, and on
+  low-power devices. It fails to _no scene_, never to a thrown error — this repo has been
+  bitten by WebGL in headless environments before.
+- **Shaders must not need extensions.** An `fwidth()` call in `FloorGrid` needed the
+  derivatives extension on WebGL1 and silently took the whole floor offline. Anti-alias by
+  passing a width uniform instead.
+- **Uniforms live in a `useMemo`, not in a ref effect.** r3f's material ref is null on the
+  first effect pass.
+- **Chat ties into the scene via window events.** `Homepage.tsx` dispatches
+  `portfolio:chat-send` (`:129`) and `portfolio:chat-mode` (`:181`); `src/pages/_app.tsx:35-39`
+  owns the listener and its cleanup.
 
 ## Animation contract (anime.js v4)
 
-All motion uses `animejs@4.5.0` v4 API. Durations/easings come from `src/config/animations.ts` which is itself generated from `tokens.css` — do not hardcode `duration` / `ease` literals.
+All motion uses `animejs@4.5.0` v4 API. Durations/easings come from
+`src/config/animations.ts` which is itself generated from `tokens.css` — do not hardcode
+`duration` / `ease` literals.
 
-| Pattern                                       | Canonical usage — copy this shape                                                                                                                                                                                                                                      |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`createScope` per component root**          | `useScrollAnimation.ts:68` `createScope({ root, mediaQueries:{reduceMotion…}, defaults:{duration:800,ease:'outExpo'}})` · `useHover.ts:8` `createScope({ root })` — always `scope.revert()` in cleanup                                                                 |
-| **`createTimeline` for sequences**            | `BootSequence.tsx` `createTimeline({defaults:{ease:'outExpo'},onComplete…})` then `tl.add(letters,{…spring…},0)` · `useTimeline.ts:101` `const tl=createTimeline(tlOptions); targets.forEach(t=>tl.add(targetEl,animParams,position))`                                 |
-| **`stagger` for grids**                       | `Background.tsx:71` `delay: stagger(durations.stagger*1000,{from:'first'})` · `blog/index.tsx:64` `delay: stagger(70,{from:'first'})`                                                                                                                                  |
-| **`onScroll({sync:true})` for scroll-driven** | `Background.tsx:81` `autoplay:onScroll({sync:true})` (morph scrub) · `useScrollAnimation.ts:68` `autoplay: onScroll({target,container,sync,start,end,threshold,onUpdate})`                                                                                             |
-| **`spring()` for physical release**           | `useDraggableCard.ts:91` `releaseEase:createSpring({stiffness:200,damping:20})` · `ProjectDetailModal.tsx:53` `…spring({stiffness:150,damping:16})` (modal entrance). CSS token presets: `--spring-stiff/--spring-soft/--spring-bouncy` → `springs` in `animations.ts` |
-| Tokens                                        | `durations.*` / `easings.*` / `springs.*` from `animations.ts` (generated). Imports like `import {durations,easings} from '../config/animations'`                                                                                                                      |
+| Pattern                                       | Canonical usage — copy this shape                                                                                                 |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **`createScope` per component root**          | `createScope({ root, mediaQueries:{reduceMotion…}, defaults:{duration:800,ease:'outExpo'}})` · always `scope.revert()` in cleanup |
+| **`createTimeline` for sequences**            | `createTimeline({defaults:{ease:'outExpo'},onComplete…})` then `tl.add(target, params, position)`                                 |
+| **`stagger` for grids**                       | `delay: stagger(durations.stagger*1000, {from:'first'})`                                                                          |
+| **`onScroll({sync:true})` for scroll-driven** | `autoplay: onScroll({target,container,sync,start,end,threshold,onUpdate})`                                                        |
+| **`spring()` for physical release**           | `createSpring({stiffness:200,damping:20})`. CSS token presets: `--spring-stiff/--spring-soft/--spring-bouncy` → `springs`         |
+| Tokens                                        | `durations.*` / `easings.*` / `springs.*` from `animations.ts` (generated)                                                        |
 
-Rules: respect `prefers-reduced-motion` (`isReducedMotion()` / `canAnimate()`), use `composition:'blend'` for hover layers, clean up scopes/timelines on unmount.
+Usage counts as a sanity signal for the API surface in play: `stagger(` ×86,
+`animate(` ×59, `createScope(` ×24, `createTimeline(` ×9, `onScroll(` ×2.
+
+Rules: respect `prefers-reduced-motion` (`isReducedMotion()` / `canAnimate()`), use
+`composition:'blend'` for hover layers, clean up scopes/timelines on unmount.
 
 ## Data-layer contract
 
-- **Supabase is the only data source** (no external CMS, no file-backed fallback beyond legacy GitHub raw `Skills.md`/`Projects.md` gated by `CACHE_TTL_MS`).
-- `src/utils/supabase.ts` — browser client, anon/publishable key, RLS-scoped, `persistSession:true` / `PKCE`. Reads only.
-- `src/utils/supabaseAdmin.ts` — **server-only** (`SUPABASE_SECRET_KEY` > `NEXT_PUBLIC_SUPABASE_SECRET_KEY` > `SUPABASE_SERVICE_ROLE_KEY`), `persistSession:false`. Used only in `src/pages/api/**` admin handlers. Never import it in a component.
-- Writes go through `POST /api/admin/content` (`action` + `payload`/`id`) with `MUTATING_ACTIONS` set in `src/utils/api.ts`.
-- **Cache invalidation:** `clearPortfolioCache()` in `src/utils/api.ts:70` (memory + `localStorage` + `inFlight` dedup, `CACHE_TTL_MS=5min`). Called at **~20 sites** — after every `create*/update*/delete*` path (skills, projects, media, knowledge, meetings, profile, experiences). Preserve this on new write paths.
+- **Supabase is the only data source** (no external CMS, no file-backed fallback beyond
+  legacy GitHub raw `Skills.md`/`Projects.md` gated by `CACHE_TTL_MS`).
+- `src/utils/supabase.ts` — browser client, anon/publishable key, RLS-scoped. Reads only.
+- `src/utils/supabaseAdmin.ts` — **server-only** (`SUPABASE_SECRET_KEY` >
+  `NEXT_PUBLIC_SUPABASE_SECRET_KEY` > `SUPABASE_SERVICE_ROLE_KEY`), `persistSession:false`.
+  Used only in `src/pages/api/**` admin handlers. Never import it in a component.
+- Tables: `admin_sessions`, `admin_users`, `ai_models`, `ai_providers`, `ai_request_logs`,
+  `blog_posts`, `contact_messages`, `experience_projects`, `experiences`,
+  `knowledge_bases`, `meetings`, `profiles`, `project_media`, `projects`, `site_texts`,
+  `skills`.
+- Writes go through `POST /api/admin/content` (`action` + `payload`/`id`), gated by the
+  `MUTATING_ACTIONS` set in `src/utils/api.ts:266` (16 actions: `upsertProfile`, skill
+  CRUD ×3, project CRUD ×3, `addProjectMedia`, `deleteProjectMedia`, knowledge-base
+  CRUD ×3, meeting CRUD ×3).
+- **Cache invalidation:** `clearPortfolioCache()` is defined at `src/utils/api.ts:73` and
+  is **not exported**; it has **19 call sites, all inside `src/utils/api.ts`**. The generic
+  path is `api.ts:296` (after any successful `MUTATING_ACTIONS` call) plus 18 explicit
+  post-write calls. **Any new write path must call it**, and because it is module-private,
+  new callers must live in `api.ts` — if a new surface needs invalidation, add the call
+  there rather than exporting the helper.
 
 ## Do-not-touch (requires human review)
 
-Do not edit without an explicit request + review — these carry secrets, RLS, or migration history:
+Do not edit without an explicit request + review — these carry secrets, RLS, or migration
+history:
 
 - `src/pages/api/**` — admin auth, AI proxy, blogs, content router
 - `src/utils/aiService.ts`, `src/utils/aiResponseParser.ts`, `src/utils/intentDetection.ts`
-- `src/utils/api.ts:945-1014` — `createExperience` / `updateExperience` / `deleteExperience` (joins `experience_projects`)
-- `supabase/` — migrations / config
-- `install/supabase/` — canonical SQL (`schema.sql`, `ai_schema.sql`, `experiences_schema.sql`)
+- `src/utils/supabaseAdmin.ts`, `src/utils/adminAuth.ts`, `src/utils/csrf.ts`
+- `src/config/identity.ts` — the name allowlist is a security control
+- `supabase/` and `install/supabase/` — canonical SQL
 
 Prefer reading over patching: propose a migration file instead of in-place schema edits.
+Line numbers here drift; grep for the symbol instead of trusting a cited line.
 
 ## How to verify your own work
 
 Run these from repo root. Fix failures before pushing — CI runs the same.
 
 ```bash
-npm run typecheck      # tsc --noEmit
-npm run lint           # next lint
-npm test               # vitest run
-npm run test:e2e       # playwright test  (needs `npx playwright install` once)
-npm run tokens:check   # token codegen drift + token-lint (see below)
-npm run verify         # all of the above in sequence
+npm run typecheck            # tsc --noEmit
+npm run lint                 # eslint .  (flat config, eslint.config.mjs)
+npm test                     # vitest run
+npm run test:e2e             # playwright test  (needs `npx playwright install` once)
+npm run tokens:check         # codegen drift + token-lint --all --warn-legacy
+npm run tokens:check:strict  # same, without --warn-legacy  ← what CI runs
+npm run verify               # typecheck → lint → tokens:check:strict → test
 ```
 
-Manual `scripts/generate-tokens.mjs` checks:
+`npm run verify` does **not** run `build` or the e2e suite — run those separately when the
+change touches routing, API routes, or anything the unit tests stub.
+
+Manual token checks:
 
 ```bash
 node scripts/generate-tokens.mjs          # regenerate
@@ -121,18 +178,32 @@ node scripts/generate-tokens.mjs --check  # CI/pre-commit — exits 1 if generat
 node --check scripts/generate-tokens.mjs  # syntax check
 ```
 
-`tokens:check` runs `generate-tokens.mjs --check` and `token-lint.mjs` (`--all` in CI, staged files in pre-commit). `token-lint` flags raw `#[0-9a-fA-F]{3,8}`, raw `rgba(`, and ad-hoc `duration-*`/`ease-*` Tailwind classes not backed by `--dur-*`/`--ease-*`.
-
-If you touched `src/styles/tokens.css`: `npm run tokens:generate && npm run tokens:check` must be green.
+If you touched `src/styles/tokens.css`: `npm run tokens:generate && npm run tokens:check`
+must be green.
 
 ## Repo hygiene
 
-- **Pre-commit** (Husky `.husky/pre-commit`): `lint-staged` → `next lint` + `node scripts/token-lint.mjs` (staged `*.ts,*.tsx,*.css`) + `node scripts/generate-tokens.mjs --check`.
-- **Commit messages** (`commitlint`): Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, …). `commit-msg` hook enforces this.
-- **Architecture graph** (`/graphify` / graphify hook): `dependency-cruiser` / `madge` → `docs/architecture-graph.svg` on pre-push. Do not hand-edit the SVG.
-- **CI** (`.github/workflows/*`): `typecheck` → `lint` → `tokens:check` → `test` → `test:e2e` (with Supabase preview). `npm run verify` mirrors CI locally.
+- **Pre-commit** (`.husky/pre-commit`): runs `npx lint-staged`, which per
+  `.lintstagedrc.json` applies `eslint --fix` + `prettier --write` to `*.{js,jsx,ts,tsx}`,
+  `prettier` to `*.{json,md,css}`, `node scripts/token-lint.mjs --warn-legacy` to
+  `*.{js,jsx,ts,tsx,css}`, and — when `src/styles/tokens.css` is staged — re-runs
+  `generate-tokens.mjs` and re-stages the generated files. **The hook mutates staged
+  content**: always re-verify the _committed_ blob (`git show HEAD:<file>`), never the
+  pre-commit working state.
+- **Commit messages** (`commit-msg`): Conventional Commits via `commitlint`
+  (`feat:`, `fix:`, `chore:`, `docs:`, …). Validate before committing:
+  `echo "msg" | npx --no -- commitlint`.
+- **There is no `pre-push` hook.** `docs/architecture-graph.svg` is a tracked _generated_
+  artifact — refresh it deliberately with `dependency-cruiser` / `madge`; nothing
+  regenerates it for you.
+- **CI** (`.github/workflows/ci.yml`): on push+PR to `main`/`master`, Node 20, five
+  sequential jobs — `typecheck` → `lint` → `tokens:check:strict` → `test` → `test:e2e`.
+  e2e needs the `NEXT_PUBLIC_SUPABASE_*` and `SUPABASE_SECRET_KEY` repo secrets.
+- `agent_docs/` and `session-*.md` are gitignored. Agent notes and session transcripts are
+  local-only; transcripts in this repo have embedded live credentials in the past.
 
-Keep diffs minimal, tokens in `tokens.css`, and animations via `src/config/animations.ts` presets.
+Keep diffs minimal, tokens in `tokens.css`, and animations via `src/config/animations.ts`
+presets.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
@@ -148,7 +219,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **terminal-portfolio** (2997 symbols, 6178 relationships, 253 execution flows).
+This project is indexed by GitNexus as **terminal-portfolio** (3167 symbols, 6460 relationships, 268 execution flows).
 
 > Index stale? Run `node .gitnexus/run.cjs analyze --index-only` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? Bootstrap with `npx`, `bunx`, or `pnpm dlx` — e.g. `bunx gitnexus@latest analyze` (npm 11 npx crash; #1939).
 

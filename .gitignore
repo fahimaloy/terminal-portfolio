@@ -53,3 +53,26 @@ supabase/.temp/
 
 # superpowers brainstorming
 .superpowers/
+
+# gitnexus — local code-intelligence index (~82M, regenerable via
+# `node .gitnexus/run.cjs analyze --index-only`). Was previously only
+# ignored by .git/info/exclude, which is local-only and not shared.
+.gitnexus/
+
+# agent session transcripts (may embed live .env secrets — never commit)
+session-*.md
+*.session.md
+
+# claude code — machine-local settings only; .claude/skills/** is tracked
+.claude/settings.local.json
+.claude/worktrees/
+
+# agent working notes — local scratch, never committed
+agent_docs/
+
+# git worktrees
+.worktrees/
+worktrees/
+
+# husky internal (husky self-manages via .husky/_/.gitignore, listed for clarity)
+.husky/_/
