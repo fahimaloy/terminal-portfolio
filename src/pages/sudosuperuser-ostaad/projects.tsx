@@ -205,7 +205,7 @@ const ProjectsPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div ref={listRef} className="lg:col-span-2">
               {projects.length > 0 ? (
-                <HudPanel accent="coral" notch="md" className="p-6">
+                <HudPanel accent="coral" className="p-6">
                   <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
                     PROJECTS ({projects.length})
                   </div>
@@ -262,7 +262,7 @@ const ProjectsPage = () => {
                   </div>
                 </HudPanel>
               ) : (
-                <HudPanel accent="coral" notch="md" className="p-6 text-center">
+                <HudPanel accent="coral" className="p-6 text-center">
                   <span className="font-body text-sm text-[var(--fg-3)]">
                     No projects yet.
                   </span>
@@ -270,7 +270,7 @@ const ProjectsPage = () => {
               )}
             </div>
 
-            <HudPanel accent="coral" notch="md" className="p-6">
+            <HudPanel accent="coral" className="p-6">
               <div ref={formRef}>
                 <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
                   {editingProjectId ? 'EDIT PROJECT' : 'ADD PROJECT'}
@@ -283,7 +283,7 @@ const ProjectsPage = () => {
                     </label>
                     <input
                       type="text"
-                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="Project title"
                       value={projectDraft.title || ''}
                       onChange={(e) =>
@@ -302,7 +302,7 @@ const ProjectsPage = () => {
                     </label>
                     <input
                       type="text"
-                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="Short title"
                       value={projectDraft.short_title || ''}
                       onChange={(e) =>
@@ -341,7 +341,7 @@ const ProjectsPage = () => {
                         </label>
                         <input
                           type="text"
-                          className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                          className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                           placeholder="Client name"
                           value={projectDraft.client_name || ''}
                           onChange={(e) =>
@@ -359,7 +359,7 @@ const ProjectsPage = () => {
                         </label>
                         <input
                           type="text"
-                          className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                          className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                           placeholder="e.g., New York, USA"
                           value={projectDraft.client_location || ''}
                           onChange={(e) =>
@@ -377,7 +377,7 @@ const ProjectsPage = () => {
                         </label>
                         <input
                           type="url"
-                          className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                          className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                           placeholder="https://..."
                           value={projectDraft.client_logo || ''}
                           onChange={(e) =>
@@ -419,7 +419,7 @@ const ProjectsPage = () => {
                     </label>
                     <input
                       type="url"
-                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="Thumbnail URL"
                       value={projectDraft.thumbnail_url || ''}
                       onChange={(e) =>
@@ -438,7 +438,7 @@ const ProjectsPage = () => {
                     </label>
                     <input
                       type="url"
-                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="Main image URL"
                       value={projectDraft.image_url || ''}
                       onChange={(e) =>
@@ -457,7 +457,7 @@ const ProjectsPage = () => {
                     </label>
                     <input
                       type="url"
-                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="Live project URL"
                       value={projectDraft.project_url || ''}
                       onChange={(e) =>
@@ -476,7 +476,7 @@ const ProjectsPage = () => {
                     </label>
                     <input
                       type="url"
-                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="Repository URL"
                       value={projectDraft.repo_url || ''}
                       onChange={(e) =>
@@ -495,7 +495,7 @@ const ProjectsPage = () => {
                     </label>
                     <input
                       type="text"
-                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="e.g., JavaScript, Python, Go"
                       value={(projectDraft.languages || []).join(', ')}
                       onChange={(e) => setProjectLanguages(e.target.value)}
@@ -509,7 +509,7 @@ const ProjectsPage = () => {
                     </label>
                     <input
                       type="text"
-                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="e.g., web, mobile, api (skills are auto-added)"
                       value={(projectDraft.tags || []).join(', ')}
                       onChange={(e) => setProjectTags(e.target.value)}
@@ -536,7 +536,7 @@ const ProjectsPage = () => {
                       </label>
                       <input
                         type="number"
-                        className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                        className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                         value={projectDraft.featured_order || 0}
                         onChange={(e) =>
                           setProjectDraft((prev) => ({
@@ -554,7 +554,7 @@ const ProjectsPage = () => {
                       </label>
                       <input
                         type="number"
-                        className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                        className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                         value={projectDraft.sort_order || 0}
                         onChange={(e) =>
                           setProjectDraft((prev) => ({

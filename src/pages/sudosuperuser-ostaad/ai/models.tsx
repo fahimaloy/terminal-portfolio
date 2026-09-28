@@ -368,7 +368,7 @@ const AiModelsPage = () => {
           </GlitchText>
 
           {statusMessage && (
-            <HudPanel accent="lime" notch="sm" className="mb-4 p-3">
+            <HudPanel accent="lime" className="mb-4 p-3">
               <span className="font-body text-sm text-[var(--fg-2)]">
                 {statusMessage}
               </span>
@@ -376,7 +376,7 @@ const AiModelsPage = () => {
           )}
 
           {/* ─── Create New Model Form ─────────────────────── */}
-          <HudPanel accent="cyan" notch="md" className="p-6 mb-8">
+          <HudPanel accent="cyan" className="p-6 mb-8">
             <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
               ADD NEW AI MODEL
             </div>
@@ -389,7 +389,7 @@ const AiModelsPage = () => {
                     PROVIDER TYPE:
                   </label>
                   <select
-                    className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] rounded-[var(--radius-md)] transition-all duration-200 [color-scheme:dark]"
+                    className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] rounded-[var(--radius-md)] transition-all duration-200 [color-scheme:dark]"
                     value={providerType}
                     onChange={(e) =>
                       setProviderType(
@@ -410,7 +410,7 @@ const AiModelsPage = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                    className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                     placeholder="e.g., My Gemini Provider"
                     value={providerName}
                     onChange={(e) => handleNameChange(e.target.value)}
@@ -428,7 +428,7 @@ const AiModelsPage = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] font-mono rounded-[var(--radius-md)] transition-all duration-200"
+                    className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] font-mono rounded-[var(--radius-md)] transition-all duration-200"
                     placeholder="e.g., my-gemini-provider"
                     value={identifierSlug}
                     onChange={(e) =>
@@ -446,7 +446,7 @@ const AiModelsPage = () => {
                     </label>
                     <input
                       type="url"
-                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] font-mono rounded-[var(--radius-md)] transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] font-mono rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="e.g., https://api.openai.com/v1"
                       value={baseUrl}
                       onChange={(e) => setBaseUrl(e.target.value)}
@@ -462,7 +462,7 @@ const AiModelsPage = () => {
                   </label>
                   <input
                     type="password"
-                    className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                    className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                     placeholder="Enter your API key"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
@@ -479,7 +479,7 @@ const AiModelsPage = () => {
                     <input
                       type="number"
                       min="0"
-                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="e.g., 60"
                       value={rpmLimit}
                       onChange={(e) =>
@@ -497,7 +497,7 @@ const AiModelsPage = () => {
                     <input
                       type="number"
                       min="0"
-                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                      className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                       placeholder="e.g., 10000"
                       value={rpdLimit}
                       onChange={(e) =>
@@ -521,7 +521,7 @@ const AiModelsPage = () => {
                 </NeonButton>
 
                 {testError && (
-                  <HudPanel accent="coral" notch="sm" className="p-3">
+                  <HudPanel accent="coral" className="p-3">
                     <span className="font-body text-sm text-[var(--fg-2)]">
                       {testError}
                     </span>
@@ -533,7 +533,7 @@ const AiModelsPage = () => {
             {/* ─── Model Selection (after test) ────────────── */}
             {step === 'select' && (
               <div className="space-y-4">
-                <HudPanel accent="lime" notch="sm" className="p-3">
+                <HudPanel accent="lime" className="p-3">
                   <span className="font-body text-sm text-[var(--fg-2)]">
                     Found {fetchedModels.length} models. Select the ones you
                     want to add:
@@ -591,7 +591,7 @@ const AiModelsPage = () => {
           </HudPanel>
 
           {/* ─── Models Table ──────────────────────────────── */}
-          <HudPanel accent="cyan" notch="md" className="overflow-hidden">
+          <HudPanel accent="cyan" className="overflow-hidden">
             <div className="p-4 border-b border-[var(--border-subtle)]">
               <div className="text-lg font-display tracking-[2px] text-[var(--fg-2)]">
                 CONFIGURED MODELS ({models.length})
@@ -661,7 +661,7 @@ const AiModelsPage = () => {
                             <input
                               type="number"
                               min="0"
-                              className="w-16 px-1 py-0.5 bg-[var(--bg-1)] border border-[var(--border-subtle)] text-[var(--fg-1)] text-[10px] text-center rounded-[var(--radius-md)] focus:outline-none focus:border-[var(--border-strong)]"
+                              className="w-16 min-h-[44px] min-w-[44px] px-1 py-0.5 bg-[var(--bg-1)] border border-[var(--border-subtle)] text-[var(--fg-1)] text-[10px] text-center rounded-[var(--radius-md)] focus:outline-none focus:border-[var(--border-strong)]"
                               value={editingLimits[model.id].rpm}
                               onChange={(e) =>
                                 setEditingLimits((prev) => ({
@@ -688,7 +688,7 @@ const AiModelsPage = () => {
                             <input
                               type="number"
                               min="0"
-                              className="w-16 px-1 py-0.5 bg-[var(--bg-1)] border border-[var(--border-subtle)] text-[var(--fg-1)] text-[10px] text-center rounded-[var(--radius-md)] focus:outline-none focus:border-[var(--border-strong)]"
+                              className="w-16 min-h-[44px] min-w-[44px] px-1 py-0.5 bg-[var(--bg-1)] border border-[var(--border-subtle)] text-[var(--fg-1)] text-[10px] text-center rounded-[var(--radius-md)] focus:outline-none focus:border-[var(--border-strong)]"
                               value={editingLimits[model.id].rpd}
                               onChange={(e) =>
                                 setEditingLimits((prev) => ({

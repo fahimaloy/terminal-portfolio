@@ -72,7 +72,7 @@ const EditBlogPage = () => {
           </div>
 
           {error && (
-            <HudPanel accent="coral" notch="sm" className="p-3">
+            <HudPanel accent="coral" className="p-3">
               <span className="font-body text-sm text-neon-coral">{error}</span>
             </HudPanel>
           )}
@@ -82,16 +82,12 @@ const EditBlogPage = () => {
               {Array.from({ length: 3 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-32 bg-white/[0.03] border border-white/5 clip-notch-sm animate-pulse-glow"
+                  className="h-32 bg-[var(--overlay-white-03)] border border-[var(--overlay-white-05)] clip-notch-sm animate-pulse-glow"
                 />
               ))}
             </div>
           ) : !post ? (
-            <HudPanel
-              accent="coral"
-              notch="md"
-              className="p-8 text-center space-y-4"
-            >
+            <HudPanel accent="coral" className="p-8 text-center space-y-4">
               <div className="font-display text-sm text-neon-coral tracking-[3px]">
                 POST NOT FOUND
               </div>

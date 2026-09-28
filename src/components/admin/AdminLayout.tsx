@@ -73,16 +73,11 @@ const LogoutConfirmation: React.FC<{
     >
       <div
         ref={backdropRef}
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0"
+        className="absolute inset-0 bg-[var(--overlay-black-80)] backdrop-blur-sm opacity-0"
         onClick={!isLoggingOut ? onClose : undefined}
       />
       <div ref={panelRef} className="relative max-w-sm w-full opacity-0">
-        <HudPanel
-          accent="coral"
-          notch="md"
-          title="// CONFIRM_LOGOUT"
-          className="p-6"
-        >
+        <HudPanel accent="coral" title="// CONFIRM_LOGOUT" className="p-6">
           <div className="text-center space-y-4">
             <div className="text-5xl">🚪</div>
             <h2
@@ -281,7 +276,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden p-2 bg-bg-smoke text-neon-cyan transition-all"
-                style={{ clipPath: 'var(--clip-notch-sm)' }}
+                // --clip-notch-sm is a bare <length> (6px), not a <basic-shape>, so
+                // using it directly here is dropped at parse time. Interpolate it
+                // into a real polygon() so the top-right corner is actually cut.
+                style={{
+                  clipPath:
+                    'polygon(0 0, calc(100% - var(--clip-notch-sm)) 0, 100% var(--clip-notch-sm), 100% 100%, 0 100%)',
+                }}
                 aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={mobileMenuOpen}
               >
@@ -302,7 +303,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   className={`admin-nav-item px-3 py-2 font-display tracking-[1.5px] uppercase text-[10px] transition-all duration-200 flex items-center gap-2 ${
                     isActive(item.path)
                       ? 'bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/40 hud-glow-cyan'
-                      : 'bg-transparent text-text-secondary border border-white/10 hover:border-white/30 hover:text-text-primary'
+                      : 'bg-transparent text-text-secondary border border-[var(--overlay-white-10)] hover:border-[var(--overlay-white-30)] hover:text-text-primary'
                   }`}
                   style={{
                     clipPath:
@@ -313,7 +314,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   <span>{item.label}</span>
                   {item.path === '/sudosuperuser-ostaad/meetings' &&
                     unreadMeetings > 0 && (
-                      <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-neon-coral text-black font-display text-[9px]">
+                      <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-neon-coral text-[var(--bg-void)] font-display text-[9px]">
                         {unreadMeetings}
                       </span>
                     )}
@@ -326,7 +327,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         {renderMobileMenu && (
           <div
             ref={mobileNavRef}
-            className="md:hidden border-t border-white/5 bg-bg-void opacity-0"
+            className="md:hidden border-t border-[var(--overlay-white-05)] bg-bg-void opacity-0"
           >
             <nav
               className="flex flex-col p-4 gap-2 text-sm"
@@ -339,7 +340,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                     className={`px-4 py-3 font-display tracking-[1.5px] uppercase text-[10px] transition-all flex items-center justify-between ${
                       isActive(item.path)
                         ? 'bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/40'
-                        : 'text-text-secondary border border-white/10 hover:border-white/30'
+                        : 'text-text-secondary border border-[var(--overlay-white-10)] hover:border-[var(--overlay-white-30)]'
                     }`}
                     style={{
                       clipPath:
@@ -352,7 +353,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                     </span>
                     {item.path === '/sudosuperuser-ostaad/meetings' &&
                       unreadMeetings > 0 && (
-                        <span className="bg-neon-coral text-black text-xs font-display px-2 py-0.5">
+                        <span className="bg-neon-coral text-[var(--bg-void)] text-xs font-display px-2 py-0.5">
                           {unreadMeetings}
                         </span>
                       )}
@@ -367,11 +368,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       <main className="max-w-7xl mx-auto px-4 py-6 md:py-8">
         {isLoading ? (
           <div className="flex items-center justify-center min-h-[60vh]">
-            <HudPanel
-              accent="cyan"
-              notch="md"
-              className="p-8 text-center space-y-3"
-            >
+            <HudPanel accent="cyan" className="p-8 text-center space-y-3">
               <div className="w-8 h-8 border-4 border-neon-cyan/20 border-t-neon-cyan rounded-full animate-spin mx-auto" />
               <div className="font-display tracking-[2px] text-neon-cyan">
                 LOADING…

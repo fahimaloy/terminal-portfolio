@@ -195,7 +195,7 @@ const SiteTextsPage = () => {
             SITE TEXTS MANAGEMENT
           </GlitchText>
 
-          <HudPanel accent="coral" notch="md" className="p-6 mb-8">
+          <HudPanel accent="coral" className="p-6 mb-8">
             <div ref={formRef}>
               <div className="text-[10px] font-display tracking-[3px] text-neon-coral mb-4">
                 ADD NEW SITE TEXT
@@ -208,7 +208,7 @@ const SiteTextsPage = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     placeholder="e.g., developer_profile_label"
                     value={newKey}
                     onChange={(e) => setNewKey(e.target.value)}
@@ -221,7 +221,7 @@ const SiteTextsPage = () => {
                     Category:
                   </label>
                   <select
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
                     disabled={isSaving}
@@ -240,7 +240,7 @@ const SiteTextsPage = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     placeholder="e.g., DEVELOPER PROFILE"
                     value={newValue}
                     onChange={(e) => setNewValue(e.target.value)}
@@ -254,7 +254,7 @@ const SiteTextsPage = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     placeholder="Description of this text"
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
@@ -274,7 +274,7 @@ const SiteTextsPage = () => {
             </div>
           </HudPanel>
 
-          <HudPanel accent="coral" notch="md" className="p-6">
+          <HudPanel accent="coral" className="p-6">
             <div className="text-[10px] font-display tracking-[3px] text-neon-coral mb-4">
               EXISTING SITE TEXTS
             </div>
@@ -287,7 +287,7 @@ const SiteTextsPage = () => {
               <div ref={listRef} className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-white/10">
+                    <tr className="border-b border-[var(--overlay-white-10)]">
                       <th className="text-left py-3 font-display text-[10px] tracking-[2px] text-text-muted">
                         Key
                       </th>
@@ -306,7 +306,7 @@ const SiteTextsPage = () => {
                     {siteTexts.map((text) => (
                       <tr
                         key={text.id}
-                        className="stext-item border-b border-white/5 hover:bg-white/[0.03]"
+                        className="stext-item border-b border-[var(--overlay-white-05)] hover:bg-[var(--overlay-white-03)]"
                       >
                         <td className="py-3 font-mono text-xs text-neon-cyan">
                           {text.key}
@@ -318,7 +318,7 @@ const SiteTextsPage = () => {
                           {editingId === text.id ? (
                             <input
                               type="text"
-                              className="w-full bg-bg-smoke border border-white/10 text-text-primary px-2 py-1.5 font-body text-sm focus:outline-none focus:border-neon-cyan clip-notch-sm"
+                              className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-2 py-1.5 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan clip-notch-sm"
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}
                               onKeyDown={(e) => {
@@ -379,7 +379,7 @@ const SiteTextsPage = () => {
             )}
           </HudPanel>
 
-          <HudPanel accent="coral" notch="md" className="mt-8 p-6">
+          <HudPanel accent="coral" className="mt-8 p-6">
             <div className="text-[10px] font-display tracking-[3px] text-neon-coral mb-4">
               DEFAULT SITE TEXTS
             </div>

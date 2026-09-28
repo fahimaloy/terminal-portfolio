@@ -162,7 +162,7 @@ const SkillsPage = () => {
             MANAGE SKILLS
           </GlitchText>
 
-          <HudPanel accent="lime" notch="md" className="p-6 mb-8">
+          <HudPanel accent="lime" className="p-6 mb-8">
             <div ref={formRef}>
               <div className="text-[10px] font-display tracking-[3px] text-neon-lime mb-4">
                 {editingId ? 'EDIT SKILL' : 'ADD NEW SKILL'}
@@ -175,7 +175,7 @@ const SkillsPage = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     placeholder="e.g., React, Python, TypeScript"
                     value={newSkill}
                     onChange={(e) => setNewSkill(e.target.value)}
@@ -189,7 +189,7 @@ const SkillsPage = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     placeholder="e.g., 5 years, 2+ years"
                     value={newSkillDuration}
                     onChange={(e) => setNewSkillDuration(e.target.value)}
@@ -233,7 +233,7 @@ const SkillsPage = () => {
           </HudPanel>
 
           {skills.length > 0 ? (
-            <HudPanel accent="lime" notch="md" className="p-6">
+            <HudPanel accent="lime" className="p-6">
               <div className="text-[10px] font-display tracking-[3px] text-neon-lime mb-4">
                 SKILLS ({skills.length})
               </div>
@@ -250,7 +250,7 @@ const SkillsPage = () => {
                     onDragStart={() => setDragSkillId(skill.id)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleSkillDrop(skill.id)}
-                    className="skill-item p-3 bg-white/[0.03] border border-white/10 clip-notch-sm flex justify-between items-center cursor-move hover:border-neon-cyan/30 hover:bg-neon-cyan/5 transition-all duration-200"
+                    className="skill-item p-3 bg-[var(--overlay-white-03)] border border-[var(--overlay-white-10)] clip-notch-sm flex justify-between items-center cursor-move hover:border-neon-cyan/30 hover:bg-neon-cyan/5 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3 flex-1">
                       {skill.icon_key && (
@@ -291,7 +291,7 @@ const SkillsPage = () => {
               </div>
             </HudPanel>
           ) : (
-            <HudPanel accent="lime" notch="md" className="p-6 text-center">
+            <HudPanel accent="lime" className="p-6 text-center">
               <span className="font-body text-sm text-text-muted">
                 No skills yet. Add one to get started.
               </span>

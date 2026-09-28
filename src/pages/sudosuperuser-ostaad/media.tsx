@@ -195,7 +195,7 @@ const MediaPage = () => {
             MANAGE PROJECT MEDIA
           </GlitchText>
 
-          <HudPanel accent="cyan" notch="md" className="p-6 mb-8">
+          <HudPanel accent="cyan" className="p-6 mb-8">
             <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-4">
               SELECT PROJECT
             </div>
@@ -205,7 +205,7 @@ const MediaPage = () => {
                 value={selectedProjectId || ''}
                 onChange={(e) => setSelectedProjectId(Number(e.target.value))}
                 disabled={isSaving}
-                className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
+                className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
               >
                 {projects.map((project) => (
                   <option key={project.id} value={project.id}>
@@ -222,7 +222,7 @@ const MediaPage = () => {
 
           {selectedProjectId && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <HudPanel accent="cyan" notch="md" className="p-6">
+              <HudPanel accent="cyan" className="p-6">
                 <div className="text-[10px] font-display tracking-[3px] text-neon-cyan mb-4">
                   ADD MEDIA
                 </div>
@@ -238,7 +238,7 @@ const MediaPage = () => {
                         setMediaType(e.target.value as 'image' | 'video')
                       }
                       disabled={isSaving}
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
+                      className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
                     >
                       <option value="image">Image</option>
                       <option value="video">Video</option>
@@ -258,7 +258,7 @@ const MediaPage = () => {
                           )
                         }
                         disabled={isSaving}
-                        className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
+                        className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] clip-notch-sm transition-all duration-200 [color-scheme:dark]"
                       >
                         <option value="direct">Direct Upload</option>
                         <option value="youtube">YouTube</option>
@@ -276,7 +276,7 @@ const MediaPage = () => {
                       value={mediaUrl}
                       onChange={(e) => setMediaUrl(e.target.value)}
                       disabled={isSaving}
-                      className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                      className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                       placeholder="Enter media URL"
                     />
                   </div>
@@ -291,7 +291,7 @@ const MediaPage = () => {
                   </NeonButton>
                 </div>
 
-                <div className="border-t border-white/10 pt-4">
+                <div className="border-t border-[var(--overlay-white-10)] pt-4">
                   <h4 className="font-display tracking-[2px] text-sm text-text-muted mb-2">
                     Or Upload File
                   </h4>
@@ -313,7 +313,7 @@ const MediaPage = () => {
                         <span>Uploading...</span>
                         <span className="font-mono">{uploadProgress}%</span>
                       </div>
-                      <div className="w-full h-2 bg-white/[0.03] border border-white/10 clip-notch-sm overflow-hidden">
+                      <div className="w-full h-2 bg-[var(--overlay-white-03)] border border-[var(--overlay-white-10)] clip-notch-sm overflow-hidden">
                         <div
                           className="h-full bg-neon-cyan shadow-[0_0_8px_var(--glow-cyan)] transition-all duration-300"
                           style={{ width: `${uploadProgress}%` }}
@@ -324,7 +324,7 @@ const MediaPage = () => {
                 </div>
               </HudPanel>
 
-              <HudPanel accent="coral" notch="md" className="p-6">
+              <HudPanel accent="coral" className="p-6">
                 <div className="text-[10px] font-display tracking-[3px] text-neon-coral mb-4">
                   MEDIA ({filteredMedia.length})
                 </div>
@@ -337,7 +337,7 @@ const MediaPage = () => {
                     {filteredMedia.map((media) => (
                       <div
                         key={media.id}
-                        className="media-item relative group clip-notch-sm overflow-hidden border border-white/10 bg-white/[0.03] hover:border-neon-cyan/30 transition-all duration-200"
+                        className="media-item relative group clip-notch-sm overflow-hidden border border-[var(--overlay-white-10)] bg-[var(--overlay-white-03)] hover:border-neon-cyan/30 transition-all duration-200"
                       >
                         {/* Thumbnail with zoom on hover */}
                         <div className="aspect-video overflow-hidden">
@@ -350,14 +350,14 @@ const MediaPage = () => {
                               loading="lazy"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-black/40">
+                            <div className="w-full h-full flex items-center justify-center bg-[var(--overlay-black-strong)]">
                               <span className="text-2xl">🎬</span>
                             </div>
                           )}
                         </div>
 
                         {/* Overlay with actions */}
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                        <div className="absolute inset-0 bg-[var(--overlay-black-60)] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
                           <NeonButton
                             variant="ghost"
                             accent="coral"

@@ -82,12 +82,12 @@ const AdminBlogsPage = () => {
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-16 bg-white/[0.03] border border-white/5 clip-notch-sm animate-pulse-glow"
+                  className="h-16 bg-[var(--overlay-white-03)] border border-[var(--overlay-white-05)] clip-notch-sm animate-pulse-glow"
                 />
               ))}
             </div>
           ) : posts.length === 0 ? (
-            <HudPanel accent="coral" notch="md" className="p-8 text-center">
+            <HudPanel accent="coral" className="p-8 text-center">
               <div className="font-display text-sm text-neon-coral tracking-[3px]">
                 NO POSTS YET
               </div>
@@ -101,12 +101,11 @@ const AdminBlogsPage = () => {
                 <HudPanel
                   key={post.id}
                   accent={post.status === 'published' ? 'cyan' : 'amber'}
-                  notch="sm"
                   className="p-3"
                 >
                   <div className="flex flex-wrap items-center gap-3">
                     {/* Thumb */}
-                    <div className="w-16 h-12 bg-black/40 overflow-hidden flex-shrink-0 clip-notch-sm">
+                    <div className="w-16 h-12 bg-[var(--overlay-black-strong)] overflow-hidden flex-shrink-0 clip-notch-sm">
                       {post.cover_image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -182,7 +181,7 @@ const AdminBlogsPage = () => {
 
                   {/* Inline delete confirmation */}
                   {confirmId === post.id && (
-                    <div className="mt-3 pt-3 border-t border-white/10 flex flex-wrap items-center gap-3">
+                    <div className="mt-3 pt-3 border-t border-[var(--overlay-white-10)] flex flex-wrap items-center gap-3">
                       <span className="font-body text-xs text-neon-coral">
                         Delete “{post.title}”? This cannot be undone.
                       </span>

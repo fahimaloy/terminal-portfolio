@@ -21,7 +21,7 @@ const StatCard: React.FC<{
   color?: string;
   sub?: string;
 }> = ({ label, value, icon, color, sub }) => (
-  <HudPanel accent="cyan" notch="sm" className="p-4">
+  <HudPanel accent="cyan" className="p-4">
     <div className="flex items-center justify-between mb-2">
       <span className="text-2xl">{icon}</span>
       {color && (
@@ -135,7 +135,7 @@ const AiUsagePage = () => {
                 Period:
               </label>
               <select
-                className="bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-1.5 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] rounded-[var(--radius-md)] transition-all duration-200 [color-scheme:dark]"
+                className="bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-1.5 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] rounded-[var(--radius-md)] transition-all duration-200 [color-scheme:dark]"
                 value={days}
                 onChange={(e) => setDays(Number(e.target.value))}
               >
@@ -166,7 +166,7 @@ const AiUsagePage = () => {
               </div>
             </div>
           ) : totalLogs === 0 ? (
-            <HudPanel accent="cyan" notch="md" className="p-12 text-center">
+            <HudPanel accent="cyan" className="p-12 text-center">
               <div className="text-5xl mb-4">📭</div>
               <p className="font-display tracking-[2px] text-[var(--fg-1)] text-lg mb-2">
                 No usage data yet
@@ -239,7 +239,7 @@ const AiUsagePage = () => {
                     />
                   </div>
 
-                  <HudPanel accent="cyan" notch="md" className="p-6">
+                  <HudPanel accent="cyan" className="p-6">
                     <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
                       REQUEST DISTRIBUTION
                     </div>
@@ -273,7 +273,6 @@ const AiUsagePage = () => {
                       <HudPanel
                         key={stat.modelIdentifier}
                         accent="cyan"
-                        notch="md"
                         className="p-4"
                       >
                         <div className="flex items-center justify-between mb-3">
@@ -361,7 +360,7 @@ const AiUsagePage = () => {
                     </p>
                   ) : (
                     <>
-                      <HudPanel accent="cyan" notch="md" className="p-4">
+                      <HudPanel accent="cyan" className="p-4">
                         <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
                           DAILY REQUEST VOLUME (LAST {dailyStats.length} DAYS)
                         </div>
@@ -402,11 +401,7 @@ const AiUsagePage = () => {
                         </div>
                       </HudPanel>
 
-                      <HudPanel
-                        accent="cyan"
-                        notch="md"
-                        className="overflow-x-auto"
-                      >
+                      <HudPanel accent="cyan" className="overflow-x-auto">
                         <table className="w-full font-body text-sm">
                           <thead>
                             <tr className="border-b border-[var(--border-subtle)] text-[var(--fg-3)]">
@@ -474,22 +469,14 @@ const AiUsagePage = () => {
               {activeTab === 'errors' && (
                 <div className="space-y-4">
                   {recentErrors.length === 0 ? (
-                    <HudPanel
-                      accent="lime"
-                      notch="md"
-                      className="p-8 text-center"
-                    >
+                    <HudPanel accent="lime" className="p-8 text-center">
                       <div className="text-4xl mb-2">✨</div>
                       <p className="font-body text-sm text-[var(--fg-3)]">
                         No errors recorded. Everything is running smoothly!
                       </p>
                     </HudPanel>
                   ) : (
-                    <HudPanel
-                      accent="coral"
-                      notch="md"
-                      className="overflow-x-auto"
-                    >
+                    <HudPanel accent="coral" className="overflow-x-auto">
                       <table className="w-full font-body text-sm">
                         <thead>
                           <tr className="border-b border-[var(--border-subtle)] text-[var(--fg-3)]">

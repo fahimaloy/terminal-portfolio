@@ -221,7 +221,7 @@ const ExperiencesPage = () => {
           </GlitchText>
 
           {/* Form */}
-          <HudPanel accent="amber" notch="md" className="p-6 mb-8">
+          <HudPanel accent="amber" className="p-6 mb-8">
             <div ref={formRef}>
               <div className="text-[10px] font-display tracking-[3px] text-neon-amber mb-4">
                 {editingId ? 'EDIT EXPERIENCE' : 'ADD EXPERIENCE'}
@@ -233,7 +233,7 @@ const ExperiencesPage = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     placeholder="e.g., Senior Developer"
                     value={form.title}
                     onChange={(e) =>
@@ -248,7 +248,7 @@ const ExperiencesPage = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     placeholder="Company name"
                     value={form.company_name}
                     onChange={(e) =>
@@ -263,7 +263,7 @@ const ExperiencesPage = () => {
                   </label>
                   <input
                     type="url"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     placeholder="https://..."
                     value={form.company_logo}
                     onChange={(e) =>
@@ -278,7 +278,7 @@ const ExperiencesPage = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     placeholder="City, Country"
                     value={form.location}
                     onChange={(e) =>
@@ -293,7 +293,7 @@ const ExperiencesPage = () => {
                   </label>
                   <input
                     type="date"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     value={form.from_date}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, from_date: e.target.value }))
@@ -307,7 +307,7 @@ const ExperiencesPage = () => {
                   </label>
                   <input
                     type="date"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     value={form.to_date}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, to_date: e.target.value }))
@@ -333,7 +333,7 @@ const ExperiencesPage = () => {
                     Description
                   </label>
                   <textarea
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200 resize-none"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200 resize-none"
                     rows={3}
                     placeholder="Brief description of your role..."
                     value={form.description}
@@ -355,7 +355,7 @@ const ExperiencesPage = () => {
                         className={`px-3 py-1 clip-notch-sm font-body text-xs border transition-all duration-200 ${
                           form.projectIds.includes(proj.id)
                             ? 'bg-neon-coral/20 border-neon-coral/50 text-neon-coral'
-                            : 'bg-white/[0.03] border-white/10 text-text-muted hover:border-neon-cyan/30 hover:text-text-primary'
+                            : 'bg-[var(--overlay-white-03)] border-[var(--overlay-white-10)] text-text-muted hover:border-neon-cyan/30 hover:text-text-primary'
                         }`}
                       >
                         {proj.short_title || proj.title}
@@ -389,7 +389,7 @@ const ExperiencesPage = () => {
 
           {/* List */}
           {experiences.length > 0 ? (
-            <HudPanel accent="amber" notch="md" className="p-6">
+            <HudPanel accent="amber" className="p-6">
               <div className="text-[10px] font-display tracking-[3px] text-neon-amber mb-4">
                 EXPERIENCES ({experiences.length})
               </div>
@@ -404,7 +404,7 @@ const ExperiencesPage = () => {
                     onDragStart={() => setDragId(exp.id)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleDrop(exp.id)}
-                    className="exp-item p-3 bg-white/[0.03] border border-white/10 clip-notch-sm flex justify-between items-center cursor-move hover:border-neon-cyan/30 hover:bg-neon-cyan/5 transition-all duration-200"
+                    className="exp-item p-3 bg-[var(--overlay-white-03)] border border-[var(--overlay-white-10)] clip-notch-sm flex justify-between items-center cursor-move hover:border-neon-cyan/30 hover:bg-neon-cyan/5 transition-all duration-200"
                   >
                     <div className="flex-1">
                       <div className="font-display tracking-[2px] text-text-primary text-sm">
@@ -438,7 +438,7 @@ const ExperiencesPage = () => {
               </div>
             </HudPanel>
           ) : (
-            <HudPanel accent="amber" notch="md" className="p-6 text-center">
+            <HudPanel accent="amber" className="p-6 text-center">
               <span className="font-body text-sm text-text-muted">
                 No experiences yet.
               </span>

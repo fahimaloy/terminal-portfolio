@@ -78,7 +78,7 @@ const DashboardPage = () => {
   if (!authorized && !loading && error) {
     return (
       <div className="min-h-screen bg-bg-void flex items-center justify-center px-4">
-        <HudPanel accent="coral" notch="md" className="p-6 text-center">
+        <HudPanel accent="coral" className="p-6 text-center">
           <div className="font-display text-sm text-neon-coral tracking-[3px]">
             SESSION ERROR
           </div>
@@ -152,7 +152,6 @@ const DashboardPage = () => {
                 <Tilt3D intensity={3}>
                   <HudPanel
                     accent={card.accent}
-                    notch="md"
                     title={`// ${card.label}`}
                     className="p-4 h-full"
                   >
@@ -164,7 +163,7 @@ const DashboardPage = () => {
                       )}
                     </div>
                     <Link href={card.link} legacyBehavior>
-                      <a className="text-[10px] font-display tracking-[2px] text-neon-cyan hover:text-neon-amber transition-colors">
+                      <a className="inline-flex items-center min-h-[44px] min-w-[44px] text-[10px] font-display tracking-[2px] text-neon-cyan hover:text-neon-amber transition-colors">
                         {card.action.toUpperCase()} →
                       </a>
                     </Link>
@@ -176,16 +175,11 @@ const DashboardPage = () => {
 
           {/* Lower grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <HudPanel
-              accent="cyan"
-              notch="md"
-              title="// QUICK_ACTIONS"
-              className="p-4"
-            >
+            <HudPanel accent="cyan" title="// QUICK_ACTIONS" className="p-4">
               <div className="space-y-2">
                 {QUICK_ACTIONS.map((action) => (
                   <Link key={action.href} href={action.href} legacyBehavior>
-                    <a className="block px-3 py-2.5 bg-white/[0.03] border border-white/10 text-text-secondary hover:text-text-primary hover:border-neon-cyan/30 hover:bg-neon-cyan/5 transition-all duration-200 text-xs font-body clip-notch-sm">
+                    <a className="block px-3 py-2.5 min-h-[44px] min-w-[44px] bg-[var(--overlay-white-03)] border border-[var(--overlay-white-10)] text-text-secondary hover:text-text-primary hover:border-neon-cyan/30 hover:bg-neon-cyan/5 transition-all duration-200 text-xs font-body clip-notch-sm">
                       {action.label}
                     </a>
                   </Link>
@@ -193,16 +187,11 @@ const DashboardPage = () => {
               </div>
             </HudPanel>
 
-            <HudPanel
-              accent="coral"
-              notch="md"
-              title="// SYSTEM_INFO"
-              className="p-4"
-            >
+            <HudPanel accent="coral" title="// SYSTEM_INFO" className="p-4">
               <div className="space-y-2 text-xs font-body">
                 <Row label="Logged in as" value={user?.username || '—'} />
                 <Row label="Email" value={user?.email || 'Not set'} />
-                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                <div className="flex justify-between items-center py-2 border-b border-[var(--overlay-white-05)]">
                   <span className="text-text-muted">Profile</span>
                   <NeonChip accent={profile?.full_name ? 'lime' : 'amber'}>
                     {profile?.full_name ? 'CONFIGURED' : 'INCOMPLETE'}
@@ -231,7 +220,7 @@ const DashboardPage = () => {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between py-2 border-b border-white/5">
+    <div className="flex justify-between py-2 border-b border-[var(--overlay-white-05)]">
       <span className="text-text-muted">{label}</span>
       <span className="text-text-primary font-medium truncate ml-3">
         {value}

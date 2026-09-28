@@ -103,7 +103,7 @@ const KnowledgePage = () => {
             MANAGE KNOWLEDGE BASE
           </GlitchText>
 
-          <HudPanel accent="lime" notch="md" className="p-6 mb-8">
+          <HudPanel accent="lime" className="p-6 mb-8">
             <div ref={formRef}>
               <div className="text-[10px] font-display tracking-[3px] text-neon-lime mb-4">
                 ADD NEW CONTEXT
@@ -116,7 +116,7 @@ const KnowledgePage = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
+                    className="w-full bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200"
                     placeholder="e.g., Professional Background, Work Setup, Salary Expectations"
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
@@ -129,7 +129,7 @@ const KnowledgePage = () => {
                     Content / Details:
                   </label>
                   <textarea
-                    className="w-full h-32 bg-bg-smoke border border-white/10 text-text-primary px-3 py-2 font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200 resize-none"
+                    className="w-full h-32 bg-bg-smoke border border-[var(--overlay-white-10)] text-text-primary px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_12px_var(--glow-cyan)] placeholder-text-muted clip-notch-sm transition-all duration-200 resize-none"
                     placeholder="The text that AI will use to answer user questions..."
                     value={newContent}
                     onChange={(e) => setNewContent(e.target.value)}
@@ -150,7 +150,7 @@ const KnowledgePage = () => {
           </HudPanel>
 
           {knowledges.length > 0 ? (
-            <HudPanel accent="lime" notch="md" className="p-6">
+            <HudPanel accent="lime" className="p-6">
               <div className="text-[10px] font-display tracking-[3px] text-neon-lime mb-4">
                 SAVED CONTEXTS ({knowledges.length})
               </div>
@@ -158,7 +158,7 @@ const KnowledgePage = () => {
                 {knowledges.map((kb) => (
                   <div
                     key={kb.id}
-                    className="kb-item p-3 bg-white/[0.03] border border-white/10 clip-notch-sm flex flex-col justify-between hover:border-neon-cyan/30 transition-all duration-200"
+                    className="kb-item p-3 bg-[var(--overlay-white-03)] border border-[var(--overlay-white-10)] clip-notch-sm flex flex-col justify-between hover:border-neon-cyan/30 transition-all duration-200"
                   >
                     <div className="flex-1 mb-2">
                       <div className="font-display tracking-[2px] text-text-primary text-sm mb-1">
@@ -181,7 +181,7 @@ const KnowledgePage = () => {
               </div>
             </HudPanel>
           ) : (
-            <HudPanel accent="lime" notch="md" className="p-6 text-center">
+            <HudPanel accent="lime" className="p-6 text-center">
               <span className="font-body text-sm text-text-muted">
                 No knowledge base entries yet.
               </span>

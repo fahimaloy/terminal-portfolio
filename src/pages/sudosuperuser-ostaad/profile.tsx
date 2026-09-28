@@ -133,14 +133,14 @@ const ProfilePage = () => {
           </GlitchText>
 
           {statusMessage && (
-            <HudPanel accent="lime" notch="sm" className="mb-4 p-3">
+            <HudPanel accent="lime" className="mb-4 p-3">
               <span className="font-body text-sm text-[var(--fg-2)]">
                 {statusMessage}
               </span>
             </HudPanel>
           )}
 
-          <HudPanel accent="cyan" notch="md" className="p-6 mb-8">
+          <HudPanel accent="cyan" className="p-6 mb-8">
             <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
               PORTFOLIO DETAILS
             </div>
@@ -152,7 +152,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="text"
-                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Full name"
                   value={profile.full_name || ''}
                   onChange={(e) =>
@@ -171,7 +171,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="text"
-                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Professional title"
                   value={profile.title || ''}
                   onChange={(e) =>
@@ -187,7 +187,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="text"
-                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Phone number"
                   value={profile.phone || ''}
                   onChange={(e) =>
@@ -203,7 +203,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="email"
-                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Email address"
                   value={profile.email || ''}
                   onChange={(e) =>
@@ -219,7 +219,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="url"
-                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Website URL"
                   value={profile.website || ''}
                   onChange={(e) =>
@@ -238,7 +238,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="url"
-                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="GitHub profile URL"
                   value={profile.github || ''}
                   onChange={(e) =>
@@ -254,7 +254,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="url"
-                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="LinkedIn profile URL"
                   value={profile.linkedin || ''}
                   onChange={(e) =>
@@ -273,7 +273,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="url"
-                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Avatar image URL"
                   value={profile.avatar_url || ''}
                   onChange={(e) =>
@@ -292,7 +292,7 @@ const ProfilePage = () => {
                 Summary:
               </label>
               <textarea
-                className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200 resize-none"
+                className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200 resize-none"
                 rows={3}
                 placeholder="Short summary"
                 value={profile.summary || ''}
@@ -311,7 +311,7 @@ const ProfilePage = () => {
                 Bio:
               </label>
               <textarea
-                className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200 resize-none"
+                className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200 resize-none"
                 rows={4}
                 placeholder="Detailed bio"
                 value={profile.bio || ''}
@@ -337,7 +337,7 @@ const ProfilePage = () => {
                 placeholder="Hi, I'm your AI assistant. Ask me anything about my skills, projects, and professional background!"
                 maxLength={500}
                 rows={3}
-                className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200 resize-none"
+                className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200 resize-none"
                 disabled={isSaving}
               />
             </div>
@@ -352,7 +352,7 @@ const ProfilePage = () => {
             </NeonButton>
           </HudPanel>
 
-          <HudPanel accent="coral" notch="md" className="p-6">
+          <HudPanel accent="coral" className="p-6">
             <div className="text-[10px] font-display tracking-[3px] text-[var(--fg-2)] mb-4">
               ADMIN CREDENTIALS
             </div>
@@ -373,7 +373,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="text"
-                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Username"
                   value={credentialsForm.username}
                   onChange={(e) =>
@@ -392,7 +392,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="email"
-                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Private email"
                   value={credentialsForm.email}
                   onChange={(e) =>
@@ -411,7 +411,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="password"
-                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="Current password"
                   value={credentialsForm.currentPassword}
                   onChange={(e) =>
@@ -430,7 +430,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="password"
-                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
+                  className="w-full bg-[var(--bg-2)] border border-[var(--border-subtle)] text-[var(--fg-1)] px-3 py-2 min-h-[44px] font-body text-sm focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[0_0_0_3px_var(--border-subtle)] placeholder:text-[var(--fg-3)] rounded-[var(--radius-md)] transition-all duration-200"
                   placeholder="New password"
                   value={credentialsForm.newPassword}
                   onChange={(e) =>
