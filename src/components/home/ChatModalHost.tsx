@@ -63,6 +63,7 @@ export default function ChatModalHost({
         onOpen={() => setShowOverlay(true)}
         onReset={onReset}
         showClear={showClear}
+        isLoading={isLoading}
       />
       <MessageOverlay
         isOpen={showOverlay}

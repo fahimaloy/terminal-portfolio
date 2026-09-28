@@ -1,5 +1,6 @@
 // src/components/ChatMessage.tsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { RiAlertLine, RiRefreshLine } from 'react-icons/ri';
 import {
   PortfolioProject,
   PortfolioSkill,
@@ -33,7 +34,86 @@ type ChatMessageProps = {
   experiences?: PortfolioExperience[];
   responseType?: string;
   responseData?: any;
+  /** Epoch ms the message was appended. Drives the metadata rail. */
+  ts?: number;
+  /** A failed request — rendered as a distinct error card, not an answer. */
+  isError?: boolean;
+  /** Re-runs the last request. Only offered on error bubbles. */
+  onRetry?: () => void;
+  /**
+   * P3.3: whether this message should play the typewriter reveal. Defaults to
+   * `true` so every other caller keeps its behaviour; `ChatStream` is the only
+   * consumer that passes it, and it passes `false` for everything that is not
+   * the newly-arrived assistant reply. That is what stops a restored
+   * transcript from replaying every old message's fade on mount.
+   */
+  reveal?: boolean;
+  /**
+   * P3.3: the reveal has finished and the full text is now the settled answer —
+   * the only moment at which it is safe to announce it. Fired immediately for
+   * reduced-motion users, who get the whole text with no animation at all.
+   */
+  onRevealDone?: () => void;
 };
+
+/**
+ * Metadata rail shared by every bubble. The dot + label carry the role, the
+ * clock carries the time — one consistent row instead of a bare `> AI.RESPONSE`
+ * string, so scanning a long transcript tells you who said what and when.
+ *
+ * The label is a real element rather than a `::before` because it has to be
+ * selectable, translatable and readable by assistive tech.
+ */
+function RoleRail({
+  accent,
+  label,
+  ts,
+}: {
+  accent: 'cyan' | 'amber' | 'coral';
+  label: string;
+  ts?: number;
+}) {
+  return (
+    <div className="flex items-center gap-2 mb-2 select-none">
+      <span
+        aria-hidden="true"
+        className="w-1.5 h-1.5 rounded-full shrink-0"
+        style={{
+          background: `var(--neon-${accent})`,
+          boxShadow: `0 0 8px var(--glow-${accent}-sm)`,
+        }}
+      />
+      <span
+        className="font-mono text-[10px] tracking-[0.2em] uppercase leading-none"
+        style={{ color: `var(--neon-${accent})` }}
+      >
+        {label}
+      </span>
+      {ts != null && (
+        <time
+          dateTime={new Date(ts).toISOString()}
+          className="font-mono text-[10px] tabular-nums ml-auto leading-none"
+          style={{ color: 'var(--fg-3)' }}
+        >
+          {formatClock(ts)}
+        </time>
+      )}
+    </div>
+  );
+}
+
+/**
+ * `HH:MM` in 24h. Formatted by hand rather than through `toLocaleTimeString`
+ * so the server and the client cannot disagree over a locale or a 12/24h
+ * default — that mismatch is a hydration error, and this rail renders inside
+ * the logged conversation region.
+ */
+function formatClock(ts: number): string {
+  const d = new Date(ts);
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
 
 export default React.memo(function ChatMessage({
   role,
@@ -43,6 +123,11 @@ export default React.memo(function ChatMessage({
   experiences = [],
   responseType,
   responseData,
+  ts,
+  isError = false,
+  onRetry,
+  reveal = true,
+  onRevealDone,
 }: ChatMessageProps) {
   const [openInlineProject, setOpenInlineProject] =
     useState<PortfolioProject | null>(null);
@@ -90,23 +175,118 @@ export default React.memo(function ChatMessage({
 
   useEffect(() => {
     setTypedDone(false);
-  }, [text]);
+  }, [text, reveal]);
+
+  // `reveal` false means this message is history: render it flat, with no
+  // typewriter mounted at all. Reduced motion is NOT handled here — `ChatStream`
+  // is the single owner of that decision and reads it through the render-safe
+  // `useMotionPreference` hook, so it simply passes `reveal={false}` and this
+  // component never needs to know why.
+  const shouldType = reveal && !typedDone;
+
+  // P3.3 — a marker-bearing answer renders one <TypewriterText> per text
+  // segment, each with its own onComplete. "Settled" has to mean ALL of them
+  // finished, so this counts down rather than latching on the first callback
+  // (which previously swapped the remaining mid-reveal segments straight to
+  // their final text, so a card with prose after a project grid skipped it).
+  const textSegmentCount = hasMarkers
+    ? segments.filter((s) => s.type === 'text').length
+    : 1;
+  const pendingRef = useRef(textSegmentCount);
+
+  const markSegmentDone = useCallback(() => {
+    pendingRef.current = Math.max(0, pendingRef.current - 1);
+    if (pendingRef.current === 0) {
+      setTypedDone(true);
+      onRevealDone?.();
+    }
+  }, [onRevealDone]);
+
+  // Re-arm the countdown whenever the text or the reveal decision changes, and
+  // settle immediately when there is nothing to reveal (a card with no text
+  // segment at all), so the stream's settled flag can never latch.
+  useEffect(() => {
+    pendingRef.current = textSegmentCount;
+    if (textSegmentCount === 0) {
+      setTypedDone(true);
+      onRevealDone?.();
+    }
+  }, [text, reveal, textSegmentCount, onRevealDone]);
 
   if (isUser) {
     return (
       <div className="flex w-full justify-end">
         <HudPanel
           accent="amber"
-          notch="sm"
-          className="max-w-[85%] md:max-w-[75%] px-4 py-3 hud-glow-amber"
+          className="max-w-[85%] md:max-w-[75%] px-4 py-3 accent-hairline"
         >
-          <div className="text-[10px] font-display tracking-[2px] text-neon-amber text-shadow-neon-amber mb-1">
-            {'>> YOU'}
-          </div>
-          <div className="font-body text-sm text-text-primary whitespace-pre-wrap">
+          <RoleRail accent="amber" label="You" ts={ts} />
+          <div className="font-body text-sm text-text-primary whitespace-pre-wrap break-words">
             {text}
           </div>
         </HudPanel>
+      </div>
+    );
+  }
+
+  // A failed request used to arrive as an ordinary `model` message, so a failed
+  // API call was visually indistinguishable from a real answer — the reader
+  // had to read the prose to notice. It gets its own card and a retry.
+  if (isError) {
+    return (
+      <div className="flex w-full justify-start">
+        <div
+          role="alert"
+          className="w-full max-w-[95%] md:max-w-[75%] rounded-card px-4 py-3 border"
+          style={{
+            background: 'var(--wash-coral)',
+            borderColor: 'var(--glow-coral)',
+          }}
+        >
+          <div className="flex items-center gap-2 mb-2 select-none">
+            <RiAlertLine
+              size={14}
+              aria-hidden="true"
+              style={{ color: 'var(--neon-coral)' }}
+            />
+            <span
+              className="font-mono text-[10px] tracking-[0.2em] uppercase leading-none"
+              style={{ color: 'var(--neon-coral)' }}
+            >
+              Connection Error
+            </span>
+            {ts != null && (
+              <time
+                dateTime={new Date(ts).toISOString()}
+                className="font-mono text-[10px] tabular-nums ml-auto leading-none"
+                style={{ color: 'var(--fg-3)' }}
+              >
+                {formatClock(ts)}
+              </time>
+            )}
+          </div>
+          <p
+            className="font-body text-sm leading-relaxed"
+            style={{ color: 'var(--fg-2)' }}
+          >
+            {text}
+          </p>
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="mt-3 inline-flex items-center gap-2 min-h-[44px] min-w-[44px] px-3 py-2 rounded-[var(--radius-md)] font-mono text-[11px] tracking-[0.14em] uppercase transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-coral)]"
+              style={{
+                background: 'var(--wash-coral-strong)',
+                border: '1px solid var(--glow-coral)',
+                color: 'var(--neon-coral)',
+              }}
+            >
+              <RiRefreshLine size={12} aria-hidden="true" />
+              Retry
+            </button>
+          )}
+        </div>
       </div>
     );
   }
@@ -116,14 +296,8 @@ export default React.memo(function ChatMessage({
     return (
       <div className="flex w-full justify-start">
         <div className="w-full max-w-[95%] md:max-w-[85%]">
-          <HudPanel
-            accent="cyan"
-            notch="sm"
-            className="px-4 py-3 hud-glow-cyan"
-          >
-            <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-3">
-              {'> AI.RESPONSE'}
-            </div>
+          <HudPanel accent="cyan" className="px-4 py-3 accent-hairline">
+            <RoleRail accent="cyan" label="Assistant" ts={ts} />
             <ProjectMatchGrid
               projects={responseData.projects}
               skills={skills}
@@ -139,14 +313,8 @@ export default React.memo(function ChatMessage({
     return (
       <div className="flex w-full justify-start">
         <div className="w-full max-w-[95%] md:max-w-[85%]">
-          <HudPanel
-            accent="cyan"
-            notch="sm"
-            className="px-4 py-3 hud-glow-cyan"
-          >
-            <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-3">
-              {'> AI.RESPONSE'}
-            </div>
+          <HudPanel accent="cyan" className="px-4 py-3 accent-hairline">
+            <RoleRail accent="cyan" label="Assistant" ts={ts} />
             <SkillGrid skills={responseData.skills} />
           </HudPanel>
         </div>
@@ -158,14 +326,8 @@ export default React.memo(function ChatMessage({
     return (
       <div className="flex w-full justify-start">
         <div className="w-full max-w-[95%] md:max-w-[85%]">
-          <HudPanel
-            accent="cyan"
-            notch="sm"
-            className="px-4 py-3 hud-glow-cyan"
-          >
-            <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-3">
-              {'> AI.RESPONSE'}
-            </div>
+          <HudPanel accent="cyan" className="px-4 py-3 accent-hairline">
+            <RoleRail accent="cyan" label="Assistant" ts={ts} />
             <ExperienceTimeline experiences={responseData.experiences} />
           </HudPanel>
         </div>
@@ -179,21 +341,14 @@ export default React.memo(function ChatMessage({
       <div className="flex w-full justify-start">
         <HudPanel
           accent="cyan"
-          notch="sm"
-          className="max-w-[85%] md:max-w-[75%] px-4 py-3 hud-glow-cyan"
+          className="max-w-[85%] md:max-w-[75%] px-4 py-3 accent-hairline"
         >
-          <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-1">
-            {'> AI.RESPONSE'}
-          </div>
+          <RoleRail accent="cyan" label="Assistant" ts={ts} />
           <div className="font-body text-sm text-text-primary whitespace-pre-wrap">
-            {typedDone ? (
-              text
+            {shouldType ? (
+              <TypewriterText text={text} onDone={markSegmentDone} />
             ) : (
-              <TypewriterText
-                text={text}
-                speed={10}
-                onDone={() => setTypedDone(true)}
-              />
+              text
             )}
           </div>
         </HudPanel>
@@ -204,24 +359,21 @@ export default React.memo(function ChatMessage({
   return (
     <div className="flex w-full justify-start">
       <div className="max-w-[90%] md:max-w-[82%] space-y-3">
-        <HudPanel accent="cyan" notch="sm" className="px-4 py-3 hud-glow-cyan">
-          <div className="text-[10px] font-display tracking-[2px] text-neon-cyan text-shadow-neon-cyan mb-2">
-            {'> AI.RESPONSE'}
-          </div>
+        <HudPanel accent="cyan" className="px-4 py-3 accent-hairline">
+          <RoleRail accent="cyan" label="Assistant" ts={ts} />
           <div className="font-body text-sm text-text-primary space-y-3">
             {segments.map((segment, idx) => {
               switch (segment.type) {
                 case 'text':
                   return (
                     <span key={idx} className="block whitespace-pre-wrap">
-                      {typedDone ? (
-                        segment.content
-                      ) : (
+                      {shouldType ? (
                         <TypewriterText
                           text={segment.content}
-                          speed={6}
-                          onDone={() => setTypedDone(true)}
+                          onDone={markSegmentDone}
                         />
+                      ) : (
+                        segment.content
                       )}
                     </span>
                   );

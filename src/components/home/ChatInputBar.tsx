@@ -1,7 +1,16 @@
 // src/components/home/ChatInputBar.tsx
-// Chat input bar — warm editorial + focus glow / press micro-interactions.
+// Chat command bar — warm editorial + focus glow / press micro-interactions.
+//
+// THE AFFORDANCE (P3.5): this used to be a `readOnly` <input> carrying the
+// placeholder "Type a message…". It could not be typed into, it rendered a
+// caret on mobile, and tapping it opened a modal. To a phone user that is a
+// text field that silently swallows every keystroke. It is now an honest
+// <button>: no caret, no "Type a message…", a visible OPEN affordance with an
+// expand icon, and an accessible name that says what activating it does. The
+// draft text (`input`) is still displayed, because SEND still sends it — it is
+// shown as a DRAFT, not as editable field content.
 import React, { useRef, useEffect, useCallback } from 'react';
-import { FiSend, FiRotateCcw } from 'react-icons/fi';
+import { FiSend, FiRotateCcw, FiMaximize2 } from 'react-icons/fi';
 import { createScope, animate, spring } from 'animejs';
 import {
   durations,
@@ -13,25 +22,35 @@ import {
 
 type ChatInputBarProps = {
   input: string;
+  /**
+   * @deprecated The bar no longer pretends to be a text field, so there is
+   * nothing to type into it. The draft is edited in the composer
+   * (`MessageOverlay` → `inputValue`/`onInputChange`). The prop is kept so
+   * `ChatModalHost` keeps compiling; do not wire it back to a second input.
+   */
   onInputChange: (v: string) => void;
   onSend: () => void;
   onOpen: () => void;
   onReset: () => void;
   showClear: boolean;
+  /** A request is in flight — SEND goes inert so the bar cannot double-fire. */
+  isLoading?: boolean;
 };
 
 export default function ChatInputBar({
   input,
-  onInputChange,
   onSend,
   onOpen,
   onReset,
   showClear,
+  isLoading = false,
 }: ChatInputBarProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const sendRef = useRef<HTMLButtonElement | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
+
+  const hasDraft = input.trim().length > 0;
 
   useEffect(() => {
     const root = wrapRef.current?.parentElement ?? wrapRef.current;
@@ -45,26 +64,26 @@ export default function ChatInputBar({
     };
   }, []);
 
-  // Keyboard shortcuts: / to focus input, double Esc to unfocus
+  // Keyboard shortcuts: / to reach the composer trigger, double Esc to leave it.
   useEffect(() => {
     let lastEsc = 0;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === '/' && document.activeElement !== inputRef.current) {
+      if (e.key === '/' && document.activeElement !== triggerRef.current) {
         e.preventDefault();
-        inputRef.current?.focus();
+        triggerRef.current?.focus();
         onOpen();
       }
-      if (e.key === 'Escape' && document.activeElement === inputRef.current) {
+      if (e.key === 'Escape' && document.activeElement === triggerRef.current) {
         const now = Date.now();
         if (now - lastEsc < 350) {
-          inputRef.current?.blur();
+          triggerRef.current?.blur();
         }
         lastEsc = now;
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [inputRef, onOpen]);
+  }, [triggerRef, onOpen]);
   const animateFocus = useCallback((focused: boolean) => {
     const el = wrapRef.current;
     if (!el || isReducedMotion() || !canAnimate()) return;
@@ -132,71 +151,112 @@ export default function ChatInputBar({
     else anim();
   }, []);
 
+  // WCAG 2.5.3 Label in Name: the accessible name has to contain the visible
+  // label, so it is derived from the same text the button shows rather than
+  // being a fixed string that contradicts it.
+  const triggerName = hasDraft
+    ? `DRAFT: ${input.trim()} — open the message composer to edit it`
+    : 'ASK ANYTHING — open the message composer';
+
   return (
     <div className="w-full relative z-30 mt-8 mb-4">
+      {/* A plain surface, deliberately NOT a control. It was previously an
+          onClick div wrapping the <input> and two real <button>s; the trigger
+          below now fills it, so the click handler moved onto the button
+          itself and the wrapper is just chrome. onFocusCapture still catches
+          focus bubbling from any child, so the focus glow is unchanged. */}
       <div
         ref={wrapRef}
-        className="w-full flex items-center gap-2 p-1.5 min-h-[60px] rounded-[var(--radius-lg)] border cursor-text"
+        data-chat-inputbar
+        className="w-full flex items-center gap-2 p-1.5 min-h-[60px] rounded-[var(--radius-lg)] border"
         style={{
           background: 'var(--bg-2)',
           borderColor: 'var(--border-subtle)',
         }}
-        onClick={onOpen}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && onOpen()}
         onFocusCapture={() => animateFocus(true)}
         onBlurCapture={() => animateFocus(false)}
       >
         <span
+          aria-hidden="true"
           className="font-mono pl-3 text-lg flex-shrink-0"
-          style={{ color: 'var(--fg-4)' }}
+          style={{ color: 'var(--fg-3)' }}
         >
           &gt;
         </span>
-        <div className="flex-1 min-w-0">
-          {/* The keyboard shortcuts used to live in the placeholder, where
-              they truncated it to "Search tra"-length garbage at 390px. They
-              are announced here instead and the placeholder stays short. */}
-          <span id="chat-input-shortcuts" className="sr-only">
-            Press slash to focus this field, Escape to unfocus it.
-          </span>
-          <input
-            ref={inputRef}
-            type="text"
-            className="w-full bg-transparent border-none px-2 py-2.5 focus:outline-none text-sm font-body cursor-text"
-            style={{ color: 'var(--fg-1)' } as React.CSSProperties}
-            placeholder="Type a message…"
-            aria-describedby="chat-input-shortcuts"
-            value={input}
-            onChange={(e) => onInputChange(e.target.value)}
-            onFocus={() => {
-              animateFocus(true);
-              onOpen();
+
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={onOpen}
+          aria-label={triggerName}
+          aria-describedby="chat-input-shortcuts"
+          className="group flex-1 min-w-0 flex items-center gap-2 min-h-[44px] px-2 text-left font-body text-sm rounded-[var(--radius-sm)] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-2)]"
+        >
+          {hasDraft ? (
+            <>
+              <span
+                aria-hidden="true"
+                className="font-mono text-[10px] tracking-[0.16em] flex-shrink-0"
+                style={{ color: 'var(--neon-amber)' }}
+              >
+                DRAFT
+              </span>
+              <span
+                aria-hidden="true"
+                className="truncate"
+                style={{ color: 'var(--fg-1)' }}
+              >
+                {input}
+              </span>
+            </>
+          ) : (
+            <span
+              aria-hidden="true"
+              className="font-mono tracking-[0.14em] truncate"
+              style={{ color: 'var(--fg-3)' }}
+            >
+              ASK ANYTHING
+            </span>
+          )}
+
+          {/* "Opens a panel", said twice: an icon that means expand, and a
+              word. It lives *inside* the button so the whole region is one
+              tap target, and it is a <span> with pointer-events-none so it
+              neither nests a control in a control nor adds a word to the
+              accessible name the trigger already carries. */}
+          <span
+            aria-hidden="true"
+            className="hidden sm:inline-flex ml-auto flex-shrink-0 items-center gap-1.5 min-h-[44px] px-3 font-mono text-[11px] tracking-[0.14em] rounded-[var(--radius-md)] border pointer-events-none"
+            style={{
+              borderColor: 'var(--glow-cyan-30)',
+              color: 'var(--neon-cyan)',
+              background: 'var(--wash-cyan)',
             }}
-            onBlur={() => animateFocus(false)}
-            readOnly
-            aria-label="Open chat"
-          />
-        </div>
+          >
+            OPEN <FiMaximize2 size={12} />
+          </span>
+        </button>
+
         {showClear && (
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onReset();
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-md)] font-mono text-[11px] tracking-[0.14em] border transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 min-h-[44px] rounded-[var(--radius-md)] font-mono text-[11px] tracking-[0.14em] border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-2)]"
             style={{
               borderColor: 'var(--border-subtle)',
               color: 'var(--fg-3)',
               background: 'transparent',
             }}
           >
-            <FiRotateCcw size={12} /> CLEAR
+            <FiRotateCcw size={12} aria-hidden="true" /> CLEAR
           </button>
         )}
         <button
           ref={sendRef}
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             if (input.trim()) onSend();
@@ -207,16 +267,39 @@ export default function ChatInputBar({
           onMouseLeave={handlePressUp}
           onTouchStart={handlePressDown}
           onTouchEnd={handlePressUp}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-md)] font-mono text-[11px] tracking-[0.14em] border transition-colors"
+          // The bar is always visible, and SEND used to look and behave
+          // identically while a request was in flight — so a double tap queued
+          // two turns. It now reads as busy and is genuinely inert.
+          disabled={isLoading}
+          aria-busy={isLoading}
+          className="inline-flex items-center gap-1.5 px-4 min-h-[44px] rounded-[var(--radius-md)] font-mono text-[11px] tracking-[0.14em] border transition-colors duration-200 disabled:opacity-60 disabled:cursor-wait focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-2)]"
           style={{
             background: 'var(--fg-1)',
             color: 'var(--bg-1)',
             borderColor: 'var(--fg-1)',
           }}
         >
-          SEND <FiSend size={12} />
+          {isLoading ? 'SENDING' : 'SEND'}{' '}
+          {isLoading ? (
+            <span
+              aria-hidden="true"
+              className="w-2 h-2 rounded-full animate-pulse-soft"
+              style={{ background: 'var(--bg-1)' }}
+            />
+          ) : (
+            <FiSend size={12} aria-hidden="true" />
+          )}
         </button>
       </div>
+
+      {/* The keyboard shortcuts used to live in the placeholder, where they
+          truncated it to "Search tra"-length garbage at 390px. They are
+          announced here instead and the visible label stays short. */}
+      <span id="chat-input-shortcuts" className="sr-only">
+        Press slash to reach the composer, Escape to leave it. This bar is a
+        button, not a text field — activating it opens the full message
+        composer, where you can type and send.
+      </span>
     </div>
   );
 }

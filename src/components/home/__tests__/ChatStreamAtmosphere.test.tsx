@@ -76,7 +76,9 @@ describe('ChatStream atmosphere', () => {
     expect(
       document.querySelector('[data-graphic="grat-lattice"]'),
     ).not.toBeNull();
-    expect(screen.getByText('THINKING')).toBeInTheDocument();
+    // The label is sentence-case in the DOM and uppercased by CSS, so it is
+    // matched case-insensitively rather than on the rendered glyphs.
+    expect(screen.getByText(/thinking/i)).toBeInTheDocument();
     expect(
       document.querySelector('[data-graphic="grat-scope"]'),
     ).not.toBeNull();
@@ -87,7 +89,7 @@ describe('ChatStream atmosphere', () => {
     Object.defineProperty(Element.prototype, 'getBoundingClientRect', {
       writable: true,
       configurable: true,
-      value: () => ({ top: window.innerHeight + 200 } as DOMRect),
+      value: () => ({ top: window.innerHeight + 200 }) as DOMRect,
     });
     Element.prototype.scrollIntoView = scrollIntoView;
     render(

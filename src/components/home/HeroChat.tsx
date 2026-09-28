@@ -25,6 +25,8 @@ type Message = {
   text: string;
   responseType?: string;
   responseData?: unknown;
+  ts?: number;
+  isError?: boolean;
 };
 
 type Props = {
@@ -38,6 +40,7 @@ type Props = {
   isDataLoading: boolean;
   isInitial: boolean;
   onSend: (text: string, skillFilter?: number[]) => void;
+  onRetry?: () => void;
 };
 
 /** Counts from 0 to `target`, or jumps straight there under reduced motion. */
@@ -74,6 +77,7 @@ export default function HeroChat({
   isDataLoading,
   isInitial,
   onSend,
+  onRetry,
 }: Props) {
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -125,6 +129,7 @@ export default function HeroChat({
       skills={skills}
       experiences={experiences}
       isLoading={isLoading}
+      onRetry={onRetry}
     />
   );
 }

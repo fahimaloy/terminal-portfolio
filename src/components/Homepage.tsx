@@ -2,7 +2,7 @@
 /* HOMEPAGE — orchestrator (lean after Phase 5 split). Delegates hero/stream,
 // strip, and overlay to extracted components. Data + chat state stay here. */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import {
   getPortfolioProfile,
@@ -28,6 +28,10 @@ type Message = {
   text: string;
   responseType?: string;
   responseData?: unknown;
+  /** Epoch ms the message was appended — drives the per-message clock. */
+  ts?: number;
+  /** A failed request. Renders as an error card with a retry, not an answer. */
+  isError?: boolean;
 };
 
 export default function Homepage() {
@@ -46,7 +50,6 @@ export default function Homepage() {
     null,
   );
   const [showProjectDetail, setShowProjectDetail] = useState(false);
-  const [now, setNow] = useState('');
 
   // Data
   //
@@ -108,28 +111,16 @@ export default function Homepage() {
     };
   }, []);
 
-  // HUD clock
-  useEffect(() => {
-    const update = () =>
-      setNow(
-        new Date().toLocaleTimeString('en-US', {
-          hour12: false,
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-        }),
-      );
-    update();
-    const id = setInterval(update, 1000);
-    return () => clearInterval(id);
-  }, []);
+  // The HUD clock moved into HudChrome. It used to live here as `now` state,
+  // so a 1s interval re-rendered the whole homepage — hero, chat stream, the
+  // lot — every second, just to move three glyphs in a corner.
 
   const handleSend = async (text: string, skillFilter?: number[]) => {
     if (!text.trim() || isLoading) return;
     window.dispatchEvent(new CustomEvent('portfolio:chat-send'));
     setInput('');
     setConversationHistory((prev) => [...prev, text].slice(-10));
-    const userMessage: Message = { role: 'user', text };
+    const userMessage: Message = { role: 'user', text, ts: Date.now() };
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
     try {
@@ -146,21 +137,36 @@ export default function Homepage() {
           text: reply,
           responseType: res.data?.type || res.data?.response_type,
           responseData: res.data?.data,
+          ts: Date.now(),
         },
       ]);
       setConversationHistory((prev) => [...prev, reply].slice(-10));
     } catch {
+      // A failed request must not read like an answer. It gets `isError` so the
+      // stream renders a distinct card with a retry, and it is deliberately
+      // kept out of `conversationHistory` so a dead exchange is not fed back to
+      // the model as prior context.
       setMessages((prev) => [
         ...prev,
         {
           role: 'model',
-          text: 'Oops! Something went wrong while fetching the answer.',
+          text: "I couldn't reach the server. Your message wasn't sent — check your connection and try again.",
+          isError: true,
+          ts: Date.now(),
         },
       ]);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Re-runs the last thing the user asked, without re-adding the failed turn.
+  const lastUserText = [...messages]
+    .reverse()
+    .find((m) => m.role === 'user')?.text;
+  const handleRetry = useCallback(() => {
+    if (lastUserText) void handleSend(lastUserText);
+  }, [lastUserText]);
 
   const handleReset = () => {
     setMessages([]);
@@ -206,7 +212,6 @@ export default function Homepage() {
         profileName={resolveName(profile).split(/\s+/)[0]}
         profileInitial={resolveName(profile).charAt(0).toUpperCase()}
         siteTexts={siteTexts}
-        now={now}
         messages={messages}
         heroRef={heroRef}
       />
@@ -258,6 +263,7 @@ export default function Homepage() {
               isDataLoading={isDataLoading}
               isInitial={isInitial}
               onSend={handleSend}
+              onRetry={handleRetry}
             />
           </div>
 
