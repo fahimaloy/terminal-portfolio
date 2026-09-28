@@ -28,5 +28,12 @@
       "node_modules/**": "deny",
       ".git/**": "deny"
     }
+  },
+  "mcp": {
+    "gitnexus": {
+      "type": "local",
+      "command": ["npx", "-y", "gitnexus@latest", "mcp"],
+      "enabled": true
+    }
   }
 }

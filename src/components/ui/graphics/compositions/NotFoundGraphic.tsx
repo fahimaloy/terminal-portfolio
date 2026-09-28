@@ -55,7 +55,7 @@ export default function NotFoundGraphic({
       />
       {/* Center-behind morph orb — accent magenta (primary) + subtle cyan offset for depth */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-55">
-        <MorphOrb accent="magenta" size={220} />
+        <MorphOrb accent="coral" size={220} />
       </div>
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-30 translate-x-4 translate-y-3">
         <MorphOrb accent="cyan" size={148} />

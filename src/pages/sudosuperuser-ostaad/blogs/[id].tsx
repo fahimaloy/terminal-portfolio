@@ -72,8 +72,8 @@ const EditBlogPage = () => {
           </div>
 
           {error && (
-            <HudPanel accent="red" notch="sm" className="p-3">
-              <span className="font-body text-sm text-neon-red">{error}</span>
+            <HudPanel accent="coral" notch="sm" className="p-3">
+              <span className="font-body text-sm text-neon-coral">{error}</span>
             </HudPanel>
           )}
 
@@ -88,11 +88,11 @@ const EditBlogPage = () => {
             </div>
           ) : !post ? (
             <HudPanel
-              accent="red"
+              accent="coral"
               notch="md"
               className="p-8 text-center space-y-4"
             >
-              <div className="font-display text-sm text-neon-red tracking-[3px]">
+              <div className="font-display text-sm text-neon-coral tracking-[3px]">
                 POST NOT FOUND
               </div>
               <NeonButton

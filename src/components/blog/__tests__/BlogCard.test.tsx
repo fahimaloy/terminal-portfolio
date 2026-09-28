@@ -26,7 +26,7 @@ import type { BlogListItem } from '../../../types/blog';
 function post(overrides: Partial<BlogListItem> = {}): BlogListItem {
   return {
     id: 11,
-    slug: 'retro-paper',
+    slug: 'bg-2',
     title: 'Retro Paper Reading',
     excerpt: 'A warm reading surface with amber ink.',
     teaser: null,

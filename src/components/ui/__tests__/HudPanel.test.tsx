@@ -13,20 +13,20 @@ describe('HudPanel', () => {
     render(<HudPanel data-testid="p">X</HudPanel>);
     const el = screen.getByTestId('p');
     expect(el.className).toMatch(/rounded-card/);
-    expect(el.style.borderTop).toContain('var(--neon-yellow)');
+    expect(el.style.borderTop).toContain('var(--neon-amber)');
     expect(el.style.background).toContain('var(--bg-2)');
     expect(el.style.borderRadius).toBe('var(--radius-lg)');
   });
 
   it('applies the chosen accent glow class', () => {
     render(
-      <HudPanel accent="magenta" data-testid="p">
+      <HudPanel accent="coral" data-testid="p">
         X
       </HudPanel>,
     );
     const el = screen.getByTestId('p');
     expect(el.className).toMatch(/rounded-card/);
-    expect(el.style.borderTop).toContain('var(--neon-magenta)');
+    expect(el.style.borderTop).toContain('var(--neon-coral)');
   });
 
   it('uses a notched clip path via utility class', () => {
@@ -46,35 +46,35 @@ describe('HudPanel', () => {
     expect(screen.getByText('// STATUS')).toBeInTheDocument();
   });
 
-  it('applies green glow + green title for accent="green"', () => {
+  it('applies green glow + green title for accent="lime"', () => {
     render(
-      <HudPanel accent="green" title="// OK" data-testid="p">
+      <HudPanel accent="lime" title="// OK" data-testid="p">
         X
       </HudPanel>,
     );
     const panel = screen.getByTestId('p');
     expect(panel.className).toMatch(/rounded-card/);
-    expect(panel.style.borderTop).toContain('var(--neon-green)');
+    expect(panel.style.borderTop).toContain('var(--neon-lime)');
     expect(panel.style.background).toContain('var(--bg-2)');
     expect(panel.style.borderRadius).toBe('var(--radius-lg)');
     const title = screen.getByText('// OK');
     // editorial: title is fg-2 on subtle border, not neon
     expect(title.style.color).toBe('var(--fg-2)');
-    expect(title.className).not.toMatch(/text-neon-green/);
+    expect(title.className).not.toMatch(/text-neon-lime/);
     expect(title.className).toMatch(/border-b/);
   });
 
-  it('applies red glow + red title for accent="red"', () => {
+  it('applies red glow + red title for accent="coral"', () => {
     render(
-      <HudPanel accent="red" title="// ERR" data-testid="p">
+      <HudPanel accent="coral" title="// ERR" data-testid="p">
         X
       </HudPanel>,
     );
     const panel = screen.getByTestId('p');
     expect(panel.className).toMatch(/rounded-card/);
-    expect(panel.style.borderTop).toContain('var(--neon-red)');
+    expect(panel.style.borderTop).toContain('var(--neon-coral)');
     const title = screen.getByText('// ERR');
     expect(title.style.color).toBe('var(--fg-2)');
-    expect(title.className).not.toMatch(/text-neon-red/);
+    expect(title.className).not.toMatch(/text-neon-coral/);
   });
 });

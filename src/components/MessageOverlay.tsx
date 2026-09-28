@@ -286,11 +286,11 @@ export default function MessageOverlay({
       <div
         ref={backdropRef}
         onClick={onClose}
-        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-md opacity-0"
+        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-md reveal"
       />
       <div
         ref={panelRef}
-        className="fixed left-0 right-0 bottom-0 z-50 flex flex-col opacity-0"
+        className="fixed left-0 right-0 bottom-0 z-50 flex flex-col reveal"
         style={{ maxHeight: '85vh' }}
       >
         <div
@@ -300,7 +300,7 @@ export default function MessageOverlay({
           <div className="flex justify-end mb-2">
             <NeonButton
               variant="ghost"
-              accent="magenta"
+              accent="coral"
               onClick={onClose}
               iconLeft={<FiX />}
             >
@@ -322,11 +322,11 @@ export default function MessageOverlay({
           )}
 
           {mode === 'chat' && (
-            <Ripple color="var(--glow-yellow-soft)">
+            <Ripple color="var(--glow-amber-sm)">
               <HudPanel
-                accent="yellow"
+                accent="amber"
                 notch="md"
-                className="overflow-hidden hud-glow-yellow"
+                className="overflow-hidden hud-glow-amber"
               >
                 <AdvancedFeaturesBar activeMode={mode} onModeChange={setMode} />
 
@@ -340,7 +340,7 @@ export default function MessageOverlay({
                       className="grid grid-cols-2 md:grid-cols-3 gap-2"
                     >
                       {QUICK_SUGGESTIONS.map((s, i) => {
-                        const accents = ['cyan', 'magenta', 'yellow'] as const;
+                        const accents = ['cyan', 'coral', 'amber'] as const;
                         const accent = accents[i % accents.length];
                         return (
                           <button
@@ -368,12 +368,10 @@ export default function MessageOverlay({
                                 composition: 'blend',
                               });
                             }}
-                            className={`suggestion-chip p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-neon-${accent}/10 hover:border-neon-${accent}/30 transition-colors text-left opacity-0`}
+                            className="suggestion-chip p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-neon-cyan/10 hover:border-neon-cyan/30 transition-colors text-left reveal"
                           >
                             <div className="flex items-center gap-2">
-                              <span className={`text-neon-${accent}`}>
-                                {s.icon}
-                              </span>
+                              <span className="text-neon-cyan">{s.icon}</span>
                               <span className="text-[10px] font-display tracking-wider text-text-primary leading-tight">
                                 {s.label
                                   .split(' ')
@@ -466,7 +464,7 @@ export default function MessageOverlay({
                     placeholder="Ask about my development projects, skills, or experience..."
                     maxLength={2000}
                     rows={2}
-                    className="flex-1 bg-transparent border-none text-text-primary px-2 py-2 focus:outline-none placeholder-text-muted text-sm font-body resize-none focus:shadow-[0_0_12px_var(--glow-yellow)] transition-all duration-200"
+                    className="flex-1 bg-transparent border-none text-text-primary px-2 py-2 focus:outline-none placeholder-text-muted text-sm font-body resize-none focus:shadow-[0_0_12px_var(--glow-amber)] transition-all duration-200"
                     disabled={isLoading}
                   />
                   <div className="flex items-center gap-2 ml-2">
@@ -474,7 +472,7 @@ export default function MessageOverlay({
                       {inputValue.length}/2000
                     </span>
                     <NeonButton
-                      accent="yellow"
+                      accent="amber"
                       iconRight={isLoading ? undefined : <FiSend />}
                       loading={isLoading}
                       onClick={handleSend}

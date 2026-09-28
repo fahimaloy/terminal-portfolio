@@ -29,13 +29,8 @@ export default function BlogEmptyGraphic({
 }: BlogEmptyGraphicProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const isNoResults = variant === 'no-results';
-  const accent = (isNoResults ? 'cyan' : 'magenta') as
-    | 'yellow'
-    | 'magenta'
-    | 'cyan'
-    | 'green'
-    | 'purple'
-    | 'blue';
+  const accent = (isNoResults ? 'cyan' : 'coral') as
+    'amber' | 'coral' | 'cyan' | 'lime' | 'violet' | 'ice';
 
   useEffect(() => {
     const root = rootRef.current;
@@ -58,19 +53,22 @@ export default function BlogEmptyGraphic({
             ease: (easings.smooth as unknown as string) ?? 'linear',
             delay: stagger(durations.stagger * 1000 * 0.38, { from: 'first' }),
           });
-          idleTimer = setTimeout(() => {
-            try {
-              animate(drawables, {
-                draw: ['0 1', '0.02 0.98', '0 1'],
-                duration: durations.pulse * 1000,
-                ease: (easings.smooth as unknown as string) ?? 'linear',
-                loop: true,
-                alternate: true,
-              });
-            } catch {
-              // ignore idle loop failure
-            }
-          }, durations.draw * 1000 + durations.stagger * 1000 * 3);
+          idleTimer = setTimeout(
+            () => {
+              try {
+                animate(drawables, {
+                  draw: ['0 1', '0.02 0.98', '0 1'],
+                  duration: durations.pulse * 1000,
+                  ease: (easings.smooth as unknown as string) ?? 'linear',
+                  loop: true,
+                  alternate: true,
+                });
+              } catch {
+                // ignore idle loop failure
+              }
+            },
+            durations.draw * 1000 + durations.stagger * 1000 * 3,
+          );
         } catch {
           animate(strokes as unknown as HTMLElement[], {
             opacity: [0, 1],

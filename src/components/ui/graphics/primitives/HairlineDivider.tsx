@@ -1,6 +1,6 @@
 import React from 'react';
 
-type Accent = 'yellow' | 'magenta' | 'cyan' | 'green' | 'purple' | 'blue';
+type Accent = 'amber' | 'coral' | 'cyan' | 'lime' | 'violet' | 'ice';
 
 export interface HairlineDividerProps {
   accent?: Accent;

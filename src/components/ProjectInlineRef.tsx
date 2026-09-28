@@ -6,14 +6,14 @@ import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 const COLORS = [
   {
-    accent: 'text-neon-yellow',
-    border: 'border-neon-yellow/40',
-    glow: 'hud-glow-yellow',
+    accent: 'text-neon-amber',
+    border: 'border-neon-amber/40',
+    glow: 'hud-glow-amber',
   },
   {
-    accent: 'text-neon-magenta',
-    border: 'border-neon-magenta/40',
-    glow: 'hud-glow-magenta',
+    accent: 'text-neon-coral',
+    border: 'border-neon-coral/40',
+    glow: 'hud-glow-coral',
   },
   {
     accent: 'text-neon-cyan',
@@ -21,14 +21,14 @@ const COLORS = [
     glow: 'hud-glow-cyan',
   },
   {
-    accent: 'text-neon-yellow',
-    border: 'border-neon-yellow/40',
-    glow: 'hud-glow-yellow',
+    accent: 'text-neon-amber',
+    border: 'border-neon-amber/40',
+    glow: 'hud-glow-amber',
   },
   {
-    accent: 'text-neon-magenta',
-    border: 'border-neon-magenta/40',
-    glow: 'hud-glow-magenta',
+    accent: 'text-neon-coral',
+    border: 'border-neon-coral/40',
+    glow: 'hud-glow-coral',
   },
 ];
 

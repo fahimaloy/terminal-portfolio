@@ -9,15 +9,11 @@ import {
 import MorphOrb from '../primitives/MorphOrb';
 import Bracket from '../primitives/Bracket';
 import HairlineDivider from '../primitives/HairlineDivider';
+import type { AccentColor } from '../../../../config/animations';
 
-type Accent =
-  | 'yellow'
-  | 'magenta'
-  | 'cyan'
-  | 'green'
-  | 'purple'
-  | 'blue'
-  | 'red';
+// Accent vocabulary is owned by the token pipeline; primitives must not
+// re-declare it or they drift the moment an accent is retired.
+type Accent = AccentColor;
 
 export interface HeroEmptyGraphicProps {
   className?: string;
@@ -59,19 +55,22 @@ export default function HeroEmptyGraphic({
             ease: (easings.smooth as unknown as string) ?? 'linear',
             delay: stagger(durations.stagger * 1000 * 0.45, { from: 'first' }),
           });
-          idleTimer = setTimeout(() => {
-            try {
-              animate(drawables, {
-                draw: ['0 1', '0.02 0.98', '0 1'],
-                duration: durations.pulse * 1000,
-                ease: (easings.smooth as unknown as string) ?? 'linear',
-                loop: true,
-                alternate: true,
-              });
-            } catch {
-              // ignore idle loop failure
-            }
-          }, durations.draw * 1000 + durations.stagger * 1000 * 5);
+          idleTimer = setTimeout(
+            () => {
+              try {
+                animate(drawables, {
+                  draw: ['0 1', '0.02 0.98', '0 1'],
+                  duration: durations.pulse * 1000,
+                  ease: (easings.smooth as unknown as string) ?? 'linear',
+                  loop: true,
+                  alternate: true,
+                });
+              } catch {
+                // ignore idle loop failure
+              }
+            },
+            durations.draw * 1000 + durations.stagger * 1000 * 5,
+          );
         } catch {
           animate(strokes as unknown as HTMLElement[], {
             opacity: [0, 1],

@@ -68,7 +68,7 @@ const AdminBlogsPage = () => {
               </p>
             </div>
             <NeonButton
-              accent="yellow"
+              accent="amber"
               iconLeft={<FiPlus />}
               onClick={() => router.push('/sudosuperuser-ostaad/blogs/new')}
             >
@@ -87,8 +87,8 @@ const AdminBlogsPage = () => {
               ))}
             </div>
           ) : posts.length === 0 ? (
-            <HudPanel accent="magenta" notch="md" className="p-8 text-center">
-              <div className="font-display text-sm text-neon-magenta tracking-[3px]">
+            <HudPanel accent="coral" notch="md" className="p-8 text-center">
+              <div className="font-display text-sm text-neon-coral tracking-[3px]">
                 NO POSTS YET
               </div>
               <p className="font-mono text-[11px] text-text-muted mt-2">
@@ -100,7 +100,7 @@ const AdminBlogsPage = () => {
               {posts.map((post) => (
                 <HudPanel
                   key={post.id}
-                  accent={post.status === 'published' ? 'cyan' : 'yellow'}
+                  accent={post.status === 'published' ? 'cyan' : 'amber'}
                   notch="sm"
                   className="p-3"
                 >
@@ -130,13 +130,13 @@ const AdminBlogsPage = () => {
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <NeonChip
                           accent={
-                            post.status === 'published' ? 'green' : 'yellow'
+                            post.status === 'published' ? 'lime' : 'amber'
                           }
                         >
                           {post.status.toUpperCase()}
                         </NeonChip>
                         {post.featured && (
-                          <NeonChip accent="magenta">FEATURED</NeonChip>
+                          <NeonChip accent="coral">FEATURED</NeonChip>
                         )}
                         <span className="text-[9px] font-mono text-text-muted">
                           /{post.slug}
@@ -170,7 +170,7 @@ const AdminBlogsPage = () => {
                       </NeonButton>
                       <NeonButton
                         variant="ghost"
-                        accent="red"
+                        accent="coral"
                         iconLeft={<FiTrash2 />}
                         onClick={() => setConfirmId(post.id)}
                         disabled={busy}
@@ -183,12 +183,12 @@ const AdminBlogsPage = () => {
                   {/* Inline delete confirmation */}
                   {confirmId === post.id && (
                     <div className="mt-3 pt-3 border-t border-white/10 flex flex-wrap items-center gap-3">
-                      <span className="font-body text-xs text-neon-red">
+                      <span className="font-body text-xs text-neon-coral">
                         Delete “{post.title}”? This cannot be undone.
                       </span>
                       <div className="flex gap-2 ml-auto">
                         <NeonButton
-                          accent="red"
+                          accent="coral"
                           onClick={() => handleDelete(post.id)}
                           loading={busy}
                         >

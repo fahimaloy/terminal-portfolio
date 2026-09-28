@@ -92,7 +92,7 @@ export default function SearchableMultiSelect({
             return (
               <span
                 key={opt.id}
-                className="inline-flex items-center gap-1 px-2 py-0.5 bg-neon-purple/20 border border-neon-purple/30 clip-notch-sm text-xs text-neon-purple/80"
+                className="inline-flex items-center gap-1 px-2 py-0.5 bg-neon-violet/20 border border-neon-violet/30 clip-notch-sm text-xs text-neon-violet/80"
               >
                 {opt.icon ||
                   (TechIcon ? (
@@ -165,13 +165,13 @@ export default function SearchableMultiSelect({
                   type="button"
                   onClick={() => toggle(opt.id)}
                   className={`w-full px-3 py-2 flex items-center gap-2 text-left text-sm hover:bg-white/[0.03] transition-colors focus-visible:outline-none focus-visible:bg-white/[0.05] ${
-                    selectedIds.includes(opt.id) ? 'bg-neon-purple/10' : ''
+                    selectedIds.includes(opt.id) ? 'bg-neon-violet/10' : ''
                   }`}
                 >
                   <div
                     className={`w-4 h-4 rounded border flex items-center justify-center ${
                       selectedIds.includes(opt.id)
-                        ? 'bg-neon-purple border-neon-purple'
+                        ? 'bg-neon-violet border-neon-violet'
                         : 'border-white/20'
                     }`}
                   >

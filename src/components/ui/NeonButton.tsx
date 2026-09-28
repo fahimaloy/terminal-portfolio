@@ -13,63 +13,29 @@ import {
 type Variant = 'filled' | 'outline' | 'ghost' | 'glass' | 'gradient';
 type Size = 'sm' | 'md' | 'lg';
 
-// Updated accent map to match new tokens.css (neon-cyan, neon-magenta, neon-amber, neon-violet, neon-rose, neon-lime, neon-ice, neon-cyan-alt, neon-cyan-teal)
-// Also includes legacy accents for backward compatibility
-type NeonAccent =
-  | 'cyan'
-  | 'magenta'
-  | 'amber'
-  | 'violet'
-  | 'rose'
-  | 'lime'
-  | 'ice'
-  | 'cyanAlt'
-  | 'cyanTeal'
-  // Legacy accents for backward compatibility
-  | 'yellow'
-  | 'green'
-  | 'red'
-  | 'purple'
-  | 'blue';
+import type { AccentColor } from '../../config/animations';
 
-const ACCENT_MAP: Record<NeonAccent, string> = {
+const ACCENT_MAP: Record<AccentColor, string> = {
   cyan: 'var(--neon-cyan)',
-  magenta: 'var(--neon-magenta)',
-  amber: 'var(--neon-amber)',
   violet: 'var(--neon-violet)',
-  rose: 'var(--neon-rose)',
+  coral: 'var(--neon-coral)',
+  amber: 'var(--neon-amber)',
   lime: 'var(--neon-lime)',
   ice: 'var(--neon-ice)',
-  cyanAlt: 'var(--neon-cyan-alt)',
-  cyanTeal: 'var(--neon-cyan-teal)',
-  // Legacy accents - map to new tokens
-  yellow: 'var(--neon-yellow)',
-  green: 'var(--neon-green)',
-  red: 'var(--neon-red)',
-  purple: 'var(--neon-purple)',
-  blue: 'var(--neon-blue)',
 };
 
-const GLOW_MAP: Record<NeonAccent, string> = {
+const GLOW_MAP: Record<AccentColor, string> = {
   cyan: 'var(--glow-cyan)',
-  magenta: 'var(--glow-magenta)',
-  amber: 'var(--glow-amber)',
   violet: 'var(--glow-violet)',
-  rose: 'var(--glow-rose)',
+  coral: 'var(--glow-coral)',
+  amber: 'var(--glow-amber)',
   lime: 'var(--glow-lime)',
   ice: 'var(--glow-ice)',
-  cyanAlt: 'var(--glow-cyan)',
-  cyanTeal: 'var(--glow-cyan)',
-  yellow: 'var(--glow-yellow)',
-  green: 'var(--glow-green)',
-  red: 'var(--glow-red)',
-  purple: 'var(--glow-purple)',
-  blue: 'var(--glow-blue)',
 };
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant;
-  accent?: NeonAccent;
+  accent?: AccentColor;
   loading?: boolean;
   size?: Size;
   iconLeft?: React.ReactNode;
@@ -209,7 +175,7 @@ export default function NeonButton({
       backdropFilter: 'var(--glass-blur)',
     },
     gradient: {
-      background: `linear-gradient(135deg, ${ACCENT_MAP.cyan} 0%, ${ACCENT_MAP.magenta} 100%)`,
+      background: `linear-gradient(135deg, ${ACCENT_MAP.cyan} 0%, ${ACCENT_MAP.violet} 100%)`,
       color: 'var(--bg-1)',
       border: 'none',
     },

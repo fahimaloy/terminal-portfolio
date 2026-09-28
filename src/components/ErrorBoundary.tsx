@@ -55,20 +55,20 @@ export default class ErrorBoundary extends Component<Props, State> {
             }
           >
             <HudPanel
-              accent="red"
+              accent="coral"
               notch="md"
               title="// SYSTEM_FAULT"
               className="p-6 space-y-4"
             >
               <div className="flex flex-col items-center text-center gap-3">
-                <div className="w-14 h-14 rounded-full bg-neon-red/20 border border-neon-red/40 flex items-center justify-center">
-                  <FiAlertTriangle className="w-7 h-7 text-neon-red" />
+                <div className="w-14 h-14 rounded-full bg-neon-coral/20 border border-neon-coral/40 flex items-center justify-center">
+                  <FiAlertTriangle className="w-7 h-7 text-neon-coral" />
                 </div>
-                <GlitchText accent="red" as="h3" className="text-base">
+                <GlitchText accent="coral" as="h3" className="text-base">
                   SOMETHING WENT WRONG
                 </GlitchText>
                 {this.state.error?.message && (
-                  <NeonChip accent="red">
+                  <NeonChip accent="coral">
                     {this.state.error.message.length > 80
                       ? `${this.state.error.message.slice(0, 80)}…`
                       : this.state.error.message}
@@ -81,7 +81,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               </div>
               <div className="flex justify-center">
                 <NeonButton
-                  accent="yellow"
+                  accent="amber"
                   iconLeft={<FiRefreshCw />}
                   onClick={this.handleRetry}
                 >

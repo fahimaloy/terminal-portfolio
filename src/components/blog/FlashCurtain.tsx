@@ -10,7 +10,7 @@ type FlashCurtainProps = {
 };
 
 const FlashCurtain = forwardRef<HTMLDivElement, FlashCurtainProps>(
-  ({ color = 'var(--retro-amber)', className = '' }, ref) => {
+  ({ color = 'var(--neon-amber)', className = '' }, ref) => {
     return (
       <div
         ref={ref}

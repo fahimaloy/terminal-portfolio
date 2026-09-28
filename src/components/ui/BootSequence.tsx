@@ -1,725 +1,963 @@
-/* Premium Workspace Reveal Splash — 4s fixed, shows every refresh.
-   Premium SVG vector graphics + anime.js v4 cinematic sequence.
-   No Three.js — pure SVG/Canvas for reliability in all environments.
-   Timeline: aurora fade → scope rings draw → code stream → module grid →
-   workspace build → wordmark stagger → username → rail fill → exit burst. */
+/**
+ * BootSequence — "Developer Deck": a five-act vector boot sequence.
+ *
+ * Act 0  Cold start        0 → 600ms    point ignites, perspective floor draws outward
+ * Act 1  Signal acquire   600 → 1900ms  circuit fan propagates, nodes pop, binary rain falls
+ * Act 2  Systems online  1900 → 3000ms  rings lock, brackets snap, telemetry opens, chips land
+ * Act 3  Identity lock   3000 → 3900ms  rule draws, wordmark sets, handle glints, rail fills
+ * Act 4  Dissolve        3900 → 4700ms  strokes fade, particles burst, cross-fade to the page
+ *
+ * Two rules the previous version broke:
+ *   1. The exit is a timeline label, never a `setTimeout`. It used to fire at
+ *      `TOTAL_MS - 3200` (800ms), unmounting the splash before the wordmark
+ *      phase at 2000ms ever played.
+ *   2. Every animated element starts at `opacity: 0` set in JS. A Tailwind
+ *      `opacity-0` class survives `scope.revert()` and strands the element
+ *      invisible — the bug that hid the hero's quick-command cards.
+ *
+ * All motion is anime.js v4 on one timeline. The SVG primitives are static
+ * geometry with `data-*` hooks; none of them run SMIL or CSS loops.
+ */
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  animate,
   createScope,
   createTimeline,
   createDrawable,
   stagger,
   spring,
-  onScroll,
+  splitText,
+  type TextSplitter,
 } from 'animejs';
-import { splitText } from 'animejs';
-import {
-  durations,
-  easings,
-  springs,
-  isReducedMotion,
-  canAnimate,
-} from '../../config/animations';
-import ScopeRings from './graphics/primitives/ScopeRings';
+import { easings, springs, isReducedMotion } from '../../config/animations';
+import { FALLBACK_HANDLE, FALLBACK_NAME } from '../../config/identity';
 import AuroraMesh from './graphics/primitives/AuroraMesh';
-import MorphOrb from './graphics/primitives/MorphOrb';
-import SignalTicks from './graphics/primitives/SignalTicks';
+import BinaryRain from './graphics/primitives/BinaryRain';
+import CircuitTraces from './graphics/primitives/CircuitTraces';
+import CodeBrackets from './graphics/primitives/CodeBrackets';
+import FileTree from './graphics/primitives/FileTree';
+import TerminalPrompt from './graphics/primitives/TerminalPrompt';
 
-const TOTAL_MS = 4000;
-const SKIPPABLE_AFTER_MS = 1000;
+const SKIPPABLE_AFTER_MS = 1200;
 
-// Premium color palette from tokens
-const ACCENT_COLORS = [
-  'var(--ring-cyan)',
-  'var(--ring-magenta)',
-  'var(--ring-violet)',
-  'var(--ring-amber)',
-  'var(--ring-rose)',
-] as const;
+/**
+ * Absolute maximum the splash may stay on screen, regardless of whether the
+ * exit timeline fired its own completion. The sequence ends around 4.6s, so
+ * this is nearly double: it never truncates a healthy run, and only intervenes
+ * when the timeline has failed — an interrupted animation, a backgrounded tab,
+ * or anything thrown mid-play used to leave the splash covering the page
+ * indefinitely.
+ */
+const HARD_CEILING_MS = 8000;
 
-interface BootScopeHandle {
-  revert: () => void;
-  add: (fn: () => void | Promise<void>) => void;
-}
+/** Act boundaries. Every phase in the sequence resolves against these. */
+const ACT = {
+  ignite: 0,
+  floor: 120,
+  fan: 600,
+  rain: 900,
+  rings: 1900,
+  brackets: 2150,
+  telemetry: 2350,
+  chips: 2500,
+  rule: 3000,
+  wordmark: 3120,
+  handle: 3300,
+  status: 3450,
+  hold: 3900,
+  dissolve: 4300,
+} as const;
 
-// Floating module data
 const MODULES = [
-  { label: 'API', pos: 'top-left' },
-  { label: 'DB', pos: 'top-right' },
-  { label: 'UI', pos: 'bottom-left' },
-  { label: 'UX', pos: 'bottom-right' },
+  { label: 'API', pos: 'top-[14%] left-[7%]', accent: 'var(--neon-cyan)' },
+  { label: 'DB', pos: 'top-[14%] right-[7%]', accent: 'var(--neon-coral)' },
+  { label: 'UI', pos: 'bottom-[14%] left-[7%]', accent: 'var(--neon-violet)' },
+  { label: 'UX', pos: 'bottom-[14%] right-[7%]', accent: 'var(--neon-amber)' },
 ] as const;
 
-// Code lines for stream effect
-const CODE_LINES = [
-  { text: 'const workspace = new CyberDeck();', color: '--neon-lime' },
-  { text: "await workspace.boot({ kernel: 'neural' });", color: '--neon-cyan' },
-  { text: '// Initializing subsystems...', color: '--fg-3' },
-  { text: '✓ Neural link established', color: '--neon-magenta' },
-  { text: '✓ Render pipeline online', color: '--neon-amber' },
-];
+const BURST = [
+  { x: -46, y: -30 },
+  { x: 40, y: -36 },
+  { x: -30, y: 32 },
+  { x: 32, y: 26 },
+  { x: -12, y: -46 },
+  { x: 48, y: 8 },
+  { x: -48, y: 6 },
+  { x: 12, y: 44 },
+] as const;
+
+const ACCENT_COLORS = [
+  'var(--neon-cyan)',
+  'var(--neon-violet)',
+  'var(--neon-coral)',
+  'var(--neon-amber)',
+  'var(--neon-lime)',
+] as const;
+
+/** Corner brackets for act 2 — four L-shapes framing the stage. */
+const BRACKETS = [
+  'M 0 18 L 0 0 L 18 0',
+  'M 82 0 L 100 0 L 100 18',
+  'M 100 82 L 100 100 L 82 100',
+  'M 18 100 L 0 100 L 0 82',
+] as const;
+
+/** Perspective floor: lines converging on the centre as they recede. */
+const FLOOR_LINES = Array.from({ length: 13 }, (_, i) => {
+  const t = i / 12;
+  const inset = 4 + t * 34;
+  return { inset, opacity: 0.05 + t * 0.12, key: `h${i}` };
+});
+const FLOOR_RAYS = Array.from({ length: 9 }, (_, i) => ({
+  key: `v${i}`,
+  x: 4 + (i / 8) * 92,
+}));
 
 export default function BootSequence() {
   const [show, setShow] = useState(false);
+  const [skippable, setSkippable] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const scopeRef = useRef<BootScopeHandle | null>(null);
-  const mountTime = useRef<number>(Date.now());
-  const timersRef = useRef<number[]>([]);
+  const mountTime = useRef<number>(0);
+  const telemetryRef = useRef<HTMLSpanElement>(null);
 
-  const finish = useCallback(() => {
-    setShow(false);
-  }, []);
+  const finish = useCallback(() => setShow(false), []);
 
   const skip = useCallback(() => {
-    if (show && Date.now() - mountTime.current > SKIPPABLE_AFTER_MS) {
-      finish();
-    }
-  }, [show, finish]);
-
-  // Always mount — no sessionStorage guard
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const reduced = isReducedMotion();
-    setShow(true);
-    mountTime.current = Date.now();
-    if (reduced) {
-      const t = window.setTimeout(finish, 140);
-      timersRef.current.push(t as unknown as number);
-      return () => window.clearTimeout(t as unknown as number);
-    }
+    if (Date.now() - mountTime.current > SKIPPABLE_AFTER_MS) finish();
   }, [finish]);
 
-  // Skip on any key/click after SKIPPABLE_AFTER_MS
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    mountTime.current = Date.now();
+    setShow(true);
+    if (isReducedMotion()) {
+      const t = window.setTimeout(finish, 420);
+      return () => window.clearTimeout(t);
+    }
+
+    // Hard ceiling. The exit is driven by an anime.js timeline `onComplete`,
+    // which never fires if the timeline is interrupted, the tab is backgrounded
+    // mid-run, or anything throws while it plays — and the splash then covers
+    // the page indefinitely. This is independent of that path, so the splash
+    // cannot outlive its own sequence. Deliberately longer than the timeline so
+    // it never cuts the animation short on a normal load.
+    const ceiling = window.setTimeout(finish, HARD_CEILING_MS);
+    return () => window.clearTimeout(ceiling);
+  }, [finish]);
+
   useEffect(() => {
     if (!show) return;
-
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' || e.key === ' ') {
         e.preventDefault();
         skip();
       }
     };
-    const onClick = () => skip();
-
     window.addEventListener('keydown', onKey);
-    window.addEventListener('mousedown', onClick);
-    window.addEventListener('touchstart', onClick);
-
+    const t = window.setTimeout(() => setSkippable(true), SKIPPABLE_AFTER_MS);
     return () => {
+      window.clearTimeout(t);
       window.removeEventListener('keydown', onKey);
-      window.removeEventListener('mousedown', onClick);
-      window.removeEventListener('touchstart', onClick);
     };
   }, [show, skip]);
 
-  // Cinematic premium splash sequence
   useEffect(() => {
     if (!show || !rootRef.current || isReducedMotion()) return;
-
     const root = rootRef.current;
+
     const scope = createScope({
       root,
       mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
-      defaults: {
-        duration: durations.enter * 1000,
-        ease: easings.smooth,
-      },
+      defaults: { ease: easings.smooth },
     } as Parameters<typeof createScope>[0]);
-    scopeRef.current = scope as unknown as BootScopeHandle;
 
-    let wordSplitter: ReturnType<typeof splitText> | null = null;
-    let usernameSplitter: ReturnType<typeof splitText> | null = null;
+    let wordSplitter: TextSplitter | null = null;
+    const softSpring = spring(
+      springs.soft as unknown as Record<string, number>,
+    ) as unknown as string;
+    const snapSpring = spring(
+      springs.snappy as unknown as Record<string, number>,
+    ) as unknown as string;
 
     scope.add(() => {
-      const inner = root.querySelector<HTMLElement>('.splash-inner');
-      const aurora = root.querySelector<HTMLElement>('.splash-aurora');
-      const scopeRings = root.querySelectorAll<HTMLElement>('.splash-scope');
-      const morphOrbs = root.querySelectorAll<HTMLElement>('.splash-orb');
-      const signalTicks = root.querySelectorAll<HTMLElement>('.splash-tick');
-      const moduleCards = root.querySelectorAll<HTMLElement>('.splash-module');
-      const codeLines = root.querySelectorAll<HTMLElement>('.splash-code-line');
-      const wordmark = root.querySelector<HTMLElement>('.splash-wordmark');
-      const username = root.querySelector<HTMLElement>('.splash-username');
-      const railFill = root.querySelector<HTMLElement>('.splash-rail-fill');
-      const statusText = root.querySelector<HTMLElement>('.splash-status');
-      const gridLines =
-        root.querySelectorAll<SVGGeometryElement>('.splash-grid-line');
-      const confettiDots =
-        root.querySelectorAll<HTMLElement>('.splash-confetti');
+      const q = <T extends Element>(sel: string) =>
+        Array.from(root.querySelectorAll<T>(sel));
 
-      // Initial state
-      if (inner) inner.style.opacity = '0';
-      if (railFill) railFill.style.transform = 'scaleX(0)';
-      if (aurora) aurora.style.opacity = '0';
+      const floorLines = q<SVGGeometryElement>('[data-floor-line]');
+      const floorRays = q<SVGGeometryElement>('[data-floor-ray]');
+      const ignite = root.querySelector<HTMLElement>('[data-act="ignite"]');
+      const fan = q<SVGGeometryElement>('[data-trace-path]');
+      const fanNodes = q<HTMLElement>('[data-trace-node]');
+      const rain = q<SVGElement>('[data-rain-glyph]');
+      const rainColumns = q<SVGElement>('[data-rain-column]');
+      const ringStrokes = q<SVGGeometryElement>('[data-ring-stroke]');
+      const brackets = q<SVGGeometryElement>('[data-bracket]');
+      const coreGlyph = q<SVGGeometryElement>('[data-core-glyph]');
+      const treeRows = q<SVGElement>('[data-tree-row]');
+      const promptChars = q<SVGElement>('[data-prompt-char]');
+      const caret = root.querySelector<SVGElement>('[data-prompt-caret]');
+      const chips = q<HTMLElement>('[data-module]');
+      const rule = root.querySelector<SVGGeometryElement>('[data-rule-path]');
+      const wordmark = root.querySelector<HTMLElement>('[data-wordmark]');
+      const handle = root.querySelector<HTMLElement>('[data-handle]');
+      const rail = root.querySelector<HTMLElement>('[data-rail-fill]');
+      const status = root.querySelector<HTMLElement>('[data-status]');
+      const burst = q<HTMLElement>('[data-burst]');
+      const codeLines = q<HTMLElement>('[data-code-line]');
 
-      // Initial fade-in
-      animate(root, {
-        opacity: [0, 1],
-        duration: 200,
-        ease: easings.smooth,
+      // Everything that animates starts hidden — set here, never in a class.
+      const hidden: (HTMLElement | SVGElement | null)[] = [
+        ...fanNodes,
+        ...rain,
+        ...ringStrokes,
+        ...brackets,
+        ...coreGlyph,
+        ...treeRows,
+        ...promptChars,
+        caret,
+        ...chips,
+        ...codeLines,
+        rule,
+        wordmark,
+        handle,
+        status,
+        ...burst,
+      ];
+      hidden.forEach((el) => {
+        if (el) el.style.opacity = '0';
       });
+      if (rail) rail.style.transform = 'scaleX(0)';
 
-      if (inner) {
-        animate(inner, {
-          opacity: [0, 1],
-          duration: 240,
-          ease: easings.smooth,
-        });
+      const tl = createTimeline({ defaults: { ease: easings.smooth } });
+
+      // The root is authored at opacity 0. Without this tween it never becomes
+      // visible and the whole sequence plays behind an invisible overlay.
+      tl.add(
+        root,
+        { opacity: [0, 1], duration: 220, ease: easings.smooth },
+        ACT.ignite,
+      );
+
+      // ── Act 0 · Cold start ────────────────────────────────────────────────
+      if (ignite) {
+        tl.add(
+          ignite,
+          {
+            scale: [0, 1],
+            opacity: [0, 1],
+            duration: 320,
+            ease: easings.outExpo,
+          },
+          ACT.ignite,
+        );
       }
-
-      // Aurora fade-in
-      if (aurora) {
-        animate(aurora, {
-          opacity: [0, 1],
-          duration: durations.enter * 1000 * 0.5,
-          ease: easings.smooth,
-        });
-      }
-
-      // Signal ticks — draw sequentially (staircase)
-      if (signalTicks.length) {
-        animate(signalTicks, {
-          opacity: [0, 1],
-          scale: [0.6, 1],
-          duration: 200,
-          ease: easings.outExpo,
-          delay: stagger(80, { from: 'first' }),
-        });
-      }
-
-      // Scope rings — draw with line-draw effect
-      if (scopeRings.length) {
-        const drawables: ReturnType<typeof createDrawable>[0][] = [];
-        scopeRings.forEach((el) => {
-          const d = createDrawable(el, 0, 0);
-          if (d.length) drawables.push(...d);
-        });
-        if (drawables.length) {
-          animate(drawables as unknown as HTMLElement[], {
-            draw: ['0 0', '0 1'],
-            duration: durations.draw * 1000,
-            ease: easings.smooth,
-            delay: stagger(200, { from: 'first' }),
-          });
+      if (floorRays.length) {
+        const draw = createDrawable(floorRays);
+        if ((draw as unknown as HTMLElement[]).length) {
+          tl.add(
+            draw as unknown as HTMLElement[],
+            {
+              draw: ['0 0', '0 1'],
+              duration: 620,
+              ease: easings.smooth,
+              delay: stagger(28, { from: 'center' }),
+            },
+            ACT.floor,
+          );
         }
-        // After draw, pulse glow
-        setTimeout(() => {
-          scopeRings.forEach((el) => {
-            const stroke = el.style.stroke || 'var(--ring-cyan)';
-            animate(el, {
-              opacity: [{ from: 0.8 }, { to: 1 }],
-              duration: durations.pulse * 1000,
-              loop: 2,
-              direction: 'alternate',
-              ease: 'easeInOut',
-              delay: stagger(300),
-            });
-          });
-        }, durations.draw * 1000 + 300);
+      }
+      if (floorLines.length) {
+        tl.add(
+          floorLines,
+          {
+            opacity: [0, 0.14],
+            duration: 420,
+            delay: stagger(24, { from: 'center' }),
+          },
+          ACT.floor,
+        );
       }
 
-      // Morph orbs — gentle float
-      if (morphOrbs.length) {
-        morphOrbs.forEach((orb) => {
-          animate(orb, {
-            y: [0, -8, 0],
-            x: [0, 4, 0],
-            rotate: [0, 4, 0, -4, 0],
-            duration: 4000,
-            loop: true,
-            direction: 'alternate',
-            ease: 'easeInOut',
-            delay: Math.random() * 400,
-          });
-        });
+      // ── Act 1 · Signal acquisition ────────────────────────────────────────
+      if (fan.length) {
+        const draw = createDrawable(fan);
+        if ((draw as unknown as HTMLElement[]).length) {
+          tl.add(
+            draw as unknown as HTMLElement[],
+            {
+              draw: ['0 0', '0 1'],
+              duration: 460,
+              ease: easings.outExpo,
+              delay: stagger(55, { from: 'first' }),
+            },
+            ACT.fan,
+          );
+        }
+      }
+      if (fanNodes.length) {
+        tl.add(
+          fanNodes,
+          {
+            scale: [0, 1],
+            opacity: [0, 1],
+            duration: 420,
+            ease: snapSpring,
+            delay: stagger(40, { from: 'first' }),
+          },
+          ACT.fan + 260,
+        );
+      }
+      if (rainColumns.length) {
+        tl.add(
+          rainColumns,
+          { opacity: [0, 0.5], y: [-12, 0], duration: 520, delay: stagger(90) },
+          ACT.rain,
+        );
+      }
+      if (rain.length) {
+        tl.add(
+          rain,
+          {
+            opacity: [0, 0.7],
+            duration: 90,
+            delay: stagger(9, { from: 'first' }),
+          },
+          ACT.rain + 180,
+        );
+        // One downward pass, then settle — never an endless loop on screen.
+        tl.add(
+          rain,
+          {
+            y: ['-100%', '100%'],
+            duration: 1400,
+            ease: easings.smooth,
+            delay: stagger(6),
+          },
+          ACT.rain + 260,
+        );
+        tl.add(rain, { y: '0%', duration: 1 }, ACT.rain + 1700);
+        tl.add(rain, { opacity: 0, duration: 1 }, ACT.rain + 1700);
       }
 
-      // Grid lines — draw in sequence
-      if (gridLines.length) {
-        const gridDraw = createDrawable('.splash-grid-line', 0, 0);
-        animate(gridDraw as unknown as HTMLElement[], {
-          draw: ['0 0', '0 1'],
-          duration: durations.draw * 1000 * 0.8,
-          ease: easings.smooth,
-          delay: stagger(100, { from: 'first' }),
-        });
+      // ── Act 2 · Systems online ────────────────────────────────────────────
+      if (coreGlyph.length) {
+        tl.add(
+          coreGlyph,
+          {
+            scale: [0.4, 1],
+            opacity: [0, 0.8],
+            rotate: [-25, 0],
+            duration: 620,
+            ease: snapSpring,
+          },
+          ACT.rings,
+        );
       }
-
-      // Module cards — spring entrance from edges
-      if (moduleCards.length) {
-        animate(moduleCards, {
-          opacity: [0, 1],
-          translateY: [24, 0],
-          scale: [0.92, 1],
-          duration: durations.enter * 1000 * 0.6,
-          ease: spring(
-            springs.card as unknown as Record<string, number>,
-          ) as unknown as string,
-          delay: stagger(80, { from: 'first' }),
-        });
+      if (ringStrokes.length) {
+        const draw = createDrawable(ringStrokes);
+        if ((draw as unknown as HTMLElement[]).length) {
+          tl.add(
+            draw as unknown as HTMLElement[],
+            {
+              draw: ['0 0', '0 1'],
+              duration: 520,
+              ease: easings.outExpo,
+              delay: stagger(120, { from: 'first' }),
+            },
+            ACT.rings,
+          );
+        }
+        tl.add(
+          ringStrokes,
+          {
+            scale: [1.08, 1],
+            duration: 620,
+            ease: softSpring,
+            delay: stagger(120),
+          },
+          ACT.rings + 300,
+        );
+        tl.add(
+          ringStrokes,
+          { opacity: [0, 1], duration: 320, delay: stagger(120) },
+          ACT.rings,
+        );
       }
-
-      // Code lines — typewriter reveal
+      if (brackets.length) {
+        const draw = createDrawable(brackets);
+        if ((draw as unknown as HTMLElement[]).length) {
+          tl.add(
+            draw as unknown as HTMLElement[],
+            {
+              draw: ['0 0', '0 1'],
+              duration: 340,
+              ease: easings.outExpo,
+              delay: stagger(90),
+            },
+            ACT.brackets,
+          );
+        }
+        tl.add(brackets, { opacity: [0, 1], duration: 200 }, ACT.brackets);
+      }
+      if (treeRows.length) {
+        tl.add(
+          treeRows,
+          {
+            x: [-8, 0],
+            opacity: [0, 1],
+            duration: 300,
+            ease: easings.outExpo,
+            delay: stagger(45, { from: 'first' }),
+          },
+          ACT.telemetry,
+        );
+      }
+      if (promptChars.length) {
+        tl.add(
+          promptChars,
+          { opacity: [0, 0.85], duration: 40, delay: stagger(28) },
+          ACT.telemetry + 120,
+        );
+        if (caret) {
+          tl.add(
+            caret,
+            { opacity: [0, 0.9], duration: 60 },
+            ACT.telemetry + 200,
+          );
+        }
+      }
+      if (chips.length) {
+        tl.add(
+          chips,
+          {
+            scale: [0.7, 1],
+            y: [14, 0],
+            opacity: [0, 1],
+            duration: 520,
+            ease: snapSpring,
+            delay: stagger(90),
+          },
+          ACT.chips,
+        );
+      }
       if (codeLines.length) {
-        codeLines.forEach((line, i) => {
-          line.style.opacity = '0';
-          line.style.transform = 'translateY(8px)';
-        });
-        animate(codeLines, {
-          opacity: [0, 1],
-          translateY: [8, 0],
-          duration: 240,
-          ease: easings.smooth,
-          delay: stagger(500, { from: 'first' }),
-        });
+        tl.add(
+          codeLines,
+          {
+            x: [-10, 0],
+            opacity: [0, 1],
+            duration: 260,
+            ease: easings.outExpo,
+            delay: stagger(90),
+          },
+          ACT.telemetry,
+        );
+      }
+      // Telemetry counter — a plain object tweened on the timeline, written
+      // straight to the DOM so 40 ticks never re-render React.
+      if (telemetryRef.current) {
+        const counter = { v: 0 };
+        tl.add(
+          counter,
+          {
+            v: 100,
+            duration: 1100,
+            ease: easings.smooth,
+            onUpdate: () => {
+              if (telemetryRef.current) {
+                telemetryRef.current.textContent = String(
+                  Math.round(counter.v),
+                ).padStart(3, '0');
+              }
+            },
+          },
+          ACT.rings,
+        );
       }
 
-      // Timeline for centered elements
-      const tl = createTimeline({
-        defaults: { ease: easings.outExpo },
-      });
-
-      tl.label('wordmark', 2000);
-      tl.label('username', 2200);
-      tl.label('rail', 2400);
-      tl.label('status', 2550);
-      tl.label('hold', 2800);
-      tl.label('exit', 3200);
-
-      // Wordmark splitText — char cascade from center
-      try {
-        if (wordmark) {
+      // ── Act 3 · Identity lock ─────────────────────────────────────────────
+      if (rule) {
+        const draw = createDrawable(rule, 0, 0);
+        if ((draw as unknown as HTMLElement[]).length) {
+          tl.add(
+            draw as unknown as HTMLElement[],
+            { draw: ['0 0', '1 0'], duration: 380, ease: easings.outExpo },
+            ACT.rule,
+          );
+        }
+        tl.add(rule, { opacity: [0, 0.8], duration: 1 }, ACT.rule);
+      }
+      if (wordmark) {
+        try {
           wordSplitter = splitText(wordmark, {
             chars: true,
             words: { wrap: 'clip' },
           });
+        } catch {
+          wordSplitter = null;
         }
-      } catch {}
-
-      try {
-        if (username) {
-          usernameSplitter = splitText(username, {
-            chars: true,
-          });
+        const words = (wordSplitter?.words as unknown as HTMLElement[]) ?? [];
+        const chars = (wordSplitter?.chars as unknown as HTMLElement[]) ?? [];
+        words.forEach((w) => {
+          w.style.paddingBottom = '0.14em';
+        });
+        if (words.length) {
+          tl.add(
+            words,
+            {
+              y: ['0.7em', '0em'],
+              duration: 460,
+              ease: easings.outExpo,
+              delay: stagger(70),
+            },
+            ACT.wordmark,
+          );
         }
-      } catch {}
-
-      const wordChars = (wordSplitter?.chars as unknown as HTMLElement[]) ?? [];
-      const usernameChars =
-        (usernameSplitter?.chars as unknown as HTMLElement[]) ?? [];
-
-      if (wordChars.length) {
+        if (chars.length) {
+          tl.add(chars, { opacity: [0, 1], duration: 300 }, ACT.wordmark + 40);
+        }
+        tl.add(wordmark, { opacity: [0, 1], duration: 1 }, ACT.wordmark);
+      }
+      if (handle) {
         tl.add(
-          wordChars,
+          handle,
           {
-            y: ['80%', '0%'],
-            opacity: [0, 1],
-            duration: durations.enter * 1000 * 0.5,
-            ease: easings.expoOut,
-            delay: stagger(16, { from: 'center' }),
+            opacity: [0, 0.85],
+            y: [8, 0],
+            duration: 380,
+            ease: easings.outExpo,
           },
-          'wordmark',
+          ACT.handle,
         );
-      } else if (wordmark) {
+      }
+      if (rail) {
         tl.add(
-          wordmark,
-          { opacity: [0, 1], y: [12, 0], duration: 400 },
-          'wordmark',
+          rail,
+          { opacity: [0, 1], duration: 1, ease: 'linear' },
+          ACT.ignite,
+        );
+        tl.add(
+          rail,
+          { scaleX: [0, 1], ease: 'linear', duration: ACT.hold },
+          ACT.ignite,
+        );
+      }
+      if (status) {
+        tl.add(
+          status,
+          { opacity: [0, 1], y: [6, 0], duration: 320, ease: easings.outExpo },
+          ACT.status,
         );
       }
 
-      if (usernameChars.length) {
-        tl.add(
-          usernameChars,
-          {
-            y: ['100%', '0%'],
-            opacity: [0, 1],
-            duration: durations.enter * 1000 * 0.35,
-            ease: easings.expoOut,
-            delay: stagger(14, { from: 'first' }),
-          },
-          'username',
-        );
-      } else if (username) {
-        tl.add(
-          username,
-          { opacity: [0, 1], y: [8, 0], duration: 350 },
-          'username',
-        );
-      }
+      // ── Act 4 · Dissolve ──────────────────────────────────────────────────
+      const dissolveTargets = [
+        ...fan,
+        ...fanNodes,
+        ...ringStrokes,
+        ...brackets,
+        ...coreGlyph,
+        ...treeRows,
+        ...chips,
+        ...codeLines,
+        rule,
+      ].filter(Boolean) as (SVGElement | HTMLElement)[];
 
-      // Rail fill — spring scale
-      if (railFill) {
+      if (dissolveTargets.length) {
         tl.add(
-          railFill,
+          dissolveTargets,
           {
-            scaleX: [0, 1],
-            opacity: [0, 1],
-            duration: durations.enter * 1000 * 0.6,
+            opacity: 0,
+            scale: 0.94,
+            duration: 420,
             ease: easings.smooth,
+            delay: stagger(14),
           },
-          'rail',
+          ACT.dissolve,
         );
       }
-
-      // Status text — typewriter cursor effect
-      if (statusText) {
-        tl.add(
-          statusText,
-          { opacity: [0, 1], y: [6, 0], duration: 300 },
-          'status',
-        );
-      }
-
-      // Auto-exit after TOTAL_MS
-      const exitDelay = Math.max(80, TOTAL_MS - 3200);
-      const autoId = window.setTimeout(() => {
-        if (inner) {
-          animate(inner, {
-            scale: [1, 0.96],
-            opacity: [1, 0],
-            duration: 480,
-            ease: spring(
-              springs.gentle as unknown as Record<string, number>,
-            ) as unknown as string,
-          });
-        }
-        animate(root, {
-          opacity: [1, 0],
-          duration: 360,
-          ease: easings.smooth,
-        }).then(() => finish());
-
-        // Confetti burst
-        if (confettiDots.length) {
-          const burst = [
-            { x: -32, y: -20 },
-            { x: 28, y: -24 },
-            { x: -20, y: 22 },
-            { x: 22, y: 18 },
-            { x: -8, y: -32 },
-            { x: 32, y: 6 },
-          ];
-          confettiDots.forEach((dot, i) => {
-            const b = burst[i % burst.length];
-            dot.style.opacity = '1';
-            dot.style.transform = 'translate(0, 0) scale(0.6)';
-            animate(dot, {
+      if (burst.length) {
+        burst.forEach((dot, i) => {
+          const b = BURST[i % BURST.length];
+          dot.style.opacity = '1';
+          tl.add(
+            dot,
+            {
               x: [0, b.x],
               y: [0, b.y],
-              scale: [0.6, 1.1],
+              scale: [0.4, 1.2],
               opacity: [1, 0],
-              duration: 620,
+              duration: 560,
               ease: spring(
                 springs.bouncy as unknown as Record<string, number>,
               ) as unknown as string,
-              delay: stagger(12, { from: 'center' }),
-            });
-          });
-        }
-      }, exitDelay);
+              delay: stagger(26),
+            },
+            ACT.dissolve + 80,
+          );
+        });
+      }
+      if (wordmark) {
+        tl.add(
+          wordmark,
+          { opacity: 0, y: -14, duration: 380, ease: easings.smooth },
+          ACT.hold,
+        );
+      }
+      tl.add(
+        root,
+        { opacity: [1, 0], duration: 420, ease: easings.smooth },
+        ACT.hold + 380,
+      );
 
-      timersRef.current.push(autoId as unknown as number);
+      tl.then(() => finish());
     });
 
     return () => {
-      timersRef.current.forEach((t) => window.clearTimeout(t));
-      timersRef.current = [];
+      try {
+        scope.revert();
+      } catch {
+        /* scope already gone */
+      }
       try {
         wordSplitter?.revert();
-      } catch {}
-      try {
-        usernameSplitter?.revert();
-      } catch {}
-      scope.revert();
-      scopeRef.current = null;
+      } catch {
+        /* splitter already reverted */
+      }
       if (root) root.style.opacity = '';
     };
   }, [show, finish]);
 
   if (!show) return null;
 
-  // Generate grid path data
-  const gridPath = (x1: number, y1: number, x2: number, y2: number) =>
-    `M ${x1} ${y1} L ${x2} ${y2}`;
-
   return (
     <div
       ref={rootRef}
       role="status"
       aria-live="polite"
-      aria-label="Loading workspace"
+      aria-label="Initialising workspace"
       data-testid="boot-sequence"
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
-      style={{
-        background: 'var(--bg-void)',
-        color: 'var(--fg-1)',
-        opacity: 0,
-      }}
+      style={{ background: 'var(--bg-void)', color: 'var(--fg-1)', opacity: 0 }}
     >
-      {/* Static aurora mesh background */}
-      <AuroraMesh variant="hero" className="splash-aurora" />
+      <AuroraMesh variant="hero" className="absolute inset-0" />
 
-      {/* SVG overlay — scope rings, grid, morph orbs, signal ticks */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none">
-        <svg
-          className="absolute inset-0 w-full h-full"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-          style={{ overflow: 'visible' }}
-        >
-          {/* Grid lines — premium circuit pattern */}
-          <g
-            className="splash-grid"
-            stroke="var(--border-subtle)"
-            strokeWidth={0.5}
-            opacity={0.3}
-          >
-            <path className="splash-grid-line" d={gridPath(15, 15, 85, 15)} />
-            <path className="splash-grid-line" d={gridPath(15, 85, 85, 85)} />
-            <path className="splash-grid-line" d={gridPath(15, 15, 15, 85)} />
-            <path className="splash-grid-line" d={gridPath(85, 15, 85, 85)} />
-            <path className="splash-grid-line" d={gridPath(50, 15, 50, 85)} />
-            <path className="splash-grid-line" d={gridPath(15, 50, 85, 50)} />
-            <path className="splash-grid-line" d={gridPath(30, 30, 70, 30)} />
-            <path className="splash-grid-line" d={gridPath(30, 70, 70, 70)} />
-            <path className="splash-grid-line" d={gridPath(30, 30, 30, 70)} />
-            <path className="splash-grid-line" d={gridPath(70, 30, 70, 70)} />
-          </g>
-        </svg>
+      {/* Act 0 — perspective floor */}
+      <svg
+        className="absolute inset-x-0 bottom-0 h-1/2 w-full"
+        viewBox="0 0 100 50"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+        data-layer-group
+      >
+        {FLOOR_RAYS.map((r) => (
+          <line
+            key={r.key}
+            data-floor-ray
+            x1={r.x}
+            y1={50}
+            x2={50 + (r.x - 50) * 0.06}
+            y2={0}
+            stroke="var(--neon-cyan)"
+            strokeWidth="0.08"
+            strokeOpacity="0.3"
+            pathLength={1000}
+          />
+        ))}
+        {FLOOR_LINES.map((l) => (
+          <line
+            key={l.key}
+            data-floor-line
+            x1={l.inset}
+            y1={50 - l.inset * 0.42}
+            x2={100 - l.inset}
+            y2={50 - l.inset * 0.42}
+            stroke="var(--neon-cyan)"
+            strokeWidth="0.06"
+            strokeOpacity={l.opacity}
+            opacity={0}
+            pathLength={1000}
+          />
+        ))}
+      </svg>
 
-        {/* Scope rings — center */}
-        <div className="splash-scope absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <ScopeRings accent="cyan" size={160} />
-        </div>
+      {/* Act 1 — binary rain margins */}
+      <div
+        data-rain-column
+        className="absolute left-[3%] top-[14%] hidden sm:block"
+      >
+        <BinaryRain accent="lime" size={54} seed={0xa11ce} />
+      </div>
+      <div
+        data-rain-column
+        className="absolute right-[3%] top-[22%] hidden sm:block"
+      >
+        <BinaryRain accent="ice" size={54} seed={0xb0b} />
+      </div>
 
-        {/* Morph orbs — scattered */}
-        <div className="splash-orb absolute left-[20%] top-[25%]">
-          <MorphOrb accent="violet" size={120} />
-        </div>
-        <div className="splash-orb absolute right-[15%] top-[30%]">
-          <MorphOrb accent="magenta" size={100} />
-        </div>
-        <div className="splash-orb absolute left-[10%] bottom-[25%]">
-          <MorphOrb accent="amber" size={90} />
-        </div>
+      {/* Act 1/2 — circuit fan, core, rings, brackets */}
+      <div
+        data-layer-group
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+      >
+        <div className="relative grid place-items-center">
+          <div className="relative grid place-items-center">
+            <svg viewBox="0 0 400 400" className="w-[400px] h-[400px] -z-10">
+              {[
+                { r: 150, o: 0.5, w: 0.7 },
+                { r: 118, o: 0.35, w: 0.6 },
+                { r: 88, o: 0.22, w: 0.5 },
+              ].map((ring, i) => (
+                <circle
+                  key={ring.r}
+                  data-ring-stroke
+                  cx="200"
+                  cy="200"
+                  r={ring.r}
+                  fill="none"
+                  stroke="var(--neon-cyan)"
+                  strokeWidth={ring.w}
+                  strokeOpacity={ring.o}
+                  pathLength={1000}
+                  opacity={0}
+                />
+              ))}
+              <polygon
+                data-core-glyph
+                points="200,168 224,200 200,232 176,200"
+                fill="none"
+                stroke="var(--neon-violet)"
+                strokeWidth="1.2"
+                strokeOpacity="0.85"
+                opacity={0}
+              />
+            </svg>
 
-        {/* Signal ticks — corner indicators */}
-        <div className="splash-tick absolute left-[12%] top-[12%]">
-          <SignalTicks accent="cyan" size={40} />
-        </div>
-        <div className="splash-tick absolute right-[12%] top-[12%]">
-          <SignalTicks accent="magenta" size={40} />
-        </div>
-        <div className="splash-tick absolute left-[12%] bottom-[12%]">
-          <SignalTicks accent="violet" size={40} />
-        </div>
-        <div className="splash-tick absolute right-[12%] bottom-[12%]">
-          <SignalTicks accent="amber" size={40} />
+            <div className="absolute">
+              <CircuitTraces accent="cyan" size={330} />
+            </div>
+            <div className="absolute">
+              <CodeBrackets accent="violet" size={190} opacity={0.55} />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="splash-inner relative flex flex-col items-center w-full max-w-[520px] px-6">
-        {/* Code stream display */}
+      {/* Act 2 — corner brackets */}
+      <svg
+        data-layer-group
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(78vw,760px)] h-[min(78vw,760px)]"
+        viewBox="0 0 100 100"
+        aria-hidden="true"
+      >
+        {BRACKETS.map((d, i) => (
+          <path
+            key={d}
+            data-bracket
+            d={d}
+            fill="none"
+            stroke="var(--neon-cyan)"
+            strokeWidth="0.4"
+            pathLength={1000}
+            opacity={0}
+          />
+        ))}
+      </svg>
+
+      {/* Act 2 — module chips */}
+      <div className="absolute inset-0 pointer-events-none">
+        {MODULES.map((m) => (
+          <div
+            key={m.label}
+            data-module
+            className={`absolute ${m.pos}`}
+            style={{ opacity: 0 }}
+          >
+            <span
+              className="inline-block font-mono text-[10px] tracking-[0.18em] px-2.5 py-1 rounded-[var(--radius-sm)]"
+              style={{
+                border: '1px solid var(--border-subtle)',
+                background: 'var(--bg-1)',
+                color: m.accent,
+              }}
+            >
+              {m.label}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Act 0 ignite point */}
+      <div
+        data-act="ignite"
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+        style={{ opacity: 0 }}
+      >
         <div
-          className="splash-code-container font-mono text-[11px] leading-relaxed mb-4 w-full max-w-[400px]"
+          className="w-2 h-2 rounded-full"
           style={{
-            color: 'var(--fg-3)',
-            background: 'var(--glass-bg)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '12px 16px',
-            border: '1px solid var(--border-subtle)',
-            backdropFilter: 'var(--glass-blur)',
+            background: 'var(--neon-cyan)',
+            boxShadow: '0 0 24px var(--glow-cyan)',
           }}
-          aria-hidden="true"
-        >
-          {CODE_LINES.map((line, i) => (
-            <div
-              key={i}
-              className="splash-code-line"
-              style={{ opacity: 0, marginBottom: '2px' }}
-            >
-              <span style={{ color: `var(--${line.color})` }}>
-                {line.text.split(' ').slice(0, 4).join(' ')}
-              </span>{' '}
-              {line.text.split(' ').slice(4).join(' ') &&
-                line.text.split(' ').slice(4).join(' ')}
-            </div>
-          ))}
-        </div>
+        />
+      </div>
 
-        {/* Module cards — floating HUD elements */}
-        <div className="splash-modules absolute inset-0 pointer-events-none">
-          <div
-            className="splash-module absolute top-[12%] left-[8%]"
-            style={{ opacity: 0 }}
-          >
-            <div
-              style={{
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--border-subtle)',
-                backdropFilter: 'var(--glass-blur)',
-                borderRadius: 'var(--radius-md)',
-                padding: '6px 12px',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '10px',
-                color: 'var(--neon-cyan)',
-              }}
-            >
-              API
-            </div>
-          </div>
-          <div
-            className="splash-module absolute top-[12%] right-[8%]"
-            style={{ opacity: 0 }}
-          >
-            <div
-              style={{
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--border-subtle)',
-                backdropFilter: 'var(--glass-blur)',
-                borderRadius: 'var(--radius-md)',
-                padding: '6px 12px',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '10px',
-                color: 'var(--neon-magenta)',
-              }}
-            >
-              DB
-            </div>
-          </div>
-          <div
-            className="splash-module absolute bottom-[12%] left-[8%]"
-            style={{ opacity: 0 }}
-          >
-            <div
-              style={{
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--border-subtle)',
-                backdropFilter: 'var(--glass-blur)',
-                borderRadius: 'var(--radius-md)',
-                padding: '6px 12px',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '10px',
-                color: 'var(--neon-violet)',
-              }}
-            >
-              UI
-            </div>
-          </div>
-          <div
-            className="splash-module absolute bottom-[12%] right-[8%]"
-            style={{ opacity: 0 }}
-          >
-            <div
-              style={{
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--border-subtle)',
-                backdropFilter: 'var(--glass-blur)',
-                borderRadius: 'var(--radius-md)',
-                padding: '6px 12px',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '10px',
-                color: 'var(--neon-amber)',
-              }}
-            >
-              UX
-            </div>
-          </div>
-        </div>
-
-        {/* Wordmark — premium typography with display font */}
+      {/* Centre stack */}
+      <div className="relative flex flex-col items-center w-full max-w-3xl px-6 z-10">
+        {/* Act 2 — telemetry: build log + project tree + terminal */}
         <div
-          className="splash-wordmark font-display text-5xl md:text-6xl tracking-[0.1em] text-center"
+          data-layer-group
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl mb-8"
+        >
+          <div
+            className="rounded-[var(--radius-lg)] border p-4"
+            style={{
+              background: 'var(--bg-1)',
+              borderColor: 'var(--border-subtle)',
+            }}
+          >
+            <div
+              className="font-mono text-[9px] tracking-[0.24em] mb-2"
+              style={{ color: 'var(--fg-3)' }}
+            >
+              {'// BUILD'}
+            </div>
+            {[
+              { t: 'resolving modules', c: 'var(--neon-cyan)' },
+              { t: 'compiling shaders', c: 'var(--neon-violet)' },
+              { t: 'seeding particles', c: 'var(--neon-lime)' },
+              { t: 'linking entrypoints', c: 'var(--neon-amber)' },
+            ].map((l) => (
+              <div
+                key={l.t}
+                data-code-line
+                className="font-mono text-[10px] leading-relaxed"
+                style={{ opacity: 0 }}
+              >
+                <span style={{ color: l.c }}>✓</span>{' '}
+                <span style={{ color: 'var(--fg-3)' }}>{l.t}</span>
+              </div>
+            ))}
+            <div
+              className="font-mono text-[10px] mt-2 flex items-baseline gap-1.5"
+              style={{ color: 'var(--fg-3)' }}
+            >
+              <span
+                data-code-line
+                style={{ color: 'var(--neon-cyan)', opacity: 0 }}
+              >
+                READY
+              </span>
+              <span
+                ref={telemetryRef}
+                className="tabular-nums"
+                style={{ color: 'var(--fg-2)' }}
+              >
+                000
+              </span>
+              <span style={{ color: 'var(--fg-3)' }}>ms</span>
+            </div>
+          </div>
+
+          <div
+            className="rounded-[var(--radius-lg)] border p-4"
+            style={{
+              background: 'var(--bg-1)',
+              borderColor: 'var(--border-subtle)',
+            }}
+          >
+            <div
+              className="font-mono text-[9px] tracking-[0.24em] mb-2"
+              style={{ color: 'var(--fg-3)' }}
+            >
+              {'// WORKSPACE'}
+            </div>
+            <FileTree accent="ice" />
+            <div className="mt-2">
+              <TerminalPrompt accent="lime" />
+            </div>
+          </div>
+        </div>
+
+        {/* Act 3 — lockup */}
+        <div
+          data-wordmark
+          className="font-display font-bold uppercase whitespace-nowrap text-[clamp(1.75rem,6vw,3.75rem)] leading-[1.05] tracking-[0.03em] text-center"
           style={{
             color: 'var(--fg-1)',
-            textShadow:
-              '0 0 20px var(--glow-cyan), 0 0 40px var(--glow-magenta)',
+            textShadow: '0 0 48px var(--glow-cyan-zone)',
+            opacity: 0,
           }}
         >
-          Fahim Ahmed
+          {FALLBACK_NAME}
         </div>
 
-        {/* Username sub */}
         <div
-          className="splash-username font-mono text-[13px] tracking-[0.14em] text-center mt-1"
-          style={{
-            color: 'var(--neon-cyan)',
-            opacity: 0.8,
-          }}
+          data-handle
+          className="font-mono text-[12px] tracking-[0.18em] mt-2"
+          style={{ color: 'var(--neon-cyan)', opacity: 0 }}
         >
-          @fahimaloy
+          @{FALLBACK_HANDLE}
         </div>
 
-        {/* Rule line — drawn */}
-        <div className="splash-rule mt-3 flex justify-center w-full">
-          <svg
-            width="160"
-            height="1"
-            viewBox="0 0 160 1"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-            className="overflow-visible w-full max-w-[160px]"
-          >
-            <path
-              className="splash-rule-path"
-              d="M 0 0.5 H 160"
-              stroke="var(--neon-cyan)"
-              strokeWidth="1"
-              strokeLinecap="square"
-              opacity="1"
-            />
-          </svg>
-        </div>
-
-        {/* Loading rail */}
         <div
-          className="mt-3 w-full max-w-[220px] h-[2px] overflow-hidden rounded-full"
+          className="mt-5 w-full max-w-[220px] h-[2px] overflow-hidden rounded-full"
           style={{ background: 'var(--border-subtle)' }}
           aria-hidden="true"
         >
           <div
-            className="splash-rail-fill h-full w-full origin-left"
-            style={{
-              background: 'var(--gradient-cyan-magenta)',
-              transform: 'scaleX(0)',
-              opacity: 0.9,
-            }}
+            data-rail-fill
+            className="h-full w-full origin-left"
+            style={{ background: 'var(--gradient-cyan-violet)', opacity: 0 }}
           />
         </div>
 
-        {/* Status text */}
         <div
-          className="splash-status mt-2 font-mono text-[10px] tracking-[0.16em] text-center"
-          style={{ color: 'var(--fg-3)' }}
+          data-status
+          className="mt-3 font-mono text-[10px] tracking-[0.2em] text-center"
+          style={{ color: 'var(--fg-3)', opacity: 0 }}
         >
-          INITIALIZING WORKSPACE — SYSTEMS ONLINE
+          INITIALISING WORKSPACE
         </div>
       </div>
 
-      {/* Confetti dots (exit burst) */}
+      {/* Act 4 — burst */}
       <div
-        className="pointer-events-none absolute left-1/2 top-1/2 h-0 w-0"
+        className="absolute left-1/2 top-1/2 h-0 w-0 pointer-events-none"
         aria-hidden="true"
       >
-        {ACCENT_COLORS.map((c, i) => (
+        {ACCENT_COLORS.map((c) => (
           <span
             key={c}
-            className="splash-confetti absolute block rounded-full opacity-0"
+            data-burst
+            className="absolute block rounded-full"
             style={{
               width: '5px',
               height: '5px',
               left: '-2.5px',
               top: '-2.5px',
               background: c,
-              boxShadow: `0 0 8px ${c}`,
+              boxShadow: `0 0 10px ${c}`,
+              opacity: 0,
             }}
           />
         ))}
       </div>
+
+      {skippable && (
+        <button
+          type="button"
+          onClick={skip}
+          className="absolute bottom-6 right-6 inline-flex items-center gap-2 rounded-[var(--radius-md)] border px-3 py-1.5 font-mono text-[10px] tracking-[0.18em] transition-colors"
+          style={{
+            background: 'var(--bg-1)',
+            borderColor: 'var(--border-subtle)',
+            color: 'var(--fg-2)',
+          }}
+        >
+          SKIP <span style={{ color: 'var(--fg-3)' }}>ESC</span>
+        </button>
+      )}
     </div>
   );
 }

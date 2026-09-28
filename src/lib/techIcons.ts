@@ -2,7 +2,7 @@
 // Registry of tech-stack brand icons via react-icons/si (Simple Icons).
 // Usage:
 //   import { TECH_ICONS, resolveTechIcon, allTechIconIds } from '@/lib/techIcons';
-//   const hit = resolveTechIcon('next.js'); // -> { Component: SiNextdotjs, hex: 'var(--surface-dark-1)', label: 'Next.js', id: 'nextdotjs' }
+//   const hit = resolveTechIcon('next.js'); // -> { Component: SiNextdotjs, hex: 'var(--bg-3)', label: 'Next.js', id: 'nextdotjs' }
 //   <hit.Component color={hit.hex} />
 //
 // Notes:
@@ -950,10 +950,13 @@ export const techIconCategories: string[] = Array.from(
 
 /** Grouped lookup. */
 export const TECH_ICONS_BY_CATEGORY: Record<string, TechIconEntry[]> =
-  TECH_ICONS.reduce((acc, entry) => {
-    (acc[entry.category] ??= []).push(entry);
-    return acc;
-  }, {} as Record<string, TechIconEntry[]>);
+  TECH_ICONS.reduce(
+    (acc, entry) => {
+      (acc[entry.category] ??= []).push(entry);
+      return acc;
+    },
+    {} as Record<string, TechIconEntry[]>,
+  );
 
 // Fast lookup for resolve — built once at module load.
 const TECH_ICON_LOOKUP: Map<string, TechIconEntry> = new Map();

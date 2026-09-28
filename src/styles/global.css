@@ -41,6 +41,34 @@ body {
    Warm, subtle editorial surface system — no neon blooms or clip-notches.
    ═══════════════════════════════════════════════════════════════════════════════ */
 @layer utilities {
+  /* Visually hidden, still announced. Tailwind ships `sr-only` but it is not
+     available inside `@layer utilities` here, so the app defines its own. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* ── REVEAL — hide-until-animated, but ONLY when motion is welcome.
+     The previous pattern was `className="... opacity-0"` plus a JS
+     `if (isReducedMotion()) return;` before the entrance ran. Under
+     `prefers-reduced-motion: reduce` the early return fired, nothing ever
+     animated the element, and the content stayed invisible forever —
+     SkillGrid, ExperienceTimeline, MessageOverlay and the blog cover were
+     all blank for exactly the users who asked for less motion.
+     Scoping the hiding rule to `no-preference` makes the correct behaviour
+     the default and removes the reduced-motion code path entirely. ─────────── */
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      opacity: 0;
+    }
+  }
   /* ── SUBTLE ACCENT RING / HAIRLINE (replaces hud-glow / border-glow / text-shadow-neon) ─ */
   .accent-ring {
     box-shadow: 0 0 0 3px var(--accent-glow);
@@ -227,16 +255,16 @@ body {
   /* ── BLOG RETRO THEME — warm paper + amber ink (scoped via .blog-theme or [data-theme="blog"]) ─ */
   .blog-theme,
   [data-theme='blog'] {
-    --bg-1: var(--retro-paper);
-    --bg-2: var(--retro-paper-soft);
-    --fg-1: var(--retro-ink);
-    --fg-2: var(--retro-ink-soft);
+    --bg-1: var(--bg-2);
+    --bg-2: var(--bg-3);
+    --fg-1: var(--fg-2);
+    --fg-2: var(--fg-3);
     --border-subtle: rgba(26, 26, 24, 0.12);
     --border-strong: rgba(26, 26, 24, 0.2);
   }
   .blog-theme ::selection,
   [data-theme='blog'] ::selection {
-    background: var(--retro-amber);
+    background: var(--neon-amber);
     color: white;
   }
 
@@ -261,6 +289,16 @@ body {
     *::after {
       animation-duration: 0ms !important;
       transition-duration: 0ms !important;
+    }
+
+    /* ScrollIndicator's progress fill and section label. These used to be a
+       JS branch on isReducedMotion(), which rendered a different tree on the
+       server than in the browser and failed hydration. The component now
+       renders one tree always and CSS removes the two extras, which leaves
+       exactly the plain 2px rail the old reduced branch produced. */
+    .scroll-rail__fill,
+    .scroll-rail__label {
+      display: none;
     }
   }
 }

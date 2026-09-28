@@ -11,11 +11,12 @@ module.exports = {
   theme: {
     extend: {
       colors: generated.colors,
-      fontFamily: {
-        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
-        body: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
-      },
+      // Fonts and motion come from tokens.css. Hardcoding them here is how
+      // `font-display` ended up shipping Space Grotesk while --font-display
+      // said Orbitron.
+      fontFamily: generated.fontFamily,
+      transitionDuration: generated.transitionDuration,
+      transitionTimingFunction: generated.transitionTimingFunction,
       keyframes: {
         'pulse-glow': {
           '0%, 100%': { opacity: '0.4' },

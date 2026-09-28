@@ -4,7 +4,7 @@ import { animate } from 'animejs';
 import { GlitchAccent } from './GlitchText';
 import { isReducedMotion, durations, easings } from '../../config/animations';
 
-type ChipAccent = GlitchAccent | 'purple' | 'blue';
+type ChipAccent = GlitchAccent | 'violet' | 'ice';
 
 type Props = React.HTMLAttributes<HTMLSpanElement> & {
   accent?: ChipAccent;

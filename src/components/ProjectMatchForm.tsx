@@ -104,13 +104,13 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
       {formState === 'filling' && (
         <>
           <HudPanel
-            accent="green"
+            accent="lime"
             notch="md"
             className="p-3 flex items-start gap-3"
           >
-            <FiSearch className="w-5 h-5 text-neon-yellow flex-shrink-0 mt-0.5" />
+            <FiSearch className="w-5 h-5 text-neon-amber flex-shrink-0 mt-0.5" />
             <div>
-              <div className="font-display text-[10px] tracking-[3px] text-neon-yellow mb-1">
+              <div className="font-display text-[10px] tracking-[3px] text-neon-amber mb-1">
                 PROJECT MATCH
               </div>
               <div className="font-body text-xs text-text-secondary">
@@ -122,12 +122,12 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
 
           {errorMsg && (
             <HudPanel
-              accent="red"
+              accent="coral"
               notch="sm"
               className="p-3 flex items-center gap-2"
             >
-              <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
-              <span className="font-body text-sm text-neon-red">
+              <FiAlertCircle className="w-4 h-4 text-neon-coral flex-shrink-0" />
+              <span className="font-body text-sm text-neon-coral">
                 {errorMsg}
               </span>
             </HudPanel>
@@ -139,7 +139,7 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
             placeholder="Describe your project idea in detail..."
             maxLength={5000}
             rows={6}
-            className="w-full bg-bg-smoke border border-white/10 text-text-primary p-3 font-body text-sm focus:outline-none focus:border-neon-yellow focus:shadow-[0_0_12px_var(--glow-yellow)] placeholder-text-muted resize-none transition-all duration-200 clip-notch-md"
+            className="w-full bg-bg-smoke border border-white/10 text-text-primary p-3 font-body text-sm focus:outline-none focus:border-neon-amber focus:shadow-[0_0_12px_var(--glow-amber)] placeholder-text-muted resize-none transition-all duration-200 clip-notch-md"
             disabled={false}
           />
           <div className="flex justify-end">
@@ -150,7 +150,7 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
 
           <div className="flex gap-2">
             <NeonButton
-              accent="yellow"
+              accent="amber"
               iconLeft={<FiSearch />}
               onClick={handleSubmit}
               disabled={!description.trim() || description.trim().length < 20}
@@ -167,11 +167,11 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
       {formState === 'submitting' && (
         <div className="flex flex-col items-center justify-center py-8 space-y-4">
           <div className="relative w-16 h-16">
-            <div className="absolute inset-0 border-4 border-neon-yellow/20 rounded-full" />
-            <div className="absolute inset-0 border-4 border-transparent border-t-neon-yellow rounded-full animate-spin" />
+            <div className="absolute inset-0 border-4 border-neon-amber/20 rounded-full" />
+            <div className="absolute inset-0 border-4 border-transparent border-t-neon-amber rounded-full animate-spin" />
           </div>
           <div className="text-center">
-            <div className="font-display tracking-[2px] text-neon-yellow">
+            <div className="font-display tracking-[2px] text-neon-amber">
               ANALYZING…
             </div>
             <div className="font-body text-sm text-text-muted mt-1">
@@ -184,12 +184,12 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
       {formState === 'result' && (
         <div className="space-y-4">
           <HudPanel
-            accent="green"
+            accent="lime"
             notch="md"
             className="p-3 flex items-center gap-3"
           >
-            <FiCheck className="w-5 h-5 text-neon-green flex-shrink-0" />
-            <span className="font-display text-[10px] tracking-[3px] text-neon-green">
+            <FiCheck className="w-5 h-5 text-neon-lime flex-shrink-0" />
+            <span className="font-display text-[10px] tracking-[3px] text-neon-lime">
               ANALYSIS COMPLETE
             </span>
           </HudPanel>
@@ -253,18 +253,18 @@ export default function ProjectMatchForm({ onBackToChat, projects }: Props) {
       {formState === 'error' && (
         <div className="space-y-4">
           <HudPanel
-            accent="red"
+            accent="coral"
             notch="sm"
             className="p-3 flex items-center gap-2"
           >
-            <FiAlertCircle className="w-4 h-4 text-neon-red flex-shrink-0" />
-            <span className="font-body text-sm text-neon-red">
+            <FiAlertCircle className="w-4 h-4 text-neon-coral flex-shrink-0" />
+            <span className="font-body text-sm text-neon-coral">
               {errorMsg || 'Something went wrong.'}
             </span>
           </HudPanel>
           <div className="flex gap-2">
             <NeonButton
-              accent="yellow"
+              accent="amber"
               onClick={() => {
                 setFormState('filling');
                 setErrorMsg('');

@@ -4,7 +4,7 @@
    - Cover h-[44dvh] min 240px + tag shelf + reading time + excerpt clamp-3
    - Tilt3D off on mobile/reduced-motion (conditional render)
    - Token-only accent via ACCENT_CYCLE per index
-   - No raw hex — all colors read var(--wash-*) / var(--retro-*)
+   - No raw hex — all colors read var(--wash-*) / var(--overlay-*)
    - Amber flash VFX handled by FlashCurtain in BlogReels on snap change
    - Premium hover states with glow, scale, and border transitions
    - Reading progress indicator on hover
@@ -14,7 +14,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Clock, Eye, Star, BookOpen } from 'lucide-react';
-import { isReducedMotion, canAnimate } from '../../config/animations';
+import { useMotionPreference } from '../../hooks/useMotionPreference';
 import { animate, stagger, createScope } from 'animejs';
 import { BlogListItem } from '../../types/blog';
 import HairlineDivider from '../ui/graphics/primitives/HairlineDivider';
@@ -25,12 +25,12 @@ interface Props {
 }
 
 const ACCENT_CYCLE = [
-  'yellow',
-  'magenta',
+  'amber',
+  'coral',
   'cyan',
-  'green',
-  'purple',
-  'blue',
+  'lime',
+  'violet',
+  'ice',
 ] as const;
 type CardAccent = (typeof ACCENT_CYCLE)[number];
 
@@ -48,8 +48,11 @@ function fmtDate(iso: string | null): string {
 
 export default function BlogCard({ post, index = 0 }: Props) {
   const accent: CardAccent = ACCENT_CYCLE[index % ACCENT_CYCLE.length];
-  const reduced = isReducedMotion();
-  const animateEnabled = canAnimate();
+  // Render-time motion state must be mount-gated: isReducedMotion() is false
+  // on the server and the user's real preference in the browser, so reading it
+  // during render made this card's cover opacity and its two conditional
+  // children differ between SSR and hydration.
+  const { reduced, canAnimate: animateEnabled } = useMotionPreference();
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [readingProgress, setReadingProgress] = useState(0);
@@ -120,7 +123,7 @@ export default function BlogCard({ post, index = 0 }: Props) {
             className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-subtle)]"
             style={{
               background:
-                'radial-gradient(circle at 20% 10%, var(--field-glow-cyan), transparent 35%), radial-gradient(circle at 90% 100%, var(--field-glow-magenta), transparent 45%), var(--bg-2)',
+                'radial-gradient(circle at 20% 10%, var(--field-glow-cyan), transparent 35%), radial-gradient(circle at 90% 100%, var(--field-glow-coral), transparent 45%), var(--bg-2)',
               boxShadow:
                 '0 0 0 1px var(--field-glow-cyan), 0 16px 40px var(--overlay-black-soft)',
             }}
@@ -169,7 +172,7 @@ export default function BlogCard({ post, index = 0 }: Props) {
                   className="absolute bottom-0 left-0 h-[3px] transition-all duration-200"
                   style={{
                     width: `${isHovered ? readingProgress : 0}%`,
-                    background: 'var(--gradient-cyan-magenta)',
+                    background: 'var(--gradient-cyan-violet)',
                     boxShadow: '0 0 8px var(--glow-cyan-sm)',
                     transformOrigin: 'left center',
                   }}

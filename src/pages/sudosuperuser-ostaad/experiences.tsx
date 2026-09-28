@@ -214,16 +214,16 @@ const ExperiencesPage = () => {
       <AdminLayout user={user} isLoading={loading}>
         <div className="max-w-4xl">
           <GlitchText
-            accent="yellow"
+            accent="amber"
             className="text-2xl font-display tracking-[2px] mb-6"
           >
             MANAGE EXPERIENCES
           </GlitchText>
 
           {/* Form */}
-          <HudPanel accent="yellow" notch="md" className="p-6 mb-8">
+          <HudPanel accent="amber" notch="md" className="p-6 mb-8">
             <div ref={formRef}>
-              <div className="text-[10px] font-display tracking-[3px] text-neon-yellow mb-4">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-amber mb-4">
                 {editingId ? 'EDIT EXPERIENCE' : 'ADD EXPERIENCE'}
               </div>
               <div className="grid gap-3 md:grid-cols-2">
@@ -354,7 +354,7 @@ const ExperiencesPage = () => {
                         onClick={() => toggleProject(proj.id)}
                         className={`px-3 py-1 clip-notch-sm font-body text-xs border transition-all duration-200 ${
                           form.projectIds.includes(proj.id)
-                            ? 'bg-neon-magenta/20 border-neon-magenta/50 text-neon-magenta'
+                            ? 'bg-neon-coral/20 border-neon-coral/50 text-neon-coral'
                             : 'bg-white/[0.03] border-white/10 text-text-muted hover:border-neon-cyan/30 hover:text-text-primary'
                         }`}
                       >
@@ -389,8 +389,8 @@ const ExperiencesPage = () => {
 
           {/* List */}
           {experiences.length > 0 ? (
-            <HudPanel accent="yellow" notch="md" className="p-6">
-              <div className="text-[10px] font-display tracking-[3px] text-neon-yellow mb-4">
+            <HudPanel accent="amber" notch="md" className="p-6">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-amber mb-4">
                 EXPERIENCES ({experiences.length})
               </div>
               <p className="font-body text-sm text-text-muted mb-4">
@@ -426,7 +426,7 @@ const ExperiencesPage = () => {
                       </NeonButton>
                       <NeonButton
                         variant="ghost"
-                        accent="red"
+                        accent="coral"
                         onClick={() => setConfirmDelete(exp.id)}
                         disabled={isSaving}
                       >
@@ -438,7 +438,7 @@ const ExperiencesPage = () => {
               </div>
             </HudPanel>
           ) : (
-            <HudPanel accent="yellow" notch="md" className="p-6 text-center">
+            <HudPanel accent="amber" notch="md" className="p-6 text-center">
               <span className="font-body text-sm text-text-muted">
                 No experiences yet.
               </span>

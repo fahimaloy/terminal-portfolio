@@ -97,15 +97,15 @@ const KnowledgePage = () => {
       <AdminLayout user={user} isLoading={loading}>
         <div className="max-w-2xl">
           <GlitchText
-            accent="green"
+            accent="lime"
             className="text-2xl font-display tracking-[2px] mb-6"
           >
             MANAGE KNOWLEDGE BASE
           </GlitchText>
 
-          <HudPanel accent="green" notch="md" className="p-6 mb-8">
+          <HudPanel accent="lime" notch="md" className="p-6 mb-8">
             <div ref={formRef}>
-              <div className="text-[10px] font-display tracking-[3px] text-neon-green mb-4">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-lime mb-4">
                 ADD NEW CONTEXT
               </div>
 
@@ -150,8 +150,8 @@ const KnowledgePage = () => {
           </HudPanel>
 
           {knowledges.length > 0 ? (
-            <HudPanel accent="green" notch="md" className="p-6">
-              <div className="text-[10px] font-display tracking-[3px] text-neon-green mb-4">
+            <HudPanel accent="lime" notch="md" className="p-6">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-lime mb-4">
                 SAVED CONTEXTS ({knowledges.length})
               </div>
               <div ref={listRef} className="space-y-4">
@@ -170,7 +170,7 @@ const KnowledgePage = () => {
                     </div>
                     <NeonButton
                       variant="ghost"
-                      accent="red"
+                      accent="coral"
                       onClick={() => setConfirmDelete(kb.id)}
                       disabled={isSaving}
                     >
@@ -181,7 +181,7 @@ const KnowledgePage = () => {
               </div>
             </HudPanel>
           ) : (
-            <HudPanel accent="green" notch="md" className="p-6 text-center">
+            <HudPanel accent="lime" notch="md" className="p-6 text-center">
               <span className="font-body text-sm text-text-muted">
                 No knowledge base entries yet.
               </span>

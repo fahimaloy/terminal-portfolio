@@ -98,12 +98,36 @@ const clearSessionCookieValue = () =>
 const sessionTokenHash = (token: string) =>
   crypto.createHash('sha256').update(token).digest('hex');
 
+/** Placeholders that must never reach a live credential. */
+const SEED_PASSWORD_DENYLIST: Record<string, true> = {
+  changeme: true,
+  password: true,
+  admin: true,
+  secret: true,
+  '123456': true,
+  admin123: true,
+  letmein: true,
+};
+
+const isAcceptableSeedPassword = (value: string): boolean =>
+  value.length >= 12 && !SEED_PASSWORD_DENYLIST[value.toLowerCase()];
+
 export const ensureDefaultAdminSeeded = async (): Promise<void> => {
   if (!supabaseAdmin) {
     return;
   }
 
   if (!ADMIN_DEFAULT_PASSWORD) {
+    return;
+  }
+
+  // Refuse to seed a credential anyone can guess. `.env.example` shipped
+  // ADMIN_DEFAULT_PASSWORD=changeme uncommented, so an operator who copied the
+  // template would have had a live admin account with a published password.
+  if (!isAcceptableSeedPassword(ADMIN_DEFAULT_PASSWORD)) {
+    console.warn(
+      '[adminAuth] Refusing to seed the default admin: ADMIN_DEFAULT_PASSWORD is missing, shorter than 12 characters, or a well-known placeholder. Create the admin user manually instead.',
+    );
     return;
   }
 

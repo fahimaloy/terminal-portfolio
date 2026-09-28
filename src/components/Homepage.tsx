@@ -4,7 +4,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import config from '../../config.json';
 import {
   getPortfolioProfile,
   PortfolioProfile,
@@ -22,8 +21,8 @@ import HudChrome from './home/HudChrome';
 import HeroChat from './home/HeroChat';
 import { ProjectStrip, ProjectInlineDetail } from './home/ProjectStrip';
 import ChatModalHost from './home/ChatModalHost';
-import ThreeBackground from './ui/ThreeBackground';
-import { StatBar, Background } from './ui';
+import { StatBar } from './ui';
+import { resolveName } from '../config/identity';
 type Message = {
   role: 'user' | 'model';
   text: string;
@@ -50,24 +49,63 @@ export default function Homepage() {
   const [now, setNow] = useState('');
 
   // Data
+  //
+  // Every branch is bounded. The previous version was a bare
+  // `await Promise.all([...])` with no timeout and no catch, so a single
+  // hanging Supabase request left `isDataLoading` true forever and the three
+  // skeleton StatBars sat on screen permanently. Each getter already resolves
+  // to an empty value on failure, so an individual failure is harmless — the
+  // only real risk was a request that never settles, and that is what the
+  // deadline covers.
   useEffect(() => {
+    let cancelled = false;
+    const DEADLINE_MS = 4000;
+    let deadline = 0;
+
     const load = async () => {
       setIsDataLoading(true);
-      const [p, pr, sk, exp, texts] = await Promise.all([
-        getPortfolioProfile(),
-        getPortfolioProjects(),
-        getPortfolioSkills(),
-        getPortfolioExperiences(),
-        getSiteTexts(),
-      ]);
-      if (p) setProfile(p);
-      setProjects(pr);
-      setSkills(sk);
-      setExperiences(exp);
-      setSiteTexts(texts);
-      setIsDataLoading(false);
+
+      const timeout = new Promise<undefined>((resolve) => {
+        deadline = window.setTimeout(() => resolve(undefined), DEADLINE_MS);
+      });
+
+      try {
+        const result = await Promise.race([
+          Promise.all([
+            getPortfolioProfile(),
+            getPortfolioProjects(),
+            getPortfolioSkills(),
+            getPortfolioExperiences(),
+            getSiteTexts(),
+          ]),
+          timeout,
+        ]);
+
+        if (cancelled) return;
+
+        if (result) {
+          const [p, pr, sk, exp, texts] = result;
+          if (p) setProfile(p);
+          setProjects(pr);
+          setSkills(sk);
+          setExperiences(exp);
+          setSiteTexts(texts);
+        }
+        // A timeout resolves `undefined` and is deliberately not an error: the
+        // page still renders, just without CMS data, which is the correct
+        // degraded state. Either way the skeleton must go.
+      } catch {
+        // A rejected getter must not strand the skeleton either.
+      } finally {
+        if (!cancelled) setIsDataLoading(false);
+      }
     };
+
     load();
+    return () => {
+      cancelled = true;
+      window.clearTimeout(deadline);
+    };
   }, []);
 
   // HUD clock
@@ -88,6 +126,7 @@ export default function Homepage() {
 
   const handleSend = async (text: string, skillFilter?: number[]) => {
     if (!text.trim() || isLoading) return;
+    window.dispatchEvent(new CustomEvent('portfolio:chat-send'));
     setInput('');
     setConversationHistory((prev) => [...prev, text].slice(-10));
     const userMessage: Message = { role: 'user', text };
@@ -130,18 +169,31 @@ export default function Homepage() {
     setDetailProject(null);
   };
 
-  const isInitial = messages.length === 0 && !showProjectDetail;
   const homeRootRef = useRef<HTMLDivElement | null>(null);
   const heroRef = useRef<HTMLDivElement | null>(null);
+  const isInitial = messages.length === 0 && !showProjectDetail;
+
+  // The scene layer lives in _app, one level up. This window event is how the
+  // page tells it "the chat is open" without threading scene state through
+  // every component in between.
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('portfolio:chat-mode', {
+        detail: { open: !isInitial || showOverlay },
+      }),
+    );
+  }, [isInitial, showOverlay]);
 
   return (
     <div
       ref={homeRootRef}
       className="h-[100dvh] min-h-[100dvh] flex flex-col overflow-hidden relative z-10"
     >
-      <Background variant="hero" intensity="high" />
+      {/* Background/scene is owned by the app shell (see _app.tsx SceneLayer) so
+          exactly one instance exists per route. Mounting a second one here
+          doubled the particle field, grid, scanlines and aurora. */}
       <SEOMeta
-        title={profile?.full_name || config.name || 'Fahim Ahmed'}
+        title={resolveName(profile)}
         description={
           profile?.bio ||
           'Full-Stack Web & App Developer | Building digital solutions with modern technologies'
@@ -151,46 +203,38 @@ export default function Homepage() {
       />
       <ScrollIndicator />
       <HudChrome
-        profileName={profile?.full_name?.split(' ')[0] || 'Fahim'}
-        profileInitial={(profile?.full_name || 'FA').charAt(0)}
+        profileName={resolveName(profile).split(/\s+/)[0]}
+        profileInitial={resolveName(profile).charAt(0).toUpperCase()}
         siteTexts={siteTexts}
         now={now}
         messages={messages}
-        heroRef={heroRef as React.RefObject<HTMLElement>}
+        heroRef={heroRef}
       />
 
-      {/* Scrollable middle — centered hero when isInitial, message feed otherwise */}
+      {/* Scrollable middle. `my-auto` rather than `justify-center`: centering a
+          flex child that is taller than its container clips BOTH ends, which
+          cut the quick-command row off the bottom of a 100dvh viewport. */}
       <div
-        className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden w-full scroll-smooth ${
-          isInitial && !isDataLoading
-            ? 'flex flex-col items-center'
-            : 'flex flex-col items-center'
-        }`}
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden w-full flex flex-col items-center"
         style={{
           paddingTop: 'calc(var(--header-h) + 12px)',
           paddingBottom: 8,
         }}
       >
-        <div
-          className={`w-full max-w-4xl mx-auto px-4 flex flex-col items-center flex-1 ${
-            isInitial && !isDataLoading
-              ? 'justify-center py-6'
-              : 'justify-start py-6'
-          }`}
-        >
+        <div className="w-full max-w-4xl mx-auto px-4 flex flex-col items-center my-auto py-6">
           {/* Loading skeleton stat bars */}
           {isInitial && isDataLoading && (
             <div className="w-full max-w-2xl space-y-3">
               <StatBar
                 label={siteTexts.compiling_label || 'COMPILING'}
                 value={40}
-                accent="yellow"
+                accent="amber"
                 delay={0}
               />
               <StatBar
                 label={siteTexts.linking_label || 'LINKING'}
                 value={70}
-                accent="magenta"
+                accent="coral"
                 delay={200}
               />
               <StatBar
@@ -214,7 +258,6 @@ export default function Homepage() {
               isDataLoading={isDataLoading}
               isInitial={isInitial}
               onSend={handleSend}
-              onOpenChat={() => setShowOverlay(true)}
             />
           </div>
 

@@ -101,12 +101,12 @@ function MenuButton({
       style={{
         borderRadius: 'var(--radius-md)',
         border: active
-          ? '1px solid color-mix(in srgb, var(--neon-purple) 30%, transparent)'
+          ? '1px solid color-mix(in srgb, var(--neon-violet) 30%, transparent)'
           : '1px solid transparent',
         background: active
-          ? 'color-mix(in srgb, var(--neon-purple) 12%, transparent)'
+          ? 'color-mix(in srgb, var(--neon-violet) 12%, transparent)'
           : 'transparent',
-        color: active ? 'var(--neon-purple)' : 'var(--text-muted)',
+        color: active ? 'var(--neon-violet)' : 'var(--text-muted)',
       }}
       className={`p-1.5 transition-all focus-visible:outline-none focus-visible:border focus-visible:border-[var(--neon-cyan)] focus-visible:shadow-[0_0_0_3px_var(--glow-cyan-sm)] ${
         !active ? 'hover:text-[var(--fg-1)] hover:bg-[var(--bg-3)]' : ''
@@ -317,13 +317,13 @@ const MenuBar = ({
           style={{
             borderRadius: 'var(--radius-md)',
             border: editor.isActive('codeBlock')
-              ? '1px solid color-mix(in srgb, var(--neon-purple) 30%, transparent)'
+              ? '1px solid color-mix(in srgb, var(--neon-violet) 30%, transparent)'
               : '1px solid transparent',
             background: editor.isActive('codeBlock')
-              ? 'color-mix(in srgb, var(--neon-purple) 12%, transparent)'
+              ? 'color-mix(in srgb, var(--neon-violet) 12%, transparent)'
               : 'transparent',
             color: editor.isActive('codeBlock')
-              ? 'var(--neon-purple)'
+              ? 'var(--neon-violet)'
               : 'var(--text-muted)',
           }}
           title="Code Block Language"
@@ -352,10 +352,10 @@ const MenuBar = ({
                   borderRadius: 'var(--radius-sm)',
                   background:
                     activeLang === lang
-                      ? 'color-mix(in srgb, var(--neon-purple) 12%, transparent)'
+                      ? 'color-mix(in srgb, var(--neon-violet) 12%, transparent)'
                       : 'transparent',
                   color:
-                    activeLang === lang ? 'var(--neon-purple)' : 'var(--fg-2)',
+                    activeLang === lang ? 'var(--neon-violet)' : 'var(--fg-2)',
                 }}
               >
                 {lang}
@@ -470,7 +470,7 @@ export default function RichTextEditor({
           borderRadius: 'var(--radius-lg)',
           background: 'var(--bg-2)',
           boxShadow: isFullscreen
-            ? '0 0 24px var(--glow-purple-sm)'
+            ? '0 0 24px var(--glow-violet-sm)'
             : undefined,
         }}
       >

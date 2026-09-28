@@ -91,8 +91,6 @@ export default function CursorGlow({
     };
   }, [size]);
 
-  if (isReducedMotion()) return null;
-
   return (
     <div
       ref={glowRef}

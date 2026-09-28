@@ -11,14 +11,9 @@ import {
   canAnimate,
 } from '../../config/animations';
 
-export type GlitchAccent =
-  | 'yellow'
-  | 'magenta'
-  | 'cyan'
-  | 'green'
-  | 'red'
-  | 'purple'
-  | 'blue';
+import type { AccentColor } from '../../config/animations';
+
+export type GlitchAccent = AccentColor;
 
 type Props = {
   children: React.ReactNode;

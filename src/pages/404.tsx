@@ -393,7 +393,7 @@ export default function NotFoundPage() {
               className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[54%] opacity-55"
               aria-hidden="true"
             >
-              <MorphOrb accent="magenta" size={220} />
+              <MorphOrb accent="coral" size={220} />
             </div>
             <div
               className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[54%] opacity-30 translate-x-3 translate-y-2"
@@ -450,19 +450,19 @@ export default function NotFoundPage() {
           <div className="relative notfound-diagnostic">
             <Bracket className="notfound-bracket pointer-events-none absolute inset-0 opacity-60" />
             <HudPanel
-              accent="red"
+              accent="coral"
               notch="md"
               title="// DIAGNOSTIC_LOG"
               className="p-4 space-y-3 relative"
             >
               <div className="diag-item opacity-0">
-                <StatBar label="UPLINK" value={0} accent="red" />
+                <StatBar label="UPLINK" value={0} accent="coral" />
               </div>
               <div className="diag-item opacity-0">
-                <StatBar label="ROUTE_INTEGRITY" value={12} accent="magenta" />
+                <StatBar label="ROUTE_INTEGRITY" value={12} accent="coral" />
               </div>
               <div className="diag-item opacity-0">
-                <StatBar label="SIGNAL_STRENGTH" value={5} accent="yellow" />
+                <StatBar label="SIGNAL_STRENGTH" value={5} accent="amber" />
               </div>
               <div className="text-[10px] font-mono space-y-1">
                 <div
@@ -490,7 +490,7 @@ export default function NotFoundPage() {
 
           <div className="flex justify-center gap-3">
             <NeonButton
-              accent="yellow"
+              accent="amber"
               onClick={() => router.push('/')}
               className="notfound-btn opacity-0"
             >

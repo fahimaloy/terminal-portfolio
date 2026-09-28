@@ -29,7 +29,9 @@ const TOKENS_CSS = path.join(ROOT, 'src/styles/tokens.css');
 const OUT_TS = path.join(ROOT, 'src/config/generated/tokens.generated.ts');
 const OUT_TW = path.join(ROOT, 'tailwind.tokens.generated.js');
 
-const EXPECTED_ACCENTS = ['cyan', 'magenta', 'amber', 'violet', 'rose', 'yellow', 'green', 'red', 'purple', 'blue', 'lime', 'ice'];
+// v5 accent vocabulary: 3 primary (cyan / violet / coral) + 3 support
+// (amber / lime / ice). Order is stable so generated output is deterministic.
+const EXPECTED_ACCENTS = ['cyan', 'violet', 'coral', 'amber', 'lime', 'ice'];
 const MIN_ACCENTS = 4; // Require at least 4 neon accents for validation
 
 // ---------------------------------------------------------------------------
@@ -115,7 +117,7 @@ function parseTokensCss(css) {
   }
 
 
-  // --wash-*, --grid-*, --surface-*, --retro-*, --ring-*, --status-*, --border-*, --shadow-*
+  // --wash-*, --grid-*, --surface-*, --ring-*, --status-*, --border-*, --shadow-*
   const wash = {};
   for (const m of primaryCss.matchAll(/--wash-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     wash[m[1]] = m[2].trim();
@@ -127,10 +129,6 @@ function parseTokensCss(css) {
   const surface = {};
   for (const m of primaryCss.matchAll(/--surface-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     surface[m[1]] = m[2].trim();
-  }
-  const retro = {};
-  for (const m of primaryCss.matchAll(/--retro-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
-    retro[m[1]] = m[2].trim();
   }
   const ring = {};
   for (const m of primaryCss.matchAll(/--ring-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
@@ -149,7 +147,7 @@ function parseTokensCss(css) {
     shadow[m[1]] = m[2].trim();
   }
 
-  return { neon, glow, glowSm, durations, easings, bg, text, glass, springs, fonts, wash, grid, surface, retro, ring, status, border, shadow };
+  return { neon, glow, glowSm, durations, easings, bg, text, glass, springs, fonts, wash, grid, surface, ring, status, border, shadow };
 }
 
 function msToSeconds(msStr) {
@@ -164,7 +162,7 @@ function msToSeconds(msStr) {
 // ---------------------------------------------------------------------------
 
 function generateTsContent(tokens) {
-  const { neon, glow, glowSm, durations, easings, springs, wash, grid, surface, retro, ring, status, border, shadow } = tokens;
+  const { neon, glow, glowSm, durations, easings, springs, wash, grid, surface, ring, status, border, shadow } = tokens;
 
   // Build accentConfig entries — preserve EXPECTED_ACCENTS order for stable output
   const accentNames = EXPECTED_ACCENTS.filter((n) => neon[n]);
@@ -221,11 +219,6 @@ function generateTsContent(tokens) {
 
   // Surface elevation (derived from --surface-*)
   const surfaceEntries = Object.entries(surface)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([k, v]) => `  ${toJsKey(k)}: '${escapeSingle(v)}'`);
-
-  // Retro blog theme (derived from --retro-*)
-  const retroEntries = Object.entries(retro)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `  ${toJsKey(k)}: '${escapeSingle(v)}'`);
 
@@ -287,11 +280,6 @@ export const generatedSurface: Record<string, string> = {
 ${surfaceEntries.join(',\n')},
 } as const;
 
-// Retro blog theme (derived from --retro-*)
-export const generatedRetro: Record<string, string> = {
-${retroEntries.join(',\n')},
-} as const;
-
 // Ring/stroke aliases (derived from --ring-*)
 export const generatedRing: Record<string, string> = {
 ${ringEntries.join(',\n')},
@@ -300,7 +288,7 @@ ${ringEntries.join(',\n')},
 }
 
 function generateTwContent(tokens) {
-  const { neon, glow, glowSm, bg, text, glass, wash, grid, surface, retro, ring, status, border } = tokens;
+  const { neon, glow, glowSm, bg, text, glass, wash, grid, surface, ring, status, border, durations, easings, fonts } = tokens;
 
   // Build Tailwind extend.colors map — mirrors current tailwind.config.js extend.colors
   const colorEntries = {};
@@ -344,10 +332,6 @@ function generateTwContent(tokens) {
   for (const [k, v] of Object.entries(surface).sort(([a], [b]) => a.localeCompare(b))) {
     colorEntries[`surface-${k}`] = v;
   }
-  // retro colors
-  for (const [k, v] of Object.entries(retro).sort(([a], [b]) => a.localeCompare(b))) {
-    colorEntries[`retro-${k}`] = v;
-  }
   // ring colors
   for (const [k, v] of Object.entries(ring).sort(([a], [b]) => a.localeCompare(b))) {
     colorEntries[`ring-${k}`] = v;
@@ -365,6 +349,32 @@ function generateTwContent(tokens) {
     .map(([k, v]) => `    '${k}': '${escapeSingle(v)}'`)
     .join(',\n');
 
+  // `duration-*` utilities are backed by the same --dur-* tokens the JS reads,
+  // so a Tailwind class and an anime.js tween can never disagree on timing.
+  const durationLines = Object.entries(durations)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `    '${toJsKey(k)}': '${escapeSingle(v)}'`)
+    .join(',\n');
+
+  const easingLines = Object.entries(easings)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `    '${toJsKey(k)}': '${escapeSingle(v)}'`)
+    .join(',\n');
+
+  // font-* families come from tokens.css so `font-display` can never drift from
+  // --font-display (it did: the Tailwind class shipped Space Grotesk while the
+  // token said Orbitron).
+  const fontFamily = {};
+  for (const [k, v] of Object.entries(fonts).sort(([a], [b]) => a.localeCompare(b))) {
+    fontFamily[k] = v
+      .split(',')
+      .map((f) => f.trim().replace(/^['"]|['"]$/g, ''))
+      .filter(Boolean);
+  }
+  const fontLines = Object.entries(fontFamily)
+    .map(([k, v]) => `    '${k}': ${JSON.stringify(v)}`)
+    .join(',\n');
+
   return `// AUTO-GENERATED — do not edit. Run: node scripts/generate-tokens.mjs
 // Source: src/styles/tokens.css
 // Imported by tailwind.config.js: require('./tailwind.tokens.generated.js')
@@ -372,6 +382,15 @@ function generateTwContent(tokens) {
 module.exports = {
   colors: {
 ${colorLines},
+  },
+  fontFamily: {
+${fontLines},
+  },
+  transitionDuration: {
+${durationLines},
+  },
+  transitionTimingFunction: {
+${easingLines},
   },
 };
 `;
@@ -488,7 +507,7 @@ function main() {
   writeFileSync(OUT_TS, tsContent, 'utf8');
   writeFileSync(OUT_TW, twContent, 'utf8');
 
-  console.log(`[generate-tokens] Wrote ${path.relative(ROOT, OUT_TS)} (${Object.keys(tokens.neon).length} accents, ${Object.keys(tokens.durations).length} durations, ${Object.keys(tokens.easings).length} easings, ${Object.keys(tokens.wash).length} wash, ${Object.keys(tokens.grid).length} grid, ${Object.keys(tokens.surface).length} surface, ${Object.keys(tokens.retro).length} retro, ${Object.keys(tokens.ring).length} ring)`);
+  console.log(`[generate-tokens] Wrote ${path.relative(ROOT, OUT_TS)} (${Object.keys(tokens.neon).length} accents, ${Object.keys(tokens.durations).length} durations, ${Object.keys(tokens.easings).length} easings, ${Object.keys(tokens.wash).length} wash, ${Object.keys(tokens.grid).length} grid, ${Object.keys(tokens.surface).length} surface, ${Object.keys(tokens.ring).length} ring)`);
   console.log(`[generate-tokens] Wrote ${path.relative(ROOT, OUT_TW)} (${Object.keys(tokens.neon).length} neon + ${Object.keys(tokens.glow).length} glow + ${Object.keys(tokens.glowSm).length} glow-sm + bg/text/glass colors)`);
 }
 

@@ -1,233 +1,147 @@
 import React from 'react';
+import type { AccentColor } from '../../../../config/animations';
 
-type Accent =
-  | 'yellow'
-  | 'magenta'
-  | 'cyan'
-  | 'green'
-  | 'purple'
-  | 'blue'
-  | 'red';
+// Accent vocabulary is owned by the token pipeline; primitives must not
+// re-declare it or they drift the moment an accent is retired.
+type Accent = AccentColor;
 
 export interface FileTreeProps {
   accent?: Accent;
   size?: number;
   className?: string;
   style?: React.CSSProperties;
+  opacity?: number;
 }
 
 /**
- * FileTree — animated directory/file tree structure
- * Expands from root with stagger
- * Selectors: .grat-filetree, .grat-stroke, .grat-node
+ * A small directory tree: root → two directories → three files.
+ * Rows are listed with their indent depth and connector geometry.
+ */
+const ROWS: { label: string; depth: number; kind: 'dir' | 'file' }[] = [
+  { label: 'src', depth: 0, kind: 'dir' },
+  { label: 'components', depth: 1, kind: 'dir' },
+  { label: 'scene', depth: 2, kind: 'dir' },
+  { label: 'ParticleField.tsx', depth: 3, kind: 'file' },
+  { label: 'FloorGrid.tsx', depth: 3, kind: 'file' },
+  { label: 'CoreObject.tsx', depth: 3, kind: 'file' },
+  { label: 'utils', depth: 1, kind: 'dir' },
+  { label: 'api.ts', depth: 2, kind: 'file' },
+  { label: 'identity.ts', depth: 2, kind: 'file' },
+];
+
+const ROW_H = 10;
+const X0 = 8;
+const INDENT = 11;
+
+/**
+ * FileTree — a project tree, rendered as static vector geometry.
+ *
+ * The timeline draws each `[data-tree-row]` connector and fades the label, so
+ * the tree "opens" as one beat of the boot sequence rather than running on a
+ * CSS clock of its own.
  */
 export default function FileTree({
-  accent = 'blue',
+  accent = 'ice',
   size,
   className,
   style,
+  opacity = 1,
 }: FileTreeProps) {
   const stroke = `var(--ring-${accent})`;
-  const dim = size ? { width: size, height: size } : undefined;
-  const startX = 20;
-  const startY = 20;
-  const rowHeight = 12;
-  const indent = 14;
-
-  const tree = [
-    { name: 'src', depth: 0, isDir: true, delay: 0 },
-    { name: 'components', depth: 1, isDir: true, delay: 1 },
-    { name: 'ui', depth: 2, isDir: true, delay: 2 },
-    { name: 'Button.tsx', depth: 3, isDir: false, delay: 3 },
-    { name: 'Card.tsx', depth: 3, isDir: false, delay: 4 },
-    { name: 'home', depth: 2, isDir: true, delay: 5 },
-    { name: 'HeroSection.tsx', depth: 3, isDir: false, delay: 6 },
-    { name: 'HeroChat.tsx', depth: 3, isDir: false, delay: 7 },
-    { name: 'hooks', depth: 1, isDir: true, delay: 8 },
-    { name: 'useScrollAnimation.ts', depth: 2, isDir: false, delay: 9 },
-    { name: 'utils', depth: 1, isDir: true, delay: 10 },
-    { name: 'api.ts', depth: 2, isDir: false, delay: 11 },
-    { name: 'config', depth: 1, isDir: true, delay: 12 },
-    { name: 'animations.ts', depth: 2, isDir: false, delay: 13 },
-  ];
+  const height = ROWS.length * ROW_H + 8;
+  const top = 4;
 
   return (
     <svg
-      width={size ?? 120}
-      height={size ?? 120}
-      viewBox="0 0 100 100"
-      preserveAspectRatio="xMidYMid meet"
+      width={size ?? 160}
+      height={size ? (size / 100) * height : height}
+      viewBox={`0 0 100 ${height}`}
+      preserveAspectRatio="xMidYMin meet"
       aria-hidden="true"
       className={className}
-      style={{ display: 'block', overflow: 'visible', ...dim, ...style }}
+      style={{
+        display: 'block',
+        overflow: 'visible',
+        opacity,
+        ...(size ? { width: size, height: (size / 100) * height } : null),
+        ...style,
+      }}
       data-graphic="grat-filetree"
     >
-      <g className="grat-filetree" data-graphic="grat-filetree">
-        {tree.map(({ name, depth, isDir, delay }, idx) => {
-          const x = startX + depth * indent;
-          const y = startY + idx * rowHeight;
-          const isLast = idx === tree.length - 1;
-          const nextDepth = isLast ? 0 : tree[idx + 1]?.depth ?? 0;
-          const showVertical = depth > 0 && nextDepth >= depth;
-
+      <g className="grat-filetree" fontFamily="var(--font-mono)">
+        {ROWS.map((row, i) => {
+          const y = top + i * ROW_H;
+          const x = X0 + row.depth * INDENT;
+          // Elbow connector: down the previous level, then across.
+          const connector =
+            row.depth === 0
+              ? ''
+              : `M ${x - INDENT / 2} ${y - ROW_H + 3} L ${
+                  x - INDENT / 2
+                } ${y - 2} L ${x - 2.5} ${y - 2}`;
           return (
-            <React.Fragment key={idx}>
-              {/* Vertical connector line */}
-              {depth > 0 && (
-                <line
-                  className="grat-stroke grat-connector"
-                  data-graphic="grat-stroke"
-                  x1={startX + (depth - 0.5) * indent}
-                  y1={y - rowHeight}
-                  x2={startX + (depth - 0.5) * indent}
-                  y2={y}
+            <g key={row.label} data-tree-row={i} opacity={0}>
+              {connector && (
+                <path
+                  d={connector}
+                  fill="none"
                   stroke={stroke}
-                  strokeWidth="0.8"
-                  strokeOpacity={0.4}
-                  style={
-                    { animationDelay: `${delay * 80}ms` } as React.CSSProperties
-                  }
-                >
-                  <animate
-                    attributeName="stroke-dashoffset"
-                    from="1000"
-                    to="0"
-                    dur="0.3s"
-                    begin={`${delay * 0.08}s`}
-                    fill="freeze"
-                  />
-                </line>
+                  strokeWidth="0.5"
+                  strokeOpacity="0.5"
+                  pathLength={1000}
+                />
               )}
-
-              {/* Horizontal connector */}
-              {depth > 0 && (
-                <line
-                  className="grat-stroke grat-connector-h"
-                  data-graphic="grat-stroke"
-                  x1={startX + (depth - 0.5) * indent}
-                  y1={y}
-                  x2={x - 4}
-                  y2={y}
+              {row.kind === 'dir' ? (
+                <path
+                  d={`M ${x} ${y - 4} L ${x + 6} ${y - 4} L ${x + 6} ${y - 0.5} L ${x} ${y - 0.5} Z`}
+                  fill="none"
                   stroke={stroke}
-                  strokeWidth="0.8"
-                  strokeOpacity={0.5}
-                  style={
-                    {
-                      animationDelay: `${delay * 80 + 100}ms`,
-                    } as React.CSSProperties
-                  }
-                >
-                  <animate
-                    attributeName="stroke-dashoffset"
-                    from="1000"
-                    to="0"
-                    dur="0.2s"
-                    begin={`${delay * 0.08 + 0.1}s`}
-                    fill="freeze"
-                  />
-                </line>
-              )}
-
-              {/* Directory/File icon */}
-              {isDir ? (
-                <React.Fragment>
-                  {/* Folder icon */}
-                  <path
-                    className="grat-stroke grat-folder"
-                    data-graphic="grat-stroke"
-                    d={`M ${x} ${y - 6} 
-                       L ${x + 10} ${y - 6} 
-                       L ${x + 10} ${y + 6} 
-                       L ${x} ${y + 6} 
-                       Z
-                       M ${x + 1} ${y - 6} 
-                       L ${x + 3} ${y - 10} 
-                       L ${x + 9} ${y - 10} 
-                       L ${x + 9} ${y - 6}`}
-                    stroke={stroke}
-                    strokeWidth="0.9"
-                    strokeOpacity={0.8}
-                    fill="none"
-                    pathLength={1000}
-                    style={
-                      {
-                        animationDelay: `${delay * 80 + 150}ms`,
-                      } as React.CSSProperties
-                    }
-                  >
-                    <animate
-                      attributeName="stroke-dashoffset"
-                      from="1000"
-                      to="0"
-                      dur="0.4s"
-                      begin={`${delay * 0.08 + 0.15}s`}
-                      fill="freeze"
-                    />
-                  </path>
-                </React.Fragment>
+                  strokeWidth="0.6"
+                  strokeOpacity="0.85"
+                />
               ) : (
-                <React.Fragment>
-                  {/* File icon */}
-                  <path
-                    className="grat-stroke grat-file"
-                    data-graphic="grat-stroke"
-                    d={`M ${x} ${y - 6} 
-                       L ${x + 8} ${y - 6} 
-                       L ${x + 8} ${y + 6} 
-                       L ${x} ${y + 6} 
-                       Z
-                       M ${x + 5} ${y - 6} 
-                       L ${x + 5} ${y - 2} 
-                       L ${x + 8} ${y - 2}`}
-                    stroke={stroke}
-                    strokeWidth="0.9"
-                    strokeOpacity={0.7}
+                <>
+                  <rect
+                    x={x}
+                    y={y - 4}
+                    width="5"
+                    height="4"
+                    rx="0.5"
                     fill="none"
-                    pathLength={1000}
-                    style={
-                      {
-                        animationDelay: `${delay * 80 + 150}ms`,
-                      } as React.CSSProperties
-                    }
-                  >
-                    <animate
-                      attributeName="stroke-dashoffset"
-                      from="1000"
-                      to="0"
-                      dur="0.3s"
-                      begin={`${delay * 0.08 + 0.15}s`}
-                      fill="freeze"
-                    />
-                  </path>
-                </React.Fragment>
-              )}
-
-              {/* Expand/collapse indicator for dirs */}
-              {isDir && (
-                <polygon
-                  className="grat-node grat-expand"
-                  data-graphic="grat-node"
-                  points={`${x + 10},${y - 2} ${x + 14},${y + 2} ${x + 10},${
-                    y + 6
-                  }`}
-                  fill={stroke}
-                  fillOpacity={0.6}
-                  style={
-                    {
-                      animationDelay: `${delay * 80 + 200}ms`,
-                    } as React.CSSProperties
-                  }
-                >
-                  <animate
-                    attributeName="opacity"
-                    values="0;0.6;0.6"
-                    dur="0.2s"
-                    begin={`${delay * 0.08 + 0.2}s`}
-                    fill="freeze"
+                    stroke={stroke}
+                    strokeWidth="0.5"
+                    strokeOpacity="0.6"
                   />
-                </polygon>
+                  <line
+                    x1={x + 1.2}
+                    y1={y - 2.4}
+                    x2={x + 3.8}
+                    y2={y - 2.4}
+                    stroke={stroke}
+                    strokeWidth="0.4"
+                    strokeOpacity="0.5"
+                  />
+                  <line
+                    x1={x + 1.2}
+                    y1={y - 1.2}
+                    x2={x + 3.8}
+                    y2={y - 1.2}
+                    stroke={stroke}
+                    strokeWidth="0.4"
+                    strokeOpacity="0.5"
+                  />
+                </>
               )}
-            </React.Fragment>
+              <text
+                x={x + 9}
+                y={y + 0.5}
+                fontSize="4.4"
+                fill={stroke}
+                fillOpacity={row.kind === 'dir' ? 0.9 : 0.6}
+              >
+                {row.label}
+              </text>
+            </g>
           );
         })}
       </g>

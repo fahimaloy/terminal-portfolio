@@ -7,13 +7,12 @@ import GridLattice from './graphics/primitives/GridLattice';
 type NotchSize = 'sm' | 'md' | 'lg';
 
 const ACCENT_COLOR: Record<GlitchAccent, string> = {
-  yellow: 'var(--neon-yellow)',
-  magenta: 'var(--neon-magenta)',
   cyan: 'var(--neon-cyan)',
-  green: 'var(--neon-green)',
-  red: 'var(--neon-red)',
-  purple: 'var(--neon-purple)',
-  blue: 'var(--neon-blue)',
+  violet: 'var(--neon-violet)',
+  coral: 'var(--neon-coral)',
+  amber: 'var(--neon-amber)',
+  lime: 'var(--neon-lime)',
+  ice: 'var(--neon-ice)',
 };
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
@@ -31,7 +30,7 @@ type Props = React.HTMLAttributes<HTMLDivElement> & {
 };
 
 export default function HudPanel({
-  accent = 'yellow',
+  accent = 'amber',
   notch: _notch = 'md',
   title,
   className = '',
@@ -55,9 +54,8 @@ export default function HudPanel({
   // When wash is true, blend wash over bg-2 via backgroundImage overlay to keep depth
   if (wash) {
     baseStyle.backgroundColor = 'var(--bg-2)';
-    (
-      baseStyle as Record<string, string>
-    ).backgroundImage = `linear-gradient(var(--wash-${accent}), var(--wash-${accent}))`;
+    (baseStyle as Record<string, string>).backgroundImage =
+      `linear-gradient(var(--wash-${accent}), var(--wash-${accent}))`;
   }
 
   return (

@@ -1,14 +1,6 @@
 // src/components/home/__tests__/HeroSection.test.tsx
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from '@testing-library/react';
-import React from 'react';
-
-vi.mock('next/router', () => ({
-  useRouter: vi.fn(() => ({
-    push: vi.fn(),
-    back: vi.fn(),
-  })),
-}));
 
 vi.mock('animejs', () => {
   const scope = {
@@ -28,7 +20,6 @@ vi.mock('animejs', () => {
     createScope: vi.fn(() => scope),
     createTimeline: vi.fn(() => ({ add: vi.fn() })),
     createDrawable: vi.fn(() => []),
-    onScroll: vi.fn((options: unknown) => options),
     splitText: vi.fn(() => ({ chars: [], words: [], revert: vi.fn() })),
     spring: vi.fn(() => 'spring-ease'),
     stagger: vi.fn((value: unknown) => value),
@@ -36,10 +27,9 @@ vi.mock('animejs', () => {
 });
 
 import HeroSection from '../HeroSection';
-import { createScope, onScroll } from 'animejs';
+import { createScope } from 'animejs';
 
 const mockedCreateScope = vi.mocked(createScope);
-const mockedOnScroll = vi.mocked(onScroll);
 
 function mockMatchMedia(reduceMatches: boolean) {
   Object.defineProperty(window, 'matchMedia', {
@@ -63,6 +53,8 @@ function clearMatchMedia() {
   Reflect.deleteProperty(window, 'matchMedia');
 }
 
+const noop = vi.fn();
+
 describe('HeroSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -74,31 +66,62 @@ describe('HeroSection', () => {
     clearMatchMedia();
   });
 
-  it('uses the default document scroll container for stats and cleans up its scope', () => {
-    const { container, unmount } = render(
+  // Regression guard: the quick cards were invisible because they carried a
+  // Tailwind `opacity-0` class that survived every scope.revert(). If an
+  // animated node ever regains a hiding class, this fails.
+  it('never hides animated nodes with a utility opacity class', () => {
+    const { container } = render(
       <HeroSection
         profile={null}
-        projects={[]}
-        skills={[]}
-        experiences={[]}
         siteTexts={{}}
         projectCount={0}
         skillCount={0}
         expCount={0}
-        onSend={vi.fn()}
-        onOpenChat={vi.fn()}
+        onSend={noop}
       />,
     );
 
-    const statEls = container.querySelectorAll('[data-hero="stats"] > div');
-    expect(statEls).toHaveLength(3);
-    expect(mockedOnScroll).toHaveBeenCalledTimes(3);
-    expect(mockedOnScroll.mock.calls.map(([options]) => options)).toEqual([
-      { sync: false },
-      { sync: false },
-      { sync: false },
-    ]);
+    const animated = container.querySelectorAll(
+      '[data-hero="label"], [data-hero="name"], [data-hero="title"], ' +
+        '[data-hero="stats"] > div, [data-hero="card"]',
+    );
+    expect(animated.length).toBeGreaterThan(0);
+    animated.forEach((el) => {
+      const hiding = Array.from(el.classList).filter((c) =>
+        /^opacity-\d+$/.test(c),
+      );
+      expect(hiding).toEqual([]);
+    });
+  });
 
+  it('renders six quick-command cards and three stats', () => {
+    const { container } = render(
+      <HeroSection
+        profile={null}
+        siteTexts={{}}
+        projectCount={4}
+        skillCount={12}
+        expCount={3}
+        onSend={noop}
+      />,
+    );
+    expect(container.querySelectorAll('[data-hero="card"]')).toHaveLength(6);
+    expect(
+      container.querySelectorAll('[data-hero="stats"] > div'),
+    ).toHaveLength(3);
+  });
+
+  it('reverts its scope on unmount', () => {
+    const { unmount } = render(
+      <HeroSection
+        profile={null}
+        siteTexts={{}}
+        projectCount={0}
+        skillCount={0}
+        expCount={0}
+        onSend={noop}
+      />,
+    );
     const scope = mockedCreateScope.mock.results[0].value as {
       revert: ReturnType<typeof vi.fn>;
     };

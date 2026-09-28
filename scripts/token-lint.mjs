@@ -111,16 +111,22 @@ function collectFiles() {
 }
 
 function collectAllFiles() {
-  // Use git ls-files so we respect .gitignore and don't need extra deps
+  // `git ls-files` only returns TRACKED files, so any newly created file was
+  // invisible to `--all` until it was staged — the gate reported "OK" over a
+  // directory that was never linted. Prefer the filesystem walk, which is
+  // what the fallback used to do, and use git only to add tracked files
+  // outside src/ (e2e, scripts).
+  const fromDisk = walkDir('src');
   try {
     const out = execSync('git ls-files', { encoding: 'utf8' });
-    return out.split('\n')
-      .map(s => s.trim())
+    const tracked = out
+      .split('\n')
+      .map((s) => s.trim())
       .filter(Boolean)
-      .filter(f => SUPPORTED_EXTS.has(path.extname(f)) && existsSync(f));
+      .filter((f) => SUPPORTED_EXTS.has(path.extname(f)) && existsSync(f));
+    return [...new Set([...fromDisk, ...tracked])];
   } catch {
-    // Fallback: manual walk of src/
-    return walkDir('src');
+    return fromDisk;
   }
 }
 

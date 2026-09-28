@@ -11,6 +11,7 @@ import {
   generatedDurations,
   generatedEasings,
   generatedSprings,
+  type AccentColor as GeneratedAccentColor,
 } from './generated/tokens.generated';
 
 // Type aliases for Anime.js options (avoids importing internal types)
@@ -18,22 +19,12 @@ type StaggerOptions = Record<string, unknown>;
 type EasingFunction = string | number | ((v: number) => number);
 
 // ── Accent Types ─────────────────────────────────────────────────────────────
-export type AccentColor =
-  | 'cyan'
-  | 'magenta'
-  | 'amber'
-  | 'violet'
-  | 'rose'
-  | 'lime'
-  | 'ice'
-  | 'cyanAlt'
-  | 'cyanTeal'
-  // Legacy accents for backward compatibility
-  | 'yellow'
-  | 'green'
-  | 'red'
-  | 'purple'
-  | 'blue';
+// One vocabulary for the whole app: 3 primary (cyan / violet / coral) + 3
+// support (amber / lime / ice). Previously each component declared its own
+// union plus "legacy aliases for backward compatibility", which is how a
+// 15-hue palette grew. New components import `AccentColor`; they do not
+// re-declare it.
+export type AccentColor = GeneratedAccentColor;
 
 // ── Duration Tokens — derived from tokens.css via generated file ───────────
 // tokens.css is single source of truth (AGENTS.md: Design-token contract).

@@ -3,21 +3,22 @@
 // reuses BlogCard chrome (HudPanel+Tilt3D), LightningTransition per-card,
 // ReadingProgress → pager dots, RichTextRenderer for expanded view.
 // Preserves /blog/[slug] SSR route — expanded is in-place overlay.
-// Respects isReducedMotion(): stacked static fallback.
+// Respects prefers-reduced-motion: stacked static fallback, mount-gated so
+// the server and the client render the same tree.
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronDown, X, Calendar, Clock, Eye } from 'lucide-react';
-import { isReducedMotion } from '../../config/animations';
 import {
   useCoverPreload,
   useBulkCoverPreload,
 } from '../../hooks/useCoverPreload';
+import { useMotionPreference } from '../../hooks/useMotionPreference';
 import { getBlogPost } from '../../utils/blogApi';
 import type { BlogListItem, BlogPost } from '../../types/blog';
 import { HudPanel, NeonChip, NeonButton, GlitchText } from '../ui';
-import { canAnimate, durations } from '../../config/animations';
+import { durations } from '../../config/animations';
 import { useFlashCurtain } from '../../hooks/useFlashCurtain';
 import FlashCurtain from './FlashCurtain';
 import LightningTransition from './LightningTransition';
@@ -51,7 +52,11 @@ export default function BlogReels({
   loading,
   onLoadMore,
 }: Props) {
-  const reduced = typeof window !== 'undefined' ? isReducedMotion() : false;
+  // The reduced branch below renders an entirely different tree (stacked
+  // cards vs a snap scroller). isReducedMotion() is false on the server and
+  // the user's real preference in the browser, so reading it during render
+  // guaranteed a hydration mismatch; the hook gates on mount instead.
+  const { reduced } = useMotionPreference();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const [bolt, setBolt] = useState(0);
@@ -181,7 +186,7 @@ export default function BlogReels({
         {items.map((post, i) => (
           <HudPanel
             key={post.id}
-            accent={(['cyan', 'magenta', 'yellow', 'green'] as const)[i % 4]}
+            accent={(['cyan', 'violet', 'coral', 'ice'] as const)[i % 4]}
             notch="md"
             className="overflow-hidden"
           >
@@ -262,7 +267,7 @@ export default function BlogReels({
           style={{
             width: `${items.length ? ((active + 1) / items.length) * 100 : 0}%`,
             background:
-              'linear-gradient(90deg, var(--neon-cyan), var(--neon-yellow), var(--neon-magenta))',
+              'linear-gradient(90deg, var(--neon-cyan), var(--neon-amber), var(--neon-coral))',
             boxShadow: '0 0 8px var(--glow-cyan-sm)',
           }}
         />
@@ -304,9 +309,7 @@ export default function BlogReels({
                 }`}
               >
                 <HudPanel
-                  accent={
-                    (['cyan', 'magenta', 'yellow', 'green'] as const)[i % 4]
-                  }
+                  accent={(['cyan', 'violet', 'coral', 'ice'] as const)[i % 4]}
                   notch="md"
                   className="overflow-hidden flex flex-col max-h-[min(78dvh,720px)]"
                 >
@@ -349,9 +352,7 @@ export default function BlogReels({
                       <GlitchText
                         as="h2"
                         accent={
-                          (['cyan', 'magenta', 'yellow', 'green'] as const)[
-                            i % 4
-                          ]
+                          (['cyan', 'violet', 'coral', 'ice'] as const)[i % 4]
                         }
                         className="text-xl md:text-2xl mt-1 line-clamp-2"
                       >
@@ -360,13 +361,13 @@ export default function BlogReels({
                     </div>
                     {post.featured ? (
                       <div className="absolute top-3 left-3">
-                        <NeonChip accent="yellow">FEATURED</NeonChip>
+                        <NeonChip accent="amber">FEATURED</NeonChip>
                       </div>
                     ) : null}
                   </div>
 
                   <div className="p-4 space-y-3 overflow-y-auto">
-                    {post.teaser ?? post.excerpt ? (
+                    {(post.teaser ?? post.excerpt) ? (
                       <p className="text-sm text-text-secondary line-clamp-3">
                         {post.teaser ?? post.excerpt}
                       </p>
@@ -389,11 +390,11 @@ export default function BlogReels({
                         {detailLoading === post.slug
                           ? 'LOADING…'
                           : expandedSlug === post.slug
-                          ? 'CLOSE'
-                          : 'READ'}
+                            ? 'CLOSE'
+                            : 'READ'}
                       </NeonButton>
                       <Link href={`/blog/${post.slug}`} legacyBehavior>
-                        <a className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-neon-yellow/30 text-neon-yellow font-display text-[11px] tracking-[1.5px] hover:bg-neon-yellow/10 transition-colors clip-notch-sm">
+                        <a className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-neon-amber/30 text-neon-amber font-display text-[11px] tracking-[1.5px] hover:bg-neon-amber/10 transition-colors clip-notch-sm">
                           PERMALINK
                         </a>
                       </Link>
@@ -483,7 +484,7 @@ function ReelsCardInner({
         <Eye size={10} /> {post.view_count ?? 0}
       </div>
       <div className="font-display text-lg text-text-primary">{post.title}</div>
-      {post.teaser ?? post.excerpt ? (
+      {(post.teaser ?? post.excerpt) ? (
         <p className="text-sm text-text-secondary line-clamp-3">
           {post.teaser ?? post.excerpt}
         </p>
@@ -497,7 +498,7 @@ function ReelsCardInner({
           {detailLoading ? 'LOADING…' : expanded ? 'CLOSE' : 'READ'}
         </NeonButton>
         <Link href={`/blog/${post.slug}`} legacyBehavior>
-          <a className="inline-flex items-center px-3 py-1.5 border border-neon-yellow/30 text-neon-yellow font-display text-[11px] clip-notch-sm">
+          <a className="inline-flex items-center px-3 py-1.5 border border-neon-amber/30 text-neon-amber font-display text-[11px] clip-notch-sm">
             PERMALINK
           </a>
         </Link>
@@ -553,7 +554,7 @@ function ExpandedOverlay({
         className="w-full max-w-3xl max-h-[85dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <HudPanel accent="yellow" notch="md" className="p-4 md:p-6 relative">
+        <HudPanel accent="amber" notch="md" className="p-4 md:p-6 relative">
           <button
             onClick={onClose}
             className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center border border-white/10 hover:border-neon-cyan/40 text-text-muted hover:text-text-primary transition-colors clip-notch-sm"
@@ -570,7 +571,7 @@ function ExpandedOverlay({
               <div className="pr-8">
                 <GlitchText
                   as="h2"
-                  accent="yellow"
+                  accent="amber"
                   className="text-xl md:text-2xl"
                 >
                   {detail.title}
@@ -588,11 +589,7 @@ function ExpandedOverlay({
                     OPEN PAGE
                   </a>
                 </Link>
-                <NeonButton
-                  accent="magenta"
-                  variant="outline"
-                  onClick={onClose}
-                >
+                <NeonButton accent="coral" variant="outline" onClick={onClose}>
                   CLOSE
                 </NeonButton>
               </div>

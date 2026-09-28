@@ -78,7 +78,7 @@ const LogoutConfirmation: React.FC<{
       />
       <div ref={panelRef} className="relative max-w-sm w-full opacity-0">
         <HudPanel
-          accent="red"
+          accent="coral"
           notch="md"
           title="// CONFIRM_LOGOUT"
           className="p-6"
@@ -87,13 +87,13 @@ const LogoutConfirmation: React.FC<{
             <div className="text-5xl">🚪</div>
             <h2
               id="logout-title"
-              className="font-display tracking-[2px] text-xl text-neon-magenta text-shadow-neon-magenta"
+              className="font-display tracking-[2px] text-xl text-neon-coral text-shadow-neon-coral"
             >
               CONFIRM LOGOUT
             </h2>
             <p className="text-text-muted text-sm font-body">
               Are you sure you want to log out,{' '}
-              <span className="text-neon-yellow font-display">{username}</span>?
+              <span className="text-neon-amber font-display">{username}</span>?
             </p>
             <div className="flex gap-3 justify-center pt-2">
               <NeonButton
@@ -105,7 +105,7 @@ const LogoutConfirmation: React.FC<{
                 CANCEL
               </NeonButton>
               <NeonButton
-                accent="red"
+                accent="coral"
                 onClick={onConfirm}
                 disabled={isLoggingOut}
                 loading={isLoggingOut}
@@ -256,7 +256,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   @ {user?.username || 'GUEST'}
                 </span>
                 <span
-                  className="inline-flex items-center px-2 py-0.5 text-[10px] font-display tracking-[2px] uppercase bg-neon-yellow/10 border border-neon-yellow/40 text-neon-yellow"
+                  className="inline-flex items-center px-2 py-0.5 text-[10px] font-display tracking-[2px] uppercase bg-neon-amber/10 border border-neon-amber/40 text-neon-amber"
                   style={{
                     clipPath:
                       'polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px)',
@@ -268,7 +268,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
               <NeonButton
                 variant="ghost"
-                accent="magenta"
+                accent="coral"
                 onClick={handleLogoutClick}
                 disabled={isLoggingOut}
                 loading={isLoggingOut}
@@ -296,7 +296,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             aria-label="Main navigation"
           >
             {navItems.map((item) => (
-              <Link key={item.path} href={item.path}>
+              <Link key={item.path} href={item.path} legacyBehavior>
                 <a
                   onClick={handleNavClick}
                   className={`admin-nav-item px-3 py-2 font-display tracking-[1.5px] uppercase text-[10px] transition-all duration-200 flex items-center gap-2 ${
@@ -313,7 +313,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   <span>{item.label}</span>
                   {item.path === '/sudosuperuser-ostaad/meetings' &&
                     unreadMeetings > 0 && (
-                      <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-neon-magenta text-black font-display text-[9px]">
+                      <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-neon-coral text-black font-display text-[9px]">
                         {unreadMeetings}
                       </span>
                     )}
@@ -333,7 +333,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               aria-label="Mobile navigation"
             >
               {navItems.map((item) => (
-                <Link key={item.path} href={item.path}>
+                <Link key={item.path} href={item.path} legacyBehavior>
                   <a
                     onClick={handleNavClick}
                     className={`px-4 py-3 font-display tracking-[1.5px] uppercase text-[10px] transition-all flex items-center justify-between ${
@@ -352,7 +352,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                     </span>
                     {item.path === '/sudosuperuser-ostaad/meetings' &&
                       unreadMeetings > 0 && (
-                        <span className="bg-neon-magenta text-black text-xs font-display px-2 py-0.5">
+                        <span className="bg-neon-coral text-black text-xs font-display px-2 py-0.5">
                           {unreadMeetings}
                         </span>
                       )}
@@ -390,11 +390,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-2 text-[10px] font-display tracking-[2px] uppercase text-text-muted">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-neon-green animate-pulse-dot" />
+              <span className="w-2 h-2 rounded-full bg-neon-lime animate-pulse-dot" />
               <span>SYSTEM ONLINE</span>
             </div>
             <div>
-              <code className="text-neon-magenta">$ /sudosuperuser-ostaad</code>
+              <code className="text-neon-coral">$ /sudosuperuser-ostaad</code>
             </div>
             <div>v2.0.0 | {user?.username || 'GUEST'}</div>
           </div>

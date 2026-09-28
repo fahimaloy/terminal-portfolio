@@ -1,76 +1,50 @@
 import React from 'react';
+import type { AccentColor } from '../../../../config/animations';
 
-type Accent =
-  | 'yellow'
-  | 'magenta'
-  | 'cyan'
-  | 'green'
-  | 'purple'
-  | 'blue'
-  | 'red';
+// Accent vocabulary is owned by the token pipeline; primitives must not
+// re-declare it or they drift the moment an accent is retired.
+type Accent = AccentColor;
 
 export interface CodeBracketsProps {
   accent?: Accent;
   size?: number;
   className?: string;
   style?: React.CSSProperties;
+  opacity?: number;
 }
 
+/** `{} [] ()` as three concentric pairs — the "code" frame of the lockup. */
+const PAIRS: { left: string; right: string }[] = [
+  {
+    left: 'M 26 16 C 18 16 18 34 26 34 L 22 42 C 10 42 10 34 14 26 C 16 22 16 18 18 16 Z',
+    right:
+      'M 74 16 C 82 16 82 34 74 34 L 78 42 C 90 42 90 34 86 26 C 84 22 84 18 82 16 Z',
+  },
+  {
+    left: 'M 30 22 L 24 22 L 24 50 L 30 50',
+    right: 'M 70 22 L 76 22 L 76 50 L 70 50',
+  },
+  {
+    left: 'M 34 28 C 28 28 28 44 34 44',
+    right: 'M 66 28 C 72 28 72 44 66 44',
+  },
+];
+
 /**
- * CodeBrackets — animated code bracket pairs: {} [] ()
- * Each pair draws in sequence via createDrawable stagger
- * Selectors: .grat-brackets, .grat-stroke
+ * CodeBrackets — three concentric bracket pairs.
+ *
+ * Static geometry only. The timeline draws each `[data-bracket-stroke]` with
+ * `createDrawable`, so the brackets lock in sequence instead of looping on a
+ * clock the surrounding choreography cannot control.
  */
 export default function CodeBrackets({
   accent = 'cyan',
   size,
   className,
   style,
+  opacity = 1,
 }: CodeBracketsProps) {
   const stroke = `var(--ring-${accent})`;
-  const dim = size ? { width: size, height: size } : undefined;
-  const centerX = 50;
-  const centerY = 50;
-  const pairSpacing = 22;
-
-  const brackets = [
-    // { } - curly braces
-    {
-      left: `M ${centerX - pairSpacing} ${centerY - 18} 
-             C ${centerX - pairSpacing - 8} ${centerY - 18} 
-               ${centerX - pairSpacing - 8} ${centerY + 18} 
-               ${centerX - pairSpacing} ${centerY + 18}`,
-      right: `M ${centerX + pairSpacing} ${centerY - 18} 
-              C ${centerX + pairSpacing + 8} ${centerY - 18} 
-                ${centerX + pairSpacing + 8} ${centerY + 18} 
-                ${centerX + pairSpacing} ${centerY + 18}`,
-      delay: 0,
-    },
-    // [ ] - square brackets
-    {
-      left: `M ${centerX - pairSpacing} ${centerY - 14} 
-             L ${centerX - pairSpacing - 6} ${centerY - 14} 
-             L ${centerX - pairSpacing - 6} ${centerY + 14} 
-             L ${centerX - pairSpacing} ${centerY + 14}`,
-      right: `M ${centerX + pairSpacing} ${centerY - 14} 
-              L ${centerX + pairSpacing + 6} ${centerY - 14} 
-              L ${centerX + pairSpacing + 6} ${centerY + 14} 
-              L ${centerX + pairSpacing} ${centerY + 14}`,
-      delay: 1,
-    },
-    // ( ) - parentheses
-    {
-      left: `M ${centerX - pairSpacing} ${centerY - 10} 
-             C ${centerX - pairSpacing - 5} ${centerY - 10} 
-               ${centerX - pairSpacing - 5} ${centerY + 10} 
-               ${centerX - pairSpacing} ${centerY + 10}`,
-      right: `M ${centerX + pairSpacing} ${centerY - 10} 
-              C ${centerX + pairSpacing + 5} ${centerY - 10} 
-                ${centerX + pairSpacing + 5} ${centerY + 10} 
-                ${centerX + pairSpacing} ${centerY + 10}`,
-      delay: 2,
-    },
-  ];
 
   return (
     <svg
@@ -80,43 +54,41 @@ export default function CodeBrackets({
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
       className={className}
-      style={{ display: 'block', overflow: 'visible', ...dim, ...style }}
+      style={{
+        display: 'block',
+        overflow: 'visible',
+        opacity,
+        ...(size ? { width: size, height: size } : null),
+        ...style,
+      }}
       data-graphic="grat-brackets"
     >
-      <g className="grat-brackets" data-graphic="grat-brackets">
-        {brackets.map(({ left, right, delay }, idx) => (
+      <g className="grat-brackets">
+        {PAIRS.map(({ left, right }, idx) => (
           <React.Fragment key={idx}>
             <path
-              className="grat-stroke grat-bracket"
-              data-graphic="grat-stroke"
-              data-bracket={idx}
+              className="grat-stroke"
+              data-bracket-stroke={idx}
               d={left}
+              fill="none"
               stroke={stroke}
-              strokeWidth="1.2"
-              strokeOpacity={0.85}
+              strokeWidth="1.3"
+              strokeOpacity="0.8"
               strokeLinecap="round"
               strokeLinejoin="round"
               pathLength={1000}
-              style={
-                { animationDelay: `${delay * 150}ms` } as React.CSSProperties
-              }
             />
             <path
-              className="grat-stroke grat-bracket"
-              data-graphic="grat-stroke"
-              data-bracket={idx}
+              className="grat-stroke"
+              data-bracket-stroke={idx}
               d={right}
+              fill="none"
               stroke={stroke}
-              strokeWidth="1.2"
-              strokeOpacity={0.85}
+              strokeWidth="1.3"
+              strokeOpacity="0.8"
               strokeLinecap="round"
               strokeLinejoin="round"
               pathLength={1000}
-              style={
-                {
-                  animationDelay: `${delay * 150 + 50}ms`,
-                } as React.CSSProperties
-              }
             />
           </React.Fragment>
         ))}

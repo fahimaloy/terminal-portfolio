@@ -28,7 +28,7 @@ export function useFlashCurtain(
   curtainRef: React.RefObject<HTMLElement | null>,
   opts: FlashCurtainOptions = {},
 ) {
-  const { color = 'var(--retro-amber)', durationMs = durations.exit * 1000 } =
+  const { color = 'var(--neon-amber)', durationMs = durations.exit * 1000 } =
     opts;
   const scopeRef = useRef<FlashScopeHandle | null>(null);
 

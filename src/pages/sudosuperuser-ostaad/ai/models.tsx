@@ -333,9 +333,7 @@ const AiModelsPage = () => {
         <span className="text-[10px] text-[var(--fg-2)]">No provider</span>
       );
     return (
-      <NeonChip
-        accent={provider.provider_type === 'gemini' ? 'cyan' : 'magenta'}
-      >
+      <NeonChip accent={provider.provider_type === 'gemini' ? 'cyan' : 'coral'}>
         {provider.name} (
         {provider.provider_type === 'gemini' ? 'GEMINI' : 'OPENAI'})
       </NeonChip>
@@ -348,7 +346,7 @@ const AiModelsPage = () => {
     const until = new Date(model.cooldown_until);
     if (until <= new Date()) return null;
     return (
-      <NeonChip accent="yellow" className="mt-1">
+      <NeonChip accent="amber" className="mt-1">
         COOLDOWN UNTIL {until.toLocaleTimeString()}
       </NeonChip>
     );
@@ -370,7 +368,7 @@ const AiModelsPage = () => {
           </GlitchText>
 
           {statusMessage && (
-            <HudPanel accent="green" notch="sm" className="mb-4 p-3">
+            <HudPanel accent="lime" notch="sm" className="mb-4 p-3">
               <span className="font-body text-sm text-[var(--fg-2)]">
                 {statusMessage}
               </span>
@@ -523,7 +521,7 @@ const AiModelsPage = () => {
                 </NeonButton>
 
                 {testError && (
-                  <HudPanel accent="red" notch="sm" className="p-3">
+                  <HudPanel accent="coral" notch="sm" className="p-3">
                     <span className="font-body text-sm text-[var(--fg-2)]">
                       {testError}
                     </span>
@@ -535,7 +533,7 @@ const AiModelsPage = () => {
             {/* ─── Model Selection (after test) ────────────── */}
             {step === 'select' && (
               <div className="space-y-4">
-                <HudPanel accent="green" notch="sm" className="p-3">
+                <HudPanel accent="lime" notch="sm" className="p-3">
                   <span className="font-body text-sm text-[var(--fg-2)]">
                     Found {fetchedModels.length} models. Select the ones you
                     want to add:
@@ -571,7 +569,7 @@ const AiModelsPage = () => {
 
                 <div className="flex gap-2">
                   <NeonButton
-                    accent="yellow"
+                    accent="amber"
                     onClick={handleCreate}
                     disabled={isSaving || selectedModels.size === 0}
                   >
@@ -581,7 +579,7 @@ const AiModelsPage = () => {
                   </NeonButton>
                   <NeonButton
                     variant="ghost"
-                    accent="magenta"
+                    accent="coral"
                     onClick={handleCancelCreate}
                     disabled={isSaving}
                   >
@@ -740,7 +738,7 @@ const AiModelsPage = () => {
                             {editingLimits[model.id] ? (
                               <>
                                 <NeonButton
-                                  accent="green"
+                                  accent="lime"
                                   onClick={() => handleSaveLimits(model.id)}
                                   disabled={isSaving}
                                   className="text-[10px] px-2 py-1"
@@ -749,7 +747,7 @@ const AiModelsPage = () => {
                                 </NeonButton>
                                 <NeonButton
                                   variant="ghost"
-                                  accent="magenta"
+                                  accent="coral"
                                   onClick={() =>
                                     handleCancelEditLimits(model.id)
                                   }
@@ -771,7 +769,7 @@ const AiModelsPage = () => {
                             )}
                             <NeonButton
                               variant="ghost"
-                              accent="red"
+                              accent="coral"
                               onClick={() => handleDeleteModel(model.id)}
                               disabled={isSaving}
                               className="text-[10px] px-2 py-1"

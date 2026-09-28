@@ -4,8 +4,10 @@ import type { BlogListItem } from '../../../types/blog';
 
 const LIST_COLUMNS =
   'id, slug, title, excerpt, teaser, cover_image_url, cover_image_alt, status, featured, tags, reading_minutes, view_count, seo_title, seo_description, seo_keywords, canonical_url, published_at, created_at, updated_at';
-
 const MAX_PAGE_SIZE = 50;
+/** Upper bound on rows read for a facet scan, and on tags returned. */
+const FACET_SCAN_LIMIT = 2000;
+const FACET_LIMIT = 50;
 
 function toInt(value: unknown, fallback: number): number {
   const n = Number(Array.isArray(value) ? value[0] : value);
@@ -41,6 +43,7 @@ export default async function handler(
         page: 1,
         pageSize: 9,
         hasMore: false,
+        facets: [],
       },
     });
     return;
@@ -91,6 +94,35 @@ export default async function handler(
     const items = (data ?? []) as unknown as BlogListItem[];
     const total = count ?? items.length;
 
+    // Tag facets come from the whole published set, not from the current page.
+    // The page used to derive its tag list from `items`, so the filter chips
+    // only ever showed tags that happened to be on the loaded page.
+    let facets: { tag: string; count: number }[] = [];
+    if (toStr(req.query.facets) === 'true') {
+      // Bounded on both axes. The scan is public, unauthenticated and hit on
+      // every blog-index request, so an unbounded full-table read plus an
+      // uncapped tally is a denial-of-service lever. FACET_SCAN_LIMIT caps
+      // the rows read; FACET_LIMIT caps what leaves the handler. Both are
+      // generous for a personal blog — thousands of posts, dozens of tags.
+      const { data: allTags } = await supabaseAdmin
+        .from('blog_posts')
+        .select('tags')
+        .eq('status', 'published')
+        .limit(FACET_SCAN_LIMIT);
+      const tally = new Map<string, number>();
+      for (const row of (allTags ?? []) as { tags?: string[] }[]) {
+        for (const t of row.tags ?? []) {
+          const key = t.trim().slice(0, 64);
+          if (!key) continue;
+          tally.set(key, (tally.get(key) ?? 0) + 1);
+        }
+      }
+      facets = [...tally.entries()]
+        .map(([tag, count]) => ({ tag, count }))
+        .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag))
+        .slice(0, FACET_LIMIT);
+    }
+
     res.setHeader(
       'Cache-Control',
       'public, s-maxage=60, stale-while-revalidate=300',
@@ -103,6 +135,7 @@ export default async function handler(
         page,
         pageSize,
         hasMore: from + items.length < total,
+        facets,
       },
     });
   } catch {
@@ -113,8 +146,8 @@ export default async function handler(
         items: [],
         total: 0,
         page: 1,
-        pageSize: 9,
         hasMore: false,
+        facets: [],
       },
     });
   }

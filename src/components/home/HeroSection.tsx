@@ -1,7 +1,29 @@
 // src/components/home/HeroSection.tsx
-// Hero: label, name, title, bio, stats, CTA buttons, quick-access cards.
-import React, { forwardRef, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/router';
+// Hero: eyebrow, name, title, bio, stats, quick-access cards.
+//
+// This component is the SOLE owner of hero choreography. HeroChat used to run a
+// second timeline over the same `data-hero="*"` nodes, and both the Tailwind
+// `opacity-0` class and anime.js were writing opacity — under
+// `reactStrictMode: true` the double-invoke left the quick cards at computed
+// opacity 0. Rules that follow from that:
+//   1. Exactly one scope writes a given element.
+//   2. No `opacity-*` class on anything the scope animates — initial state is
+//      set in JS so `scope.revert()` restores the *animated* value, not the class.
+//   3. Cleanup order is scope first, then splitText — otherwise revert() runs
+//      against a DOM the splitter has already rebuilt.
+//   4. The name is solid colour. The split word wrapper must be taller than the
+//      glyph box or `overflow: clip` crops descenders (the "cyan blob" bug).
+
+import React, { forwardRef, useEffect, useRef } from 'react';
+import {
+  animate,
+  createTimeline,
+  createDrawable,
+  stagger,
+  spring,
+  splitText,
+  type TextSplitter,
+} from 'animejs';
 import {
   Briefcase,
   Code,
@@ -9,26 +31,9 @@ import {
   Mail,
   GitBranch,
   Link as LinkIcon,
-  MousePointer,
-  Keyboard,
 } from 'lucide-react';
-import {
-  animate,
-  createScope,
-  createTimeline,
-  stagger,
-  createDrawable,
-  onScroll,
-  spring,
-} from 'animejs';
-import { splitText } from 'animejs';
-import config from '../../../config.json';
-import type {
-  PortfolioProfile,
-  PortfolioSkill,
-  PortfolioProject,
-  PortfolioExperience,
-} from '../../utils/api';
+import { resolveName } from '../../config/identity';
+import type { PortfolioProfile } from '../../utils/api';
 import {
   durations,
   easings,
@@ -36,20 +41,17 @@ import {
   isReducedMotion,
   canAnimate,
 } from '../../config/animations';
+import { useMotionScope } from '../../hooks/useMotionScope';
 import { HairlineDivider } from '../ui/graphics';
 import GridLattice from '../ui/graphics/primitives/GridLattice';
 
 type HeroSectionProps = {
   profile: PortfolioProfile | null;
-  projects: PortfolioProject[];
-  skills: PortfolioSkill[];
-  experiences: PortfolioExperience[];
   siteTexts: Record<string, string>;
   projectCount: number;
   skillCount: number;
   expCount: number;
   onSend: (text: string) => void;
-  onOpenChat: () => void;
 };
 
 const QUICK_CARDS = [
@@ -57,165 +59,134 @@ const QUICK_CARDS = [
     label: 'MY GITHUB',
     icon: <GitBranch size={20} />,
     message: 'Show me your GitHub',
-    shortcut: 'G',
   },
   {
     label: 'MY LINKEDIN',
     icon: <LinkIcon size={20} />,
     message: 'Show me your LinkedIn',
-    shortcut: 'L',
   },
   {
     label: 'EMAIL ME',
     icon: <Mail size={20} />,
     message: 'How can I contact you?',
-    shortcut: 'E',
   },
   {
     label: 'MY PROJECTS',
     icon: <Briefcase size={20} />,
     message: 'Show me your projects',
-    shortcut: 'P',
   },
   {
     label: 'MY SKILLSETS',
     icon: <Code size={20} />,
     message: 'Show me your skills',
-    shortcut: 'S',
   },
   {
     label: 'MY EXPERIENCE',
     icon: <Clock size={20} />,
     message: 'Show me your experience',
-    shortcut: 'X',
   },
 ];
 
+// Shared by the name and its sweep overlay so both lay out identically.
+const NAME_TYPE =
+  'font-display font-bold uppercase tracking-[-0.045em] leading-[1.02] ' +
+  'text-[clamp(2.5rem,8vw,7rem)]';
+
 const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
-  (
-    {
-      profile,
-      projects,
-      skills,
-      experiences,
-      siteTexts,
-      projectCount,
-      skillCount,
-      expCount,
-      onSend,
-      onOpenChat,
-    },
-    ref,
-  ) => {
-    const router = useRouter();
+  ({ profile, siteTexts, projectCount, skillCount, expCount, onSend }, ref) => {
     const innerRef = useRef<HTMLDivElement>(null);
     const cardRefs = useRef<Record<string, HTMLElement>>({});
-    const [reduced, setReduced] = useState(false);
+    const name = resolveName(profile);
 
-    // Check reduced motion preference
-    useEffect(() => {
-      setReduced(isReducedMotion());
-    }, []);
+    // `respectReduced: false` on purpose: this component already builds a
+    // zero-duration version of the same timeline when motion is reduced, so
+    // handing it a null scope would duplicate that branch. The hook still
+    // guarantees one scope and a clean StrictMode double-invoke.
+    const { run, revert, hoverRef } = useMotionScope(innerRef, {
+      respectReduced: false,
+      mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
+      defaults: { ease: easings.outExpo ?? 'outExpo' },
+    });
 
     useEffect(() => {
       const root = innerRef.current;
       if (!root) return;
 
       const reduced = isReducedMotion();
+      const ms = (seconds: number) => seconds * 1000;
+      let nameSplitter: TextSplitter | null = null;
 
-      const scope = createScope({
-        root,
-        mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
-        defaults: {
-          duration: durations[700] * 1000,
-          ease: easings.outExpo ?? 'outExpo',
-          composition: 'blend',
-        },
-      } as Parameters<typeof createScope>[0]);
-
-      let nameSplitter: ReturnType<typeof splitText> | null = null;
-      let titleSplitter: ReturnType<typeof splitText> | null = null;
-
-      scope.add(() => {
+      run((scope) => {
+        if (!scope) return;
         const label = root.querySelectorAll<HTMLElement>('[data-hero="label"]');
-        const nameWrap =
-          root.querySelectorAll<HTMLElement>('[data-hero="name"]');
-        const titleWrap = root.querySelectorAll<HTMLElement>(
-          '[data-hero="title"]',
-        );
-        const nameEl = root.querySelector<HTMLElement>('[data-hero="name"] h1');
+        const nameWrap = root.querySelector<HTMLElement>('[data-hero="name"]');
+        const nameEl = nameWrap?.querySelector<HTMLElement>('h1') ?? null;
+        const sweep = root.querySelector<HTMLElement>('[data-hero="sweep"]');
         const titleEl = root.querySelector<HTMLElement>('[data-hero="title"]');
         const bio = root.querySelectorAll<HTMLElement>('[data-hero="bio"]');
         const stats = root.querySelectorAll<HTMLElement>(
           '[data-hero="stats"] > div',
         );
-        const ctas = root.querySelectorAll<HTMLElement>('[data-hero="cta"]');
         const cards = root.querySelectorAll<HTMLElement>('[data-hero="card"]');
+        const hairlineWrap = root.querySelector<HTMLElement>('.hero-hairline');
 
-        const hairlineLines = root.querySelectorAll<SVGGeometryElement>(
-          '.hero-hairline line',
-        );
-        const hairlineDrawable =
-          !reduced && hairlineLines.length > 0
-            ? createDrawable('.hero-hairline line')
-            : [];
-
-        // Split name/title chars with clip wrap when motion is allowed.
-        if (!reduced) {
-          try {
-            if (nameEl) {
-              nameSplitter = splitText(nameEl, {
-                chars: true,
-                words: { wrap: 'clip' },
-              });
-            }
-          } catch {
-            nameSplitter = null;
-          }
-          try {
-            if (titleEl) {
-              titleSplitter = splitText(titleEl, {
-                chars: true,
-                words: { wrap: 'clip' },
-              });
-            }
-          } catch {
-            titleSplitter = null;
-          }
-        }
-
-        const nameChars =
-          (nameSplitter?.chars as unknown as HTMLElement[]) ?? [];
-        const titleChars =
-          (titleSplitter?.chars as unknown as HTMLElement[]) ?? [];
+        // Initial state lives here, not in a CSS class, so scope.revert() can
+        // never strand an element at opacity 0.
+        const hidden: HTMLElement[] = [
+          nameWrap,
+          titleEl,
+          ...label,
+          ...bio,
+          ...stats,
+          ...cards,
+        ].filter((el): el is HTMLElement => Boolean(el));
+        hidden.forEach((el) => {
+          el.style.opacity = '0';
+        });
 
         const tl = createTimeline({ defaults: { ease: 'outExpo' } });
 
         if (reduced) {
-          if (label.length) tl.add(label, { y: [16, 0], opacity: [0, 1] }, 0);
-          if (nameWrap.length)
-            tl.add(nameWrap, { y: [16, 0], opacity: [0, 1] }, stagger(70));
-          if (titleWrap.length)
-            tl.add(titleWrap, { y: [16, 0], opacity: [0, 1] }, stagger(70));
+          // Same choreography, zero duration. Every add needs its own
+          // `duration: 1` — anime's default is ~1000ms, so omitting it made
+          // the reduced-motion path play a full second of tweens.
+          const instant = { duration: 1 };
+          if (label.length)
+            tl.add(label, { y: [12, 0], opacity: [0, 1], ...instant }, 0);
+          if (nameWrap)
+            tl.add(
+              nameWrap,
+              { y: [12, 0], opacity: [0, 1], ...instant },
+              stagger(60),
+            );
+          if (titleEl)
+            tl.add(
+              titleEl,
+              { y: [12, 0], opacity: [0, 1], ...instant },
+              stagger(60),
+            );
           if (bio.length)
-            tl.add(bio, { y: [12, 0], opacity: [0, 1] }, stagger(70));
+            tl.add(
+              bio,
+              { y: [10, 0], opacity: [0, 1], ...instant },
+              stagger(60),
+            );
           if (stats.length)
             tl.add(
               stats,
-              { y: [14, 0], opacity: [0, 1], duration: 600 },
-              stagger(60, { from: 'first' }),
-            );
-          if (ctas.length)
-            tl.add(
-              ctas,
-              { y: [12, 0], opacity: [0, 1] },
-              stagger(60, { from: 'first' }),
+              { y: [10, 0], opacity: [0, 1], ...instant },
+              stagger(40, { from: 'first' }),
             );
           if (cards.length)
             tl.add(
               cards,
-              { y: [16, 0], opacity: [0, 1], scale: [0.98, 1] },
-              stagger(60, { from: 'first' }),
+              {
+                y: [10, 0],
+                opacity: [0, 1],
+                scale: [0.99, 1],
+                ...instant,
+              },
+              stagger(40, { from: 'first' }),
             );
           return;
         }
@@ -224,84 +195,119 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
           springs.soft as unknown as Record<string, number>,
         ) as unknown as string;
 
-        // Label
-        if (label.length) tl.add(label, { y: [16, 0], opacity: [0, 1] }, 0);
-
-        // Hairline drawable under label/name — line-draw ['0 0','0 1']
-        if ((hairlineDrawable as unknown as HTMLElement[]).length) {
-          tl.add(
-            hairlineDrawable as unknown as HTMLElement[],
-            {
-              draw: ['0 0', '0 1'],
-              duration: durations.draw * 1000,
-              ease: easings.smooth ?? 'linear',
-            },
-            stagger(40, { from: 'first' }),
-          );
-          // Also fade the container wrapper
-          const hairlineWraps =
-            root.querySelectorAll<HTMLElement>('.hero-hairline');
-          if (hairlineWraps.length) {
+        // Hairline draw under the lockup.
+        if (hairlineWrap) {
+          const draw = createDrawable(hairlineWrap);
+          if ((draw as unknown as HTMLElement[]).length) {
             tl.add(
-              hairlineWraps,
+              draw as unknown as HTMLElement[],
               {
-                opacity: [0, 1],
-                duration: durations.enter * 1000 * 0.35,
+                draw: ['0 0', '0 1'],
+                duration: ms(durations.draw),
                 ease: easings.smooth,
               },
-              '-200',
+              0,
             );
           }
+          tl.add(
+            hairlineWrap,
+            { opacity: [0, 1], duration: ms(durations.enter) * 0.4 },
+            0,
+          );
         }
 
-        // Name chars — clip cascade stagger 16-22 from first
+        if (label.length) tl.add(label, { y: [12, 0], opacity: [0, 1] }, 120);
+
+        // Name — word-level clip cascade. Chars only fade: a per-char clip box
+        // sized to the line box is what cropped the glyphs.
+        try {
+          if (nameEl) {
+            nameSplitter = splitText(nameEl, {
+              chars: true,
+              words: { wrap: 'clip' },
+            });
+          }
+        } catch {
+          nameSplitter = null;
+        }
+
+        const nameWords =
+          (nameSplitter?.words as unknown as HTMLElement[]) ?? [];
+        const nameChars =
+          (nameSplitter?.chars as unknown as HTMLElement[]) ?? [];
+
+        // The wrapper starts hidden, so it must always be faded back in —
+        // animating only the split words left the parent at opacity 0.
+        if (nameWrap) {
+          tl.add(
+            nameWrap,
+            { opacity: [0, 1], duration: ms(durations.enter) * 0.35 },
+            200,
+          );
+        }
+
+        if (nameWords.length) {
+          // The clip wrapper hugs the line box; give it descender headroom.
+          nameWords.forEach((w) => {
+            w.style.paddingBottom = '0.14em';
+          });
+          tl.add(
+            nameWords,
+            {
+              y: ['0.7em', '0em'],
+              duration: ms(durations.enter) * 0.72,
+              ease: easings.expoOut,
+              delay: stagger(70),
+            },
+            220,
+          );
+        } else if (nameWrap) {
+          tl.add(nameWrap, { y: [18, 0], duration: ms(durations.enter) }, 220);
+        }
         if (nameChars.length) {
           tl.add(
             nameChars,
-            {
-              y: ['112%', '0%'],
-              opacity: [0, 1],
-              duration: durations.enter * 1000 * 0.52,
-              ease: easings.expoOut ?? 'outExpo',
-              delay: stagger(18, { from: 'first' }),
-            },
-            stagger(70),
+            { opacity: [0, 1], duration: ms(durations.enter) * 0.5 },
+            260,
           );
-        } else if (nameWrap.length) {
-          tl.add(nameWrap, { y: [16, 0], opacity: [0, 1] }, stagger(70));
         }
 
-        // Title chars — stagger from center
-        if (titleChars.length) {
+        // Specular sweep — one shot, then never again. The name stays a solid
+        // colour; only this overlay is a gradient, and it is transient.
+        if (sweep) {
           tl.add(
-            titleChars,
+            sweep,
             {
-              y: ['112%', '0%'],
               opacity: [0, 1],
-              duration: durations.enter * 1000 * 0.46,
-              ease: easings.expoOut ?? 'outExpo',
-              delay: stagger(20, { from: 'center' }),
+              backgroundPositionX: ['150%', '-150%'],
+              duration: 1100,
+              ease: easings.smooth,
             },
-            stagger(70),
+            900,
           );
-        } else if (titleWrap.length) {
-          tl.add(titleWrap, { y: [16, 0], opacity: [0, 1] }, stagger(70));
+          tl.add(sweep, { opacity: 0, duration: 1 }, 2010);
         }
 
-        // Bio with soft spring
+        if (titleEl)
+          tl.add(
+            titleEl,
+            {
+              y: [10, 0],
+              opacity: [0, 1],
+              duration: ms(durations.enter) * 0.5,
+            },
+            620,
+          );
         if (bio.length)
           tl.add(
             bio,
             {
-              y: [12, 0],
+              y: [10, 0],
               opacity: [0, 1],
-              duration: 560,
-              ease: softSpring ?? easings.smooth,
+              duration: ms(durations.enter) * 0.45,
             },
-            stagger(70),
+            820,
           );
-
-        // Stats staggered spring
         if (stats.length)
           tl.add(
             stats,
@@ -309,31 +315,12 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               y: [14, 0],
               opacity: [0, 1],
               duration: 600,
-              ease: softSpring ?? easings.smooth,
-              delay: stagger(22, { from: 'first' }),
+              ease: softSpring,
+              delay: stagger(60, { from: 'first' }),
             },
-            stagger(60, { from: 'first' }),
+            920,
           );
-
-        // CTAs with spring
-        if (ctas.length)
-          tl.add(
-            ctas,
-            {
-              y: [12, 0],
-              opacity: [0, 1],
-              duration: 520,
-              ease: softSpring ?? easings.smooth,
-              delay: stagger(18, { from: 'first' }),
-            },
-            stagger(60, { from: 'first' }),
-          );
-
-        // Cards — stagger spring; draggable is optional and gated by canAnimate()
-        // Keep stagger spring for cards; horizontal drag via createDraggable is skipped
-        // here to avoid scroll-jank and to keep token-lint/typecheck green — re-enable
-        // by targeting [data-hero="rail"] with createDraggable gated by canAnimate().
-        if (cards.length) {
+        if (cards.length)
           tl.add(
             cards,
             {
@@ -341,56 +328,43 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               opacity: [0, 1],
               scale: [0.98, 1],
               duration: 560,
-              ease: softSpring ?? easings.smooth,
-              delay: stagger(22, { from: 'first' }),
+              ease: softSpring,
+              delay: stagger(60, { from: 'first' }),
             },
-            stagger(60, { from: 'first' }),
+            1180,
           );
-        }
-
-        // Reference canAnimate to guard any future draggable wiring without dead-code lint.
-        // Scroll-driven stats reveal (premium anime.js v4 pattern with onScroll)
-        if (!reduced && stats.length && typeof onScroll === 'function') {
-          const statsContainer = root.querySelector('[data-hero="stats"]');
-          if (statsContainer) {
-            scope.add('scroll-stats', (scopeRef: any) => {
-              const statEls = root.querySelectorAll(
-                '[data-hero="stats"] > div',
-              );
-              statEls.forEach((el, i) => {
-                animate(el as HTMLElement, {
-                  opacity: [0, 1],
-                  y: [20, 0],
-                  duration: 550,
-                  ease: 'outExpo',
-                  delay: i * 80,
-                  autoplay: onScroll({
-                    sync: false,
-                  }),
-                });
-              });
-            });
-          }
-        }
-        void canAnimate;
       });
 
       return () => {
+        // Order matters: restore animated properties first, then let the
+        // splitter put the original text nodes back.
+        revert();
         try {
           nameSplitter?.revert();
-        } catch {}
-        try {
-          titleSplitter?.revert();
-        } catch {}
-        scope.revert();
+        } catch {
+          /* splitter already reverted */
+        }
+        nameSplitter = null;
       };
-    }, []);
+    }, [run, revert]);
+
+    // Hover rides the component's own scope so it is cancelled on unmount and
+    // never races the intro timeline on the same properties.
+    const hover = (el: HTMLElement | undefined, scale: number, y: number) => {
+      if (!el) return;
+      hoverRef.current?.revert();
+      hoverRef.current = animate(el, {
+        scale,
+        y,
+        duration: durations.hover * 1000,
+        ease: easings.smooth,
+      });
+    };
 
     const setRefs = (el: HTMLDivElement | null) => {
-      (innerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+      innerRef.current = el;
       if (typeof ref === 'function') ref(el);
-      else if (ref)
-        (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
+      else if (ref) ref.current = el;
     };
 
     return (
@@ -399,204 +373,151 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
         className="flex flex-col items-center w-full"
         id="hero"
       >
-        {/* Hairline divider drawable under label/name */}
-        <HairlineDivider className="hero-hairline w-24 mx-auto mt-2 opacity-0" />
-        {/* Name — premium gradient display typography */}
-        <div data-hero="name" className="hero-name opacity-0 mt-2">
+        <HairlineDivider className="hero-hairline w-24 mx-auto mb-3" />
+
+        {/* Eyebrow */}
+        <div
+          data-hero="label"
+          className="font-mono text-[10px] tracking-[0.34em] mb-3 text-center"
+          style={{ color: 'var(--fg-3)' }}
+        >
+          {'// ' + (siteTexts.developer_label || 'DEVELOPER PROFILE')}
+        </div>
+
+        {/* Name — solid colour, single restrained glow */}
+        <div data-hero="name" className="hero-name relative">
           <h1
-            className="text-6xl md:text-8xl lg:text-9xl font-display font-bold tracking-[-0.05em] leading-[0.82]"
+            className={`hero-name-el ${NAME_TYPE}`}
             style={{
-              background: 'var(--gradient-hero-name)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              filter:
-                'drop-shadow(0 0 25px var(--glow-text-cyan)) drop-shadow(0 2px 30px var(--glow-text-magenta))',
+              color: 'var(--fg-1)',
+              textShadow:
+                '0 0 56px var(--glow-cyan-zone), 0 0 18px var(--glow-cyan-faint)',
             }}
           >
-            {profile?.full_name?.toUpperCase() ||
-              config.name?.toUpperCase() ||
-              'FAHIM AHMED'}
+            {name}
           </h1>
+          <span
+            data-hero="sweep"
+            aria-hidden="true"
+            className={`hero-name-sweep absolute inset-0 ${NAME_TYPE}`}
+            style={{
+              color: 'transparent',
+              opacity: 0,
+              backgroundImage:
+                'linear-gradient(100deg, transparent 38%, var(--glow-cyan-30) 50%, transparent 62%)',
+              backgroundSize: '220% 100%',
+              backgroundPositionX: '150%',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              pointerEvents: 'none',
+            }}
+          >
+            {name}
+          </span>
         </div>
 
         {/* Title */}
         <div
           data-hero="title"
-          className="hero-title font-body text-sm md:text-base tracking-[0.18em] mt-3 opacity-0"
-          style={{ color: 'var(--fg-3)' }}
+          className="hero-title font-body text-sm md:text-base tracking-[0.18em] mt-4 text-center"
+          style={{ color: 'var(--fg-2)' }}
         >
           FULL-STACK{' '}
-          <span
-            className="font-display tracking-[0.14em]"
-            style={{ color: 'var(--fg-3)' }}
-          >
-            DEVELOPER
-          </span>
+          <span className="font-display tracking-[0.14em]">DEVELOPER</span>
         </div>
 
         {/* Bio */}
         {profile?.bio && (
           <div
             data-hero="bio"
-            className="hero-bio text-[15px] font-body text-center mt-5 max-w-lg leading-relaxed opacity-0"
+            className="hero-bio text-[15px] font-body text-center mt-5 max-w-lg leading-relaxed"
             style={{ color: 'var(--fg-2)' }}
           >
             {profile.bio}
           </div>
         )}
 
-        {/* Stats row */}
-        <div data-hero="stats" className="hero-stats flex gap-8 mt-6 relative">
+        {/* Stats */}
+        <div
+          data-hero="stats"
+          className="hero-stats flex gap-4 md:gap-8 mt-7 relative"
+        >
           <GridLattice
-            opacity={0.03}
+            opacity={0.05}
             color="var(--grid-1)"
             className="absolute inset-0 pointer-events-none"
             aria-hidden="true"
           />
-          <div className="text-center opacity-0">
-            <div
-              className="text-2xl font-display font-bold"
-              style={{
-                color: 'var(--fg-1)',
-                background: 'var(--overlay-card-bg)',
-                backdropFilter: 'blur(12px)',
-                padding: '8px 16px',
-                boxShadow: '0 4px 30px var(--overlay-black-medium)',
-                borderRadius: 'var(--radius-sm)',
-              }}
-            >
-              {projectCount}+
+          {[
+            { value: projectCount, label: 'PROJECTS' },
+            { value: skillCount, label: 'SKILLS' },
+            { value: expCount, label: 'EXPERIENCE' },
+          ].map((s) => (
+            <div key={s.label} className="text-center">
+              <div
+                className="text-2xl md:text-3xl font-display font-bold tabular-nums"
+                style={{ color: 'var(--fg-1)' }}
+              >
+                {s.value}
+                <span style={{ color: 'var(--neon-cyan)' }}>+</span>
+              </div>
+              <div
+                className="text-[9px] font-mono tracking-[0.2em] mt-1"
+                style={{ color: 'var(--fg-3)' }}
+              >
+                {s.label}
+              </div>
             </div>
-            <div
-              className="text-[9px] font-mono tracking-[0.2em]"
-              style={{ color: 'var(--fg-4)' }}
-            >
-              PROJECTS
-            </div>
-          </div>
-          <div className="text-center opacity-0">
-            <div
-              className="text-2xl font-display font-medium"
-              style={{
-                color: 'var(--fg-1)',
-                background: 'var(--overlay-card-bg)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid var(--overlay-card-border)',
-                padding: '8px 16px',
-                boxShadow: '0 4px 30px var(--overlay-black-medium)',
-                borderRadius: 'var(--radius-sm)',
-              }}
-            >
-              {skillCount}+
-            </div>
-            <div
-              className="text-[9px] font-mono tracking-[0.2em]"
-              style={{ color: 'var(--fg-4)' }}
-            >
-              SKILLS
-            </div>
-          </div>
-          <div className="text-center opacity-0">
-            <div
-              className="text-2xl font-display font-medium"
-              style={{
-                color: 'var(--fg-1)',
-                background: 'var(--overlay-card-bg)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid var(--overlay-card-border)',
-                padding: '8px 16px',
-                boxShadow: '0 4px 30px var(--overlay-black-medium)',
-                borderRadius: 'var(--radius-sm)',
-              }}
-            >
-              {expCount}+
-            </div>
-            <div
-              className="text-[9px] font-mono tracking-[0.2em]"
-              style={{ color: 'var(--fg-4)' }}
-            >
-              EXPERIENCE
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Quick access cards */}
-        <div className="mt-12 w-full" id="quick-commands">
+        <div className="mt-8 w-full" id="quick-commands">
           <div
-            className="text-[9px] font-mono tracking-[0.28em] text-center mb-3"
-            style={{ color: 'var(--fg-4)' }}
+            className="text-[10px] font-mono tracking-[0.28em] text-center mb-3"
+            style={{ color: 'var(--fg-3)' }}
           >
             {'// ' + (siteTexts.quick_commands_label || 'QUICK COMMANDS')}
           </div>
           <div
             data-hero="rail"
-            className="grid grid-cols-2 md:grid-cols-3 gap-3"
+            className="grid grid-cols-2 md:grid-cols-3 gap-2.5 max-w-2xl mx-auto"
           >
             {QUICK_CARDS.map((card) => (
               <button
                 key={card.label}
                 data-hero="card"
+                type="button"
                 onClick={() => onSend(card.message)}
                 onMouseEnter={() => {
-                  if (!reduced && canAnimate()) {
-                    animate(cardRefs.current[card.label], {
-                      scale: 1.02,
-                      boxShadow:
-                        '0 0 30px var(--glow-cyan-sm), inset 0 1px 0 var(--overlay-card-shadow-inner)',
-                      duration: durations.hover * 1000,
-                      ease: easings.smooth,
-                    });
-                  }
+                  if (isReducedMotion() || !canAnimate()) return;
+                  hover(cardRefs.current[card.label], 1.03, -2);
                 }}
                 onMouseLeave={() => {
-                  if (!reduced && canAnimate()) {
-                    animate(cardRefs.current[card.label], {
-                      scale: 1,
-                      boxShadow:
-                        'inset 0 1px 0 var(--overlay-card-shadow-inner), 0 8px 32px var(--overlay-card-shadow-outer)',
-                      duration: durations.hover * 1000,
-                      ease: easings.smooth,
-                    });
-                  }
+                  if (isReducedMotion() || !canAnimate()) return;
+                  hover(cardRefs.current[card.label], 1, 0);
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onSend(card.message);
-                  }
-                }}
-                tabIndex={0}
-                role="button"
-                aria-label={`${card.label}, press ${card.shortcut}`}
+                aria-label={card.label.replace('MY ', '').toLowerCase()}
                 ref={(el) => {
                   if (el) cardRefs.current[card.label] = el;
                 }}
-                className="quick-card text-left p-4 cursor-pointer border rounded-[var(--radius-lg)] transition-all duration-300 hover:shadow-[0_0_25px_var(--glow-cyan-sm)] hover:-translate-y-0.5 opacity-0 hover:border-[var(--glow-cyan-30)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-1)]"
+                className="text-left p-4 cursor-pointer border rounded-[var(--radius-lg)] transition-colors duration-300 hover:border-[var(--glow-cyan-30)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-1)]"
                 style={{
-                  background: 'var(--overlay-card-bg)',
-                  backdropFilter: 'blur(20px) saturate(1.2)',
-                  borderColor: 'var(--glow-cyan-zone)',
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
+                  background: 'var(--card-bg)',
+                  backdropFilter: 'var(--glass-blur-md)',
+                  borderColor: 'var(--border-subtle)',
                   color: 'var(--fg-1)',
-                  boxShadow:
-                    'inset 0 1px 0 var(--overlay-card-shadow-inner), 0 8px 32px var(--overlay-card-shadow-outer)',
+                  boxShadow: 'var(--shadow-md)',
                 }}
               >
-                <div className="text-center">
-                  <div
-                    className="flex justify-center mb-2"
-                    style={{ color: 'var(--fg-3)' }}
-                  >
-                    {card.icon}
-                  </div>
-                  <div
-                    className="font-mono text-[10px] tracking-[0.18em]"
+                <div className="flex items-center gap-3">
+                  <span style={{ color: 'var(--neon-cyan)' }}>{card.icon}</span>
+                  <span
+                    className="font-mono text-[10px] tracking-[0.16em]"
                     style={{ color: 'var(--fg-2)' }}
                   >
                     {card.label}
-                  </div>
+                  </span>
                 </div>
               </button>
             ))}

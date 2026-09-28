@@ -155,12 +155,19 @@ export default function ChatInputBar({
           &gt;
         </span>
         <div className="flex-1 min-w-0">
+          {/* The keyboard shortcuts used to live in the placeholder, where
+              they truncated it to "Search tra"-length garbage at 390px. They
+              are announced here instead and the placeholder stays short. */}
+          <span id="chat-input-shortcuts" className="sr-only">
+            Press slash to focus this field, Escape to unfocus it.
+          </span>
           <input
             ref={inputRef}
             type="text"
             className="w-full bg-transparent border-none px-2 py-2.5 focus:outline-none text-sm font-body cursor-text"
             style={{ color: 'var(--fg-1)' } as React.CSSProperties}
-            placeholder="Type a message... (Press / to focus, Esc to unfocus)"
+            placeholder="Type a message…"
+            aria-describedby="chat-input-shortcuts"
             value={input}
             onChange={(e) => onInputChange(e.target.value)}
             onFocus={() => {

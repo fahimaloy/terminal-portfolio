@@ -4,17 +4,22 @@ import React, { useRef, useCallback } from 'react';
 import { createSafeAnimatable } from '../../utils/animatable';
 import { isReducedMotion } from '../../config/animations';
 
-type MagneticButtonBaseProps = {
+type MagneticButtonOwnProps = {
   children: React.ReactNode;
   className?: string;
   strength?: number;
-  as?: React.ElementType;
 };
 
-type MagneticButtonProps = MagneticButtonBaseProps &
+/**
+ * Polymorphic in `as`. A plain union of the two attribute bags collapses to
+ * `never` when spread onto a generic `ElementType`, so the variants are
+ * discriminated on `as` instead: a button gets button attributes, an anchor
+ * gets anchor attributes, and both are checked at the call site.
+ */
+type MagneticButtonProps = MagneticButtonOwnProps &
   (
-    | React.ButtonHTMLAttributes<HTMLButtonElement>
-    | React.AnchorHTMLAttributes<HTMLAnchorElement>
+    | ({ as?: 'button' } & React.ButtonHTMLAttributes<HTMLButtonElement>)
+    | ({ as: 'a' } & React.AnchorHTMLAttributes<HTMLAnchorElement>)
   );
 
 export default function MagneticButton({
@@ -75,14 +80,16 @@ export default function MagneticButton({
     animatableRef.current.y(0);
   }, []);
 
+  // `as` is destructured above, so the tag is known and the remaining props
+  // are narrowed to that element's attribute bag.
   return (
     <Component
       ref={ref}
       className={className}
-      onClick={onClick}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      {...rest}
+      onClick={onClick as never}
+      onMouseMove={handleMouseMove as never}
+      onMouseLeave={handleMouseLeave as never}
+      {...(rest as Record<string, unknown>)}
     >
       {children}
     </Component>

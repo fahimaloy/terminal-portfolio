@@ -189,15 +189,15 @@ const SiteTextsPage = () => {
       <AdminLayout user={user} isLoading={loading}>
         <div className="max-w-4xl">
           <GlitchText
-            accent="magenta"
+            accent="coral"
             className="text-2xl font-display tracking-[2px] mb-6"
           >
             SITE TEXTS MANAGEMENT
           </GlitchText>
 
-          <HudPanel accent="magenta" notch="md" className="p-6 mb-8">
+          <HudPanel accent="coral" notch="md" className="p-6 mb-8">
             <div ref={formRef}>
-              <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+              <div className="text-[10px] font-display tracking-[3px] text-neon-coral mb-4">
                 ADD NEW SITE TEXT
               </div>
 
@@ -274,8 +274,8 @@ const SiteTextsPage = () => {
             </div>
           </HudPanel>
 
-          <HudPanel accent="magenta" notch="md" className="p-6">
-            <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+          <HudPanel accent="coral" notch="md" className="p-6">
+            <div className="text-[10px] font-display tracking-[3px] text-neon-coral mb-4">
               EXISTING SITE TEXTS
             </div>
 
@@ -354,7 +354,7 @@ const SiteTextsPage = () => {
                             <div className="flex gap-2">
                               <NeonButton
                                 variant="outline"
-                                accent="yellow"
+                                accent="amber"
                                 onClick={() => startEditing(text)}
                                 disabled={isSaving}
                               >
@@ -362,7 +362,7 @@ const SiteTextsPage = () => {
                               </NeonButton>
                               <NeonButton
                                 variant="ghost"
-                                accent="red"
+                                accent="coral"
                                 onClick={() => setConfirmDelete(text.id)}
                                 disabled={isSaving}
                               >
@@ -379,8 +379,8 @@ const SiteTextsPage = () => {
             )}
           </HudPanel>
 
-          <HudPanel accent="magenta" notch="md" className="mt-8 p-6">
-            <div className="text-[10px] font-display tracking-[3px] text-neon-magenta mb-4">
+          <HudPanel accent="coral" notch="md" className="mt-8 p-6">
+            <div className="text-[10px] font-display tracking-[3px] text-neon-coral mb-4">
               DEFAULT SITE TEXTS
             </div>
             <p className="font-body text-text-muted text-sm mb-4">

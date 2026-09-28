@@ -17,7 +17,7 @@ describe('GlitchText', () => {
 
   it('supports an accent prop that controls text-shadow color', () => {
     render(
-      <GlitchText accent="magenta" data-testid="g">
+      <GlitchText accent="coral" data-testid="g">
         M
       </GlitchText>,
     );
