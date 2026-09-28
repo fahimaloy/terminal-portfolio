@@ -1,5 +1,4 @@
 import axios from 'axios';
-import config from '../../config.json';
 import {
   supabase,
   hasSupabaseConfig as hasSupabaseClientConfig,
@@ -257,9 +256,9 @@ export type ExperienceProject = {
 const hasSupabaseConfig = (): boolean =>
   Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) &&
-      hasSupabaseClientConfig(),
+    (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) &&
+    hasSupabaseClientConfig(),
   );
 
 // Mutating actions that should invalidate the public cache
@@ -299,8 +298,7 @@ const adminContentAction = async (
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const respData = error.response?.data as
-        | Record<string, unknown>
-        | undefined;
+        Record<string, unknown> | undefined;
       console.error(
         `[adminContentAction] "${action}" failed (${error.response?.status}):`,
         (respData && respData.message) || error.message,
@@ -1089,48 +1087,4 @@ export const deleteExperience = async (id: number): Promise<boolean> => {
   if (error) return false;
   clearPortfolioCache();
   return true;
-};
-
-export const getProjects = async () => {
-  // const { data } = await axios.get(
-  //   `https://raw.githubusercontent.com/fahimaloy/fahimaloy/main/Projects.md`,
-  // );
-  return getCachedOrFetch('legacy:projects', async () => {
-    const { data } = await axios.get(
-      `${process.env.NEXT_PUBLIC_API}/api/allprojects`,
-    );
-    return data;
-  });
-};
-export const getSkills = async () => {
-  return getCachedOrFetch('legacy:skills', async () => {
-    const { data } = await axios.get(
-      `https://raw.githubusercontent.com/fahimaloy/fahimaloy/main/Skills.md`,
-    );
-
-    return data;
-  });
-};
-
-export const getReadme = async () => {
-  return getCachedOrFetch('legacy:readme', async () => {
-    const { data } = await axios.get(config.readmeUrl);
-    return data;
-  });
-};
-
-export const getWeather = async (city: string) => {
-  try {
-    const { data } = await axios.get(`https://wttr.in/${city}?ATm`);
-    return data;
-  } catch (error) {
-    return error;
-  }
-};
-
-export const getQuote = async () => {
-  const { data } = await axios.get('https://api.quotable.io/random');
-  return {
-    quote: `“${data.content}” — ${data.author}`,
-  };
 };
