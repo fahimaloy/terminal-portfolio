@@ -63,11 +63,11 @@ vi.mock('../../components/ui', () => ({
   },
   NeonButton: (props: any) => {
     const React = require('react');
-    return React.createElement(
-      'button',
-      { onClick: props.onClick, className: props.className },
-      props.children,
-    );
+    // Spread everything, the way the real NeonButton does (it forwards
+    // `...rest` onto the button element). An earlier version of this mock
+    // passed only `onClick` and `className`, which silently swallowed the
+    // `data-notfound-anim` marker the reduced-motion branch queries on.
+    return React.createElement('button', { ...props }, props.children);
   },
   StatBar: () => {
     const React = require('react');
@@ -86,7 +86,7 @@ vi.mock('animejs', () => {
   return {
     __esModule: true,
     createScope: vi.fn(() => mockScope),
-    createTimeline: vi.fn(() => ({ add: mockTlAdd404 } as any)),
+    createTimeline: vi.fn(() => ({ add: mockTlAdd404 }) as any),
     stagger: mockStaggerFn,
     createDrawable: vi.fn(() => [] as any),
     spring: vi.fn(() => 'spring-ease' as any),
@@ -96,7 +96,7 @@ vi.mock('animejs', () => {
           chars: [{ style: {} }],
           words: [{ style: {} }],
           revert: mockSplitterRevert404,
-        } as any),
+        }) as any,
     ),
     scrambleText: mockScrambleFn,
     animate: vi.fn(),
