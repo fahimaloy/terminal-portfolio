@@ -1,10 +1,33 @@
 // src/components/ExperienceTimeline.tsx
 /* ═══════════════════════════════════════════════════════════════════════════════
-   EXPERIENCE TIMELINE — Enhanced with anime.js animations
-   - Line draw on scroll (SVG createDrawable)
-   - Stagger node entrance
-   - Icon pop-in
-   - Alternating slide content
+   EXPERIENCE TIMELINE
+
+   What this component actually does, in full. An earlier version of this
+   header promised four effects and implemented one; the list below is
+   exhaustive. If you add an effect, add it here — if you remove one, remove
+   it here.
+
+   WHAT IT DOES
+   - One staggered entrance on mount, inside a createScope that is reverted on
+     unmount and whenever `experiences` changes:
+       · .timeline-node    — scales 0.5 -> 1 while fading in
+       · .timeline-content — slides in from x: 20 while fading in
+     One animate() call each, content cards finishing faster than the nodes.
+   - Expand/collapse per row: React state only, no animation.
+
+   WHAT IT DELIBERATELY DOES NOT DO
+   - NO line draw on scroll. The vertical rule is a plain absolutely-positioned
+     div with a Tailwind gradient (from-neon-cyan via-neon-coral to-neon-amber),
+     not an SVG, so `createDrawable` cannot reach it. It has never been drawn
+     progressively and this header no longer claims that it is.
+   - NO icon pop-in. The company-logo / initials tile is static markup.
+   - NO alternating slide. Every .timeline-content slides in from the same
+     x: 20; the rows do not alternate direction.
+
+   Adding the line draw is possible (an <svg> <path> with an SVG gradient, plus
+   createDrawable and vector-effect="non-scaling-stroke"), but it is a visual
+   change to a user-visible component and is deliberately left out of scope
+   rather than half-done.
 ═══════════════════════════════════════════════════════════════════════════════ */
 
 import React, { useEffect, useState, useRef } from 'react';
@@ -17,7 +40,12 @@ import {
   Briefcase,
 } from 'lucide-react';
 import { animate, createScope, stagger } from 'animejs';
-import { isReducedMotion } from '../config/animations';
+import {
+  durations,
+  easings,
+  isReducedMotion,
+  canAnimate,
+} from '../config/animations';
 
 type ExperienceTimelineProps = {
   experiences: PortfolioExperience[];
@@ -30,41 +58,44 @@ export default function ExperienceTimeline({
     experiences.length > 0 ? experiences[0].id : null,
   );
   const timelineRef = useRef<HTMLDivElement>(null);
-  const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
   useEffect(() => {
-    if (!timelineRef.current || isReducedMotion()) return;
+    // canAnimate() as well as isReducedMotion(): canAnimate() is also false
+    // during SSR and in jsdom (no matchMedia), and the repo rule is that a
+    // component must render its final resting value when motion cannot run.
+    // The .reveal class in global.css is scoped to `no-preference` for the
+    // same reason, so the rows are visible in both of those cases.
+    if (!timelineRef.current || isReducedMotion() || !canAnimate()) return;
 
     const scope = createScope({ root: timelineRef.current });
-    scopeRef.current = scope;
 
     scope.add(() => {
-      // Animate nodes with stagger
+      // Node dots. durations[500] is the 500ms this used to hardcode, so the
+      // cadence is unchanged and now sourced from a --dur-* token.
       const nodes = timelineRef.current!.querySelectorAll('.timeline-node');
       animate(nodes, {
         opacity: [0, 1],
         scale: [0.5, 1],
-        duration: 500,
-        ease: 'outExpo',
-        delay: stagger(100, { from: 'first' }),
+        duration: durations[500] * 1000,
+        ease: easings.outExpo,
+        delay: stagger(durations.stagger * 1000, { from: 'first' }),
       });
 
-      // Animate content cards with stagger
+      // Content cards. Previously 400ms — there is no --dur-400, so this uses
+      // the next token down, durations[300], which keeps the intended
+      // relationship (cards resolve faster than their node).
       const contents =
         timelineRef.current!.querySelectorAll('.timeline-content');
       animate(contents, {
         opacity: [0, 1],
         x: [20, 0],
-        duration: 400,
-        ease: 'outExpo',
-        delay: stagger(100, { from: 'first' }),
+        duration: durations[300] * 1000,
+        ease: easings.outExpo,
+        delay: stagger(durations.stagger * 1000, { from: 'first' }),
       });
     });
 
-    return () => {
-      scope.revert();
-      scopeRef.current = null;
-    };
+    return () => scope.revert();
   }, [experiences]);
 
   if (!experiences.length) {
@@ -92,7 +123,7 @@ export default function ExperienceTimeline({
             <div className="timeline-node absolute -left-5 top-4 w-3 h-3 rounded-full bg-neon-cyan border-2 border-bg-void shadow-[0_0_8px_var(--neon-cyan)] reveal" />
 
             {/* Content card */}
-            <div className="timeline-content bg-white/5 border border-white/10 rounded-xl p-4 ml-2 reveal">
+            <div className="timeline-content bg-[var(--overlay-white-05)] border-[var(--overlay-white-10)] rounded-xl p-4 ml-2 reveal">
               {/* Header row */}
               <div className="flex items-start gap-3">
                 {/* Company logo or initials */}
@@ -105,7 +136,7 @@ export default function ExperienceTimeline({
                     loading="lazy"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--neon-violet)] to-[var(--neon-cyan)] flex items-center justify-center text-sm font-bold text-[var(--fg-1)] flex-shrink-0">
                     {exp.company_name
                       .split(' ')
                       .map((w) => w[0])
@@ -118,7 +149,7 @@ export default function ExperienceTimeline({
                   <div className="font-display text-sm text-neon-cyan text-shadow-neon-cyan">
                     {exp.title}
                   </div>
-                  <div className="text-xs text-white mt-0.5">
+                  <div className="text-xs text-[var(--fg-1)] mt-0.5">
                     {exp.company_name}
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-[10px] text-text-muted">
@@ -143,7 +174,7 @@ export default function ExperienceTimeline({
                   onClick={() =>
                     setExpandedId(expandedId === exp.id ? null : exp.id)
                   }
-                  className="text-text-muted hover:text-white"
+                  className="grid place-items-center min-h-[44px] min-w-[44px] -mr-2 text-text-muted hover:text-[var(--fg-1)]"
                   aria-label={expandedId === exp.id ? 'Collapse' : 'Expand'}
                 >
                   {expandedId === exp.id ? (
@@ -156,7 +187,7 @@ export default function ExperienceTimeline({
 
               {/* Expanded content */}
               {expandedId === exp.id && (
-                <div className="mt-3 pt-3 border-t border-white/10 space-y-3">
+                <div className="mt-3 pt-3 border-t border-[var(--overlay-white-10)] space-y-3">
                   {exp.description && (
                     <p className="text-sm text-text-secondary">
                       {exp.description}
