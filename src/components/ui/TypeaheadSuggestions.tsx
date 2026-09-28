@@ -77,7 +77,7 @@ export default function TypeaheadSuggestions({
               e.preventDefault();
               onSelect(s);
             }}
-            className="px-3 py-2 cursor-pointer flex justify-between items-center hover:bg-white/5 text-text-primary"
+            className="px-3 py-2 cursor-pointer flex justify-between items-center hover:bg-[var(--overlay-white-05)] text-text-primary"
           >
             <span className="truncate">{s.label}</span>
             {s.hint && (
