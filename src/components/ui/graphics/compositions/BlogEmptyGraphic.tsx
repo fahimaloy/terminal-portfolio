@@ -140,6 +140,13 @@ export default function BlogEmptyGraphic({
             strokeWidth={1}
           />
 
+          {/* Every `var(--fg-4)` inside this <svg> is DECORATIVE ORNAMENT ONLY —
+              book-spine ticks, search-lens cross ticks, sparkle dots and the
+              right-side wash rules, all at 0.28–0.85 opacity. They carry no
+              information and are `aria-hidden`, so they legitimately sit on the
+              weakest step of the foreground ramp. Do not "fix" them to
+              --fg-3. The three strings a visitor actually reads live below,
+              outside this svg, and are on --fg-3. */}
           <svg
             viewBox="0 0 320 148"
             preserveAspectRatio="xMidYMid meet"
@@ -402,10 +409,12 @@ export default function BlogEmptyGraphic({
             />
             <span
               className="font-mono text-[10px] tracking-[0.14em]"
-              style={{ color: 'var(--fg-4)' }}
+              style={{ color: 'var(--fg-3)' }}
             >
               {isNoResults ? 'NO MATCHES' : 'STACK EMPTY'}
             </span>
+            {/* Pure ornament: a separator glyph carrying no information, so it
+                stays on the weakest ramp step. */}
             <span
               className="font-mono text-[10px]"
               style={{ color: 'var(--fg-4)', opacity: 0.5 }}
@@ -414,7 +423,7 @@ export default function BlogEmptyGraphic({
             </span>
             <span
               className="font-mono text-[10px] tracking-[0.12em]"
-              style={{ color: 'var(--fg-4)' }}
+              style={{ color: 'var(--fg-3)' }}
             >
               TRY ANOTHER QUERY
             </span>
@@ -422,9 +431,12 @@ export default function BlogEmptyGraphic({
         </div>
       </div>
 
+      {/* The readable message of the whole empty state — promoted from
+          --fg-4 so the one line a visitor actually needs is not on the
+          weakest step of the ramp. */}
       <div
         className="mt-3 text-center font-mono text-[10px] tracking-[0.2em]"
-        style={{ color: 'var(--fg-4)' }}
+        style={{ color: 'var(--fg-3)' }}
       >
         {isNoResults
           ? 'NO MATCHES — TRY ANOTHER QUERY'
