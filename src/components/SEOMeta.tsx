@@ -47,7 +47,13 @@ export default function SEOMeta({
   blogPost,
   noindex = false,
 }: SEOMetaProps) {
-  const siteUrl = 'https://fahimaloy.dev';
+  // Canonical site origin. Must match `SITE_URL` in `src/pages/sitemap.xml.ts`:
+  // `NEXT_PUBLIC_SITE_URL` lets staging/preview emit their own host, with the
+  // hardcoded production origin as fallback. Trailing slashes are stripped so
+  // `path` concatenation stays safe.
+  const siteUrl = (
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://fahimaloy.dev'
+  ).replace(/\/+$/, '');
   const fullUrl = `${siteUrl}${path}`;
   const imageUrl = image || `${siteUrl}/og-image.png`;
 

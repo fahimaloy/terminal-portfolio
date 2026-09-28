@@ -1,7 +1,12 @@
 import type { GetServerSideProps } from 'next';
 import { supabaseAdmin } from '../utils/supabaseAdmin';
 
-const SITE_URL = 'https://fahimaloy.dev';
+// Canonical site origin. `NEXT_PUBLIC_SITE_URL` lets staging/preview deployments
+// emit their own host; the hardcoded value is the production fallback. Trailing
+// slashes are stripped so callers can append paths safely.
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL || 'https://fahimaloy.dev'
+).replace(/\/+$/, '');
 
 interface UrlEntry {
   loc: string;
@@ -15,8 +20,8 @@ function buildXml(entries: UrlEntry[]): string {
     .map(
       (e) => `  <url>
     <loc>${e.loc}</loc>${
-        e.lastmod ? `\n    <lastmod>${e.lastmod}</lastmod>` : ''
-      }
+      e.lastmod ? `\n    <lastmod>${e.lastmod}</lastmod>` : ''
+    }
     <changefreq>${e.changefreq}</changefreq>
     <priority>${e.priority}</priority>
   </url>`,
