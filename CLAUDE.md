@@ -93,7 +93,7 @@ Keep diffs small; when you touch a token, touch the token file, not the generate
 
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **terminal-portfolio** (3167 symbols, 6460 relationships, 268 execution flows).
+This project is indexed by GitNexus as **terminal-portfolio** (2885 symbols, 6095 relationships, 243 execution flows).
 
 > Index stale? Run `node .gitnexus/run.cjs analyze --index-only` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? Bootstrap with `npx`, `bunx`, or `pnpm dlx` — e.g. `bunx gitnexus@latest analyze` (npm 11 npx crash; #1939).
 

@@ -69,8 +69,12 @@ union and never add a "legacy alias" branch.** Twelve duplicate local unions plu
 `EXPECTED_ACCENTS`, add a `[data-accent='x']` block, regenerate.
 
 `token-lint` fails on raw `#[0-9a-fA-F]{3,8}` and raw `rgba(` outside `tokens.css`, and on
-ad-hoc `duration-*`/`ease-*` Tailwind classes not backed by `--dur-*`/`--ease-*`. Escape a
-single line with a `// token-lint-ignore` comment.
+ad-hoc `duration-*`/`ease-*` Tailwind classes not backed by `--dur-*`/`--ease-*`. It also
+fails on stock-Tailwind colour utilities that bypass `tokens.css` (`text-amber-500`,
+`bg-purple-200`, shade-less `text-cyan`); the allowed set is derived from
+`tailwind.tokens.generated.js` rather than a hardcoded accent list, and unlike legacy debt
+this rule is never downgraded by `--warn-legacy`. Escape a single line with a
+`// token-lint-ignore` comment.
 
 ## Scene contract (Three.js)
 
@@ -219,7 +223,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **terminal-portfolio** (3167 symbols, 6460 relationships, 268 execution flows).
+This project is indexed by GitNexus as **terminal-portfolio** (2885 symbols, 6095 relationships, 243 execution flows).
 
 > Index stale? Run `node .gitnexus/run.cjs analyze --index-only` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? Bootstrap with `npx`, `bunx`, or `pnpm dlx` — e.g. `bunx gitnexus@latest analyze` (npm 11 npx crash; #1939).
 
