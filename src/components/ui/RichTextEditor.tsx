@@ -108,7 +108,7 @@ function MenuButton({
           : 'transparent',
         color: active ? 'var(--neon-violet)' : 'var(--text-muted)',
       }}
-      className={`p-1.5 transition-all focus-visible:outline-none focus-visible:border focus-visible:border-[var(--neon-cyan)] focus-visible:shadow-[0_0_0_3px_var(--glow-cyan-sm)] ${
+      className={`grid place-items-center min-h-[44px] min-w-[44px] p-1.5 transition-all focus-visible:outline-none focus-visible:border focus-visible:border-[var(--neon-cyan)] focus-visible:shadow-[0_0_0_3px_var(--glow-cyan-sm)] ${
         !active ? 'hover:text-[var(--fg-1)] hover:bg-[var(--bg-3)]' : ''
       } ${disabled ? 'opacity-30 cursor-not-allowed' : ''}`}
       title={title}
@@ -313,7 +313,7 @@ const MenuBar = ({
         <button
           type="button"
           onClick={() => setLangPickerOpen(!langPickerOpen)}
-          className="p-1.5 transition-all flex items-center gap-1 text-xs focus-visible:outline-none focus-visible:border focus-visible:border-[var(--neon-cyan)]"
+          className="min-h-[44px] min-w-[44px] px-2 py-1.5 transition-all flex items-center gap-1 text-xs focus-visible:outline-none focus-visible:border focus-visible:border-[var(--neon-cyan)]"
           style={{
             borderRadius: 'var(--radius-md)',
             border: editor.isActive('codeBlock')
@@ -347,7 +347,7 @@ const MenuBar = ({
                 key={lang}
                 type="button"
                 onClick={() => setCodeLang(lang)}
-                className="block w-full text-left px-2 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:border-[var(--neon-cyan)]"
+                className="block w-full text-left min-h-[44px] min-w-[44px] px-2 py-2 text-xs transition-colors focus-visible:outline-none focus-visible:border-[var(--neon-cyan)]"
                 style={{
                   borderRadius: 'var(--radius-sm)',
                   background:
@@ -369,7 +369,7 @@ const MenuBar = ({
       <button
         type="button"
         onClick={onToggleFullscreen}
-        className="p-1.5 transition-all ml-auto focus-visible:outline-none focus-visible:border focus-visible:border-[var(--neon-cyan)]"
+        className="grid place-items-center min-h-[44px] min-w-[44px] p-1.5 transition-all ml-auto focus-visible:outline-none focus-visible:border focus-visible:border-[var(--neon-cyan)]"
         style={{ borderRadius: 'var(--radius-md)', color: 'var(--text-muted)' }}
         title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
       >
@@ -483,7 +483,7 @@ export default function RichTextEditor({
         </div>
         <EditorContent
           editor={editor}
-          className={`prose prose-invert max-w-none p-3 focus:outline-none focus-visible:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:focus-visible:outline-none ${
+          className={`rich-prose max-w-none p-3 focus:outline-none focus-visible:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:focus-visible:outline-none ${
             isFullscreen ? 'flex-1 min-h-0' : 'min-h-[150px]'
           } [&_.ProseMirror]:min-h-[130px] [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-[var(--text-muted)] [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)]`}
           data-placeholder={placeholder || 'Write your description...'}
@@ -518,7 +518,7 @@ export default function RichTextEditor({
       {/* Fullscreen backdrop */}
       {isFullscreen && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"
+          className="fixed inset-0 bg-[var(--overlay-black-80)] backdrop-blur-sm z-40"
           onClick={() => setIsFullscreen(false)}
         />
       )}

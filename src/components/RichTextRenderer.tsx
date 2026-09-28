@@ -60,7 +60,7 @@ export default function RichTextRenderer({
 
   return (
     <div
-      className={`prose prose-invert prose-sm max-w-none ${className}`}
+      className={`rich-prose max-w-none ${className}`}
       dangerouslySetInnerHTML={{ __html: sanitized }}
     />
   );

@@ -22,19 +22,6 @@ body {
   display: flex;
   flex-direction: column;
 }
-/* dvh helpers for layout shells */
-@supports (height: 100dvh) {
-  .h-dvh {
-    height: 100dvh;
-  }
-  .min-h-dvh {
-    min-height: 100dvh;
-  }
-  .max-h-dvh {
-    max-height: 100dvh;
-  }
-}
-
 /* ─────────────────────────────────────────────────────────────────────────────
    EDITORIAL WARM — REUSABLE UTILITIES
    All utilities reference CSS tokens from tokens.css (no raw hex/rgba).
@@ -69,11 +56,7 @@ body {
       opacity: 0;
     }
   }
-  /* ── SUBTLE ACCENT RING / HAIRLINE (replaces hud-glow / border-glow / text-shadow-neon) ─ */
-  .accent-ring {
-    box-shadow: 0 0 0 3px var(--accent-glow);
-    border-radius: var(--radius-lg);
-  }
+  /* ── SUBTLE ACCENT HAIRLINE (replaces hud-glow / border-glow / text-shadow-neon) ─ */
   .accent-hairline {
     border: 1px solid var(--border-subtle);
   }
@@ -81,9 +64,6 @@ body {
   /* ── SHAPE — ROUNDED (replaces clip-notch) ────────────────────────────────── */
   .rounded-card {
     border-radius: var(--radius-lg);
-  }
-  .rounded-pill {
-    border-radius: var(--radius-full);
   }
 
   /* Backwards-compat aliases — no clip-path, map to border-radius */
@@ -98,60 +78,6 @@ body {
   }
   .clip-notch-xl {
     border-radius: var(--radius-xl);
-  }
-
-  /* ── FADE IN ANIMATIONS ───────────────────────────────────────────────────── */
-  .animate-fade-in-up {
-    animation: fadeInUp var(--dur-enter) var(--ease-out) forwards;
-  }
-  .animate-fade-in-down {
-    animation: fadeInDown var(--dur-enter) var(--ease-out) forwards;
-  }
-  .animate-fade-in-left {
-    animation: fadeInLeft var(--dur-enter) var(--ease-out) forwards;
-  }
-  .animate-fade-in-right {
-    animation: fadeInRight var(--dur-enter) var(--ease-out) forwards;
-  }
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  @keyframes fadeInDown {
-    from {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  @keyframes fadeInLeft {
-    from {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-  @keyframes fadeInRight {
-    from {
-      opacity: 0;
-      transform: translateX(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
   }
 
   /* ── SUBTLE PULSE / FLOAT (kept — no neon refs) ──────────────────────────── */
@@ -196,13 +122,6 @@ body {
     -webkit-backdrop-filter: var(--glass-blur);
   }
 
-  .glass-subtle {
-    background: var(--bg-3);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-  }
-
   /* ── FONT FAMILIES ────────────────────────────────────────────────────────── */
   .font-display {
     font-family: var(--font-display);
@@ -237,35 +156,10 @@ body {
     background: var(--border-strong);
   }
 
-  /* ── SCROLLBAR NONE ───────────────────────────────────────────────────────── */
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
-  }
-  .scrollbar-none {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
   /* ── SELECTION — warm ─────────────────────────────────────────────────────── */
   ::selection {
     background: var(--selection-bg);
     color: var(--selection-fg);
-  }
-
-  /* ── BLOG RETRO THEME — warm paper + amber ink (scoped via .blog-theme or [data-theme="blog"]) ─ */
-  .blog-theme,
-  [data-theme='blog'] {
-    --bg-1: var(--bg-2);
-    --bg-2: var(--bg-3);
-    --fg-1: var(--fg-2);
-    --fg-2: var(--fg-3);
-    --border-subtle: rgba(26, 26, 24, 0.12);
-    --border-strong: rgba(26, 26, 24, 0.2);
-  }
-  .blog-theme ::selection,
-  [data-theme='blog'] ::selection {
-    background: var(--neon-amber);
-    color: white;
   }
 
   /* ── PULSE DOT — HUD status indicator (uses token durations/easing) ──── */
@@ -324,23 +218,512 @@ body {
     box-shadow: 0 0 0 3px var(--glow-cyan-sm);
   }
 
-  /* Button — plain editorial, no clip-path */
-  .neon-btn {
-    @apply relative inline-flex items-center justify-center font-display uppercase tracking-wider transition-all duration-200;
-    border: 2px solid transparent;
-    border-radius: var(--radius-md);
-  }
-
-  /* Glitch Text base — kept minimal, no glitch animation */
-  .glitch-text {
-    @apply relative font-display;
-    position: relative;
-  }
-
   /* Stat Bar base — flat, rounded */
   .stat-bar {
     @apply relative block w-full h-3 bg-bg-ash overflow-hidden;
     border-radius: var(--radius-sm);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     RICH PROSE — token-backed replacement for `prose prose-invert`
+     ═══════════════════════════════════════════════════════════════════════════
+     WHY THIS EXISTS
+     `@tailwindcss/typography` is not installed, so the `prose` / `prose-invert`
+     / `prose-sm` utilities on RichTextRenderer and RichTextEditor emit nothing
+     at all. Every blog body, chat message and project description has been
+     rendering as one undifferentiated run of unformatted text — no heading
+     scale, no list markers, no link colour, no code surface, no blockquote.
+     The plugin is deliberately NOT being added as a dependency: its generated
+     stylesheet hardcodes a slate/gray ramp that has no relationship to
+     tokens.css, and token-lint fails the build on the raw hexes it inlines. So
+     the surface is authored here instead, where it can speak the same language
+     as the rest of the app.
+
+     CONTRACT
+     - Colour comes only from tokens.css. No raw hex, no rgba(), no off-token
+       Tailwind palette utility.
+     - Body copy is --fg-2, headings --fg-1, secondary text --fg-3. --fg-4 is
+       the decorative/SVG step and is never used for prose.
+     - Every descendant rule is written `.rich-prose :where(…)`, so the whole
+       block sits at specificity (0,1,0): any utility class or later rule can
+       override any of it without `!important` and without a specificity war.
+     - It lives in @layer components, so Tailwind's utilities layer still wins
+       over everything here — the blog body picks its own size with text-sm /
+       md:text-base rather than having to fight this file.
+     - Type sizes are `em` off the root, so the scale follows whatever size the
+       host surface chose instead of overriding it.
+     - Motion uses --dur-* / --ease-* tokens, which tokens.css collapses to 0ms
+       under prefers-reduced-motion (and global.css force-zeroes every
+       transition-duration there too), so the hover lift costs nothing for the
+       users who asked for no motion.
+
+     OPT-IN AUTHORING HOOKS
+     The sanitiser keeps `class`, so anything that emits HTML can use these:
+     .lead, .caption, .mention, .chip, .tag, .callout (+ --info / --warn /
+     --danger), .divider, and the `kbd` element.
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  /* ── ROOT — the measure and the vertical rhythm ───────────────────────────── */
+  .rich-prose {
+    color: var(--fg-2);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.75;
+    letter-spacing: 0.004em;
+    /* Long URLs and unbroken identifiers are common in a dev blog; without
+       this a single 60-char slug blows the column out sideways. */
+    overflow-wrap: break-word;
+    text-wrap: pretty;
+    hanging-punctuation: first last;
+    font-synthesis-weight: none;
+  }
+
+  /* NOTE: the :first-child / :last-child edge-collapse rules live at the very
+     bottom of this block, not here. Every rule in this file is
+     `.rich-prose :where(…)`, which is (0,1,0) — one class, everything else
+     zeroed — so they all tie and source order decides. Declared here they were
+     silently beaten by the later `p { margin-block: 1.1em }` below and did
+     nothing. Search for "EDGE COLLAPSE" at the foot of the block. */
+
+  /* ── PARAGRAPHS + LEAD ────────────────────────────────────────────────────── */
+  .rich-prose :where(p) {
+    margin-block: 1.1em;
+  }
+  .rich-prose :where(.lead) {
+    color: var(--fg-1);
+    font-size: 1.125em;
+    line-height: 1.65;
+  }
+
+  /* ── HEADINGS — display face up top, body face below ─────────────────────── */
+  .rich-prose :where(h1, h2, h3, h4, h5, h6) {
+    color: var(--fg-1);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    /* The blog header is sticky — keep an anchored heading clear of it. */
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+    text-wrap: balance;
+  }
+  .rich-prose :where(h1) {
+    font-family: var(--font-display);
+    font-size: 2em;
+    font-weight: 700;
+    margin-block: 0 0.6em;
+    letter-spacing: -0.02em;
+  }
+  /* The one gradient in the whole surface, and it is on a heading, never on
+     body type. Guarded by @supports so the text can never fall back to
+     transparent. */
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    .rich-prose :where(h1) {
+      background: var(--gradient-cyan-violet);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  }
+  .rich-prose :where(h2) {
+    font-family: var(--font-display);
+    font-size: 1.5em;
+    font-weight: 600;
+    margin-block: 2.1em 0.7em;
+    padding-top: 0.9em;
+    position: relative;
+  }
+  /* Aurora kicker: a short cyan→violet rule above every h2, so the section
+     breaks read as deliberate rather than as a gap in the type. */
+  .rich-prose :where(h2)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3.25rem;
+    height: 2px;
+    background: var(--border-gradient-accent);
+    box-shadow: 0 0 12px var(--glow-cyan);
+  }
+  .rich-prose :where(h3) {
+    font-size: 1.25em;
+    margin-block: 1.8em 0.6em;
+  }
+  .rich-prose :where(h4) {
+    font-size: 1.05em;
+    margin-block: 1.6em 0.5em;
+  }
+  .rich-prose :where(h5) {
+    font-size: 0.95em;
+    margin-block: 1.4em 0.4em;
+  }
+  .rich-prose :where(h6) {
+    font-family: var(--font-mono);
+    font-size: 0.75em;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--fg-3);
+    margin-block: 1.6em 0.5em;
+  }
+
+  /* ── INLINE WEIGHT / STYLE ───────────────────────────────────────────────── */
+  .rich-prose :where(strong, b) {
+    color: var(--fg-1);
+    font-weight: 600;
+  }
+  .rich-prose :where(em, i) {
+    color: var(--fg-1);
+    font-style: italic;
+  }
+  .rich-prose :where(u, ins) {
+    text-decoration: underline;
+    text-decoration-color: var(--neon-ice);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+  .rich-prose :where(s, del, strike) {
+    color: var(--fg-3);
+    text-decoration-color: var(--neon-coral);
+    text-decoration-thickness: 1px;
+  }
+  .rich-prose :where(mark) {
+    background: var(--wash-amber);
+    color: var(--fg-1);
+    padding: 0.1em 0.3em;
+    border-radius: var(--radius-sm);
+    box-shadow: inset 0 -1px 0 var(--neon-amber);
+  }
+  .rich-prose :where(small) {
+    color: var(--fg-3);
+    font-size: 0.85em;
+  }
+  .rich-prose :where(sub, sup) {
+    line-height: 0;
+  }
+
+  /* ── LINKS — the one thing in a post the reader can act on ───────────────── */
+  .rich-prose :where(a) {
+    color: var(--neon-cyan);
+    text-decoration: underline;
+    text-decoration-color: var(--glow-cyan-60);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition:
+      color var(--dur-hover) var(--ease-out),
+      text-decoration-color var(--dur-hover) var(--ease-out),
+      text-shadow var(--dur-hover) var(--ease-out);
+  }
+  .rich-prose :where(a):hover {
+    color: var(--neon-ice);
+    text-decoration-color: var(--neon-ice);
+    text-shadow: 0 0 16px var(--glow-cyan);
+  }
+  .rich-prose :where(a):focus-visible {
+    outline: 2px solid var(--neon-cyan);
+    outline-offset: 3px;
+    border-radius: var(--radius-sm);
+  }
+  /* New-tab marker, kept off internal hrefs so the column does not turn noisy. */
+  .rich-prose :where(a[target='_blank'])::after {
+    content: ' ↗';
+    font-size: 0.8em;
+    opacity: 0.7;
+  }
+
+  /* ── LISTS ───────────────────────────────────────────────────────────────── */
+  .rich-prose :where(ul, ol) {
+    margin-block: 1.1em;
+    padding-left: 1.6em;
+  }
+  .rich-prose :where(li) {
+    margin-block: 0.45em;
+    padding-left: 0.15em;
+  }
+  .rich-prose :where(li)::marker {
+    color: var(--neon-cyan);
+    font-size: 0.85em;
+  }
+  .rich-prose :where(ul) {
+    list-style-type: '▸  ';
+  }
+  .rich-prose :where(ol) {
+    list-style-type: decimal;
+  }
+  .rich-prose :where(ol) :where(li)::marker {
+    font-family: var(--font-mono);
+    font-size: 0.75em;
+    color: var(--neon-ice);
+  }
+  /* Nested lists step down a whole tier — dimmer glyphs, tighter indent. */
+  .rich-prose :where(ul ul, ul ol, ol ul, ol ol) {
+    margin-block: 0.45em;
+    padding-left: 1.15em;
+  }
+  .rich-prose :where(ul ul) {
+    list-style-type: '·  ';
+  }
+  .rich-prose :where(ul ul) :where(li)::marker {
+    color: var(--fg-3);
+  }
+  .rich-prose :where(li > p) {
+    margin-block: 0 0.45em;
+  }
+  /* A list holding a single visual row of text reads better without bullets. */
+  .rich-prose :where(ul li:only-child) {
+    list-style: none;
+  }
+
+  /* ── CODE — inline first ─────────────────────────────────────────────────── */
+  .rich-prose :where(code) {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--neon-ice);
+    background: var(--bg-3);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.12em 0.4em;
+    word-break: break-word;
+  }
+  .rich-prose :where(kbd) {
+    font-family: var(--font-mono);
+    font-size: 0.78em;
+    color: var(--neon-ice);
+    background: var(--bg-3);
+    border: 1px solid var(--border-strong);
+    border-bottom-width: 2px;
+    border-radius: var(--radius-sm);
+    padding: 0.1em 0.45em;
+    box-shadow: var(--shadow-xs);
+  }
+
+  /* ── CODE — block: a lit panel, not a grey box ───────────────────────────── */
+  .rich-prose :where(pre) {
+    position: relative;
+    margin-block: 1.75em;
+    padding: 1.1rem 1.25rem 1.1rem 1.5rem;
+    overflow-x: auto;
+    background: var(--bg-2);
+    border: 1px solid var(--border-subtle);
+    border-left: 2px solid var(--neon-cyan);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    color: var(--fg-2);
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    line-height: 1.7;
+    tab-size: 2;
+  }
+  /* Cyan hairline across the top of the panel — the key light hitting it. */
+  .rich-prose :where(pre)::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: var(--hairline-accent);
+  }
+  .rich-prose :where(pre code) {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  /* ── BLOCKQUOTE — a violet claim panel ───────────────────────────────────── */
+  .rich-prose :where(blockquote) {
+    margin-block: 1.75em;
+    padding: 0.9rem 1.25rem;
+    background: var(--wash-violet);
+    border-left: 2px solid var(--neon-violet);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  }
+  .rich-prose :where(blockquote) :where(p) {
+    margin-block: 0.6em;
+  }
+  .rich-prose :where(blockquote) :where(p:first-child) {
+    margin-top: 0;
+  }
+  .rich-prose :where(blockquote) :where(p:last-child) {
+    margin-bottom: 0;
+  }
+  .rich-prose :where(blockquote blockquote) {
+    background: none;
+    border-left-color: var(--neon-cyan);
+    padding-left: 1rem;
+  }
+
+  /* ── HR — a hairline with a lit node on it ───────────────────────────────── */
+  .rich-prose :where(hr) {
+    height: 1px;
+    border: 0;
+    margin-block: 3rem;
+    background: var(--hairline-accent);
+    position: relative;
+  }
+  .rich-prose :where(hr)::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    background: var(--neon-cyan);
+    box-shadow: 0 0 12px var(--glow-cyan);
+  }
+
+  /* ── FIGURES ─────────────────────────────────────────────────────────────── */
+  .rich-prose :where(figure) {
+    margin-block: 2.25rem;
+  }
+  .rich-prose :where(img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-inline: auto;
+    background: var(--bg-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+  }
+  .rich-prose :where(figcaption) {
+    margin-top: 0.85rem;
+    text-align: center;
+    color: var(--fg-3);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .rich-prose :where(.caption) {
+    color: var(--fg-3);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ── TABLES ──────────────────────────────────────────────────────────────── */
+  /* `display: block` gives the table its own horizontal scroll on a phone
+     without needing a wrapper element, which the sanitiser would strip. */
+  .rich-prose :where(table) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    margin-block: 1.75em;
+    background: var(--bg-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    font-size: 0.9375em;
+  }
+  .rich-prose :where(caption) {
+    padding: 0.75rem 1rem 0;
+    text-align: left;
+    color: var(--fg-3);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .rich-prose :where(thead) {
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .rich-prose :where(th) {
+    text-align: left;
+    white-space: nowrap;
+    padding: 0.7rem 1rem;
+    background: var(--bg-3);
+    color: var(--fg-1);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .rich-prose :where(td) {
+    padding: 0.7rem 1rem;
+    color: var(--fg-2);
+    vertical-align: top;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .rich-prose :where(tbody tr:first-child td) {
+    border-top: 0;
+  }
+
+  /* ── AUTHORING HOOKS ─────────────────────────────────────────────────────── */
+  /* a.mention is what the chat/parser surface emits for an inline entity ref. */
+  .rich-prose :where(a.mention, .mention) {
+    display: inline-block;
+    padding: 0.05em 0.5em;
+    background: var(--wash-cyan);
+    border: 1px solid var(--glow-cyan-30);
+    border-radius: var(--radius-full);
+    color: var(--neon-cyan);
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .rich-prose :where(a.mention):hover,
+  .rich-prose :where(.mention):hover {
+    color: var(--neon-ice);
+    border-color: var(--glow-cyan-60);
+    text-shadow: none;
+  }
+  .rich-prose :where(.chip, .tag) {
+    display: inline-block;
+    padding: 0.1em 0.55em;
+    background: var(--bg-3);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    color: var(--fg-3);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .rich-prose :where(.divider) {
+    display: block;
+    height: 1px;
+    margin-block: 2rem;
+    background: var(--border-subtle);
+  }
+  .rich-prose :where(.callout) {
+    margin-block: 1.75em;
+    padding: 0.9rem 1.15rem;
+    background: var(--wash-cyan);
+    border: 1px solid var(--border-subtle);
+    border-left: 2px solid var(--neon-cyan);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  }
+  .rich-prose :where(.callout) :where(p) {
+    margin-block: 0.5em;
+  }
+  .rich-prose :where(.callout--warn) {
+    background: var(--wash-amber);
+    border-left-color: var(--neon-amber);
+  }
+  .rich-prose :where(.callout--danger) {
+    background: var(--wash-coral);
+    border-left-color: var(--neon-coral);
+  }
+
+  /* ── EDGE COLLAPSE — must stay the LAST rules in this block ─────────────────
+     Declared here, at the foot, on purpose. Every rule in this file is
+     `.rich-prose :where(…)` = (0,1,0): one class from `.rich-prose`, zero from
+     the `:where()`. They therefore all tie, and CSS breaks the tie on source
+     order. When these two sat at the top of the block they lost to the later
+     `p { margin-block: 1.1em }` and applied to nothing — verified in Chromium,
+     where the last paragraph still computed to 17.6px of bottom margin. Last
+     position is what makes the collapse real. */
+  .rich-prose :where(:first-child) {
+    margin-top: 0;
+  }
+  .rich-prose :where(:last-child) {
+    margin-bottom: 0;
   }
 }
 
