@@ -74,7 +74,7 @@ export default function InlineProjectCard({
           {project.short_title && (
             <div
               className="text-[10px] mt-1 line-clamp-1"
-              style={{ color: 'var(--fg-4)' }}
+              style={{ color: 'var(--fg-3)' }}
             >
               {project.short_title}
             </div>

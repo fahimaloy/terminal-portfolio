@@ -43,7 +43,7 @@ export default function ProjectInlineRef({ project, onOpen, isOpen }: Props) {
   return (
     <button
       onClick={() => onOpen?.(project)}
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-display tracking-[1.5px] uppercase border bg-black/40 ${c.accent} ${c.border} ${c.glow} transition-all duration-200 hover:scale-[1.03] active:scale-95 clip-notch-sm`}
+      className={`inline-flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-3 py-2 text-[10px] font-display tracking-[1.5px] uppercase border bg-[var(--overlay-black-strong)] ${c.accent} ${c.border} ${c.glow} transition-all duration-200 hover:scale-[1.03] active:scale-95 clip-notch-sm`}
       title={`Click to view ${project.title} details`}
     >
       {project.thumbnail_url ? (
@@ -55,7 +55,7 @@ export default function ProjectInlineRef({ project, onOpen, isOpen }: Props) {
           className="w-3.5 h-3.5 rounded-full object-cover"
         />
       ) : (
-        <span className="w-3.5 h-3.5 rounded-full bg-current opacity-40 flex items-center justify-center text-[8px] font-bold text-black">
+        <span className="w-3.5 h-3.5 rounded-full bg-current opacity-40 flex items-center justify-center text-[8px] font-bold text-[var(--bg-void)]">
           {project.title.charAt(0)}
         </span>
       )}

@@ -401,7 +401,7 @@ export default function BlogIndexPage() {
               <>
                 <p
                   className="blog-empty-subcopy font-mono text-[11px] mt-2 reveal"
-                  style={{ color: 'var(--fg-4)' }}
+                  style={{ color: 'var(--fg-3)' }}
                 >
                   {'>'} Adjust your search parameters and retry.
                 </p>
@@ -433,7 +433,7 @@ export default function BlogIndexPage() {
                 <div className="blog-empty-cta mt-4 flex justify-center gap-2 reveal">
                   <Link
                     href="/"
-                    className="inline-flex items-center justify-center px-4 py-2 font-mono text-[11px] tracking-[0.14em] border rounded-[var(--radius-md)]"
+                    className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-4 py-2 font-mono text-[11px] tracking-[0.14em] border rounded-[var(--radius-md)]"
                     style={{
                       borderColor: 'var(--border-subtle)',
                       color: 'var(--fg-2)',

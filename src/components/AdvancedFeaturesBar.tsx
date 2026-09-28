@@ -22,10 +22,16 @@ const FEATURES: Feature[] = [
   },
 ];
 
+// `text-shadow-neon-*` and `hud-glow-*` are dead classes — they survived in
+// this file (and ~30 other call sites) after the glow system was replaced by
+// the `.accent-*` utilities in global.css. They rendered as nothing, so the
+// active tab's "selected" look was carried entirely by the /10 wash. The glow
+// now comes from an inline `text-shadow` against a real `--glow-x` token, and
+// the dead class names are gone.
 const ACCENT_TEXT: Record<Feature['accent'], string> = {
-  coral: 'text-neon-coral text-shadow-neon-coral',
-  cyan: 'text-neon-cyan text-shadow-neon-cyan',
-  lime: 'text-neon-lime text-shadow-neon-lime',
+  coral: 'text-neon-coral',
+  cyan: 'text-neon-cyan',
+  lime: 'text-neon-lime',
 };
 const ACCENT_BG: Record<Feature['accent'], string> = {
   coral: 'bg-neon-coral/10 border-neon-coral/40',
@@ -33,9 +39,9 @@ const ACCENT_BG: Record<Feature['accent'], string> = {
   lime: 'bg-neon-lime/10 border-neon-lime/40',
 };
 const ACCENT_GLOW: Record<Feature['accent'], string> = {
-  coral: 'hud-glow-coral',
-  cyan: 'hud-glow-cyan',
-  lime: 'hud-glow-lime',
+  coral: '0 0 14px var(--glow-coral-sm)',
+  cyan: '0 0 14px var(--glow-cyan-sm)',
+  lime: '0 0 14px var(--glow-lime-sm)',
 };
 
 type Props = {
@@ -54,18 +60,19 @@ export default function AdvancedFeaturesBar({
         return (
           <button
             key={f.mode}
+            type="button"
             onClick={() => onModeChange(isActive ? 'chat' : f.mode)}
-            className={`inline-flex items-center gap-2 px-3 py-1.5 text-[10px] font-display tracking-[2px] uppercase border transition-all duration-200 clip-notch-sm
+            aria-pressed={isActive}
+            className={`inline-flex items-center gap-2 px-3 py-2 min-h-[44px] min-w-[44px] text-[10px] font-display tracking-[2px] uppercase border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-2)]
               ${
                 isActive
-                  ? `${ACCENT_BG[f.accent]} ${ACCENT_TEXT[f.accent]} ${
-                      ACCENT_GLOW[f.accent]
-                    }`
-                  : 'bg-transparent border-white/10 text-text-secondary hover:border-white/30 hover:text-text-primary'
+                  ? `${ACCENT_BG[f.accent]} ${ACCENT_TEXT[f.accent]}`
+                  : 'bg-transparent border-[var(--border-subtle)] text-text-secondary hover:border-[var(--border-strong)] hover:text-text-primary'
               }
             `}
+            style={isActive ? { textShadow: ACCENT_GLOW[f.accent] } : undefined}
           >
-            {f.icon}
+            <span aria-hidden="true">{f.icon}</span>
             <span>{f.label}</span>
           </button>
         );

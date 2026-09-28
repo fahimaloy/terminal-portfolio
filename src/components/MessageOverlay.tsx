@@ -93,10 +93,13 @@ function TypingDots() {
     animate(dots, {
       scale: [1, 1.4, 1],
       opacity: [0.4, 1, 0.4],
-      duration: 800,
+      // Token-backed rather than the raw 800/200ms literals this used to
+      // carry. The bounce is now a touch tighter, which reads more like a
+      // cursor than a loading spinner.
+      duration: durations.transition * 1000,
       loop: true,
-      ease: 'inOutSine',
-      delay: stagger(200),
+      ease: easings.sineInOut as unknown as string,
+      delay: stagger(durations.stagger * 1000 * 3),
     });
   }, []);
 
@@ -178,16 +181,16 @@ export default function MessageOverlay({
     if (backdropRef.current) {
       animate(backdropRef.current, {
         opacity: [0, 1],
-        duration: 200,
-        ease: 'outExpo',
+        duration: durations[200] * 1000,
+        ease: easings.expoOut as unknown as string,
       });
     }
     if (panelRef.current) {
       animate(panelRef.current, {
         y: [60, 0],
         opacity: [0, 1],
-        duration: 320,
-        ease: 'outExpo',
+        duration: durations.transition * 1000,
+        ease: easings.expoOut as unknown as string,
       });
     }
   }, [isOpen]);
@@ -222,7 +225,7 @@ export default function MessageOverlay({
         scale: [0.96, 1],
         duration: durations.enter * 1000 * 0.5,
         ease: (easings.expoOut as unknown as string) ?? 'outExpo',
-        delay: stagger(34, { from: 'first' }),
+        delay: stagger(durations.stagger * 1000, { from: 'first' }),
         composition: 'blend',
       });
     });
@@ -286,7 +289,8 @@ export default function MessageOverlay({
       <div
         ref={backdropRef}
         onClick={onClose}
-        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-md reveal"
+        className="fixed inset-0 z-40 backdrop-blur-md reveal"
+        style={{ background: 'var(--surface-overlay)' }}
       />
       <div
         ref={panelRef}
@@ -294,8 +298,16 @@ export default function MessageOverlay({
         style={{ maxHeight: '85vh' }}
       >
         <div
-          className="w-full max-w-3xl mx-auto px-4 pb-6 flex flex-col"
-          style={{ maxHeight: '85vh' }}
+          className="w-full max-w-3xl mx-auto px-4 flex flex-col"
+          // This sheet is `fixed bottom-0`, so it sat under the iOS home
+          // indicator — the composer row was the thing a thumb reaches for, and
+          // the home indicator is exactly where the thumb rests. `pb-6` alone
+          // is not enough on a notched device; the safe-area inset has to be
+          // the floor.
+          style={{
+            maxHeight: '85vh',
+            paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+          }}
         >
           <div className="flex justify-end mb-2">
             <NeonButton
@@ -325,13 +337,12 @@ export default function MessageOverlay({
             <Ripple color="var(--glow-amber-sm)">
               <HudPanel
                 accent="amber"
-                notch="md"
-                className="overflow-hidden hud-glow-amber"
+                className="overflow-hidden accent-hairline"
               >
                 <AdvancedFeaturesBar activeMode={mode} onModeChange={setMode} />
 
                 {showQuickCommands && (
-                  <div className="p-3 border-t border-white/5">
+                  <div className="p-3 border-t border-[var(--border-subtle)]">
                     <div className="text-[9px] font-display tracking-[2px] text-text-muted mb-2">
                       {'// QUICK COMMANDS'}
                     </div>
@@ -368,7 +379,7 @@ export default function MessageOverlay({
                                 composition: 'blend',
                               });
                             }}
-                            className="suggestion-chip p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-neon-cyan/10 hover:border-neon-cyan/30 transition-colors text-left reveal"
+                            className="suggestion-chip p-2.5 rounded-lg bg-[var(--overlay-card-bg)] border border-[var(--overlay-card-border)] hover:bg-neon-cyan/10 hover:border-neon-cyan/30 transition-colors text-left reveal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-cyan)]"
                           >
                             <div className="flex items-center gap-2">
                               <span className="text-neon-cyan">{s.icon}</span>
@@ -390,7 +401,7 @@ export default function MessageOverlay({
                 {suggestions &&
                   suggestions.length > 0 &&
                   inputValue.length > 0 && (
-                    <div className="px-4 py-2 border-t border-white/5">
+                    <div className="px-4 py-2 border-t border-[var(--border-subtle)]">
                       <TypeaheadSuggestions
                         query={inputValue}
                         suggestions={filtered}
@@ -413,7 +424,7 @@ export default function MessageOverlay({
                 )}
 
                 {skillFilter.length > 0 && (
-                  <div className="px-4 py-2 border-t border-white/5 flex items-center gap-2 flex-wrap">
+                  <div className="px-4 py-2 border-t border-[var(--border-subtle)] flex items-center gap-2 flex-wrap">
                     <span className="text-[9px] text-text-muted">
                       FILTERED BY:
                     </span>
@@ -423,7 +434,7 @@ export default function MessageOverlay({
                       return (
                         <span
                           key={id}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-neon-cyan/10 border border-neon-cyan/20 rounded-lg text-[10px] text-neon-cyan"
+                          className="relative inline-flex items-center gap-1 px-2 py-0.5 min-h-[44px] min-w-[44px] bg-neon-cyan/10 border border-neon-cyan/20 rounded-lg text-[10px] text-neon-cyan"
                         >
                           {skill.name}
                           <button
@@ -432,9 +443,11 @@ export default function MessageOverlay({
                                 prev.filter((i) => i !== id),
                               )
                             }
-                            className="hover:text-red-400"
+                            type="button"
+                            aria-label={`Remove ${skill.name} filter`}
+                            className="grid place-items-center w-4 h-4 hover:text-neon-coral focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-coral)] rounded-sm after:absolute after:inset-[-14px] after:content-['']"
                           >
-                            <FiX size={10} />
+                            <FiX size={10} aria-hidden="true" />
                           </button>
                         </span>
                       );
@@ -442,14 +455,14 @@ export default function MessageOverlay({
                   </div>
                 )}
 
-                <div className="flex items-end p-3 border-t border-white/5">
+                <div className="flex items-end p-3 border-t border-[var(--border-subtle)]">
                   {skills.length > 0 && (
                     <button
                       onClick={() => setShowSkillFilter(!showSkillFilter)}
-                      className={`p-2 rounded-lg mr-2 transition-all ${
+                      className={`grid place-items-center w-11 h-11 rounded-lg mr-2 transition-all ${
                         showSkillFilter
                           ? 'bg-neon-cyan/20 text-neon-cyan'
-                          : 'text-text-muted hover:text-white'
+                          : 'text-text-muted hover:text-text-primary'
                       }`}
                       title="Filter by skills"
                     >
@@ -464,7 +477,7 @@ export default function MessageOverlay({
                     placeholder="Ask about my development projects, skills, or experience..."
                     maxLength={2000}
                     rows={2}
-                    className="flex-1 bg-transparent border-none text-text-primary px-2 py-2 focus:outline-none placeholder-text-muted text-sm font-body resize-none focus:shadow-[0_0_12px_var(--glow-amber)] transition-all duration-200"
+                    className="flex-1 min-h-[44px] min-w-[44px] bg-transparent border-none text-text-primary px-2 py-2 focus:outline-none placeholder-text-muted text-sm font-body resize-none focus:shadow-[0_0_12px_var(--glow-amber)] transition-all duration-200"
                     disabled={isLoading}
                   />
                   <div className="flex items-center gap-2 ml-2">
@@ -484,10 +497,9 @@ export default function MessageOverlay({
                 </div>
 
                 {isLoading && (
-                  <div className="px-4 py-2 border-t border-white/5">
+                  <div className="px-4 py-2 border-t border-[var(--border-subtle)]">
                     <HudPanel
                       accent="cyan"
-                      notch="sm"
                       className="inline-flex items-center gap-2"
                     >
                       <span className="text-[9px] font-mono text-text-muted mr-2">

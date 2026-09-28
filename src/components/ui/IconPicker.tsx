@@ -158,7 +158,7 @@ export default function IconPicker({
       </label>
 
       {/* Current selection preview */}
-      <div className="flex items-center gap-2 p-2 bg-white/[0.03] clip-notch-sm border border-white/10">
+      <div className="flex items-center gap-2 p-2 bg-[var(--overlay-white-03)] clip-notch-sm border border-[var(--overlay-white-10)]">
         {value ? (
           <div className="flex items-center gap-2 w-full">
             {isSiValue ? (
@@ -189,7 +189,7 @@ export default function IconPicker({
             <button
               type="button"
               onClick={handleClear}
-              className="ml-auto text-xs text-text-muted hover:text-neon-coral"
+              className="ml-auto min-h-[44px] min-w-[44px] px-2 -mr-2 text-xs text-text-muted hover:text-neon-coral"
               disabled={disabled}
               aria-label="Clear icon selection"
             >
@@ -218,7 +218,7 @@ export default function IconPicker({
           <div
             role="tablist"
             aria-label="Icon type"
-            className="inline-flex p-1 gap-1 bg-white/[0.03] border border-white/10 clip-notch-sm"
+            className="inline-flex p-1 gap-1 bg-[var(--overlay-white-03)] border border-[var(--overlay-white-10)] clip-notch-sm"
           >
             <button
               type="button"
@@ -228,10 +228,10 @@ export default function IconPicker({
               id="icon-tab-general"
               onClick={() => setActive('general')}
               disabled={disabled || !allowLucide}
-              className={`px-3 py-1 text-xs font-display tracking-[1px] uppercase transition-colors clip-notch-sm border ${
+              className={`min-h-[44px] min-w-[44px] px-3 py-2 text-xs font-display tracking-[1px] uppercase transition-colors clip-notch-sm border ${
                 active === 'general'
                   ? 'bg-neon-violet/20 border-neon-violet/50 text-neon-violet'
-                  : 'border-transparent text-text-muted hover:text-text-primary hover:bg-white/10'
+                  : 'border-transparent text-text-muted hover:text-text-primary hover:bg-[var(--overlay-white-10)]'
               }`}
             >
               General
@@ -244,10 +244,10 @@ export default function IconPicker({
               id="icon-tab-stack"
               onClick={() => setActive('stack')}
               disabled={disabled || !allowTech}
-              className={`px-3 py-1 text-xs font-display tracking-[1px] uppercase transition-colors clip-notch-sm border ${
+              className={`min-h-[44px] min-w-[44px] px-3 py-2 text-xs font-display tracking-[1px] uppercase transition-colors clip-notch-sm border ${
                 active === 'stack'
                   ? 'bg-neon-violet/20 border-neon-violet/50 text-neon-violet'
-                  : 'border-transparent text-text-muted hover:text-text-primary hover:bg-white/10'
+                  : 'border-transparent text-text-muted hover:text-text-primary hover:bg-[var(--overlay-white-10)]'
               }`}
             >
               Stack
@@ -255,17 +255,17 @@ export default function IconPicker({
           </div>
 
           {active === 'stack' && showColor ? (
-            <div className="ml-auto inline-flex p-1 gap-1 bg-white/[0.03] border border-white/10 clip-notch-sm">
+            <div className="ml-auto inline-flex p-1 gap-1 bg-[var(--overlay-white-03)] border border-[var(--overlay-white-10)] clip-notch-sm">
               <button
                 type="button"
                 aria-pressed={isColored}
                 aria-label="Colored icons"
                 onClick={() => setIsColored(true)}
                 disabled={disabled}
-                className={`px-2 py-1 text-[10px] font-display tracking-[1px] uppercase transition-colors clip-notch-sm border ${
+                className={`min-h-[44px] min-w-[44px] px-2 py-2 text-[10px] font-display tracking-[1px] uppercase transition-colors clip-notch-sm border ${
                   isColored
                     ? 'bg-neon-cyan/20 border-neon-cyan/50 text-neon-cyan'
-                    : 'border-transparent text-text-muted hover:text-text-primary hover:bg-white/10'
+                    : 'border-transparent text-text-muted hover:text-text-primary hover:bg-[var(--overlay-white-10)]'
                 }`}
               >
                 Color
@@ -276,10 +276,10 @@ export default function IconPicker({
                 aria-label="Monochrome icons"
                 onClick={() => setIsColored(false)}
                 disabled={disabled}
-                className={`px-2 py-1 text-[10px] font-display tracking-[1px] uppercase transition-colors clip-notch-sm border ${
+                className={`min-h-[44px] min-w-[44px] px-2 py-2 text-[10px] font-display tracking-[1px] uppercase transition-colors clip-notch-sm border ${
                   !isColored
                     ? 'bg-neon-cyan/20 border-neon-cyan/50 text-neon-cyan'
-                    : 'border-transparent text-text-muted hover:text-text-primary hover:bg-white/10'
+                    : 'border-transparent text-text-muted hover:text-text-primary hover:bg-[var(--overlay-white-10)]'
                 }`}
               >
                 Mono
@@ -289,7 +289,7 @@ export default function IconPicker({
         </div>
       ) : active === 'stack' && showColor ? (
         <div className="flex justify-end">
-          <div className="inline-flex p-1 gap-1 bg-white/[0.03] border border-white/10 clip-notch-sm">
+          <div className="inline-flex p-1 gap-1 bg-[var(--overlay-white-03)] border border-[var(--overlay-white-10)] clip-notch-sm">
             <button
               type="button"
               aria-pressed={isColored}
@@ -299,7 +299,7 @@ export default function IconPicker({
               className={`px-2 py-1 text-[10px] font-display tracking-[1px] uppercase transition-colors clip-notch-sm border ${
                 isColored
                   ? 'bg-neon-cyan/20 border-neon-cyan/50 text-neon-cyan'
-                  : 'border-transparent text-text-muted hover:text-text-primary hover:bg-white/10'
+                  : 'border-transparent text-text-muted hover:text-text-primary hover:bg-[var(--overlay-white-10)]'
               }`}
             >
               Color
@@ -313,7 +313,7 @@ export default function IconPicker({
               className={`px-2 py-1 text-[10px] font-display tracking-[1px] uppercase transition-colors clip-notch-sm border ${
                 !isColored
                   ? 'bg-neon-cyan/20 border-neon-cyan/50 text-neon-cyan'
-                  : 'border-transparent text-text-muted hover:text-text-primary hover:bg-white/10'
+                  : 'border-transparent text-text-muted hover:text-text-primary hover:bg-[var(--overlay-white-10)]'
               }`}
             >
               Mono
@@ -324,7 +324,7 @@ export default function IconPicker({
 
       {/* Recent */}
       {recent.length > 0 ? (
-        <div className="bg-white/[0.02] border border-white/10 clip-notch-sm p-2">
+        <div className="bg-[var(--overlay-white-02)] border border-[var(--overlay-white-10)] clip-notch-sm p-2">
           <div className="text-[10px] font-display tracking-[2px] text-text-muted uppercase mb-1">
             Recent
           </div>
@@ -346,10 +346,10 @@ export default function IconPicker({
                   disabled={disabled}
                   title={r}
                   aria-label={`Recent ${r}`}
-                  className={`w-8 h-8 flex items-center justify-center clip-notch-sm border transition-colors ${
+                  className={`min-h-[44px] min-w-[44px] p-2 flex items-center justify-center clip-notch-sm border transition-colors ${
                     isSelected
                       ? 'bg-neon-violet/20 border-neon-violet/50'
-                      : 'border-transparent bg-white/[0.03] hover:bg-white/10'
+                      : 'border-transparent bg-[var(--overlay-white-03)] hover:bg-[var(--overlay-white-10)]'
                   }`}
                 >
                   {isRecentSi ? (
@@ -385,7 +385,7 @@ export default function IconPicker({
       ) : null}
 
       {/* Icon grid */}
-      <div className="max-h-48 overflow-y-auto clip-notch-sm border border-white/10 p-2 bg-bg-smoke">
+      <div className="max-h-48 overflow-y-auto clip-notch-sm border border-[var(--overlay-white-10)] p-2 bg-bg-smoke">
         {active === 'general' && allowLucide ? (
           <>
             <div
@@ -402,7 +402,7 @@ export default function IconPicker({
                     key={name}
                     type="button"
                     onClick={() => handleSelect(name)}
-                    className={`p-2 clip-notch-sm hover:bg-white/10 transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:border focus-visible:border-neon-cyan focus-visible:shadow-[0_0_12px_var(--glow-cyan-sm)] ${
+                    className={`min-h-[44px] min-w-[44px] p-2 clip-notch-sm hover:bg-[var(--overlay-white-10)] transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:border focus-visible:border-neon-cyan focus-visible:shadow-[0_0_12px_var(--glow-cyan-sm)] ${
                       value === name
                         ? 'bg-neon-violet/20 border border-neon-violet/50'
                         : 'border border-transparent'
@@ -447,7 +447,7 @@ export default function IconPicker({
                     key={entry.id}
                     type="button"
                     onClick={() => handleSelect(val)}
-                    className={`p-2 clip-notch-sm hover:bg-white/10 transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:border focus-visible:border-neon-cyan focus-visible:shadow-[0_0_12px_var(--glow-cyan-sm)] ${
+                    className={`min-h-[44px] min-w-[44px] p-2 clip-notch-sm hover:bg-[var(--overlay-white-10)] transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:border focus-visible:border-neon-cyan focus-visible:shadow-[0_0_12px_var(--glow-cyan-sm)] ${
                       isSelected
                         ? 'bg-neon-violet/20 border border-neon-violet/50'
                         : 'border border-transparent'

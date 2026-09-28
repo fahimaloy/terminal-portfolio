@@ -92,7 +92,7 @@ export default function SearchableMultiSelect({
             return (
               <span
                 key={opt.id}
-                className="inline-flex items-center gap-1 px-2 py-0.5 bg-neon-violet/20 border border-neon-violet/30 clip-notch-sm text-xs text-neon-violet/80"
+                className="inline-flex items-center gap-1 px-2 py-0.5 min-h-[44px] min-w-[44px] bg-neon-violet/20 border border-neon-violet/30 clip-notch-sm text-xs text-neon-violet/80"
               >
                 {opt.icon ||
                   (TechIcon ? (
@@ -111,7 +111,8 @@ export default function SearchableMultiSelect({
                       e.stopPropagation();
                       remove(opt.id);
                     }}
-                    className="ml-0.5 hover:text-red-400"
+                    className="relative ml-0.5 grid place-items-center w-5 h-5 hover:text-[var(--neon-coral)] after:absolute after:inset-[-12px] after:content-['']"
+                    aria-label={`Remove ${opt.label}`}
                   >
                     <X size={12} />
                   </button>
@@ -138,17 +139,17 @@ export default function SearchableMultiSelect({
 
       {/* Dropdown */}
       {isOpen && !disabled && (
-        <div className="absolute z-50 mt-1 w-full bg-bg-ash border border-white/10 clip-notch-sm shadow-xl max-h-60 overflow-hidden">
+        <div className="absolute z-50 mt-1 w-full bg-bg-ash border-[var(--overlay-white-10)] clip-notch-sm shadow-xl max-h-60 overflow-hidden">
           {/* Search input */}
-          <div className="p-2 border-b border-white/10">
-            <div className="flex items-center gap-2 px-2 bg-white/[0.03] clip-notch-sm">
+          <div className="p-2 border-b border-[var(--overlay-white-10)]">
+            <div className="flex items-center gap-2 px-2 min-h-[44px] bg-[var(--overlay-white-03)] clip-notch-sm">
               <Search size={14} className="text-text-muted" />
               <input
                 type="text"
                 placeholder={placeholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 bg-transparent text-sm text-text-primary py-1.5 focus:outline-none focus-visible:outline-none placeholder:text-text-muted"
+                className="flex-1 min-h-[44px] min-w-[44px] bg-transparent text-sm text-text-primary py-1.5 focus:outline-none focus-visible:outline-none placeholder:text-text-muted"
                 autoFocus
               />
             </div>
@@ -164,7 +165,7 @@ export default function SearchableMultiSelect({
                   key={opt.id}
                   type="button"
                   onClick={() => toggle(opt.id)}
-                  className={`w-full px-3 py-2 flex items-center gap-2 text-left text-sm hover:bg-white/[0.03] transition-colors focus-visible:outline-none focus-visible:bg-white/[0.05] ${
+                  className={`w-full min-h-[44px] min-w-[44px] px-3 py-2 flex items-center gap-2 text-left text-sm hover:bg-[var(--overlay-white-03)] transition-colors focus-visible:outline-none focus-visible:bg-[var(--overlay-white-05)] ${
                     selectedIds.includes(opt.id) ? 'bg-neon-violet/10' : ''
                   }`}
                 >
@@ -172,7 +173,7 @@ export default function SearchableMultiSelect({
                     className={`w-4 h-4 rounded border flex items-center justify-center ${
                       selectedIds.includes(opt.id)
                         ? 'bg-neon-violet border-neon-violet'
-                        : 'border-white/20'
+                        : 'border-[var(--overlay-white-20)]'
                     }`}
                   >
                     {selectedIds.includes(opt.id) && (

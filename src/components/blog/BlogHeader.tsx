@@ -131,7 +131,7 @@ export default function BlogHeader({
         <div className="flex items-center justify-between gap-4 mb-3">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.18em] shrink-0"
+            className="inline-flex items-center gap-2 min-h-[44px] min-w-[44px] font-mono text-[11px] tracking-[0.18em] shrink-0"
             style={{ color: 'var(--fg-3)' }}
           >
             <ArrowLeft size={14} aria-hidden="true" />
@@ -209,7 +209,7 @@ export default function BlogHeader({
                   onSearch('');
                 }}
                 aria-label="Clear search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1"
+                className="absolute right-2 top-1/2 -translate-y-1/2 grid place-items-center w-6 h-6 after:absolute after:inset-[-10px] after:content-['']"
                 style={{ color: 'var(--fg-3)' }}
               >
                 <X size={14} />
@@ -278,7 +278,7 @@ export default function BlogHeader({
             <button
               type="button"
               onClick={clearAll}
-              className="font-mono text-[10px] tracking-[0.16em]"
+              className="min-h-[44px] min-w-[44px] px-2 font-mono text-[10px] tracking-[0.16em]"
               style={{ color: 'var(--neon-cyan)' }}
             >
               CLEAR ALL
@@ -306,7 +306,7 @@ export default function BlogHeader({
                       type="button"
                       onClick={() => onTag(active ? '' : f.tag)}
                       aria-pressed={active}
-                      className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[10px] tracking-[0.14em] transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-full border min-h-[44px] min-w-[44px] px-3 py-2 font-mono text-[10px] tracking-[0.14em] transition-colors"
                       style={{
                         background: active ? 'var(--neon-cyan)' : 'var(--bg-3)',
                         color: active ? 'var(--bg-void)' : 'var(--fg-2)',
@@ -336,7 +336,7 @@ export default function BlogHeader({
                     type="button"
                     onClick={() => onSort(s.value)}
                     aria-pressed={active}
-                    className="rounded-[var(--radius-sm)] border px-3 py-1.5 font-mono text-[10px] tracking-[0.16em] transition-colors"
+                    className="rounded-[var(--radius-sm)] border min-h-[44px] min-w-[44px] px-3 py-2 font-mono text-[10px] tracking-[0.16em] transition-colors"
                     style={{
                       background: active ? 'var(--neon-cyan)' : 'var(--bg-3)',
                       color: active ? 'var(--bg-void)' : 'var(--fg-2)',
@@ -370,7 +370,7 @@ export default function BlogHeader({
                       type="button"
                       onClick={() => onSort(s.value)}
                       aria-pressed={sort === s.value}
-                      className="rounded-[var(--radius-sm)] border px-3 py-1.5 font-mono text-[10px] tracking-[0.16em]"
+                      className="rounded-[var(--radius-sm)] border min-h-[44px] min-w-[44px] px-3 py-2 font-mono text-[10px] tracking-[0.16em]"
                       style={{
                         borderColor:
                           sort === s.value
@@ -434,7 +434,7 @@ function FilterChip({
 }) {
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[10px] tracking-[0.12em]"
+      className="relative inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[10px] tracking-[0.12em]"
       style={{
         background: 'var(--wash-cyan)',
         color: 'var(--neon-cyan)',
@@ -446,7 +446,7 @@ function FilterChip({
         type="button"
         onClick={onClear}
         aria-label={`Remove filter ${label}`}
-        className="opacity-70 hover:opacity-100"
+        className="grid place-items-center w-6 h-6 opacity-70 hover:opacity-100 after:absolute after:inset-[-10px] after:content-['']"
       >
         <X size={11} />
       </button>
@@ -474,7 +474,7 @@ function IconToggle({
       aria-pressed={active}
       aria-label={badge ? `${label} (${badge} active)` : label}
       title={label}
-      className="relative grid place-items-center w-10 h-10 rounded-[var(--radius-md)] border transition-colors"
+      className="relative grid place-items-center w-11 h-11 rounded-[var(--radius-md)] border transition-colors"
       style={{
         background: active ? 'var(--wash-cyan)' : 'var(--bg-2)',
         color: active ? 'var(--neon-cyan)' : 'var(--fg-2)',

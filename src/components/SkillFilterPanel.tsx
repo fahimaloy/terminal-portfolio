@@ -33,20 +33,20 @@ export default function SkillFilterPanel({
   };
 
   return (
-    <div className="p-3 border-t border-white/5 bg-black/20">
+    <div className="p-3 border-t border-[var(--overlay-white-05)] bg-[var(--overlay-black-20)]">
       <div className="flex items-center gap-2 mb-2">
-        <Search size={14} className="text-gray-400" />
+        <Search size={14} className="text-[var(--fg-3)]" />
         <input
           type="text"
           placeholder="Filter by skill..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 bg-transparent text-sm text-white focus:outline-none placeholder-gray-500"
+          className="flex-1 min-h-[44px] min-w-[44px] bg-transparent text-sm text-[var(--fg-1)] focus:outline-none placeholder-[var(--fg-3)]"
         />
         {selectedIds.length > 0 && (
           <button
             onClick={() => onChange([])}
-            className="text-xs text-gray-400 hover:text-white"
+            className="min-h-[44px] min-w-[44px] px-2 -mr-2 text-xs text-[var(--fg-3)] hover:text-[var(--fg-1)]"
           >
             Clear all
           </button>
@@ -56,18 +56,17 @@ export default function SkillFilterPanel({
         {filtered.map((skill) => {
           const Icon = skill.icon_key
             ? (LucideIcons[skill.icon_key as keyof typeof LucideIcons] as
-                | React.ComponentType<any>
-                | undefined)
+                React.ComponentType<any> | undefined)
             : null;
           const isSelected = selectedIds.includes(skill.id);
           return (
             <button
               key={skill.id}
               onClick={() => toggle(skill.id)}
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all ${
+              className={`inline-flex items-center gap-1 min-h-[44px] min-w-[44px] px-3 py-2 rounded-lg text-xs transition-all ${
                 isSelected
                   ? 'bg-neon-cyan/20 border border-neon-cyan/40 text-neon-cyan'
-                  : 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10'
+                  : 'bg-[var(--overlay-white-05)] border-[var(--overlay-white-10)] text-[var(--fg-3)] hover:bg-[var(--overlay-white-10)]'
               }`}
             >
               {Icon && <Icon size={12} />}
