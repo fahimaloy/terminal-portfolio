@@ -105,11 +105,7 @@ export default function BlogForm({
     <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
         <div ref={errorRef}>
-          <HudPanel
-            accent="coral"
-            notch="sm"
-            className="p-3 flex items-center gap-2"
-          >
+          <HudPanel accent="coral" className="p-3 flex items-center gap-2">
             <FiAlertCircle className="w-4 h-4 text-neon-coral flex-shrink-0" />
             <span className="font-body text-sm text-neon-coral">{error}</span>
           </HudPanel>
@@ -117,12 +113,7 @@ export default function BlogForm({
       )}
 
       {/* Core fields */}
-      <HudPanel
-        accent="cyan"
-        notch="md"
-        title="// POST_CONTENT"
-        className="p-4 space-y-4"
-      >
+      <HudPanel accent="cyan" title="// POST_CONTENT" className="p-4 space-y-4">
         <TextInput
           id="blog-title"
           label="Title"
@@ -192,7 +183,6 @@ export default function BlogForm({
       {/* Media + taxonomy */}
       <HudPanel
         accent="coral"
-        notch="md"
         title="// MEDIA_AND_TAGS"
         className="p-4 space-y-4"
       >
@@ -221,7 +211,7 @@ export default function BlogForm({
           <img
             src={coverUrl}
             alt={coverAlt || 'Cover preview'}
-            className="w-full max-h-48 object-cover clip-notch-sm border border-white/10"
+            className="w-full max-h-48 object-cover clip-notch-sm border border-[var(--overlay-white-10)]"
           />
         )}
 
@@ -238,7 +228,6 @@ export default function BlogForm({
       {/* SEO */}
       <HudPanel
         accent="amber"
-        notch="md"
         title="// SEO_METADATA"
         className="p-4 space-y-4"
       >
@@ -273,12 +262,7 @@ export default function BlogForm({
       </HudPanel>
 
       {/* Publish controls */}
-      <HudPanel
-        accent="lime"
-        notch="md"
-        title="// PUBLISH"
-        className="p-4 space-y-4"
-      >
+      <HudPanel accent="lime" title="// PUBLISH" className="p-4 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
           <Select
             id="blog-status"
@@ -309,7 +293,7 @@ export default function BlogForm({
           </div>
         </div>
 
-        <div className="flex gap-2 pt-2 border-t border-white/5">
+        <div className="flex gap-2 pt-2 border-t border-[var(--overlay-white-05)]">
           <NeonButton
             type="submit"
             accent="amber"

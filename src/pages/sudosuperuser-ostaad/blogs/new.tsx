@@ -50,7 +50,7 @@ const NewBlogPage = () => {
           </div>
 
           {error && (
-            <HudPanel accent="coral" notch="sm" className="p-3">
+            <HudPanel accent="coral" className="p-3">
               <span className="font-body text-sm text-neon-coral">{error}</span>
             </HudPanel>
           )}

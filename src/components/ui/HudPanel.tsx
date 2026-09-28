@@ -1,10 +1,7 @@
 // src/components/ui/HudPanel.tsx
 import React from 'react';
 import { GlitchAccent } from './GlitchText';
-import Bracket from './graphics/primitives/Bracket';
 import GridLattice from './graphics/primitives/GridLattice';
-
-type NotchSize = 'sm' | 'md' | 'lg';
 
 const ACCENT_COLOR: Record<GlitchAccent, string> = {
   cyan: 'var(--neon-cyan)',
@@ -17,27 +14,20 @@ const ACCENT_COLOR: Record<GlitchAccent, string> = {
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
   accent?: GlitchAccent;
-  notch?: NotchSize;
   title?: string;
   innerClassName?: string;
-  flat?: boolean;
   /** AAA wash — saturated tint behind card (Out-of-Actions grade) */
   wash?: boolean;
-  /** Show bracket corners */
-  bracket?: boolean;
   /** Subtle HUD grid on card back */
   grid?: boolean;
 };
 
 export default function HudPanel({
   accent = 'amber',
-  notch: _notch = 'md',
   title,
   className = '',
   innerClassName = '',
-  flat: _flat = false,
   wash = false,
-  bracket = false,
   grid = false,
   children,
   ...rest
@@ -70,18 +60,6 @@ export default function HudPanel({
           aria-hidden="true"
         >
           <GridLattice opacity={1} color="var(--grid-1)" />
-        </div>
-      )}
-      {bracket && (
-        <div
-          className="pointer-events-none absolute inset-0 opacity-50"
-          aria-hidden="true"
-        >
-          <Bracket
-            accent={accent}
-            className="absolute inset-0"
-            strokeWidth={1}
-          />
         </div>
       )}
       {title && (

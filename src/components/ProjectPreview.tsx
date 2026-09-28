@@ -131,7 +131,6 @@ export default function ProjectPreview({
               >
                 <HudPanel
                   accent={c.accent}
-                  notch="sm"
                   className={`p-2 transition-all duration-200 ${
                     isActive
                       ? 'scale-105 hud-glow-' + c.accent.replace('neon-', '')
@@ -139,7 +138,7 @@ export default function ProjectPreview({
                         c.accent.replace('neon-', '')
                   }`}
                 >
-                  <div className="w-full h-16 overflow-hidden bg-black/30 mb-2 relative">
+                  <div className="w-full h-16 overflow-hidden bg-[var(--overlay-black-medium)] mb-2 relative">
                     {project.thumbnail_url ? (
                       <Image
                         src={project.thumbnail_url}
@@ -166,12 +165,8 @@ export default function ProjectPreview({
         </div>
       )}
 
-      <HudPanel
-        accent={colors.accent}
-        notch="md"
-        className="p-0 overflow-hidden"
-      >
-        <div className="relative w-full aspect-video bg-black/60">
+      <HudPanel accent={colors.accent} className="p-0 overflow-hidden">
+        <div className="relative w-full aspect-video bg-[var(--overlay-black-60)]">
           {mediaLoading && (
             <div className="absolute inset-0 flex items-center justify-center text-text-muted font-body text-sm">
               Loading media...
@@ -236,7 +231,7 @@ export default function ProjectPreview({
                       (prev - 1 + activeMedia.length) % activeMedia.length,
                   )
                 }
-                className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-text-secondary hover:text-text-primary transition-all"
+                className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-[var(--overlay-black-50)] hover:bg-[var(--overlay-black-70)] text-text-secondary hover:text-text-primary transition-all"
                 aria-label="Previous media"
               >
                 <FiChevronLeft className="w-5 h-5" />
@@ -247,7 +242,7 @@ export default function ProjectPreview({
                     (prev) => (prev + 1) % activeMedia.length,
                   )
                 }
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-text-secondary hover:text-text-primary transition-all"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[var(--overlay-black-50)] hover:bg-[var(--overlay-black-70)] text-text-secondary hover:text-text-primary transition-all"
                 aria-label="Next media"
               >
                 <FiChevronRight className="w-5 h-5" />
@@ -256,14 +251,14 @@ export default function ProjectPreview({
           )}
 
           {activeMedia.length > 1 && !mediaLoading && (
-            <div className="absolute bottom-2 right-2 bg-black/60 text-text-primary text-[10px] font-mono px-2 py-1">
+            <div className="absolute bottom-2 right-2 bg-[var(--overlay-black-60)] text-text-primary text-[10px] font-mono px-2 py-1">
               {selectedMediaIndex + 1} / {activeMedia.length}
             </div>
           )}
         </div>
 
         {activeMedia.length > 1 && (
-          <div className="flex gap-2 p-3 overflow-x-auto bg-black/20">
+          <div className="flex gap-2 p-3 overflow-x-auto bg-[var(--overlay-black-20)]">
             {activeMedia.map((m, idx) => (
               <button
                 key={m.id}
@@ -271,7 +266,7 @@ export default function ProjectPreview({
                 className={`flex-shrink-0 w-20 h-14 overflow-hidden border-2 transition-all ${
                   idx === selectedMediaIndex
                     ? 'border-neon-cyan shadow-[0_0_8px_var(--glow-cyan)]'
-                    : 'border-transparent hover:border-white/30'
+                    : 'border-transparent hover:border-[var(--overlay-white-30)]'
                 }`}
                 aria-label={`Media ${idx + 1}`}
               >
@@ -340,7 +335,7 @@ export default function ProjectPreview({
                 href={activeProject.project_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neon-amber/10 border border-neon-amber/40 text-neon-amber text-shadow-neon-amber font-display text-[10px] tracking-[2px] hover:bg-neon-amber/20 transition-all"
+                className="inline-flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-3 py-2 bg-neon-amber/10 border border-neon-amber/40 text-neon-amber text-shadow-neon-amber font-display text-[10px] tracking-[2px] hover:bg-neon-amber/20 transition-all"
                 style={{
                   clipPath:
                     'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',
@@ -355,7 +350,7 @@ export default function ProjectPreview({
                 href={activeProject.repo_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/20 text-text-primary font-display text-[10px] tracking-[2px] hover:bg-white/10 transition-all"
+                className="inline-flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-3 py-2 bg-[var(--overlay-white-05)] border border-[var(--overlay-white-20)] text-text-primary font-display text-[10px] tracking-[2px] hover:bg-[var(--overlay-white-10)] transition-all"
                 style={{
                   clipPath:
                     'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',

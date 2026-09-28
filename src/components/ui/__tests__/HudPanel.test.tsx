@@ -29,12 +29,8 @@ describe('HudPanel', () => {
     expect(el.style.borderTop).toContain('var(--neon-coral)');
   });
 
-  it('uses a notched clip path via utility class', () => {
-    render(
-      <HudPanel notch="md" data-testid="p">
-        X
-      </HudPanel>,
-    );
+  it('renders rounded editorial corners, never a notched clip path', () => {
+    render(<HudPanel data-testid="p">X</HudPanel>);
     const el = screen.getByTestId('p');
     expect(el.className).toMatch(/rounded-card/);
     expect(el.style.borderRadius).toBe('var(--radius-lg)');

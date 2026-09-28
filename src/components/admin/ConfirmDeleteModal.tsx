@@ -54,11 +54,11 @@ export default function ConfirmDeleteModal({
     >
       <div
         ref={backdropRef}
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0"
+        className="absolute inset-0 bg-[var(--overlay-black-80)] backdrop-blur-sm opacity-0"
         onClick={onClose}
       />
       <div ref={panelRef} className="relative max-w-sm w-full opacity-0">
-        <HudPanel accent="coral" notch="md" title={title} className="p-6">
+        <HudPanel accent="coral" title={title} className="p-6">
           <div className="text-center space-y-4">
             <div className="text-4xl">⚠️</div>
             <p className="text-text-muted text-sm font-body">{message}</p>

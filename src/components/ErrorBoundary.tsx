@@ -56,7 +56,6 @@ export default class ErrorBoundary extends Component<Props, State> {
           >
             <HudPanel
               accent="coral"
-              notch="md"
               title="// SYSTEM_FAULT"
               className="p-6 space-y-4"
             >

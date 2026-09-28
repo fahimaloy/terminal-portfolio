@@ -304,7 +304,7 @@ const LoginPage = () => {
 
           {/* Error Message */}
           {errorMessage && (
-            <HudPanel accent="coral" notch="sm" className="mb-6 p-4">
+            <HudPanel accent="coral" className="mb-6 p-4">
               <div className="flex items-start gap-3">
                 <span className="text-lg">⚠️</span>
                 <div>
@@ -319,7 +319,7 @@ const LoginPage = () => {
 
           {/* Success Message */}
           {status === 'success' && (
-            <HudPanel accent="lime" notch="sm" className="mb-6 p-4">
+            <HudPanel accent="lime" className="mb-6 p-4">
               <div className="flex items-center gap-3">
                 <span className="text-lg animate-bounce">✓</span>
                 <div>
@@ -336,7 +336,7 @@ const LoginPage = () => {
 
           {/* Lockout Message */}
           {isLocked && (
-            <HudPanel accent="amber" notch="sm" className="mb-6 p-4">
+            <HudPanel accent="amber" className="mb-6 p-4">
               <div className="flex items-center gap-3">
                 <span className="text-lg animate-pulse">🔒</span>
                 <div>
@@ -354,7 +354,7 @@ const LoginPage = () => {
           )}
 
           {/* Login Card */}
-          <HudPanel accent="cyan" notch="md" className="overflow-hidden">
+          <HudPanel accent="cyan" className="overflow-hidden">
             {/* Status Bar */}
             <div
               className={`h-1 transition-all duration-500 ${
