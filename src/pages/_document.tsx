@@ -10,6 +10,32 @@ export default function Document() {
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        {/* Icons. These files have always been committed under public/ but were
+            never referenced, so browsers were left to guess a /favicon.ico (and
+            probe for it). Sizes are the files' real pixel dimensions, verified
+            against their PNG headers rather than their names. The manifest's
+            6 android-icon entries were each confirmed to exist before wiring. */}
+        <link rel="icon" href="/favicon.ico" />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicon-16x16.png"
+        />
+        {/* apple-icon-180x180.png is genuinely 180x180 — the usual 152x152
+            iOS fallback was not needed. */}
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-icon-180x180.png"
+        />
+        <link rel="manifest" href="/manifest.json" />
         {/* Every family named in src/styles/tokens.css must be requested here.
             --font-display is Orbitron; it was never loaded, so every
             `font-display` element silently fell back to Space Grotesk. */}
