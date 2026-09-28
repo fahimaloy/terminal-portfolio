@@ -14,10 +14,8 @@ export type { ScopeRingsProps } from './primitives/ScopeRings';
 export type { SignalTicksProps } from './primitives/SignalTicks';
 export type { GridLatticeProps } from './primitives/GridLattice';
 
-export { default as HeroEmptyGraphic } from './compositions/HeroEmptyGraphic';
 export { default as BlogEmptyGraphic } from './compositions/BlogEmptyGraphic';
 export { default as NotFoundGraphic } from './compositions/NotFoundGraphic';
 
-export type { HeroEmptyGraphicProps } from './compositions/HeroEmptyGraphic';
 export type { BlogEmptyGraphicProps } from './compositions/BlogEmptyGraphic';
 export type { NotFoundGraphicProps } from './compositions/NotFoundGraphic';
