@@ -6,6 +6,9 @@
  *   1. raw hex color   — /#[0-9a-fA-F]{3,8}\b/
  *   2. raw rgba()      — /rgba\s*\(/
  *   3. ad-hoc duration-/ease- Tailwind class not backed by tokens
+ *   4. off-token Tailwind colour utility — text-gray-400, bg-white/5, …
+ *      (never downgraded by --warn-legacy: that flag is for legacy debt,
+ *       not for colours that bypass tokens.css)
  *
  * Usage:
  *   node scripts/token-lint.mjs [file ...]   — lint given files
@@ -17,6 +20,7 @@
 
 import { execSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { readdirSync } from 'node:fs';
 
@@ -48,6 +52,131 @@ function loadAllowedTokens() {
     } catch { /* ignore */ }
   }
   return { durs, eases };
+}
+
+// ---------------------------------------------------------------------------
+// Off-token Tailwind colour utilities (rule 4)
+// ---------------------------------------------------------------------------
+// The doctrine: src/styles/tokens.css is the ONLY source of truth for colour.
+// Tailwind's built-in palette (`text-gray-400`, `bg-white/5`, `from-purple-500`,
+// `border-black/20`, …) is just as much a violation as a raw hex literal — it
+// bypasses tokens.css entirely — but it was invisible to the raw-hex/rgba rules.
+//
+// WHY A POSITIVE ALLOWLIST AND NOT "ANYTHING THAT ISN'T A var()":
+// The naive inverse rule ("flag every colour part that is not `var(--…)`")
+// flags everything, including the token-backed named colours this project
+// generates from tokens.css (`text-neon-cyan`, `bg-glass-border`,
+// `ring-cyan`, `border-strong`, …) and every legitimate colour name the
+// design-token vocabulary grows in the future. That is the same failure mode
+// as a denylist of "known bad" colours: it must be updated on every rename,
+// and until it is, it either blocks real tokens or silently misses new
+// defaults. An allowlist of the *default Tailwind palette* is finite (22
+// families + 5 keywords), stable across Tailwind majors, and complete: every
+// class it catches is provably a stock-palette class, never a project token.
+
+// The 22 default Tailwind colour families (v3 and v4 name the same set).
+const TW_PALETTE_FAMILIES = new Set([
+  'slate', 'gray', 'grey', 'zinc', 'neutral', 'stone',
+  'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald',
+  'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia',
+  'pink', 'rose',
+]);
+
+// Shade-less stock palette entries that ARE doctrine violations — `bg-white/5`
+// and `border-black/20` bypass tokens.css exactly like `text-gray-400` does.
+const TW_PALETTE_BARE = new Set(['white', 'black']);
+
+// Colour-less keywords Tailwind accepts on these utilities. They carry no hue
+// of their own, so they are always acceptable and are never reported.
+const TW_NEUTRAL_KEYWORDS = new Set([
+  'transparent', 'current', 'currentcolor', 'inherit', 'none',
+]);
+
+// Colour-bearing utility prefixes. Sorted longest-first at build time so that
+// `ring-offset-` wins over `ring-` and `border-x-` over `border-` — otherwise
+// the shorter prefix would swallow the side/offset qualifier and the colour
+// part would never be seen (silent false negative, not a false positive).
+// Every entry here can genuinely carry a colour; none were trimmed.
+const COLOUR_PREFIXES = [
+  'placeholder-', 'ring-offset-', 'decoration-', 'accent-', 'border-',
+  'divide-', 'outline-', 'shadow-', 'from-', 'via-', 'to-',
+  'border-t-', 'border-r-', 'border-b-', 'border-l-', 'border-x-', 'border-y-',
+  'divide-x-', 'divide-y-',
+  'text-', 'bg-', 'fill-', 'stroke-', 'caret-', 'ring-',
+].sort((a, b) => b.length - a.length);
+
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// A class-ish run: everything up to the next quote/space/delimiter. Stopping at
+// `(`/`)` and `,` truncates exotic arbitrary values (`bg-[url(…)]`) mid-value,
+// which is harmless — the result still starts with `[` and is skipped.
+const COLOUR_UTIL_RE = new RegExp(
+  `\\b(?:!)?(${COLOUR_PREFIXES.map(escapeRe).join('|')})([^\\s"'\\x60,;{}()<>]+)`,
+  'g'
+);
+
+// `<family>-<shade>`, shade being 50…950 in practice — matched loosely as
+// 2–3 digits so a future shade does not need a linter change.
+const TW_SHADED_RE = /^([a-z]+)-(\d{2,3})$/;
+
+// Trailing `/opacity` modifier: numeric or bracketed. Stripped before the
+// palette check so `bg-white/5` and `bg-white` are treated identically.
+const TW_OPACITY_RE = /\/(?:\[[^\]]*\]|\d{1,3})$/;
+
+// Trailing `!` — the Tailwind important modifier. v3.2 accepts it as a suffix
+// and v4 prefers it, so `text-white!` is a real stock-palette class. Stripped
+// BEFORE TW_OPACITY_RE because the two can combine (`bg-black/20!`) and the
+// opacity regex is end-anchored — reversing the order would leave `/20!`
+// unmatched and silently miss the colour.
+const TW_IMPORTANT_RE = /!$/;
+
+const OFFTOKEN_COLOR_RULE = 'no-offtoken-color-utility';
+
+// Colour keys this project actually defines (tailwind.tokens.generated.js, which
+// is generated from tokens.css). Used only to *suppress* — a class whose colour
+// part is a defined key is a token-backed class by construction, so it can never
+// be reported even if a key were later named e.g. `purple-500`.
+function loadConfiguredColours() {
+  const names = new Set();
+  const rel = 'tailwind.tokens.generated.js';
+  if (!existsSync(rel)) return names;
+  try {
+    const req = createRequire(path.resolve(rel));
+    const mod = req('./' + rel);
+    const colours = mod?.colors;
+    if (colours && typeof colours === 'object') {
+      for (const [k, v] of Object.entries(colours)) {
+        if (typeof v === 'string') names.add(k.toLowerCase());
+      }
+    }
+  } catch { /* generated file absent or unparseable — allowlist still stands */ }
+  return names;
+}
+
+/**
+ * True when `rest` (the part after a colour-bearing prefix, opacity modifier
+ * still attached) is a stock-Tailwind colour rather than a project token.
+ */
+function isOffTokenColour(prefix, rest, configured) {
+  if (!rest) return false;                       // `placeholder-` with no suffix
+  // Arbitrary values are never this rule's business: token-backed
+  // (`text-[var(--fg-1)]`, `border-[var(--glass-border)]`) by contract, and any
+  // raw colour hiding in one (`text-[#fff]`) is already caught by rules 1/2.
+  if (rest.startsWith('[') || rest.startsWith('-[')) return false;
+  const base = rest.toLowerCase().replace(TW_IMPORTANT_RE, '').replace(TW_OPACITY_RE, '');
+  if (!base) return false;
+  if (TW_NEUTRAL_KEYWORDS.has(base)) return false;
+  if (configured.has(base) || configured.has(prefix + base)) return false;
+  if (TW_PALETTE_BARE.has(base)) return true;
+  const m = base.match(TW_SHADED_RE);
+  if (m && TW_PALETTE_FAMILIES.has(m[1])) return true;
+  // Bare family name, no shade: every stock family also defines a DEFAULT
+  // (`text-amber` is #f59e0b, `text-cyan` is #06b6d4), so this is a stock colour
+  // too — the shade-less spelling of the same violation. The `configured` lookups
+  // above run first on purpose: the project spells its accents `neon-<name>` and
+  // `ring-<name>`, so a token named exactly `cyan` would win here and stay legal.
+  if (TW_PALETTE_FAMILIES.has(base)) return true;
+  return false;
 }
 
 // Regexes
@@ -377,6 +506,22 @@ function lintFile(filePath, allowed) {
             message: `ad-hoc Tailwind class "${m[0]}" — use a token easing instead`,
           });
         }
+
+        // 4) off-token Tailwind colour utility — `text-gray-400`, `bg-white/5`,
+        // `from-purple-500`. Same class-context scoping as rule 3, plus the
+        // adjacent-line ignore marker that rules 1/2 honour.
+        if (!adjIgnored) {
+          for (const m of target.matchAll(COLOUR_UTIL_RE)) {
+            if (!isOffTokenColour(m[1], m[2], allowed.colours)) continue;
+            violations.push({
+              file: filePath,
+              line: lineNo,
+              col: line.indexOf(m[0], 0) + m.index + 1,
+              rule: OFFTOKEN_COLOR_RULE,
+              message: `off-token Tailwind colour "${m[0]}" — use a token colour (var(--…) or a generated token class) instead`,
+            });
+          }
+        }
       }
     }
   }
@@ -389,6 +534,7 @@ function lintFile(filePath, allowed) {
 // ---------------------------------------------------------------------------
 function main() {
   const allowed = loadAllowedTokens();
+  allowed.colours = loadConfiguredColours();
 
   // Re-resolve collectAllFiles fallback to use walkDirSync (guards against the async helpers above)
   // Monkey-patch collectAllFiles so the --all fallback uses sync walk
@@ -458,18 +604,44 @@ function main() {
   // Remove duplicate arbitrary vs normal duration hits for bracket syntax (normal loop already skips '[' but be safe)
   // (already handled by skip above)
 
-  if (allViolations.length > 0) {
-    const stream = warnLegacy ? console.warn.bind(console) : console.error.bind(console);
-    stream('\n[token-lint] Design-token violations found:\n');
-    for (const v of allViolations) {
-      stream(`  ${v.file}:${v.line}:${v.col}  [${v.rule}]  ${v.message}`);
+  // --warn-legacy downgrades the pre-existing rules to a warning (legacy debt
+  // the repo is tracking down). It deliberately does NOT downgrade
+  // no-offtoken-color-utility: that rule reports colours bypassing tokens.css,
+  // which is the doctrine violation, not legacy debt. Exit code stays 1
+  // whenever a colour violation is present, flag or no flag.
+  const fatalViolations = warnLegacy
+    ? allViolations.filter((v) => v.rule === OFFTOKEN_COLOR_RULE)
+    : allViolations;
+  const downgradedViolations = warnLegacy
+    ? allViolations.filter((v) => v.rule !== OFFTOKEN_COLOR_RULE)
+    : [];
+
+  if (fatalViolations.length > 0) {
+    console.error('\n[token-lint] Design-token violations found:\n');
+    for (const v of fatalViolations) {
+      console.error(`  ${v.file}:${v.line}:${v.col}  [${v.rule}]  ${v.message}`);
     }
-    stream(`\n[token-lint] ${allViolations.length} violation(s) — fix them or add "// token-lint-ignore" to the offending line.${warnLegacy ? ' (--warn-legacy: not failing)' : ''}\n`);
-    if (warnLegacy) {
-      console.log(`[token-lint] WARN — ${files.length} file(s) checked, ${allViolations.length} legacy violation(s) (allowed via --warn-legacy).`);
-      process.exit(0);
+    if (downgradedViolations.length > 0) {
+      console.warn(`\n[token-lint] ${downgradedViolations.length} further legacy violation(s) downgraded by --warn-legacy:`);
+      for (const v of downgradedViolations) {
+        console.warn(`  ${v.file}:${v.line}:${v.col}  [${v.rule}]  ${v.message}`);
+      }
     }
+    const suffix = downgradedViolations.length
+      ? ` (${downgradedViolations.length} legacy violation(s) downgraded by --warn-legacy)`
+      : '';
+    console.error(`\n[token-lint] ${fatalViolations.length} violation(s) — fix them or add "// token-lint-ignore" to the offending line.${suffix}\n`);
     process.exit(1);
+  }
+
+  if (downgradedViolations.length > 0) {
+    console.warn('\n[token-lint] Legacy design-token violations found:\n');
+    for (const v of downgradedViolations) {
+      console.warn(`  ${v.file}:${v.line}:${v.col}  [${v.rule}]  ${v.message}`);
+    }
+    console.warn(`\n[token-lint] ${downgradedViolations.length} legacy violation(s) — fix them or add "// token-lint-ignore" to the offending line. (--warn-legacy: not failing)\n`);
+    console.log(`[token-lint] WARN — ${files.length} file(s) checked, ${downgradedViolations.length} legacy violation(s) (allowed via --warn-legacy).`);
+    process.exit(0);
   }
 
   console.log(`[token-lint] OK — ${files.length} file(s) checked, no violations.`);
