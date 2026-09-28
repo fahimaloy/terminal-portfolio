@@ -12,7 +12,6 @@
  *
  *  2. A hidden tab did not stop rendering. `tier: 'paused'` was set by
  *     `useSceneQuality` but `SceneCanvas` only early-returned on `'none'`, so
-import NeonTubes from '../NeonTubes';
  *     the r3f loop kept running at full rate. Assert `frameloop`.
  *
  *  3. `TubeStrip` is the whole allocation story: the reference implementation
@@ -34,7 +33,16 @@ import {
 import type { ScenePointer } from '../../../hooks/useScenePointer';
 import SceneCanvas from '../SceneCanvas';
 import { TubeStrip } from '../TubeStrip';
-import { NEON_TUBES_FRAG, NEON_TUBES_VERT } from '../NeonTubes';
+import NeonTubes, {
+  NEON_TUBES_FRAG,
+  NEON_TUBES_VERT,
+  NEON_TUBES_GLOW_FRAG,
+  NEON_TUBES_GLOW_VERT,
+  GLOW_PALETTE_ROTATION,
+  glowAccentRun,
+  glowPointCount,
+  writeGlowSamples,
+} from '../NeonTubes';
 import { sceneAccentRun, SCENE_ACCENT_RUNS } from '../palette';
 
 const frameCallbacks: ((state: unknown, delta: number) => void)[] = [];
@@ -103,7 +111,16 @@ describe('scene pointer', () => {
   const onRead = (p: ScenePointer) => {
     seen = p;
   };
-  const mount = () => render(React.createElement(PointerProbe, { onRead }));
+  // Capture() reads the context during render, so calling render() a second time
+  // would mount a SECOND PointerProbe with its own idle pointer and could never
+  // observe the first root's. Re-render the same root instead.
+  let rerender: () => void;
+
+  const mount = () => {
+    const result = render(React.createElement(PointerProbe, { onRead }));
+    rerender = () =>
+      result.rerender(React.createElement(PointerProbe, { onRead }));
+  };
 
   beforeEach(() => {
     frameCallbacks.length = 0;
@@ -116,13 +133,13 @@ describe('scene pointer', () => {
     expect(seen.active).toBe(false);
 
     moveMouse(1440, 0);
-    mount();
+    rerender();
     expect(seen.active).toBe(true);
     expect(seen.x).toBeCloseTo(1, 5);
     expect(seen.y).toBeCloseTo(1, 5);
 
     moveMouse(0, 900);
-    mount();
+    rerender();
     expect(seen.x).toBeCloseTo(-1, 5);
     expect(seen.y).toBeCloseTo(-1, 5);
   });
@@ -130,7 +147,7 @@ describe('scene pointer', () => {
   it('reports the centre of the viewport as the origin', () => {
     mount();
     moveMouse(720, 450);
-    mount();
+    rerender();
     expect(seen.x).toBeCloseTo(0, 5);
     expect(seen.y).toBeCloseTo(0, 5);
   });
@@ -413,5 +430,224 @@ describe('NeonTubes shader interface', () => {
     // extension and silently took the whole floor offline.
     expect(NEON_TUBES_FRAG).not.toMatch(/fwidth\s*\(/);
     expect(NEON_TUBES_VERT).not.toMatch(/fwidth\s*\(/);
+  });
+});
+
+describe('NeonTubes glow layer', () => {
+  /**
+   * The faked "riding tube lights" layer: one additive `THREE.Points` cloud
+   * whose samples ride the same spine arrays the ribbons are built from.
+   *
+   * The reference lit this scene with real three.js lights
+   * (`lights: { intensity: 200, colors: [...] }`), which cannot be ported as a
+   * `<pointLight>`: three.js lights only contribute to lit materials, and this
+   * scene has none — every surface is a hand-written unlit `ShaderMaterial`. A
+   * real light would compile, mount, and change nothing on screen. These tests
+   * hold the additive fake to the same standard a real light would need: right
+   * sample count, genuinely on the spine, and shaders that actually link.
+   */
+  const varyingsOf = (src: string) =>
+    [...src.matchAll(/varying\s+\w+\s+(\w+)\s*;/g)].map((m) => m[1]);
+
+  const declaredUniforms = (src: string) =>
+    new Set([...src.matchAll(/uniform\s+\w+\s+(\w+)\s*;/g)].map((m) => m[1]));
+
+  const usedUniforms = (src: string) =>
+    new Set([...src.matchAll(/\b(u[A-Z]\w*)\b/g)].map((m) => m[1]));
+
+  it('declares exactly the same varyings in both glow stages', () => {
+    // A varying in one stage and not the other is a COMPILE error, and a failed
+    // program makes three drop the material SILENTLY — the glow would simply
+    // never appear, with no exception thrown anywhere in the app.
+    expect(varyingsOf(NEON_TUBES_GLOW_FRAG).sort()).toEqual(
+      varyingsOf(NEON_TUBES_GLOW_VERT).sort(),
+    );
+  });
+
+  it('declares every uniform the glow stages read', () => {
+    // Every uFoo referenced must be declared, or it silently reads as 0 — which
+    // for uViewportH would mean a zero-size point sprite, i.e. an invisible
+    // glow with no error anywhere.
+    for (const src of [NEON_TUBES_GLOW_FRAG, NEON_TUBES_GLOW_VERT]) {
+      const declared = declaredUniforms(src);
+      for (const name of usedUniforms(src)) {
+        expect(
+          declared,
+          `${name} read in the glow shader but not declared`,
+        ).toContain(name);
+      }
+    }
+  });
+
+  it('needs no GL extension, so the glow links on WebGL1', () => {
+    expect(NEON_TUBES_GLOW_FRAG).not.toMatch(/fwidth\s*\(/);
+    expect(NEON_TUBES_GLOW_VERT).not.toMatch(/fwidth\s*\(/);
+    expect(NEON_TUBES_GLOW_FRAG).not.toMatch(/dFdx\s*\(/);
+    expect(NEON_TUBES_GLOW_VERT).not.toMatch(/dFdx\s*\(/);
+  });
+
+  it('never reuses the tube ramp, so the light reads as a separate event', () => {
+    // The reference deliberately keeps the TUBE palette and the LIGHT palette
+    // apart. Reusing the tube ramp made the glow read as a brighter tube rather
+    // than as illumination, so the light palette is derived from the same
+    // token rotation moved by one accent.
+    const tube = sceneAccentRun(0, 3);
+    const light = glowAccentRun(0, 3);
+
+    expect(light).toHaveLength(3);
+    expect(light).not.toEqual(tube);
+    // One step, exactly: related, but never the same three hues.
+    expect(light).toEqual(sceneAccentRun(GLOW_PALETTE_ROTATION, 3));
+    expect(GLOW_PALETTE_ROTATION).toBe(1);
+
+    // Still resolved from the six token accents — never a random hex, and
+    // never a raw literal outside tokens.css.
+    for (const c of light) expect(c).toMatch(/^#|^var\(/);
+  });
+
+  it('computes the point count as samples per tube x tube count', () => {
+    expect(glowPointCount(3, 24)).toBe(72);
+    expect(glowPointCount(1, 8)).toBe(8);
+    expect(glowPointCount(0, 24)).toBe(0);
+    // Guards a negative count rather than throwing inside the frame loop.
+    expect(glowPointCount(-2, 8)).toBe(0);
+  });
+
+  it('samples the spine, so the light sits on the tube it lights', () => {
+    // Pure helper, asserted directly: the glow must ride the spine exactly,
+    // interpolating between control points rather than snapping to them.
+    const segments = 5;
+    const spine = new Float32Array((segments + 1) * 3);
+    for (let s = 0; s <= segments; s++) {
+      spine[s * 3] = s * 10;
+      spine[s * 3 + 1] = s * 2;
+      spine[s * 3 + 2] = s;
+    }
+
+    // 3 samples over a 5-segment spine puts the middle sample at fractional
+    // index 2.5, i.e. exactly half way between control points 2 and 3 — so
+    // this covers the lerp, not just the two endpoints. (segments=4 would
+    // put it at index 2.0 and only ever hit a control point.)
+    const out = new Float32Array(3 * 3);
+    writeGlowSamples(spine, segments, out, 0, 3);
+
+    // Head: exactly the first control point.
+    expect(out[0]).toBeCloseTo(0, 5);
+    expect(out[1]).toBeCloseTo(0, 5);
+    expect(out[2]).toBeCloseTo(0, 5);
+    // Middle: 50% between control point 2 (x=20,y=4,z=2) and 3 (x=30,y=6,z=3).
+    expect(out[3]).toBeCloseTo(25, 5);
+    expect(out[4]).toBeCloseTo(5, 5);
+    expect(out[5]).toBeCloseTo(2.5, 5);
+    // Tail: exactly the last control point.
+    expect(out[6]).toBeCloseTo(50, 5);
+    expect(out[7]).toBeCloseTo(10, 5);
+    expect(out[8]).toBeCloseTo(5, 5);
+
+    // Writing into the middle of a shared buffer must not disturb the rest:
+    // every tube's samples live in one preallocated array, so an off-by-one
+    // offset would smear one tube's light into its neighbour's slice.
+    const shared = new Float32Array(2 * 3 * 3).fill(-99);
+    writeGlowSamples(spine, segments, shared, 9, 3);
+    expect(shared[0]).toBe(-99);
+    expect(shared[8]).toBe(-99);
+    expect(shared[9]).toBeCloseTo(0, 5);
+  });
+
+  it('builds a glow geometry sized to samples x tubes and tracks the spine', () => {
+    // Rendered for real (with r3f's useFrame mocked), so this covers the
+    // wiring: the geometry exists, is sized correctly, and is rewritten from
+    // the spine in the SAME useFrame that advances the spine.
+    const count = 2;
+    const segments = 8;
+    const samples = 5;
+
+    // Pushed rather than assigned, so `this` is passed as an argument instead
+    // of aliased to an outer variable (no-this-alias).
+    const glowGeometries: THREE.BufferGeometry[] = [];
+    const originalSetAttribute = THREE.BufferGeometry.prototype.setAttribute;
+    const spy = vi
+      .spyOn(THREE.BufferGeometry.prototype, 'setAttribute')
+      .mockImplementation(function (
+        this: THREE.BufferGeometry,
+        name: string | number | symbol,
+        attribute: THREE.BufferAttribute,
+      ) {
+        // `aTube` exists only on the glow cloud; the tube strips set
+        // aParam/position/normal. So this captures the glow geometry and
+        // nothing else.
+        if (name === 'aTube') glowGeometries.push(this);
+        return originalSetAttribute.call(this, name, attribute);
+      });
+
+    frameCallbacks.length = 0;
+
+    try {
+      render(
+        React.createElement(NeonTubes, {
+          count,
+          segments,
+          glowSamples: samples,
+        }),
+      );
+    } finally {
+      spy.mockRestore();
+    }
+
+    // The glow layer is exactly ONE points cloud, not one per tube: a single
+    // draw call is the whole reason for the shared buffer.
+    expect(glowGeometries).toHaveLength(1);
+    const g = glowGeometries[0];
+
+    const position = g.getAttribute('position') as THREE.BufferAttribute;
+    const param = g.getAttribute('aParam') as THREE.BufferAttribute;
+    const tubeIndex = g.getAttribute('aTube') as THREE.BufferAttribute;
+
+    expect(position.count).toBe(glowPointCount(count, samples));
+    expect(position.count).toBe(count * samples);
+    expect(param.count).toBe(position.count);
+    expect(tubeIndex.count).toBe(position.count);
+    // Preallocated exactly: the buffer is not oversized, so the per-frame
+    // write cannot spill into the next tube's slice.
+    expect(position.array.length).toBe(count * samples * 3);
+    // The static per-point data ramps 0..1 along each tube, and tags which
+    // tube each point belongs to, so the shader can gradient each tube.
+    expect(param.array[0]).toBeCloseTo(0, 5);
+    expect(param.array[samples - 1]).toBeCloseTo(1, 5);
+    expect(param.array[samples]).toBeCloseTo(0, 5);
+    expect(tubeIndex.array[0]).toBeCloseTo(0, 5);
+    expect(tubeIndex.array[samples]).toBeCloseTo(1, 5);
+
+    // Now step the frame loop and assert the glow actually MOVED with the
+    // spine, rather than sitting at its seeded positions forever.
+    const state = {
+      viewport: { width: 20, height: 12, dpr: 1 },
+      size: { width: 800, height: 600 },
+      clock: { elapsedTime: 0 },
+    };
+    const frame = frameCallbacks[frameCallbacks.length - 1];
+    expect(typeof frame).toBe('function');
+
+    // Settle the spine at one clock time, then jump the clock so the idle
+    // orbit moves every tube to a new target.
+    for (let i = 0; i < 8; i++) {
+      (frame as (s: unknown, d: number) => void)(state, 1 / 60);
+    }
+    const settled = [position.array[0], position.array[1], position.array[2]];
+
+    state.clock.elapsedTime = 12;
+    for (let i = 0; i < 30; i++) {
+      (frame as (s: unknown, d: number) => void)(state, 1 / 60);
+    }
+    const moved = [position.array[0], position.array[1], position.array[2]];
+
+    const travelled = Math.hypot(
+      moved[0] - settled[0],
+      moved[1] - settled[1],
+      moved[2] - settled[2],
+    );
+    // The head sample IS the head spine point, so if the glow rides the spine
+    // this is exactly how far that control point travelled.
+    expect(travelled).toBeGreaterThan(0.05);
   });
 });

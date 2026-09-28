@@ -53,6 +53,24 @@ const setWidth = (w: number) => {
   });
 };
 
+/**
+ * `navigator.deviceMemory` is a global. Overriding it without restoring it
+ * leaks `1` into every later `tierForDevice()` in the file, which then returns
+ * `'low'` for reasons the later tests never intended. jsdom does not define the
+ * property at all, so "absent" is the state to return to — a plain `undefined`
+ * value is not the same thing, because `useSceneQuality` narrows with
+ * `'deviceMemory' in navigator` and then reads `.deviceMemory`.
+ */
+const nav = navigator as Navigator & { deviceMemory?: number };
+const realDeviceMemory = Object.getOwnPropertyDescriptor(nav, 'deviceMemory');
+const restoreDeviceMemory = () => {
+  if (realDeviceMemory) {
+    Object.defineProperty(nav, 'deviceMemory', realDeviceMemory);
+  } else {
+    delete nav.deviceMemory;
+  }
+};
+
 describe('scene quality tier', () => {
   beforeEach(() => {
     mediaMock({ coarse: false, reduced: false });
@@ -61,6 +79,7 @@ describe('scene quality tier', () => {
 
   afterEach(() => {
     setWidth(realInnerWidth);
+    restoreDeviceMemory();
   });
 
   it('does not downgrade a high-core touch laptop', () => {

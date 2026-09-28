@@ -74,6 +74,15 @@ const VARIANTS: Record<
       opacity: number;
       follow: number;
       z: number;
+      /**
+       * The faked "riding tube lights" (a point cloud riding the tube spines,
+       * NOT a three.js light — this scene has no lit material for one to
+       * affect). These three are art direction, so they live here with every
+       * other per-variant number rather than as constants inside NeonTubes.
+       */
+      glowSamples: number;
+      glowSize: number;
+      glowIntensity: number;
     } | null;
   }
 > = {
@@ -97,6 +106,13 @@ const VARIANTS: Record<
       opacity: 0.5,
       follow: 0.09,
       z: -3,
+      // The hero gets the full lighting treatment: dense samples so the light
+      // is continuous along a 48-segment spine, and enough intensity to read
+      // as illumination in the empty middle of the frame. Still additive and
+      // still depth-write-free, so it lifts the type rather than veiling it.
+      glowSamples: 24,
+      glowSize: 0.55,
+      glowIntensity: 0.5,
     },
   },
   chat: {
@@ -116,6 +132,13 @@ const VARIANTS: Record<
       opacity: 0.45,
       follow: 0.06,
       z: -5,
+      // Subtler: the chat stream IS the content here, and a bright glow behind
+      // reading text is the same legibility problem the dimmer tube opacity
+      // above already avoids. Fewer samples, smaller, and roughly half the
+      // hero's brightness — a hint of light riding the tubes, not a light show.
+      glowSamples: 14,
+      glowSize: 0.4,
+      glowIntensity: 0.24,
     },
   },
   blog: {
@@ -226,6 +249,9 @@ export default function SceneCanvas({
                 opacity={tubes.opacity}
                 follow={tubes.follow}
                 z={tubes.z}
+                glowSamples={tubes.glowSamples}
+                glowSize={tubes.glowSize}
+                glowIntensity={tubes.glowIntensity}
                 paletteOffset={paletteStep}
                 impulse={impulse}
               />
