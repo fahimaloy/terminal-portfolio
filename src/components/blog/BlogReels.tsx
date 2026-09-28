@@ -16,6 +16,7 @@ import {
 } from '../../hooks/useCoverPreload';
 import { useMotionPreference } from '../../hooks/useMotionPreference';
 import { getBlogPost } from '../../utils/blogApi';
+import { formatDate } from '../../utils/dateFormat';
 import type { BlogListItem, BlogPost } from '../../types/blog';
 import { HudPanel, NeonChip, NeonButton, GlitchText } from '../ui';
 import { durations } from '../../config/animations';
@@ -24,17 +25,6 @@ import FlashCurtain from './FlashCurtain';
 import LightningTransition from './LightningTransition';
 import RichTextRenderer from '../RichTextRenderer';
 import { animate, onScroll, createScope } from 'animejs';
-
-function formatDate(iso: string | null): string {
-  if (!iso) return 'DRAFT';
-  return new Date(iso)
-    .toLocaleDateString('en-US', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    })
-    .toUpperCase();
-}
 
 type Props = {
   items: BlogListItem[];
@@ -187,7 +177,6 @@ export default function BlogReels({
           <HudPanel
             key={post.id}
             accent={(['cyan', 'violet', 'coral', 'ice'] as const)[i % 4]}
-            notch="md"
             className="overflow-hidden"
           >
             <ReelsCardInner
@@ -233,7 +222,7 @@ export default function BlogReels({
         className="fixed right-3 top-1/2 -translate-y-1/2 z-20 hidden md:flex flex-col items-center gap-1.5"
         aria-hidden="true"
       >
-        <div className="w-px h-6 bg-white/10" />
+        <div className="w-px h-6 bg-[var(--overlay-white-10)]" />
         {items.map((_, i) => (
           <button
             key={i}
@@ -246,11 +235,11 @@ export default function BlogReels({
             className={`w-1.5 rounded-full transition-all ${
               i === active
                 ? 'h-6 bg-neon-cyan shadow-[0_0_8px_var(--glow-cyan)]'
-                : 'h-1.5 bg-white/20 hover:bg-white/40'
+                : 'h-1.5 bg-[var(--overlay-white-20)] hover:bg-[var(--overlay-white-40)]'
             }`}
           />
         ))}
-        <div className="w-px h-6 bg-white/10" />
+        <div className="w-px h-6 bg-[var(--overlay-white-10)]" />
         <span className="font-mono text-[9px] text-text-muted mt-1">
           {String(active + 1).padStart(2, '0')}/
           {String(Math.max(items.length, total || items.length)).padStart(
@@ -261,7 +250,7 @@ export default function BlogReels({
       </div>
 
       {/* Linear progress — thin bar at top of scroller */}
-      <div className="sticky top-0 z-10 h-[2px] bg-white/[0.06] -mx-4">
+      <div className="sticky top-0 z-10 h-[2px] bg-[var(--overlay-white-06)] -mx-4">
         <div
           className="h-full transition-all duration-150"
           style={{
@@ -310,12 +299,11 @@ export default function BlogReels({
               >
                 <HudPanel
                   accent={(['cyan', 'violet', 'coral', 'ice'] as const)[i % 4]}
-                  notch="md"
                   className="overflow-hidden flex flex-col max-h-[min(78dvh,720px)]"
                 >
                   {/* Cover — next/image + preload; bottleneck solved as data fetch */}
                   <div
-                    className="relative aspect-[16/9] md:aspect-[16/7] overflow-hidden bg-black/40 shrink-0"
+                    className="relative aspect-[16/9] md:aspect-[16/7] overflow-hidden bg-[var(--overlay-black-strong)] shrink-0"
                     data-reel-cover
                   >
                     {post.cover_image_url ? (
@@ -334,9 +322,9 @@ export default function BlogReels({
                         </span>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--overlay-black-70)] via-[var(--overlay-black-10)] to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <div className="flex items-center gap-2 text-[10px] font-mono text-white/80">
+                      <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--fg-2)]">
                         <span className="inline-flex items-center gap-1">
                           <Calendar size={10} /> {formatDate(post.published_at)}
                         </span>
@@ -394,13 +382,13 @@ export default function BlogReels({
                             : 'READ'}
                       </NeonButton>
                       <Link href={`/blog/${post.slug}`} legacyBehavior>
-                        <a className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-neon-amber/30 text-neon-amber font-display text-[11px] tracking-[1.5px] hover:bg-neon-amber/10 transition-colors clip-notch-sm">
+                        <a className="inline-flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-3 py-2 border border-neon-amber/30 text-neon-amber font-display text-[11px] tracking-[1.5px] hover:bg-neon-amber/10 transition-colors clip-notch-sm">
                           PERMALINK
                         </a>
                       </Link>
                     </div>
                     {expandedSlug === post.slug && (
-                      <div className="pt-3 border-t border-white/5">
+                      <div className="pt-3 border-t border-[var(--overlay-white-05)]">
                         <ExpandedDetail
                           post={post}
                           detail={detailCache[post.slug]}
@@ -498,7 +486,7 @@ function ReelsCardInner({
           {detailLoading ? 'LOADING…' : expanded ? 'CLOSE' : 'READ'}
         </NeonButton>
         <Link href={`/blog/${post.slug}`} legacyBehavior>
-          <a className="inline-flex items-center px-3 py-1.5 border border-neon-amber/30 text-neon-amber font-display text-[11px] clip-notch-sm">
+          <a className="inline-flex items-center min-h-[44px] min-w-[44px] px-3 py-2 border border-neon-amber/30 text-neon-amber font-display text-[11px] clip-notch-sm">
             PERMALINK
           </a>
         </Link>
@@ -545,7 +533,7 @@ function ExpandedOverlay({
   if (!slug) return null;
   return (
     <div
-      className="fixed inset-0 z-40 flex items-end md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-40 flex items-end md:items-center justify-center p-4 bg-[var(--overlay-black-60)] backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
@@ -554,10 +542,10 @@ function ExpandedOverlay({
         className="w-full max-w-3xl max-h-[85dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <HudPanel accent="amber" notch="md" className="p-4 md:p-6 relative">
+        <HudPanel accent="amber" className="p-4 md:p-6 relative">
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center border border-white/10 hover:border-neon-cyan/40 text-text-muted hover:text-text-primary transition-colors clip-notch-sm"
+            className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center border border-[var(--overlay-white-10)] hover:border-neon-cyan/40 text-text-muted hover:text-text-primary transition-colors clip-notch-sm after:absolute after:inset-[-6px] after:content-['']"
             aria-label="Close"
           >
             <X size={14} />
@@ -585,7 +573,7 @@ function ExpandedOverlay({
               <RichTextRenderer html={detail.content_html} />
               <div className="flex gap-2 pt-2">
                 <Link href={`/blog/${detail.slug}`} legacyBehavior>
-                  <a className="inline-flex items-center gap-1 px-3 py-1.5 bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan font-display text-[11px] clip-notch-sm">
+                  <a className="inline-flex items-center gap-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan font-display text-[11px] clip-notch-sm">
                     OPEN PAGE
                   </a>
                 </Link>
@@ -600,7 +588,7 @@ function ExpandedOverlay({
                 Could not load full transmission. Use permalink.
               </p>
               <Link href={`/blog/${slug}`} legacyBehavior>
-                <a className="inline-flex items-center px-3 py-1.5 border border-neon-cyan/30 text-neon-cyan font-display text-[11px] clip-notch-sm">
+                <a className="inline-flex items-center min-h-[44px] min-w-[44px] px-3 py-2 border border-neon-cyan/30 text-neon-cyan font-display text-[11px] clip-notch-sm">
                   OPEN /blog/{slug}
                 </a>
               </Link>

@@ -17,6 +17,7 @@ import { Clock, Eye, Star, BookOpen } from 'lucide-react';
 import { useMotionPreference } from '../../hooks/useMotionPreference';
 import { animate, stagger, createScope } from 'animejs';
 import { BlogListItem } from '../../types/blog';
+import { formatDate } from '../../utils/dateFormat';
 import HairlineDivider from '../ui/graphics/primitives/HairlineDivider';
 
 interface Props {
@@ -33,18 +34,6 @@ const ACCENT_CYCLE = [
   'ice',
 ] as const;
 type CardAccent = (typeof ACCENT_CYCLE)[number];
-
-// Inline date formatter — avoids formatDate import
-function fmtDate(iso: string | null): string {
-  if (!iso) return 'DRAFT';
-  return new Date(iso)
-    .toLocaleDateString('en-US', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    })
-    .toUpperCase();
-}
 
 export default function BlogCard({ post, index = 0 }: Props) {
   const accent: CardAccent = ACCENT_CYCLE[index % ACCENT_CYCLE.length];
@@ -146,6 +135,12 @@ export default function BlogCard({ post, index = 0 }: Props) {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
+                  {/* DECORATIVE ONLY. This is a cover-image stand-in initial,
+                      not reading copy — the real title renders further down the
+                      card. At text-4xl it is large text, where --fg-4
+                      (4.65:1 on --bg-2) clears the 3:1 AA threshold with room
+                      to spare, so it stays on the weakest ramp step on
+                      purpose. Do not promote it. */}
                   <span className="font-display text-4xl text-[var(--fg-4)]">
                     {post.title.charAt(0).toUpperCase()}
                   </span>
@@ -203,9 +198,9 @@ export default function BlogCard({ post, index = 0 }: Props) {
             <div className="p-4 space-y-2">
               <div
                 className="flex items-center gap-3 text-[9px] font-mono"
-                style={{ color: 'var(--fg-4)' }}
+                style={{ color: 'var(--fg-3)' }}
               >
-                <span>{fmtDate(post.published_at)}</span>
+                <span>{formatDate(post.published_at)}</span>
                 {post.reading_minutes ? (
                   <span className="inline-flex items-center gap-1">
                     <Clock size={9} /> {post.reading_minutes} MIN

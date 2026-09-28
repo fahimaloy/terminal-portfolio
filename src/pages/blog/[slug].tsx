@@ -26,23 +26,13 @@ import {
   springs,
 } from '../../config/animations';
 import { HairlineDivider } from '../../components/ui/graphics';
+import { formatDate } from '../../utils/dateFormat';
 
 interface Props {
   post: BlogPost;
   prev: BlogListItem | null;
   next: BlogListItem | null;
   related: BlogListItem[];
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return '';
-  return new Date(iso)
-    .toLocaleDateString('en-US', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    })
-    .toUpperCase();
 }
 
 export default function BlogReaderPage({ post, prev, next, related }: Props) {
@@ -442,7 +432,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           <div className="relative max-w-3xl mx-auto w-full">
             <Link href="/blog" legacyBehavior>
               <a
-                className="reader-back inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.18em] mb-6 reveal transition-colors hover:opacity-80"
+                className="reader-back inline-flex items-center gap-2 min-h-[44px] min-w-[44px] font-mono text-[10px] tracking-[0.18em] mb-6 reveal transition-colors hover:opacity-80"
                 style={{ color: 'var(--fg-3)' }}
               >
                 <ArrowLeft size={12} /> BACK TO LOG
@@ -451,10 +441,14 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
 
             <div
               className="reader-meta flex flex-wrap items-center gap-3 text-[10px] font-mono mb-4 reveal"
-              style={{ color: 'var(--fg-4)' }}
+              style={{ color: 'var(--fg-3)' }}
             >
               <span className="inline-flex items-center gap-1">
-                <Calendar size={10} /> {formatDate(post.published_at)}
+                <Calendar size={10} />{' '}
+                {/* Article page deliberately departs from formatDate's DRAFT/
+                    short-month defaults: a missing date renders nothing, and
+                    the wider measure takes the long month name. */}
+                {formatDate(post.published_at, { empty: '', month: 'long' })}
               </span>
               {post.reading_minutes ? (
                 <span className="inline-flex items-center gap-1">
@@ -509,7 +503,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
         <div className="max-w-3xl mx-auto px-4 pb-20">
           <RichTextRenderer
             html={post.content_html}
-            className="blog-prose font-body text-sm md:text-base leading-relaxed"
+            className="rich-prose font-body text-sm md:text-base leading-relaxed mx-auto max-w-[68ch]"
           />
 
           {/* Prev / Next — editorial cards, no HudPanel/Neon */}
@@ -528,7 +522,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
                 >
                   <div
                     className="text-[9px] font-mono tracking-[0.2em] mb-1"
-                    style={{ color: 'var(--fg-4)' }}
+                    style={{ color: 'var(--fg-3)' }}
                   >
                     {'\u25C0 PREVIOUS'}
                   </div>
@@ -557,7 +551,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
                 >
                   <div
                     className="text-[9px] font-mono tracking-[0.2em] mb-1"
-                    style={{ color: 'var(--fg-4)' }}
+                    style={{ color: 'var(--fg-3)' }}
                   >
                     {'NEXT \u25B6'}
                   </div>
@@ -579,7 +573,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             <section className="mt-16">
               <div
                 className="text-[10px] font-mono tracking-[0.24em] mb-4"
-                style={{ color: 'var(--fg-4)' }}
+                style={{ color: 'var(--fg-3)' }}
               >
                 {'// RELATED_TRANSMISSIONS'}
               </div>
@@ -594,7 +588,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           <div className="flex justify-center mt-14">
             <button
               onClick={() => router.push('/blog')}
-              className="inline-flex items-center justify-center px-5 py-2.5 font-mono text-[11px] tracking-[0.14em] border rounded-[var(--radius-md)] transition-colors duration-200"
+              className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-5 py-2.5 font-mono text-[11px] tracking-[0.14em] border rounded-[var(--radius-md)] transition-colors duration-200"
               style={{
                 background: 'transparent',
                 borderColor: 'var(--border-subtle)',
