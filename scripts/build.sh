@@ -19,8 +19,10 @@ if [ -s "$NVM_DIR/nvm.sh" ]; then
     exit 1
   fi
   if ! nvm use "$NVM_VERSION"; then
-    printf 'Unable to select Node.js %s from .nvmrc via nvm.\n' "$NVM_VERSION" >&2
-    exit 1
+    # Advisory only: .nvmrc pins an exact version, but engines.node declares a
+    # minimum. Fall through to the ambient Node.js and let the semver check below
+    # decide, so a satisfying runtime is never rejected for a missing nvm build.
+    printf 'nvm could not select Node.js %s; using the active Node.js executable if it satisfies %s.\n' "$NVM_VERSION" "$NVM_VERSION" >&2
   fi
 else
   printf 'nvm is unavailable; using the active Node.js executable if it satisfies %s.\n' "$NVM_VERSION" >&2
