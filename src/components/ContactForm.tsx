@@ -13,9 +13,9 @@ import {
 import { HudPanel, NeonButton } from './ui';
 import { useFormAnimation } from '../hooks/useFormAnimation';
 import { getErrorMessage } from '../utils/errorMessage';
+import type { FormState } from '../types/forms';
 
 type Props = { onBackToChat: () => void };
-type FormState = 'filling' | 'submitting' | 'submitted' | 'error';
 
 /**
  * Validation failures are per-field, not one banner string: WCAG 3.3.1 wants

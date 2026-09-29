@@ -19,15 +19,7 @@ import type {
 } from '../../utils/api';
 import HeroSection from './HeroSection';
 import ChatStream from './ChatStream';
-
-type Message = {
-  role: 'user' | 'model';
-  text: string;
-  responseType?: string;
-  responseData?: unknown;
-  ts?: number;
-  isError?: boolean;
-};
+import type { Message } from '../../types/chat';
 
 type Props = {
   profile: PortfolioProfile | null;

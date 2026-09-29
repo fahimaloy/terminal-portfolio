@@ -12,17 +12,7 @@ import {
   PortfolioExperience,
 } from '../../utils/api';
 import { durations, easings } from '../../config/animations';
-
-type Message = {
-  role: 'user' | 'model';
-  text: string;
-  responseType?: string;
-  responseData?: unknown;
-  /** Epoch ms the message was appended — drives the per-message clock. */
-  ts?: number;
-  /** A failed request, so the stream can offer a retry. */
-  isError?: boolean;
-};
+import type { Message } from '../../types/chat';
 
 type Props = {
   messages: Message[];

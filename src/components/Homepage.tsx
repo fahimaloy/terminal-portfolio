@@ -23,16 +23,7 @@ import { ProjectStrip, ProjectInlineDetail } from './home/ProjectStrip';
 import ChatModalHost from './home/ChatModalHost';
 import { StatBar } from './ui';
 import { resolveName } from '../config/identity';
-type Message = {
-  role: 'user' | 'model';
-  text: string;
-  responseType?: string;
-  responseData?: unknown;
-  /** Epoch ms the message was appended — drives the per-message clock. */
-  ts?: number;
-  /** A failed request. Renders as an error card with a retry, not an answer. */
-  isError?: boolean;
-};
+import type { Message } from '../types/chat';
 
 export default function Homepage() {
   const [messages, setMessages] = useState<Message[]>([]);

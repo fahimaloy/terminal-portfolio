@@ -14,12 +14,11 @@ import {
 import { GlitchText, HudPanel, NeonButton, NeonChip } from './ui';
 import { useFormAnimation } from '../hooks/useFormAnimation';
 import { getErrorMessage } from '../utils/errorMessage';
+import type { FormState } from '../types/forms';
 
 type MeetingFormProps = {
   onBackToChat: () => void;
 };
-
-type FormState = 'filling' | 'submitting' | 'submitted' | 'error';
 
 /** Per-field validation, so each message is described by the control it
  *  belongs to. The date and time pickers carry no placeholder at all, so a
