@@ -49,8 +49,14 @@ const PARTICLE_COUNT: Record<Exclude<SceneTier, 'none'>, number> = {
  * has to read as depth behind the content, never compete with it. A first
  * pass at 14k particles at size 1.6 turned the page into a nebula and put
  * body text below 4.5:1.
+ *
+ * `blog` serves two routes — the blog and `/sudosuperuser-ostaad` — and both
+ * are reading surfaces, which is why it is the entry that gives up the core
+ * object and the tube layer entirely. The admin panel is the denser of the
+ * two: it is the only surface in the app that opens a real `aria-modal` dialog
+ * over stacks of form fields and tables.
  */
-const VARIANTS: Record<
+export const VARIANTS: Record<
   SceneVariant,
   {
     opacity: number;

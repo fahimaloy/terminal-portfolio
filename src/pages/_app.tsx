@@ -32,10 +32,23 @@ const App = ({ Component, pageProps }: AppProps) => {
   // session resolves, so a layout-level tag would never reach the HTML.
   const noindex = NOINDEX_PREFIXES.some((p) => router.pathname.startsWith(p));
 
-  // One scene per route, chosen by path. The admin panel gets the quietest
-  // treatment — it is a data tool, not a showcase. On the landing page the
-  // scene also dims once the chat takes over, which the page signals with a
+  // One scene per route, chosen by path. On the landing page the scene also
+  // dims once the chat takes over, which the page signals with a
   // `portfolio:chat-mode` event.
+  //
+  // The admin panel shares the `blog` treatment, and that is deliberate on two
+  // independent counts. It is a data tool, not a showcase, so it wants the
+  // quietest art direction available: no core object, no cursor-chasing tube
+  // layer, the lowest particle opacity. It is also the only surface that opens
+  // a real `aria-modal` dialog and stacks dense form and table content, where
+  // background contrast behind the type is a reading problem rather than a
+  // flourish. Belt and braces, because the scene is not merely quiet there —
+  // it is invisible: every admin page renders inside an opaque viewport-filling
+  // root (`min-h-screen bg-bg-void` in AdminLayout, `--bg-1` on the login
+  // page, both fully opaque hex) above this fixed `z-0` layer, so nothing
+  // drawn behind it can reach the reader. Do not "tune" the admin variant
+  // expecting a visible change: if that root ever goes translucent, the art
+  // direction becomes load-bearing again and `blog` is still the right answer.
   const isAdmin = NOINDEX_PREFIXES.some((p) => router.pathname.startsWith(p));
   const isBlog = router.pathname.startsWith('/blog');
   const [chatOpen, setChatOpen] = React.useState(false);

@@ -31,7 +31,7 @@ import {
   useScenePointer,
 } from '../../../hooks/useScenePointer';
 import type { ScenePointer } from '../../../hooks/useScenePointer';
-import SceneCanvas from '../SceneCanvas';
+import SceneCanvas, { VARIANTS } from '../SceneCanvas';
 import { TubeStrip } from '../TubeStrip';
 import NeonTubes, {
   NEON_TUBES_FRAG,
@@ -189,6 +189,88 @@ describe('SceneCanvas render loop', () => {
       }),
     );
     expect(container.querySelector('[data-testid="canvas"]')).toBeNull();
+  });
+});
+
+/**
+ * Art direction, and specifically the entry the admin panel reuses.
+ *
+ * `/sudosuperuser-ostaad` is mapped to the `blog` variant by the single
+ * mapping site in `_app.tsx`, and the admin is the densest reading surface in
+ * the app — it is the only one that opens a real `aria-modal` dialog over
+ * stacked form fields and tables. These assert *why* `blog` is the right
+ * answer, as invariants rather than snapshots: each one fails only if a future
+ * pass makes the backdrop louder, brighter, or more mobile than a reading
+ * surface can tolerate.
+ */
+describe('scene art direction', () => {
+  // Reset here rather than inline in the loop below: assigning to the
+  // module-level `canvasProps` inside the test body narrows it to `null` for
+  // the rest of that block, and the optional chain then resolves to `never`.
+  beforeEach(() => {
+    canvasProps = null;
+  });
+
+  it('keeps every variant under the legibility ceiling', () => {
+    // The header on VARIANTS records the failure this bounds: an early pass at
+    // 14k particles at size 1.6 turned the page into a nebula and put body
+    // text below 4.5:1. The scene is a backdrop, so these are ceilings and
+    // not preferences.
+    for (const [name, art] of Object.entries(VARIANTS)) {
+      expect(art.opacity, name).toBeLessThanOrEqual(0.3);
+      expect(art.size, name).toBeLessThanOrEqual(0.5);
+      expect(art.grid, name).toBeLessThanOrEqual(0.2);
+    }
+  });
+
+  it('makes `blog` the quietest variant, since the admin reuses it', () => {
+    const blog = VARIANTS.blog;
+    for (const [name, art] of Object.entries(VARIANTS)) {
+      if (name === 'blog') continue;
+      expect(blog.opacity, name).toBeLessThanOrEqual(art.opacity);
+    }
+  });
+
+  it('drops the pointer-chasing tube layer on the reading variants', () => {
+    // NeonTubes is a cursor-following FOREGROUND element. Behind dense form
+    // and table content it buys nothing and costs glyph edge contrast, so the
+    // entry the admin gets must not carry it.
+    expect(VARIANTS.blog.tubes).toBeNull();
+  });
+
+  it('leaves coreOpacity at zero wherever the core object is disabled', () => {
+    // `art.core && <CoreObject opacity={art.coreOpacity} />` means a non-zero
+    // coreOpacity is dead config that will read as a bug the instant `core` is
+    // switched back on.
+    for (const [name, art] of Object.entries(VARIANTS)) {
+      if (!art.core) expect(art.coreOpacity, name).toBe(0);
+    }
+  });
+
+  it('gives each variant its own camera distance', () => {
+    // Three variants are three art directions, not one direction behind three
+    // names. A copy-paste that gave two of them the same cameraZ would leave
+    // the field at an identical apparent depth on two surfaces whose content
+    // is nothing alike.
+    const zs = Object.values(VARIANTS).map((art) => art.cameraZ);
+    expect(new Set(zs).size).toBe(zs.length);
+  });
+
+  it('applies each variant camera distance to the mounted canvas', () => {
+    // End to end through the mount: the table only earns its keep if the
+    // numbers actually reach the <Canvas> camera prop.
+    for (const variant of ['hero', 'chat', 'blog'] as const) {
+      const { unmount } = render(
+        React.createElement(SceneCanvas, {
+          variant,
+          tier: 'high',
+          densityTier: 'high',
+        }),
+      );
+      const camera = canvasProps?.camera as { position: number[] };
+      expect(camera.position[2], variant).toBe(VARIANTS[variant].cameraZ);
+      act(() => unmount());
+    }
   });
 });
 
