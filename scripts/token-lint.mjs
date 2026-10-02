@@ -265,9 +265,28 @@ function isOffTokenColour(prefix, rest, configured) {
 // Regexes
 const HEX_RE = /#[0-9a-fA-F]{3,8}\b/g;
 const RGBA_RE = /rgba\s*\(/g;
-// Matches Tailwind arbitrary class tokens like duration-300, duration-[320ms], ease-in-out etc. inside quotes
-const DURATION_CLASS_RE = /duration-(?:\[?[^\s"'`]*\]?|[a-z0-9-]+)/g;
-const EASE_CLASS_RE = /ease-(?:\[?[^\s"'`]*\]?|[a-z0-9-]+)/g;
+// Matches Tailwind arbitrary class tokens like duration-300, duration-[320ms], ease-in-out etc. inside quotes.
+//
+// WHY THE TOKEN BODY STOPS AT `,` `)` `;` `}` `]`: a class list is
+// whitespace- or quote-delimited, so those characters can only be JS/TS syntax
+// wrapping the string. Without the stop, a CSS transition VALUE string —
+// `HOVER_LIFT_TRANSITION`, whose whole point is that it reads
+// `var(--dur-hover) var(--ease-out)` instead of a compiled class — parses as
+// the class `ease-out),` and is reported for using a token it never used.
+//
+// WHY THE LEADING LOOKBEHIND: `var(--ease-out)` puts `ease-out` after `--`, so
+// the match is a custom-property REFERENCE, not a class. Requiring the
+// preceding character not to be `-` or a word character separates the two
+// without a denylist of token names.
+const CLASS_TOKEN_BODY = '[^\\s"\'`,;(){}]+';
+const DURATION_CLASS_RE = new RegExp(
+  `(?<![-\\w])duration-(?:\\[${CLASS_TOKEN_BODY}\\]?|[a-z0-9-]+)`,
+  'g',
+);
+const EASE_CLASS_RE = new RegExp(
+  `(?<![-\\w])ease-(?:\\[${CLASS_TOKEN_BODY}\\]?|[a-z0-9-]+)`,
+  'g',
+);
 
 const IGNORE_MARKER = 'token-lint-ignore';
 const SUPPORTED_EXTS = new Set(['.ts', '.tsx', '.css']);
@@ -1055,6 +1074,19 @@ function lintFile(filePath, allowed) {
   // index spaces agree.
   const codeLineStart = animeFile ? lineStartOffsets(maskedAll) : [];
 
+  // Rule 3/4's matcher reads the source with COMMENTS blanked but STRING
+  // BODIES VISIBLE — the inverse of rule 5's pass. A Tailwind class list lives
+  // in a string, so the bodies must stay; the surrounding prose must not.
+  // Without this the linter reads the repo's own documentation of the rule it
+  // enforces as evidence of breaking it: `src/config/animations.ts` explains
+  // "WHY A VAR AND NOT A `duration-*` CLASS" and
+  // `src/components/__tests__/cardLift.test.tsx` pins that the lift must not
+  // use a `duration-*` class — both are comments quoting the banned form.
+  // CSS gets no masking pass: `tokens.css` is a token SOURCE and rule 3 does
+  // not apply to the `.css` custom-property definitions it would blank.
+  const classMasked = !fileIsCss ? maskSource(content, false) : content;
+  const classLines = classMasked.split('\n');
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (line.includes(IGNORE_MARKER)) continue;
@@ -1170,11 +1202,16 @@ function lintFile(filePath, allowed) {
     //   - OR quoted strings (class lists are always inside quotes in .tsx)
     // This avoids false-positives on CSS variable definitions like `--ease-smooth:`
     // and bare CSS properties.
+    // `classLine` is the comment-masked twin of `line` (see `classMasked`): the
+    // context test and both matchers read it, while columns and the reported
+    // token text are recovered from the raw `line`, since masking preserves
+    // offsets and only blanks comment CONTENT.
+    const classLine = classLines[i] ?? line;
     const looksLikeClassContext =
-      line.includes('className') ||
-      line.includes('class=') ||
-      line.includes('@apply') ||
-      /["'`]/.test(line);
+      classLine.includes('className') ||
+      classLine.includes('class=') ||
+      classLine.includes('@apply') ||
+      /["'`]/.test(classLine);
 
     // Also skip lines that are CSS variable definitions (already filtered above, but also
     // covers --ease-* inside :root where the regex would otherwise match `--ease-smooth` suffix)
@@ -1186,10 +1223,10 @@ function lintFile(filePath, allowed) {
       // We scan quoted strings + @apply tail if present. Simpler: collect all
       // double/single/backtick-quoted spans on this line and scan inside them.
       const quotedSpans = [];
-      for (const m of line.matchAll(/(["'`])[^"'`]*?\1/g))
+      for (const m of classLine.matchAll(/(["'`])[^"'`]*?\1/g))
         quotedSpans.push(m[0]);
       // Also include @apply tail (unquoted) — e.g. @apply duration-200
-      const atApplyTail = line.match(/@apply\s+[^;]+/)?.[0] || '';
+      const atApplyTail = classLine.match(/@apply\s+[^;]+/)?.[0] || '';
       const scanTargets = quotedSpans.length
         ? quotedSpans
         : atApplyTail
@@ -1199,8 +1236,8 @@ function lintFile(filePath, allowed) {
       // fall back to scanning the whole line (covers template literal splits).
       const targets = scanTargets.length
         ? scanTargets
-        : line.includes('className') || line.includes('class=')
-          ? [line]
+        : classLine.includes('className') || classLine.includes('class=')
+          ? [classLine]
           : [];
 
       for (const target of targets) {

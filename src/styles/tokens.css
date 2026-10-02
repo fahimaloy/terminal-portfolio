@@ -526,6 +526,33 @@
   /* Text selection follows the editorial signal, not the system cyan. */
   --selection-bg: var(--neon-amber);
 
+  /* DO NOT declare --accent-color/-glow/-wash in this scope. It was tried, and
+     it makes the accent switcher dead on /blog rather than live.
+
+     `data-accent` is set on <html> (AccentSwitcher.tsx:136-138,
+     _document.tsx:66-67). This scope is set on the page's <main>
+     (blog/index.tsx:519, blog/[slug].tsx:572) — a DESCENDANT, so the two
+     selectors never match the same element and specificity never decides
+     anything between them. What decides it is simpler: a value DECLARED on an
+     element beats an INHERITED value from its ancestor, at any specificity,
+     including zero. Declaring the trio here therefore pins the whole reading
+     room to amber and there is no cascade value that hands it back.
+
+     Measured against this file in Chromium: with the trio present the room's
+     --accent-color is #ffb020 for all six of cyan/violet/coral/amber/lime/ice;
+     with it removed the room tracks <html> exactly (#3df2ff / #7c5cff / #ffb020
+     / #4dffa6 / #9be8ff / #ff4d6d). `:where([data-theme='editorial'])` is NOT an
+     escape hatch — it zeroes specificity but still declares, so it still wins
+     over the inherited value.
+
+     The room's warmth is already carried by the tokens below, which are
+     deliberately visitor-independent: --selection-bg, --border-gradient-accent,
+     --hairline-accent, --glow-accent and the --aurora-* remap. Accent-role
+     surfaces inside the room (buttons, chips, focus rings, the scene field via
+     palette.ts) are meant to follow the visitor's choice — that is the switcher
+     working, not the room leaking. Prose links stay cyan regardless, because
+     .rich-prose is not blog-owned and hard-wires --neon-cyan. */
+
   /* Rules are the warm spine of the page: amber into lime, never cyan→violet.
      The bloom travels with the paint. */
   --border-gradient-accent: linear-gradient(

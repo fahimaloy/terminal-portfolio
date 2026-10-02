@@ -91,6 +91,14 @@ function expectClean(file: string) {
 // at runtime so the token class never appears contiguously in this source.
 const LEGACY_CLASS = 'dur' + 'ation-777';
 
+// Same trap, one step further: rule 3's FIXTURES need the banned spelling in a
+// STRING (the class-context scan reads string bodies by design), so writing
+// `duration-999` / `ease-nope` literally in this test would fail
+// `token-lint --all` on the test itself. Assembled at runtime, exactly as
+// `LEGACY_CLASS` is, so no repo-wide ignore is ever needed for a test.
+const BANNED_DURATION = 'dur' + 'ation-999';
+const BANNED_EASE = 'eas' + 'e-nope';
+
 /** A file that imports animejs and contains `body` inside an animate() call. */
 const anime = (body: string) =>
   `import { animate, stagger, createScope } from 'animejs';\nimport { durations, easings, springs } from '../config/animations';\n\nexport function go() {\n  animate(el, {\n${body}\n  });\n}\n`;
@@ -1099,5 +1107,76 @@ describe('token-lint rule 5 — the live repo stays clean', () => {
     });
     expect(`${r.stdout ?? ''}${r.stderr ?? ''}`).toContain('--check OK');
     expect(r.status).toBe(0);
+  });
+});
+
+describe('token-lint rule 3 — a class-context scan that can read prose', () => {
+  // Rule 3 (`no-adhoc-duration` / `no-adhoc-ease`) scans quoted strings for
+  // off-token Tailwind duration/ease classes. It used to read RAW lines, so any
+  // file that DOCUMENTED the rule tripped it:
+  //   - `src/config/animations.ts` carries a "WHY A VAR AND NOT A `duration-*`
+  //     CLASS" comment naming the banned form;
+  //   - `src/components/__tests__/cardLift.test.tsx` pins that the card lift
+  //     "must not use a `duration-*` class".
+  // Both are prose about the rule, and both made `token-lint --all` fail, so
+  // the repo could not keep its own linter green while documenting it. Rule 5
+  // already solved this with a comment-masked pass; rule 3 now reads the same
+  // masked line (strings still visible — a class list LIVES in a string).
+
+  it('does not read a comment that quotes the banned class as a class', () => {
+    expectClean(
+      fixture(
+        'rule3-comment.tsx',
+        [
+          '/**',
+          ` * WHY A VAR AND NOT A \`${BANNED_DURATION}\` CLASS, and not \`${BANNED_EASE}\` either:`,
+          ' * a compiled class is a literal the reduced-motion block cannot see.',
+          ' */',
+          'export const A = () => <div className="duration-200" />;\n',
+        ].join('\n'),
+      ),
+    );
+  });
+
+  it('still flags the same class when it is real code, not a comment', () => {
+    // The masking pass must not have blunted the rule: this is the exact token
+    // the comment above names, in a className the linter has to read.
+    const real = fixture(
+      'rule3-real.tsx',
+      `export const A = () => <div className="${LEGACY_CLASS}" />;\n`,
+    );
+    const { code, out } = runLint([real]);
+    expect(code, 'a real off-token class must still be fatal').toBe(1);
+    expect(out).toContain('no-adhoc-duration');
+  });
+
+  it('does not read `var(--ease-out)` in a CSS transition value as a class', () => {
+    // `HOVER_LIFT_TRANSITION` is a CSS transition VALUE, not a class list. The
+    // old body `[^'"\`]*` swallowed the JS punctuation after the string, so
+    // `var(--ease-out), box-shadow` parsed as the class `ease-out),` — reported
+    // for using a token it deliberately never used.
+    expectClean(
+      fixture(
+        'rule3-css-value.ts',
+        [
+          `export const T = 'transform var(--dur-hover) var(--ease-out), box-shadow var(--dur-hover) var(--ease-out)';\n`,
+          `export const S = 'padding var(--dur-enter) var(--ease-in-out)';\n`,
+        ].join('\n'),
+      ),
+    );
+  });
+
+  it('still flags an off-token ease inside a class list next to a CSS var', () => {
+    // The lookbehind that fixes the line above must not become a blanket
+    // exemption: the class list here is real, and `ease-out)` beside it is the
+    // punctuation case again, this time with a genuine offender.
+    const { code, out } = runLint([
+      fixture(
+        'rule3-mixed.tsx',
+        `export const A = () => <div className="${BANNED_EASE}" />;\n`,
+      ),
+    ]);
+    expect(code).toBe(1);
+    expect(out).toContain('no-adhoc-ease');
   });
 });

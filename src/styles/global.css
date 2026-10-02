@@ -506,7 +506,18 @@ body {
     margin-block: 1.75em;
     padding: 1.1rem 1.25rem 1.1rem 1.5rem;
     overflow-x: auto;
-    background: var(--bg-2);
+    /* Cyan hairline across the top of the panel — the key light hitting it.
+       Painted as a background layer on the panel itself, not as an abspos
+       ::before: `pre` is an overflow-x scroller, and an abspos child is
+       translated by the scroll offset, so the ::before slid off the panel's left
+       edge the moment the code ran wider than the column. A background is fixed
+       to the element's own box (background-attachment defaults to `scroll`), so
+       the light holds while the code scrolls under it, and background-clip keeps
+       it on the --radius-md curve instead of squaring off the corners. padding-box
+       drops it onto the inner lip, clear of the 1px border, where it used to sit. */
+    background:
+      var(--hairline-accent) top / 100% 1px no-repeat padding-box,
+      var(--bg-2);
     border: 1px solid var(--border-subtle);
     border-left: 2px solid var(--neon-cyan);
     border-radius: var(--radius-md);
@@ -516,14 +527,6 @@ body {
     font-size: 0.85em;
     line-height: 1.7;
     tab-size: 2;
-  }
-  /* Cyan hairline across the top of the panel — the key light hitting it. */
-  .rich-prose :where(pre)::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 1px;
-    background: var(--hairline-accent);
   }
   .rich-prose :where(pre code) {
     background: none;

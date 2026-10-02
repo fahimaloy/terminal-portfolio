@@ -16,56 +16,41 @@ import {
   FiVideo,
 } from 'react-icons/fi';
 import { HudPanel, NeonButton, NeonChip, Ripple } from './ui';
+import { HOVER_LIFT_TRANSITION, type AccentColor } from '../config/animations';
 
-const COLOR_SETS = [
+/**
+ * Per-index palette for the tab strip. `accent` is typed as the app-wide
+ * `AccentColor` rather than a locally re-spelled union — this file used to
+ * declare `type AccentName = (typeof COLOR_SETS)[number]['accent']`, which is
+ * a second place to widen when `tokens.css` grows an accent.
+ */
+const COLOR_SETS: ReadonlyArray<{
+  accent: AccentColor;
+  text: string;
+  border: string;
+}> = [
   {
-    accent: 'amber' as const,
+    accent: 'amber',
     text: 'text-neon-amber',
     border: 'border-neon-amber/30',
   },
   {
-    accent: 'coral' as const,
+    accent: 'coral',
     text: 'text-neon-coral',
     border: 'border-neon-coral/30',
   },
   {
-    accent: 'cyan' as const,
+    accent: 'cyan',
     text: 'text-neon-cyan',
     border: 'border-neon-cyan/30',
   },
   {
-    accent: 'amber' as const,
+    accent: 'amber',
     text: 'text-neon-amber',
     border: 'border-neon-amber/30',
   },
 ];
 const getColor = (i: number) => COLOR_SETS[i % COLOR_SETS.length];
-
-type AccentName = (typeof COLOR_SETS)[number]['accent'];
-
-/**
- * The retired `.hud-glow-*` utility on the tab strip, rebuilt from tokens.
- *
- * 8px at the full `--glow-x` matches the selected-media thumbnail lower down in
- * this same file (`shadow-[0_0_8px_var(--glow-cyan)]`, ProjectPreview.tsx), so
- * "this thumbnail is selected" and "this tab is selected" are the same signal
- * at the same strength.
- *
- * Two rules and not one interpolated string: Tailwind generates utilities from
- * literal source text, so `'shadow-[0_0_8px_var(--glow-' + c.accent + ')]'`
- * compiles to nothing at all and paints nothing — which is how the dead class
- * survived unnoticed in the first place.
- */
-const TAB_GLOW_SELECTED: Record<AccentName, string> = {
-  amber: 'shadow-[0_0_8px_var(--glow-amber)]',
-  coral: 'shadow-[0_0_8px_var(--glow-coral)]',
-  cyan: 'shadow-[0_0_8px_var(--glow-cyan)]',
-};
-const TAB_GLOW_REST: Record<AccentName, string> = {
-  amber: 'hover:shadow-[0_0_8px_var(--glow-amber)]',
-  coral: 'hover:shadow-[0_0_8px_var(--glow-coral)]',
-  cyan: 'hover:shadow-[0_0_8px_var(--glow-cyan)]',
-};
 
 type Props = {
   projects: PortfolioProject[];
@@ -195,14 +180,6 @@ export default function ProjectPreview({
             const c = getColor(idx);
             const isActive = idx === activeIndex;
             const label = project.short_title || project.title;
-            // The glow lives on the `Ripple` wrapper, not on the panel inside
-            // it. `Ripple` renders `overflow-hidden`, which clips the ink of its
-            // descendants — a `box-shadow` on the `HudPanel` would be trimmed to
-            // nothing, which is most likely why the retired glow looked
-            // unfixable in place. An element's own box-shadow is never clipped
-            // by its own `overflow`, so the wrapper is the only node here that
-            // can cast a halo.
-            //
             // `<button>` inside `Ripple` rather than attributes passed through
             // it: `Ripple`'s props type is `HTMLAttributes<HTMLDivElement>`, so
             // `role`/`tabIndex` would have been spread onto a div that still
@@ -214,11 +191,45 @@ export default function ProjectPreview({
             return (
               <Ripple
                 key={project.id}
-                className={`w-[150px] transition-all duration-200 ${
+                // The house lift rides HERE, on the wrapper that sits outside
+                // the `HudPanel`, for two reasons that only hold together.
+                //
+                // 1. `Ripple` renders `overflow-hidden`, which clips the ink of
+                //    its DESCENDANTS — a `box-shadow` on the `HudPanel` or the
+                //    `<button>` inside would be trimmed to nothing, which is
+                //    most likely why the retired glow looked unfixable in
+                //    place. An element's own box-shadow is never clipped by
+                //    its own `overflow`, so this wrapper is the only node here
+                //    that can cast a halo.
+                // 2. `HudPanel` owns the panel root and its entrance animation
+                //    writes then clears inline `opacity`/`transform`/
+                //    `transition` on exactly that node — a transition
+                //    declared there is erased on mount. This wrapper is above
+                //    it, so nothing here collides.
+                //
+                // Both branches of the glow below are the SAME 16px
+                // `--card-glow` expression: the selected tab carries it as a
+                // resting state, every other tab carries it on hover. That
+                // replaced two 8px `--glow-<accent>` maps keyed per accent,
+                // which contradicted the house lift on blur radius and glow
+                // token and left two competing glow mechanisms on one card.
+                //
+                // Literal source text in both branches, never interpolation:
+                // Tailwind generates utilities from the literal, so a computed
+                // `'shadow-[0_0_16px_var(--glow-' + c.accent + ')]'` compiles
+                // to nothing and paints nothing — which is how the dead class
+                // survived unnoticed in the first place.
+                className={`w-[150px] hover:-translate-y-0.5 hover:scale-[1.015] ${
                   isActive
-                    ? TAB_GLOW_SELECTED[c.accent]
-                    : TAB_GLOW_REST[c.accent]
+                    ? 'shadow-[0_0_16px_var(--card-glow)]'
+                    : 'hover:shadow-[0_0_16px_var(--card-glow)]'
                 }`}
+                style={
+                  {
+                    '--card-glow': `var(--glow-${c.accent}-sm)`,
+                    transition: HOVER_LIFT_TRANSITION,
+                  } as React.CSSProperties
+                }
               >
                 <button
                   type="button"

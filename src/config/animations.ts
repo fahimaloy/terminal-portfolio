@@ -152,6 +152,45 @@ export function getReducedDuration(
 }
 
 /**
+ * The house card lift, as a CSS `transition` VALUE — one string, shared
+ * verbatim by `InlineProjectCard`, `ProjectPreview`'s tab strip and
+ * `SkillCard` (`src/components/InlineProjectCard.tsx`,
+ * `src/components/ProjectPreview.tsx`, `src/components/SkillCard.tsx`).
+ *
+ * It lives here rather than in three module-local copies for two reasons. One,
+ * the three cards must not be able to drift: the whole point of "the house
+ * lift" is that a card behaves the same wherever it appears, and three copies
+ * of a string is three chances to get one of them subtly wrong (which is
+ * exactly what had happened — `InlineProjectCard` shipped a `duration-200`
+ * Tailwind class while `ProjectPreview` still carried an 8px glow map). Two,
+ * this module is the hand-written seam that re-exports
+ * `src/config/generated/tokens.generated.ts`, so it is the one place that may
+ * name a token var without pulling a generated file into a component.
+ *
+ * WHY A VAR AND NOT A `duration-*` CLASS — `tailwind.tokens.generated.js`
+ * compiles `duration-200` to a LITERAL `200ms`, and a literal cannot see the
+ * reduced-motion block in `tokens.css` that collapses `--dur-hover` to `0ms`.
+ * So a Tailwind class silently ignores a visitor who asked for less motion.
+ * Reading `--dur-hover` as a custom property means that block reaches them:
+ * an instant, still visible, still legible state change, with no JS and no
+ * render-time branch.
+ *
+ * Only `transform` and `box-shadow` are transitioned — the two properties the
+ * lift actually touches. `transition: all` would also animate the ripple disc's
+ * own opacity and would re-run layout on every frame.
+ *
+ * THE LIFT RIDES ON THE INTERACTIVE ELEMENT, never on the `HudPanel` inside
+ * it: `HudPanel` owns the panel root and its entrance animation writes and then
+ * clears inline `opacity`/`transform`/`transition` on exactly that node
+ * (`src/components/ui/HudPanel.tsx`), so a transition declared there is erased
+ * on mount. `SkillCard` is the one card where the panel IS the surface — it is
+ * safe there only because that call site already passes `enter={false}`, which
+ * makes the entrance effect return before it writes anything.
+ */
+export const HOVER_LIFT_TRANSITION =
+  'transform var(--dur-hover) var(--ease-out), box-shadow var(--dur-hover) var(--ease-out)';
+
+/**
  * Standard hover animation parameters for interactive elements.
  * Uses blend composition for smooth combination with base animations.
  */
