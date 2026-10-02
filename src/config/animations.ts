@@ -226,16 +226,6 @@ export const textStaggerPreset = {
 };
 
 /**
- * Line drawing parameters for SVG.
- */
-export const drawPreset = {
-  draw: '0 1',
-  duration: durations.draw,
-  ease: easings.expoOut,
-  delay: 100,
-};
-
-/**
  * Morph transition parameters for SVG.
  */
 export const morphPreset = {
