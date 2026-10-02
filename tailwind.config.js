@@ -22,25 +22,13 @@ module.exports = {
           '0%, 100%': { opacity: '0.4' },
           '50%': { opacity: '1' },
         },
-        'pulse-dot': {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.3' },
-        },
         'ripple-out': {
           '0%': { transform: 'scale(0)', opacity: '0.5' },
           '100%': { transform: 'scale(2.5)', opacity: '0' },
         },
-        'send-flash': {
-          '0%': { transform: 'scaleX(0)', transformOrigin: 'left' },
-          '40%': { transform: 'scaleX(1)', transformOrigin: 'left' },
-          '60%': { transform: 'scaleX(1)', transformOrigin: 'right' },
-          '100%': { transform: 'scaleX(0)', transformOrigin: 'right' },
-        },
       },
       animation: {
         'pulse-glow': 'pulse-glow 2.4s ease-in-out infinite',
-        'pulse-dot': 'pulse-dot 1.2s ease-in-out infinite',
-        'send-flash': 'send-flash 0.4s var(--ease-smooth) forwards',
       },
     },
   },
