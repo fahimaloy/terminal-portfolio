@@ -16,7 +16,7 @@
 // closed state must both mount the subtree and run the entrance animation.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, act } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import React from 'react';
 
 const {
@@ -27,6 +27,16 @@ const {
   timelineParams,
   mockAnimate,
   mockStaggerFn,
+  /**
+   * Every props object the overlay handed to `TypeaheadSuggestions`, so a test
+   * can read the `open` prop it was given. The recorder wraps the REAL
+   * component (see the `../ui` mock below), so the popup's own exit animation
+   * still runs here — the point of the typeahead tests is the production render
+   * site, which a stubbed popup could not exercise.
+   */
+  typeaheadProps,
+  /** Makes `useTypeaheadSuggestions` return nothing, to reach the empty-hint state. */
+  typeaheadHasNoMatches,
 } = vi.hoisted(() => ({
   scopes: [] as Array<{
     add: (cb: () => void) => unknown;
@@ -45,6 +55,8 @@ const {
   }>,
   mockAnimate: vi.fn(),
   mockStaggerFn: vi.fn((v: unknown) => v as any),
+  typeaheadProps: [] as Array<Record<string, unknown>>,
+  typeaheadHasNoMatches: { value: false },
 }));
 
 vi.mock('animejs', () => ({
@@ -113,16 +125,37 @@ vi.mock('../SkillFilterPanel', () => ({
   default: () => null,
 }));
 
-vi.mock('../ui', () => ({
-  HudPanel: ({ children }: any) =>
-    React.createElement('div', { 'data-testid': 'hud-panel' }, children),
-  // Spread props the way the real NeonButton forwards `...rest`.
-  NeonButton: (props: any) =>
-    React.createElement('button', { ...props }, props.children),
-  Ripple: () => null,
-  TypeaheadSuggestions: () => null,
-  useTypeaheadSuggestions: (_v: string, pool: unknown[]) => pool,
-}));
+// `TypeaheadSuggestions` is the REAL component here, wrapped in a props
+// recorder. Mocking it to `null` (as the rest of this file does for its
+// siblings) is what hid the production defect: with the popup stubbed out, a
+// render site that unmounted it instead of closing it looked identical to one
+// that closed it. The real popup animates against the mocked `animejs` exactly
+// as it does in its own test file, so the exit these tests assert is the exit
+// that ships.
+vi.mock('../ui', async () => {
+  const actual = await vi.importActual<
+    typeof import('../ui/TypeaheadSuggestions')
+  >('../ui/TypeaheadSuggestions');
+  return {
+    HudPanel: ({ children }: any) =>
+      React.createElement('div', { 'data-testid': 'hud-panel' }, children),
+    // Spread props the way the real NeonButton forwards `...rest`.
+    NeonButton: (props: any) =>
+      React.createElement('button', { ...props }, props.children),
+    // `Ripple` is a visual wrapper — it renders `children` inside a single
+    // element and adds nothing a test would query. Returning `null` here threw
+    // away the entire composer, typeahead included, which is why this suite
+    // could describe the panel and its exit but never the row inside it.
+    Ripple: ({ children }: any) =>
+      React.createElement(React.Fragment, null, children),
+    TypeaheadSuggestions: (props: Record<string, unknown>) => {
+      typeaheadProps.push(props);
+      return React.createElement(actual.default, props as any);
+    },
+    useTypeaheadSuggestions: (_v: string, pool: unknown[]) =>
+      typeaheadHasNoMatches.value ? [] : pool,
+  };
+});
 
 vi.mock('react-icons/fi', () => ({
   FiSend: () => null,
@@ -184,9 +217,42 @@ function exitTimeline() {
   return found[found.length - 1];
 }
 
+/**
+ * THE POPUP'S EXIT. Same `onComplete` signature as the overlay's own exit, so
+ * the tween count is what tells them apart: the overlay animates two nodes
+ * (backdrop + panel), the popup animates exactly one — itself.
+ */
+function popupExitTimelines() {
+  return timelineParams.filter(
+    (t) =>
+      !!t.params &&
+      typeof t.params.onComplete === 'function' &&
+      t.adds.length === 1,
+  );
+}
+
+function popupExitTimeline() {
+  const found = popupExitTimelines();
+  return found[found.length - 1];
+}
+
+/** The props the overlay last handed to the popup. */
+function lastTypeaheadProps() {
+  return typeaheadProps[typeaheadProps.length - 1];
+}
+
+/** The popup's `<ul>`. It is the only `role="listbox"` on the page. */
+const listbox = () => document.querySelector('[role="listbox"]');
+
+/** `.reveal` is on both the backdrop and the panel; backdrop is the first. */
+const backdrop = () => document.querySelectorAll('.reveal')[0] ?? null;
+
 const overlay = () => document.querySelector('.reveal');
 
-function renderOverlay(isOpen: boolean) {
+function renderOverlay(
+  isOpen: boolean,
+  overrides: Record<string, unknown> = {},
+) {
   const props = {
     isOpen,
     onClose: vi.fn(),
@@ -196,6 +262,7 @@ function renderOverlay(isOpen: boolean) {
     isLoading: false,
     suggestions: [] as Array<{ label: string; icon?: React.ReactNode }>,
     projects: [] as any[],
+    ...overrides,
   };
   const utils = render(<MessageOverlay {...(props as any)} />);
   return { ...utils, props };
@@ -206,6 +273,8 @@ describe('MessageOverlay exit animation', () => {
     vi.clearAllMocks();
     scopes.length = 0;
     timelineParams.length = 0;
+    typeaheadProps.length = 0;
+    typeaheadHasNoMatches.value = false;
     mockMatchMedia(false);
   });
 
@@ -449,5 +518,381 @@ describe('MessageOverlay exit animation', () => {
     // The last scope is the chips scope, whose revert happens in its own
     // cleanup; any scope still unreverted here would be a real leak.
     expect(unreverted.length).toBe(0);
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   TYPEAHEAD POPUP LIFECYCLE AT THE PRODUCTION RENDER SITE
+
+   The defect this pins. `TypeaheadSuggestions` owns its own node lifetime — it
+   keeps the `<ul>` mounted for the ~80ms of its exit and drops it from inside —
+   but the only place that renders it (this component) conditionalled the whole
+   child on `inputValue.length > 0` and hardcoded `open`. So the popup was never
+   told to close; it was deleted on the same commit the input emptied, and the
+   exit animation committed alongside it could never run outside its own test
+   file. The visitor got an instant cut-out.
+
+   The properties that fix has to hold, all asserted here against the REAL popup:
+
+     1. closing hands the popup `open={false}` and leaves the same node in the
+        DOM until the popup's own exit completes — NODE IDENTITY, not presence,
+     2. "open with nothing to match" is content (the `emptyHint` row), so it is
+        still a state the popup can be open in, not an unmount trigger,
+     3. an overlay with no suggestion source mounts no popup machinery at all,
+     4. the row keeps its chrome and its place in the composer, and the wrapper
+        it now outlives draws nothing once the popup hands the node back,
+     5. Escape, click-outside and the composer's disabled/loading states are
+        untouched, and no React key/unmount warning rides along.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+const POPUP_SUGGESTIONS = [
+  { label: 'Show me your projects' },
+  { label: 'What are your skills?' },
+];
+
+describe('MessageOverlay typeahead popup', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    scopes.length = 0;
+    timelineParams.length = 0;
+    typeaheadProps.length = 0;
+    typeaheadHasNoMatches.value = false;
+    mockMatchMedia(false);
+  });
+
+  afterEach(() => {
+    clearMatchMedia();
+    document.body.style.overflow = '';
+    typeaheadHasNoMatches.value = false;
+  });
+
+  it('typing opens the popup and clearing the input CLOSES it instead of unmounting it', () => {
+    // The test this whole task exists for. Under the old render site the first
+    // assertion below the `open` one fails immediately: the wrapper was gated on
+    // `inputValue.length > 0`, so emptying the input deleted the `<ul>` on that
+    // commit and there was no exit left to run.
+    const { rerender, props } = renderOverlay(true, {
+      suggestions: POPUP_SUGGESTIONS,
+      inputValue: 'pro',
+    });
+
+    const node = listbox();
+    expect(node).not.toBeNull();
+    expect(screen.getByRole('listbox', { name: 'Suggestions' })).toBe(node);
+    expect(lastTypeaheadProps().open).toBe(true);
+
+    act(() => rerender(<MessageOverlay {...(props as any)} inputValue="" />));
+
+    // (1) It was TOLD to close. `toBe(false)` and not `toBeFalsy()` on purpose:
+    // dropping the prop and hardcoding `open` are the two half-fixes this site
+    // used to have, and both of them leave the popup looking closed-ish.
+    expect(lastTypeaheadProps().open).toBe(false);
+
+    // (2) And it is STILL HERE, as the very same node. Presence alone cannot see
+    // the difference between "held for the exit" and "reverted, remounted": React
+    // commits the unmount before the effect that re-mounts it runs, so a
+    // remount hands back a brand new element that passes any `not.toBeNull()`.
+    expect(listbox()).toBe(node);
+
+    // (3) Its own exit is running, aimed at that node — one tween, the enter
+    // pair reversed, i.e. the animation that shipped with the popup.
+    const tl = popupExitTimeline();
+    expect(tl).toBeDefined();
+    expect(popupExitTimelines()).toHaveLength(1);
+    expect(tl!.adds[0].target).toBe(node);
+    expect(tl!.adds[0].params.opacity).toEqual([1, 0]);
+    expect(tl!.adds[0].params.y).toEqual([0, -4]);
+
+    act(() => {
+      (tl!.params!.onComplete as () => void)();
+    });
+    expect(listbox()).toBeNull();
+  });
+
+  it('the popup owns its teardown: the overlay still renders after the popup has left', () => {
+    // The wrapper outlives the popup by design, so what is left behind must be
+    // inert. This is the assertion that keeps a mounted-but-chromed wrapper from
+    // parking an empty band under the composer.
+    const { rerender, props } = renderOverlay(true, {
+      suggestions: POPUP_SUGGESTIONS,
+      inputValue: 'pro',
+    });
+    const wrapper = listbox()!.parentElement!;
+
+    act(() => rerender(<MessageOverlay {...(props as any)} inputValue="" />));
+    expect(listbox()).toBeTruthy();
+
+    act(() => {
+      (popupExitTimeline()!.params!.onComplete as () => void)();
+    });
+
+    // The wrapper survived; the row it used to dress does not exist any more.
+    expect(wrapper.isConnected).toBe(true);
+    expect(wrapper.childElementCount).toBe(0);
+    expect(wrapper.textContent).toBe('');
+    expect(wrapper.className).toBe('');
+    expect(wrapper.className).not.toMatch(/border|padding|py-|px-/);
+    // And the composer below it is still there, undisturbed.
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByText('0/2000')).toBeInTheDocument();
+  });
+
+  it('an open popup with no matches shows the empty hint and is still a live node', () => {
+    // `suggestions.length === 0` is CONTENT in this popup, not a mount guard —
+    // it renders the `emptyHint` row. So "open, nothing to suggest" has to stay
+    // an open state, and closing it has to go through the exit rather than
+    // short-circuit the whole way. Folding it into the open state (the other
+    // tempting half-fix) fails here: the popup would never mount.
+    typeaheadHasNoMatches.value = true;
+    try {
+      const { rerender, props } = renderOverlay(true, {
+        suggestions: POPUP_SUGGESTIONS,
+        inputValue: 'zzzz',
+      });
+
+      const node = listbox();
+      expect(node).not.toBeNull();
+      expect(screen.getByText('NO MATCHES')).toBeInTheDocument();
+      expect(screen.queryAllByRole('option')).toHaveLength(0);
+      expect(lastTypeaheadProps().open).toBe(true);
+
+      act(() => rerender(<MessageOverlay {...(props as any)} inputValue="" />));
+      expect(lastTypeaheadProps().open).toBe(false);
+      expect(listbox()).toBe(node);
+
+      act(() => {
+        (popupExitTimeline()!.params!.onComplete as () => void)();
+      });
+      expect(listbox()).toBeNull();
+    } finally {
+      typeaheadHasNoMatches.value = false;
+    }
+  });
+
+  it('an overlay with no suggestion source mounts no popup machinery at all', () => {
+    // The mount gate survives — it just stops being a per-keystroke gate.
+    // "This site has suggestions to offer" is a property of the prop, and an
+    // overlay with none renders no wrapper, no popup and no empty hint.
+    const empty = renderOverlay(true, { suggestions: [], inputValue: 'pro' });
+    expect(listbox()).toBeNull();
+    expect(typeaheadProps).toHaveLength(0);
+    empty.unmount();
+
+    const missing = renderOverlay(true, { suggestions: undefined });
+    expect(listbox()).toBeNull();
+    expect(typeaheadProps).toHaveLength(0);
+    missing.unmount();
+  });
+
+  it('the row keeps its chrome and its place in the composer', () => {
+    // Layout non-regression. The chrome moved from the wrapper onto the popup so
+    // the wrapper could outlive it, and the open layout has to be the same box
+    // it was: same full-bleed divider, same padding, same parent, and nothing
+    // promoted to a positioned overlay.
+    const { rerender, props } = renderOverlay(true, {
+      suggestions: POPUP_SUGGESTIONS,
+      inputValue: 'pro',
+    });
+    const node = listbox()!;
+    const wrapper = node.parentElement!;
+
+    // Still a plain static block inside the composer panel — the panel's own
+    // extra wrapper div is the mock's simplification, containment is the point.
+    expect(screen.getByTestId('hud-panel').contains(wrapper)).toBe(true);
+    expect(wrapper.tagName).toBe('DIV');
+    for (const position of ['absolute', 'fixed', 'sticky', 'relative']) {
+      expect(wrapper.className).not.toContain(position);
+      expect(node.className).not.toContain(position);
+    }
+
+    // The popup's own classes are untouched and it has gained exactly the row's
+    // chrome — nothing else.
+    expect(node.className).toBe(
+      'font-body text-sm px-4 py-2 border-t border-[var(--border-subtle)]',
+    );
+    for (const token of ['px-4', 'py-2', 'border-t']) {
+      expect(node.classList.contains(token)).toBe(true);
+    }
+    // The options inside it keep their own padding, so the inset is unchanged.
+    expect(screen.getByText('Show me your projects').className).toBe(
+      'truncate',
+    );
+    expect(
+      (screen.getByText('Show me your projects').parentElement as HTMLElement)
+        .className,
+    ).toContain('px-3 py-2');
+
+    // And it does not move when the popup does: closing leaves the wrapper in
+    // the same spot in the DOM.
+    act(() => rerender(<MessageOverlay {...(props as any)} inputValue="" />));
+    expect(wrapper.isConnected).toBe(true);
+    expect(wrapper.parentElement).toBe(screen.getByTestId('hud-panel'));
+  });
+
+  it('Escape closes the overlay from the keydown listener and does not touch the popup', () => {
+    const { props } = renderOverlay(true, {
+      suggestions: POPUP_SUGGESTIONS,
+      inputValue: 'pro',
+    });
+    const node = listbox();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(props.onClose).toHaveBeenCalledTimes(1);
+    // Escape dismisses the SHEET, not the typeahead, so the popup keeps its
+    // `open` and leaves with the panel it lives in.
+    expect(lastTypeaheadProps().open).toBe(true);
+    expect(listbox()).toBe(node);
+  });
+
+  it('Escape still closes while the popup is mid-exit', () => {
+    // The popup outliving its own close adds a live node and a pending deadline
+    // timer to the subtree; the listener is on `window`, so nothing about it
+    // should care — but "nothing should care" is exactly the kind of claim that
+    // stops being true the moment someone adds a second key handler.
+    const { rerender, props } = renderOverlay(true, {
+      suggestions: POPUP_SUGGESTIONS,
+      inputValue: 'pro',
+    });
+    act(() => rerender(<MessageOverlay {...(props as any)} inputValue="" />));
+    expect(listbox()).not.toBeNull();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(props.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('clicking the backdrop closes the overlay', () => {
+    const { props } = renderOverlay(true, {
+      suggestions: POPUP_SUGGESTIONS,
+      inputValue: 'pro',
+    });
+
+    fireEvent.click(backdrop()!);
+
+    expect(props.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('picking an option still routes through onSuggestionClick', () => {
+    const onSuggestionClick = vi.fn();
+    renderOverlay(true, {
+      suggestions: POPUP_SUGGESTIONS,
+      inputValue: 'pro',
+      onSuggestionClick,
+    });
+
+    fireEvent.mouseDown(screen.getByText('What are your skills?'));
+
+    expect(onSuggestionClick).toHaveBeenCalledTimes(1);
+    expect(onSuggestionClick).toHaveBeenCalledWith('What are your skills?');
+  });
+
+  it('loading disables the composer and does not become a popup state', () => {
+    const { rerender, props } = renderOverlay(true, {
+      suggestions: POPUP_SUGGESTIONS,
+      inputValue: 'pro',
+      isLoading: true,
+    });
+    const node = listbox();
+
+    // The composer reads as busy…
+    expect(screen.getByRole('textbox')).toBeDisabled();
+    expect(screen.getByText('PROCESSING:')).toBeInTheDocument();
+
+    // …and the popup is untouched by it: `isLoading` is not an open/closed
+    // signal, and it does not get to own the popup's teardown either.
+    expect(lastTypeaheadProps().open).toBe(true);
+    act(() => rerender(<MessageOverlay {...(props as any)} inputValue="" />));
+    expect(lastTypeaheadProps().open).toBe(false);
+    expect(listbox()).toBe(node);
+
+    act(() => {
+      (popupExitTimeline()!.params!.onComplete as () => void)();
+    });
+    expect(listbox()).toBeNull();
+  });
+
+  it('a stale popup exit completion after re-opening does not unmount the popup', () => {
+    const { rerender, props } = renderOverlay(true, {
+      suggestions: POPUP_SUGGESTIONS,
+      inputValue: 'pro',
+    });
+    const node = listbox();
+
+    act(() => rerender(<MessageOverlay {...(props as any)} inputValue="" />));
+    const stale = popupExitTimeline()!;
+    act(() =>
+      rerender(<MessageOverlay {...(props as any)} inputValue="pro" />),
+    );
+    expect(listbox()).toBe(node);
+
+    // The completion the visitor already cancelled must be inert — identity, not
+    // presence, because an unmount-then-remount leaves something in the DOM.
+    act(() => {
+      (stale.params!.onComplete as () => void)();
+    });
+    expect(listbox()).toBe(node);
+  });
+
+  it('reduced motion: clearing the input closes the popup with no exit animation', () => {
+    mockMatchMedia(true);
+    const { rerender, props } = renderOverlay(true, {
+      suggestions: POPUP_SUGGESTIONS,
+      inputValue: 'pro',
+    });
+    const node = listbox();
+    expect(node).not.toBeNull();
+    const before = popupExitTimelines().length;
+
+    act(() => rerender(<MessageOverlay {...(props as any)} inputValue="" />));
+
+    // Same contract as the popup's own suite: told to close, no timeline built,
+    // gone on this tick rather than after 80ms of nothing.
+    expect(lastTypeaheadProps().open).toBe(false);
+    expect(popupExitTimelines()).toHaveLength(before);
+    expect(listbox()).toBeNull();
+  });
+
+  it('closing the popup logs no React key, unmount or act warning', () => {
+    // The popup's children change shape while it stays mounted: keyed `<li>`
+    // options become the single unkeyed `emptyHint` row and back. That swap is
+    // the thing most likely to produce a duplicate-key or removeChild warning,
+    // and neither the DOM nor the props recorder can see one.
+    const errors: string[] = [];
+    const spy = vi
+      .spyOn(console, 'error')
+      .mockImplementation((...args: unknown[]) => {
+        errors.push(args.map((a) => String(a)).join(' '));
+      });
+    try {
+      const { rerender, props, unmount } = renderOverlay(true, {
+        suggestions: POPUP_SUGGESTIONS,
+        inputValue: 'pro',
+      });
+      const node = listbox();
+
+      act(() =>
+        rerender(<MessageOverlay {...(props as any)} inputValue="skills" />),
+      );
+      typeaheadHasNoMatches.value = true;
+      act(() =>
+        rerender(<MessageOverlay {...(props as any)} inputValue="zzz" />),
+      );
+      expect(listbox()).toBe(node);
+      expect(screen.getByText('NO MATCHES')).toBeInTheDocument();
+
+      typeaheadHasNoMatches.value = false;
+      act(() => rerender(<MessageOverlay {...(props as any)} inputValue="" />));
+      expect(listbox()).toBe(node);
+
+      act(() => {
+        (popupExitTimeline()!.params!.onComplete as () => void)();
+      });
+      expect(listbox()).toBeNull();
+      unmount();
+    } finally {
+      spy.mockRestore();
+    }
+
+    expect(errors).toEqual([]);
   });
 });

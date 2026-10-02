@@ -194,6 +194,33 @@ export default function MessageOverlay({
 
   const filtered = useTypeaheadSuggestions(inputValue, suggestionPool, 8);
 
+  /* -- TYPEAHEAD POPUP: A CAPABILITY GATE AND AN OPEN STATE, NOT A MOUNT GATE --
+     `TypeaheadSuggestions` owns its own node lifetime. It keeps the `<ul>`
+     mounted through its ~80ms exit and drops it from inside, so this render
+     site must not also be deciding whether the popup exists — gating the child
+     on `inputValue.length > 0` deleted the node on the same commit that emptied
+     the input, and hardcoding `open` meant the popup was never even told to
+     close. The exit that shipped inside the popup was unreachable in production:
+     the only thing that ever happened was an unmount, which is what the visitor
+     saw.
+
+     So the two conditions split by what they actually mean:
+
+       hasSuggestionSource — "does this overlay have suggestions to offer at
+         all?" It is a property of the site (the prop), not of the caret, so it
+         is the one thing that still gates the mount. An overlay with no source
+         still renders no popup machinery, exactly as before.
+       isTypeaheadOpen — "is the popup showing right now?" The caret is the
+         only input, so this is the per-keystroke state, and it is handed to the
+         popup as `open` instead of being applied by removing it.
+
+     `filtered.length` is deliberately NOT part of the open state. "Open with
+     nothing to match" is a state the popup has content for — it renders its
+     `emptyHint` row — and folding it in here would re-introduce the same
+     instant-unmount through the back door, one keystroke earlier. */
+  const hasSuggestionSource = !!suggestions && suggestions.length > 0;
+  const isTypeaheadOpen = inputValue.length > 0;
+
   // Hardened quick-commands visibility (spec):
   // - On open/focus with empty input -> section is empty (no cards mounted)
   // - After user types "/" or any text and then erases to length 0 -> cards reappear
@@ -546,22 +573,36 @@ export default function MessageOverlay({
                   </div>
                 )}
 
-                {suggestions &&
-                  suggestions.length > 0 &&
-                  inputValue.length > 0 && (
-                    <div className="px-4 py-2 border-t border-[var(--border-subtle)]">
-                      <TypeaheadSuggestions
-                        query={inputValue}
-                        suggestions={filtered}
-                        onSelect={(s) =>
-                          onSuggestionClick?.(
-                            (s.payload as SuggestionShape)?.label ?? s.label,
-                          )
-                        }
-                        open
-                      />
-                    </div>
-                  )}
+                {/* THE ROW'S CHROME LIVES ON THE POPUP, NOT ON THIS WRAPPER.
+
+                    It used to live on the wrapper, which is only correct while
+                    the wrapper and the popup share one lifetime. They no longer
+                    do — the wrapper outlives the popup by the length of its
+                    exit — so padding and a top divider parked on the wrapper
+                    would leave a 17px empty band and a rule on screen under a
+                    composer that has nothing to say. Putting them on the popup
+                    collapses the wrapper to nothing in the same commit the exit
+                    hands the node back, and leaves the open layout exactly as
+                    it was: same box, same full-bleed divider, because both are
+                    full-width blocks in the same parent and Tailwind's preflight
+                    zeroes the `<ul>`'s own margins. The divider now also fades
+                    with the content it belongs to, rather than holding at full
+                    opacity under an empty row. */}
+                {hasSuggestionSource && (
+                  <div>
+                    <TypeaheadSuggestions
+                      query={inputValue}
+                      suggestions={filtered}
+                      onSelect={(s) =>
+                        onSuggestionClick?.(
+                          (s.payload as SuggestionShape)?.label ?? s.label,
+                        )
+                      }
+                      open={isTypeaheadOpen}
+                      className="px-4 py-2 border-t border-[var(--border-subtle)]"
+                    />
+                  </div>
+                )}
 
                 {showSkillFilter && skills.length > 0 && (
                   <SkillFilterPanel
