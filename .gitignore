@@ -76,3 +76,5 @@ worktrees/
 
 # husky internal (husky self-manages via .husky/_/.gitignore, listed for clarity)
 .husky/_/
+# deepwork local progress state
+.slim/deepwork/
