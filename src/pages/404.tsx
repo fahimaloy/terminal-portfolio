@@ -25,7 +25,7 @@
    THAT is why every `.reveal` element below carries `data-notfound-anim` —
    drop the marker from a node and it becomes the one node no system owns. */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { HudPanel, NeonButton, StatBar } from '../components/ui';
@@ -55,6 +55,45 @@ const STEP_MS = durations.stagger * 1000; // 60ms — cascade block offsets
 const GLYPH_STEP_MS = STEP_MS * 0.3; // 18ms — per-glyph cascade
 const BLOCK_STEP_MS = STEP_MS * 0.37; // 22ms — diagnostic rows + buttons
 
+/* ── PRE-NAVIGATION EXIT ──────────────────────────────────────────────────────
+   The two recovery buttons used to call `router.push` / `router.back` on the
+   same tick as the click, so the page was replaced with no acknowledgement that
+   anything had been pressed.
+
+   TIMING. 300ms (--dur-300) for the exit itself:
+     - it is well under the 640ms (--dur-enter) entrance, so the pair reads as
+       "out fast, in deliberate" rather than as one idea applied twice;
+     - it is subordinate to the site-wide route transition that _app.tsx is
+       starting at the same moment. Two full-weight transitions racing would
+       smear into a single long dissolve, so this one is deliberately the small
+       one and does not compete for the visitor's attention;
+     - and it is the whole of the latency. See the threshold note below.
+
+   WHEN NAVIGATION FIRES — on completion, not at a partial progress. The exit
+   eases in (`expoIn`), which means the visible part of the fade is concentrated
+   in the last ~20% of the duration: at 60% progress the page is still ~94%
+   opaque, and at 75% it is still ~88%. Firing `router.push` there does not read
+   as "the exit has gone far enough", it reads as the exit being cut off
+   mid-fade — strictly worse than waiting out 300ms. So for an accelerating exit
+   curve "far enough along" and "complete" are within a frame or two of each
+   other, and the only real lever on perceived latency is the duration itself.
+   That is why 300ms is a hard budget rather than a tuning knob.
+
+   `NAV_DEADLINE_MS` is the anti-stall backstop and is deliberately longer than
+   the exit, so on the happy path it never wins the race. It exists for the case
+   where the animation does not deliver: a backgrounded tab with throttled rAF,
+   an engine that skips the final callback, or a throw inside a tick. A visitor
+   on a 404 page who clicks "go home" and nothing happens is a far worse
+   outcome than no animation at all, so navigation is wired to three paths —
+   completion, deadline, and the catch around the animation itself — that all
+   funnel through one idempotent `fire()`. */
+const EXIT_MS = durations[300] * 1000; // 300ms
+const NAV_DEADLINE_MS = durations.exit * 1000 + durations.stagger * 1000 * 2; // 520ms
+/** Matches the direction of `exitAnim` in config/animations.ts, at a
+    deliberately smaller amount so this exit stays subordinate to the route
+    transition running alongside it. Distance, not time, so not a --dur-* token. */
+const EXIT_DRIFT_PX = 12;
+
 export default function NotFoundPage() {
   const router = useRouter();
   const [glitchText] = useState('404');
@@ -70,6 +109,12 @@ export default function NotFoundPage() {
   // detached node after the route changes — the same class of bug as the
   // observer this file used to carry.
   const scrambleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Pre-navigation exit state. `navStateRef` is the idempotence key for the
+  // whole thing: exactly one navigation per visit, no matter how many of the
+  // paths below fire or in what order.
+  const navStateRef = useRef<'idle' | 'pending' | 'fired'>('idle');
+  const navTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const exitScopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
   const targetMsg =
     "THE PAGE YOU'RE LOOKING FOR ISN'T IN THE LOCAL NETWORK. THE ROUTE MAY HAVE BEEN DECOMMISSIONED OR NEVER EXISTED.";
@@ -463,6 +508,98 @@ export default function NotFoundPage() {
     };
   }, [targetMsg]);
 
+  // ── Pre-navigation exit ─────────────────────────────────────────────────────
+  // The two recovery buttons. Every path here ends in `fire()`, and `fire()` is
+  // idempotent, so navigation cannot be skipped *and* cannot be duplicated.
+  const navigateWithExit = useCallback((run: () => void) => {
+    // A second click while the exit is in flight is a no-op, not a second push.
+    if (navStateRef.current !== 'idle') return;
+    navStateRef.current = 'pending';
+
+    const fire = () => {
+      if (navStateRef.current === 'fired') return;
+      navStateRef.current = 'fired';
+      if (navTimerRef.current !== null) {
+        clearTimeout(navTimerRef.current);
+        navTimerRef.current = null;
+      }
+      run();
+    };
+
+    // Path 1 — there is no exit to watch. Reduced motion, no motion capability,
+    // or a root that never rendered: navigate on the same tick as the click.
+    const root = pageRef.current;
+    if (!root || isReducedMotion() || !canAnimate()) {
+      fire();
+      return;
+    }
+
+    // Path 2 — the exit ran to completion (wired into the timeline's onComplete).
+    // Path 3 — the deadline below. Path 4 — the catch at the bottom.
+    try {
+      const scope = createScope({
+        root,
+        mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
+        defaults: { duration: EXIT_MS, ease: easings.expoIn },
+      } as Parameters<typeof createScope>[0]);
+      exitScopeRef.current = scope;
+
+      scope.add(() => {
+        // Live re-check, same as the entrance scope: if reduced motion is
+        // switched on between mount and click, skip straight to navigation.
+        if (scope.matches.reduceMotion) {
+          fire();
+          return;
+        }
+        const tl = createTimeline({ onComplete: fire });
+        // One node, one tween: the page root. The entrance timeline only ever
+        // claimed descendants, so nothing else in this file writes `opacity` or
+        // `transform` on this element and there is no second writer to race.
+        // `opacity` + `transform` only — nothing here triggers layout.
+        tl.add(
+          root,
+          {
+            opacity: [1, 0],
+            y: [0, -EXIT_DRIFT_PX],
+            duration: EXIT_MS,
+            ease: easings.expoIn,
+          },
+          0,
+        );
+      });
+
+      // Path 3 — the backstop. Armed only once the animation actually started,
+      // so it can never precede the exit it is standing in for.
+      navTimerRef.current = setTimeout(fire, NAV_DEADLINE_MS);
+    } catch {
+      // Path 4 — the animation itself failed (a missing anime export, a thrown
+      // tick). Swallow it and navigate: a dead button on a 404 page is a much
+      // worse failure than a missing animation.
+      try {
+        exitScopeRef.current?.revert();
+      } catch {}
+      exitScopeRef.current = null;
+      fire();
+    }
+  }, []);
+
+  // Unmount owns the exit's timers and tweens. Clearing the deadline here is
+  // also what stops a stale `fire()` from pushing a second navigation after the
+  // route has already changed.
+  useEffect(
+    () => () => {
+      if (navTimerRef.current !== null) {
+        clearTimeout(navTimerRef.current);
+        navTimerRef.current = null;
+      }
+      try {
+        exitScopeRef.current?.revert();
+      } catch {}
+      exitScopeRef.current = null;
+    },
+    [],
+  );
+
   return (
     <>
       <Head>
@@ -608,7 +745,7 @@ export default function NotFoundPage() {
             <NeonButton
               accent="amber"
               data-notfound-anim
-              onClick={() => router.push('/')}
+              onClick={() => navigateWithExit(() => router.push('/'))}
               className="notfound-btn reveal"
             >
               RETURN TO ROOT
@@ -617,7 +754,7 @@ export default function NotFoundPage() {
               accent="cyan"
               variant="outline"
               data-notfound-anim
-              onClick={() => router.back()}
+              onClick={() => navigateWithExit(() => router.back())}
               className="notfound-btn reveal"
             >
               GO BACK
