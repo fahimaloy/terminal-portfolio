@@ -3,7 +3,12 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { animate, createScope, stagger } from 'animejs';
-import { canAnimate } from '../../config/animations';
+import {
+  canAnimate,
+  durations,
+  easings,
+  isReducedMotion,
+} from '../../config/animations';
 import { logout, clearAdminSession } from '../../utils/adminPageGuard';
 import { getMeetings } from '../../utils/api';
 import { GlitchText, HudPanel, NeonButton } from '../ui';
@@ -33,6 +38,13 @@ const navItems = [
   { path: '/sudosuperuser-ostaad/ai/usage', label: 'Usage', icon: '📈' },
 ];
 
+// Timings derived from --dur-* tokens. There is no --dur-320 / --dur-250, so
+// these take the next token down rather than a bare literal (same call as
+// ExperienceTimeline's 400ms -> durations[300]).
+const NAV_ENTER_MS = durations[300] * 1000; // --dur-300 = 300ms (was 320ms)
+const MOBILE_ENTER_MS = durations[300] * 1000; // --dur-300 = 300ms (unchanged)
+const MOBILE_EXIT_MS = durations[200] * 1000; // --dur-200 = 200ms (was 250ms)
+
 const LogoutConfirmation: React.FC<{
   isOpen: boolean;
   onClose: () => void;
@@ -45,21 +57,28 @@ const LogoutConfirmation: React.FC<{
 
   useEffect(() => {
     if (!isOpen) return;
-    if (backdropRef.current) {
-      animate(backdropRef.current, {
-        opacity: [0, 1],
-        duration: 200,
-        ease: 'outExpo',
-      });
+    if (!backdropRef.current || !panelRef.current) return;
+
+    // Both nodes carry `opacity-0` in their class list, so the reduced-motion
+    // path has to write the resting value itself — skipping the animation
+    // alone would leave an invisible dialog open.
+    if (isReducedMotion() || !canAnimate()) {
+      backdropRef.current.style.opacity = '1';
+      panelRef.current.style.opacity = '1';
+      return;
     }
-    if (panelRef.current) {
-      animate(panelRef.current, {
-        opacity: [0, 1],
-        scale: [0.95, 1],
-        duration: 300,
-        ease: 'outExpo',
-      });
-    }
+
+    animate(backdropRef.current, {
+      opacity: [0, 1],
+      duration: durations[200] * 1000,
+      ease: easings.outExpo,
+    });
+    animate(panelRef.current, {
+      opacity: [0, 1],
+      scale: [0.95, 1],
+      duration: durations[300] * 1000,
+      ease: easings.outExpo,
+    });
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -139,13 +158,19 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       animate(nav.querySelectorAll('.admin-nav-item'), {
         opacity: [0, 1],
         y: [-8, 0],
-        duration: 320,
-        ease: 'outExpo',
-        delay: stagger(35),
+        duration: NAV_ENTER_MS,
+        ease: easings.outExpo,
+        delay: stagger(durations.stagger * 1000, { from: 'first' }),
       });
     });
 
-    return () => scope.revert();
+    return () => {
+      try {
+        scope.revert();
+      } catch {
+        // A reverted node can be mid-detach; never let cleanup throw.
+      }
+    };
   }, []);
 
   // Mobile menu mount/unmount with exit animation before unmount
@@ -157,10 +182,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       animate(el, {
         x: ['0%', '-100%'],
         opacity: [1, 0],
-        duration: 250,
-        ease: 'inExpo',
+        duration: MOBILE_EXIT_MS,
+        ease: easings.expoIn,
       });
-      const timer = setTimeout(() => setRenderMobileMenu(false), 260);
+      const timer = setTimeout(
+        () => setRenderMobileMenu(false),
+        MOBILE_EXIT_MS + 10,
+      );
       return () => clearTimeout(timer);
     } else if (!mobileMenuOpen && renderMobileMenu && !mobileNavRef.current) {
       setRenderMobileMenu(false);
@@ -173,8 +201,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       animate(mobileNavRef.current, {
         x: ['-100%', '0%'],
         opacity: [0, 1],
-        duration: 300,
-        ease: 'outExpo',
+        duration: MOBILE_ENTER_MS,
+        ease: easings.outExpo,
       });
     }
   }, [renderMobileMenu, mobileMenuOpen]);

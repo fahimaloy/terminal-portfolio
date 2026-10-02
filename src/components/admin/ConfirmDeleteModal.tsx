@@ -1,5 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { animate, createScope } from 'animejs';
+import {
+  canAnimate,
+  durations,
+  easings,
+  isReducedMotion,
+} from '../../config/animations';
 import { HudPanel, NeonButton } from '../ui';
 
 interface ConfirmDeleteModalProps {
@@ -27,21 +33,40 @@ export default function ConfirmDeleteModal({
     if (!backdropRef.current || !panelRef.current) return;
     const root = panelRef.current.parentElement;
     if (!root) return;
+
+    // canAnimate() as well as isReducedMotion(): canAnimate() is also false
+    // during SSR and in jsdom (no matchMedia), and the repo rule is that a
+    // component renders its final resting value when motion cannot run. Both
+    // nodes carry `opacity-0` in their class list, so the resting value has to
+    // be written here — skipping the animation alone would leave an invisible
+    // dialog open.
+    if (isReducedMotion() || !canAnimate()) {
+      backdropRef.current.style.opacity = '1';
+      panelRef.current.style.opacity = '1';
+      return;
+    }
+
     const scope = createScope({ root });
     scope.add(() => {
       animate(backdropRef.current!, {
         opacity: [0, 1],
-        duration: 200,
-        ease: 'outExpo',
+        duration: durations[200] * 1000,
+        ease: easings.outExpo,
       });
       animate(panelRef.current!, {
         opacity: [0, 1],
         scale: [0.9, 1],
-        duration: 300,
-        ease: 'outExpo',
+        duration: durations[300] * 1000,
+        ease: easings.outExpo,
       });
     });
-    return () => scope.revert();
+    return () => {
+      try {
+        scope.revert();
+      } catch {
+        // A reverted node can be mid-detach; never let cleanup throw.
+      }
+    };
   }, [open]);
 
   if (!open) return null;
