@@ -36,9 +36,20 @@ export interface StaggerOptions {
   autoplay?: boolean;
   /** Respect reduced motion */
   respectReduced?: boolean;
-  /** Small delay before starting (waits for DOM paint) */
-  paintDelay?: number;
 }
+
+/**
+ * Yield to the browser so the entrance has painted before the scope measures its
+ * children — a SCHEDULING yield, not a motion duration, which is why it is a
+ * named constant here instead of a `durations.*` read (the same reasoning as
+ * `src/utils/ambient.ts` and `ParticleField`'s hardcoded decay: these numbers
+ * are simulation/scheduling facts, not design timings, and inventing a
+ * `--dur-50` token would put a browser frame in the design-token vocabulary).
+ *
+ * It was `StaggerOptions.paintDelay` and is not one any more: no caller in the
+ * repo passed it, so the public option was a knob nobody turned.
+ */
+const PAINT_WAIT_MS = 50;
 
 const staggerPresets: Record<StaggerMode, Record<string, unknown>> = {
   list: { from: 'first' },
@@ -63,7 +74,6 @@ export function useStagger(options: StaggerOptions = {}) {
     staggerOptions,
     autoplay = true,
     respectReduced = true,
-    paintDelay = 50,
   } = options;
 
   const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
@@ -139,7 +149,7 @@ export function useStagger(options: StaggerOptions = {}) {
 
         animRef.current = anim;
       });
-    }, paintDelay);
+    }, PAINT_WAIT_MS);
 
     return () => {
       clearTimeout(timer);
@@ -161,7 +171,6 @@ export function useStagger(options: StaggerOptions = {}) {
     staggerOptions,
     autoplay,
     respectReduced,
-    paintDelay,
   ]);
 
   return { play, pause, revert, scope: scopeRef, anim: animRef };

@@ -317,11 +317,112 @@ const ANIME_MODULE_RE =
 // every token-derived form passes untouched: `durations[300] * 1000`,
 // `durations.stagger * (1/5) * 1000`, `stagger(durations.stagger * 1000, …)`,
 // `delay: stagger(…)`, `ease: easings.outExpo`, `ease: softSpring`.
-const ANIME_DURATION_RE = /\bduration\s*:\s*(\d+(?:\.\d+)?)/g;
-const ANIME_DELAY_RE = /\bdelay\s*:\s*(\d+(?:\.\d+)?)/g;
+//
+// THE KEY SET COVERS THE WRAPPERS' OWN PARAMETER NAMES, not just anime's
+// spellings. `useFlashCurtain` takes `durationMs`; `useStagger` took
+// `paintDelay`; `loopDelay` is anime v4's own name and `animatable.ts` lists it
+// in DEFAULT_KEYS. A `duration`/`delay` matcher misses all three — `durationMs:`
+// is not `duration:` — so each key is renamed by the wrapper and slips through
+// with the same raw milliseconds. The key is captured in group 1 so a report
+// names the property the author actually wrote.
+//
+// WHY THE KEY IS IMMEDIATELY FOLLOWED BY `:` (guard 1 of the type/value split —
+// see `inTypeDeclaration`): these names are ALSO how the wrappers DECLARE those
+// options, in the very modules that forward them (`useFlashCurtain.ts:18`
+// `durationMs?: number`). A `?` before the colon is what makes that a type
+// member, and `key?: <value>` does not parse in a value position at all, so
+// requiring a bare `:` can never discard a real violation. It is not the only
+// guard, because it would be the ONLY thing separating a required
+// `durationMs: number` from a value, and that is a distinction by accident.
+//
+// The `(?!\?)` lookahead is deliberately redundant, and kept that way on
+// purpose: probed, deleting it changes no result, because `\s*:` already fails
+// on the `?` (`{ delay?: 30 }` stays clean with the lookahead removed). It is
+// here as a self-documenting fast reject so the next person to widen this
+// pattern does not have to re-derive the optional-member case. The part that is
+// NOT redundant is the `\s*:` — that is the actual guard, and it is what makes
+// a required `durationMs: number` (no `?`) a question for the digit
+// requirement instead.
+const ANIME_DURATION_RE =
+  /\b(durationMs|duration|loopDelay)(?!\?)\s*:\s*(\d+(?:\.\d+)?)/g;
+const ANIME_DELAY_RE = /\b(paintDelay|delay)(?!\?)\s*:\s*(\d+(?:\.\d+)?)/g;
 // `ease:` with a quoted value — see the positive-rule note above.
-const ANIME_EASE_RE = /\bease\s*:\s*(['"`])([^'"`\n]*)\1/g;
+const ANIME_EASE_RE = /\bease(?!\?)\s*:\s*(['"`])([^'"`\n]*)\1/g;
+// No type-declaration guard: a call expression cannot appear in a type, so
+// `stagger(40)` is a value wherever it is written.
 const ANIME_STAGGER_RE = /\bstagger\(\s*(\d+(?:\.\d+)?)/g;
+
+// Guards 2 and 3 of the type/value split. Guard 2 is the digit requirement
+// above: a `number`/`string` annotation is a type keyword, so a REQUIRED member
+// (`durationMs: number`, no `?`) is excluded by the value shape rather than by
+// the `?`. Guard 3 is `inTypeDeclaration` below, which handles the one shape
+// neither key regex nor the digit requirement can separate: TypeScript allows a
+// numeric or string LITERAL as a type, so `{ paintDelay: 50 }` and
+// `{ paintDelay?: 'auto' }` inside a `type`/`interface` are perfectly legal
+// declarations and are textually identical to the value forms.
+//
+// The statement head is matched tightly on purpose: `type`/`interface` is a
+// RESERVED contextual keyword, so a statement that begins with one is a type
+// declaration and nothing else. A looser test (any `type` token on the line, or
+// any brace pair on the line) would be able to SUPPRESS a real violation, and a
+// linter that can swallow the thing it exists to report is worse than one that
+// is merely incomplete.
+const TYPE_STATEMENT_HEAD_RE =
+  /^\s*(?:export\s+)?(?:declare\s+)?(?:abstract\s+)?(?:type|interface)\b/;
+
+/**
+ * True when the match at `offset` sits inside a `type`/`interface` declaration
+ * rather than an object-literal value.
+ *
+ * `masked` must be the comment- and string-blanked source: maskSource preserves
+ * every brace and only blanks the BODIES it walks, so counting braces over it is
+ * a structural walk rather than a text search — a `{` inside a comment or a
+ * string cannot be mistaken for the enclosing block. That is the same property
+ * the rest of rule 5 relies on, reused rather than re-implemented.
+ *
+ * The scope is the INNERMOST enclosing brace, resolved to its own statement
+ * boundary, not the line. Both matter, and the difference is the whole reason
+ * this is a function and not a regex: on the single line
+ * `export type P = { paintDelay: 50 }; go({ paintDelay: 300 });` the literal
+ * type resolves to the head `export type P = ` and is skipped, while the value
+ * two braces later resolves to the head `go(` and is reported. A line-level or
+ * first-brace-level test would have suppressed both.
+ */
+function inTypeDeclaration(masked, offset) {
+  // Innermost unclosed `{` before the match.
+  let depth = 0;
+  let open = -1;
+  for (let i = offset - 1; i >= 0; i--) {
+    const c = masked[i];
+    if (c === '}') depth++;
+    else if (c === '{') {
+      if (depth === 0) {
+        open = i;
+        break;
+      }
+      depth--;
+    }
+  }
+  if (open < 0) return false;
+  // The head is whatever follows the nearest statement boundary (`;`, `{`, `}`)
+  // before that brace — up to the brace itself.
+  const before = masked.slice(0, open);
+  const cut = Math.max(
+    before.lastIndexOf(';'),
+    before.lastIndexOf('{'),
+    before.lastIndexOf('}'),
+  );
+  return TYPE_STATEMENT_HEAD_RE.test(masked.slice(cut + 1, open));
+}
+
+/** Absolute offset of each line's first character, for lifting a match index. */
+function lineStartOffsets(src) {
+  const out = [0];
+  for (let i = 0; i < src.length; i++) {
+    if (src[i] === '\n') out.push(i + 1);
+  }
+  return out;
+}
 
 // ---------------------------------------------------------------------------
 // Rule 5 scope, part 2 — reaching anime.js THROUGH the repo's own wrappers
@@ -945,7 +1046,14 @@ function lintFile(filePath, allowed) {
   // call. Offsets and quote characters survive, so columns stay correct and the
   // `ease:` rule still fires (it keys off the quotes) — its reported name is
   // recovered from the raw line by offset.
-  const codeLines = animeFile ? maskSource(content, true).split('\n') : lines;
+  const maskedAll = animeFile ? maskSource(content, true) : '';
+  const codeLines = animeFile ? maskedAll.split('\n') : lines;
+  // `inTypeDeclaration` walks backwards ACROSS line breaks (a member may sit
+  // several lines below the `type X = {` that opened it), so a per-line match
+  // index has to be lifted back to an absolute offset. The line-start table is
+  // built from the same masked source the lines were split from, so the two
+  // index spaces agree.
+  const codeLineStart = animeFile ? lineStartOffsets(maskedAll) : [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -978,24 +1086,30 @@ function lintFile(filePath, allowed) {
           ? 'via animejs'
           : `via ${animeVia} (reaches animejs)`;
       for (const m of code.matchAll(ANIME_DURATION_RE)) {
+        if (inTypeDeclaration(maskedAll, codeLineStart[i] + m.index)) continue;
         violations.push({
           file: filePath,
           line: lineNo,
           col: line.indexOf(m[0]) + m.index + 1,
           rule: ANIME_TIMING_RULE,
-          message: `raw anime.js duration ${m[1]} ${via} — use durations.* from src/config/animations.ts (tokens.css --dur-*) instead`,
+          message: `raw anime.js ${m[1]} ${m[2]} ${via} — use durations.* from src/config/animations.ts (tokens.css --dur-*) instead`,
         });
       }
       for (const m of code.matchAll(ANIME_DELAY_RE)) {
+        if (inTypeDeclaration(maskedAll, codeLineStart[i] + m.index)) continue;
         violations.push({
           file: filePath,
           line: lineNo,
           col: line.indexOf(m[0]) + m.index + 1,
           rule: ANIME_TIMING_RULE,
-          message: `raw anime.js delay ${m[1]} ${via} — use durations.* from src/config/animations.ts (tokens.css --dur-*) instead`,
+          message: `raw anime.js ${m[1]} ${m[2]} ${via} — use durations.* from src/config/animations.ts (tokens.css --dur-*) instead`,
         });
       }
       for (const m of code.matchAll(ANIME_EASE_RE)) {
+        // A string literal is a legal TYPE too (`{ ease: 'outExpo' }` in an
+        // interface), so this matcher gets the same guard 3 as the numeric ones
+        // rather than a different one.
+        if (inTypeDeclaration(maskedAll, codeLineStart[i] + m.index)) continue;
         // The body is blanked in `code`; recover the real easing name from the
         // raw line. `m[0]` ends with the closing quote, so the body starts one
         // character (the opening quote) before the tail.

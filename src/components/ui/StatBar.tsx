@@ -20,8 +20,12 @@ type Props = {
   accent?: GlitchAccent;
   showValue?: boolean;
   className?: string;
-  /** Delay before animation starts (ms) */
-  delay?: number;
+  // There used to be a `delay?: number` here. It reached the dependency array
+  // and nothing else — the `animate()` call below never passed it on, so the
+  // stagger it was written for never animated, once. Its only callers passed
+  // `delay={0}/{200}/{400}` from a loading skeleton that no longer exists, and
+  // the remaining caller on `404.tsx` omits it. Removing the prop is the only
+  // honest option: wiring it up now would invent a stagger nobody asked for.
 };
 
 export default function StatBar({
@@ -30,7 +34,6 @@ export default function StatBar({
   accent = 'cyan',
   showValue = true,
   className = '',
-  delay = 0,
 }: Props) {
   const [displayValue, setDisplayValue] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -64,7 +67,7 @@ export default function StatBar({
         },
       });
     });
-  }, [value, delay, motionScope]);
+  }, [value, motionScope]);
 
   return (
     <div className={`font-body text-xs ${className}`}>

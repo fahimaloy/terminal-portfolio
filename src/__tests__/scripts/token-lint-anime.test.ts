@@ -30,6 +30,10 @@ import {
 } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
+// The generated token map has no imports of its own, so importing it here is
+// free — and it is the only way to assert that `durations[200] * 1000` is still
+// exactly 200 without hardcoding the token's value into the test.
+import { generatedDurations } from '../../config/generated/tokens.generated';
 
 const REPO_ROOT = path.resolve(__dirname, '../../..');
 const TOKEN_LINT = path.join(REPO_ROOT, 'scripts/token-lint.mjs');
@@ -609,6 +613,9 @@ const animationsSpecifier = () => repoModuleSpecifier('src/config/animations');
 const hooksBarrelSpecifier = () => repoModuleSpecifier('src/hooks');
 const componentCounterSpecifier = () =>
   repoModuleSpecifier('src/components/ui/AnimatedCounter');
+const flashCurtainSpecifier = () =>
+  repoModuleSpecifier('src/hooks/useFlashCurtain');
+const animatableSpecifier = () => repoModuleSpecifier('src/utils/animatable');
 
 describe('token-lint rule 5 — the scope gate reaches anime through repo wrappers', () => {
   it('flags a raw delay in a file that imports the WRAPPER and never mentions animejs', () => {
@@ -661,10 +668,13 @@ describe('token-lint rule 5 — the scope gate reaches anime through repo wrappe
     );
   });
 
-  it('does not flag the wrapper itself — a `delay?: number` prop is a declaration, not a value', () => {
+  it('does not flag the wrapper itself — a `duration?: number` prop is a declaration, not a value', () => {
     // The wrapper is IN scope (it imports animejs) and still must pass: its
-    // timing surface is `delay?: number` and `paintDelay = 50`, neither of which
-    // is a `key: <bare number>` pair.
+    // timing surface is `duration?: number`, `delay?: number` and `ease?: string`,
+    // none of which is a `key: <bare number>` pair. The `paintDelay = 50` default
+    // that used to sit here is gone — nothing ever passed the option, so it was a
+    // dead knob, and a default parameter is not a `key: value` pair for this rule
+    // to see either way. See the "wrapper defaults" group below.
     expectClean(path.join(REPO_ROOT, 'src/hooks/useStagger.ts'));
   });
 
@@ -751,6 +761,285 @@ describe('token-lint rule 5 — the scope gate reaches anime through repo wrappe
       );
     },
   );
+});
+
+/**
+ * Rule 5 key coverage: the WRAPPER PARAMETER names.
+ *
+ * `duration` and `delay` are not the only anime timing keys in this repo — the
+ * wrappers rename them, and a renamed key is exactly what a `duration:` /
+ * `delay:` matcher misses. `useFlashCurtain` takes `durationMs`,
+ * `useStagger` took `paintDelay`, and `createSafeAnimatable` forwards
+ * `loopDelay` (anime.js v4's own name for it — `src/utils/animatable.ts:7`
+ * lists it among `DEFAULT_KEYS`). All three are anime timings arriving as
+ * `key: <bare ms>`, and all three passed clean under the old key set.
+ *
+ * THE TYPE-VALUE DISTINCTION MUST NOT BE INCIDENTAL. These same names appear as
+ * TYPE DECLARATIONS in the very modules that forward them —
+ * `useFlashCurtain.ts:18` declares `durationMs?: number`. A matcher written as
+ * "key, colon, digits" survives `durationMs?: number` only because of that
+ * `?`, and would equally reject a *value* written with a stray `?` it can never
+ * have. The distinction is pinned by four independent tests below, one per
+ * guard, plus a fifth that proves the guards do not over-suppress:
+ *
+ *   1. the key must be followed directly by `:` — a `?` means an optional TYPE
+ *      member, and `key?: <value>` does not parse in a value position, so
+ *      dropping `?` can never discard a real violation;
+ *   2. the value must be digits — a `number`/`string` annotation is a type
+ *      keyword, so a REQUIRED member (`durationMs: number`, no `?`) is
+ *      rejected by the value shape, not by the `?`;
+ *   3. `{ paintDelay: 50 }` is legal TypeScript as a numeric LITERAL TYPE and
+ *      is textually identical to the value form, so key/colon/digits cannot
+ *      separate them — the enclosing brace is checked against a `type` /
+ *      `interface` statement head;
+ *   4. …and that check must be scoped to the INNERMOST brace, or one type
+ *      declaration on a line would suppress a real value beside it.
+ */
+describe('token-lint rule 5 — the wrapper parameter names', () => {
+  it('flags a raw `durationMs` handed to the REAL useFlashCurtain wrapper', () => {
+    // The shape a caller gets from `useFlashCurtain(ref, flash, { durationMs })`:
+    // the hook forwards the number into `duration: durationMs` and into three
+    // sibling animations, so a raw 400ms is four raw timings.
+    const out = expectFlagged(
+      fixture(
+        'wrapper-raw-durationms.ts',
+        `import { useFlashCurtain } from '${flashCurtainSpecifier()}';\n\nexport function go() {\n  useFlashCurtain(root, flash, { color: 'var(--neon-amber)', durationMs: 400 });\n}\n`,
+      ),
+      'raw anime.js durationMs 400',
+    );
+    expect(out).toContain('via src/hooks/useFlashCurtain');
+  });
+
+  it('flags a raw `paintDelay` handed to the REAL useStagger wrapper', () => {
+    expectFlagged(
+      fixture(
+        'wrapper-raw-paintdelay.ts',
+        `import { useStagger } from '${useStaggerSpecifier()}';\n\nexport function go() {\n  useStagger({ mode: 'list', paintDelay: 300 });\n}\n`,
+      ),
+      'raw anime.js paintDelay 300',
+    );
+  });
+
+  it('flags a raw `loopDelay` handed to the REAL createSafeAnimatable wrapper', () => {
+    // `loopDelay` is anime.js v4's own parameter name — `animatable.ts` lists it
+    // in DEFAULT_KEYS, i.e. it is a timing this repo explicitly forwards.
+    const out = expectFlagged(
+      fixture(
+        'wrapper-raw-loopdelay.ts',
+        `import { createSafeAnimatable } from '${animatableSpecifier()}';\n\nexport function go() {\n  createSafeAnimatable(el, { loopDelay: 300 });\n}\n`,
+      ),
+      'raw anime.js loopDelay 300',
+    );
+    expect(out).toContain('via src/utils/animatable');
+  });
+
+  it('passes TYPE ANNOTATIONS of all three names, optional AND required', () => {
+    // Guard 1 + guard 2. `durationMs: number` has no `?` and is still not a
+    // value: it is rejected because a type annotation is not digits. If the
+    // matcher ever dropped the digit requirement, this fixture would fail.
+    //
+    // The wrapper import must be an ABSOLUTE repo path: rule 5's scope gate
+    // resolves module specifiers, so a fixture that reached its wrapper by a
+    // relative path from the cache dir would be out of scope and this expectClean
+    // would pass vacuously, for any matcher at all.
+    expectClean(
+      fixture(
+        'wrapper-type-annotations.ts',
+        [
+          `import { useFlashCurtain } from '${flashCurtainSpecifier()}';`,
+          `import { useStagger } from '${useStaggerSpecifier()}';`,
+          'export interface CurtainOpts {',
+          '  durationMs?: number;',
+          '  loopDelay?: string;',
+          '}',
+          'export interface RequiredOpts {',
+          '  durationMs: number;',
+          '  paintDelay: number;',
+          '  loopDelay: number;',
+          '}',
+          'export type Alias = { durationMs?: number; paintDelay?: number };',
+        ].join('\n'),
+      ),
+    );
+  });
+
+  it('does not mistake a numeric LITERAL TYPE for a raw timing value', () => {
+    // Guard 3. `paintDelay: 50` inside a `type` alias is a legal literal type —
+    // the type system calling it a valid value of type `50`, not a timing the
+    // author typed. Only the enclosing-brace check can tell it from a value,
+    // and only the fact that a real wrapper module declares these names in
+    // types is why that check has to exist.
+    //
+    // The `?:` lines are optional LITERAL types — legal TypeScript, and the
+    // shape a future maintainer is most likely to widen the matcher onto. They
+    // are NOT the fixture for guard 1: `(?!\?)` was probed redundant (the
+    // `\s*:` adjacency already rejects `delay?: 30`), so nothing here claims to
+    // pin it. See the note on `ANIME_DURATION_RE` in the linter.
+    expectClean(
+      fixture(
+        'wrapper-literal-type.ts',
+        [
+          `import { useStagger } from '${useStaggerSpecifier()}';`,
+          `import { durations } from '${animationsSpecifier()}';`,
+          'export type Paint = { paintDelay: 50; durationMs: 400; loopDelay: 300 };',
+          'export type Alias2 = { loopDelay: 0 };',
+          'export type Optional3 = { delay?: 30; durationMs?: 400; paintDelay?: 0 };',
+          'export function go() {',
+          '  useStagger({ paintDelay: durations.tap * 1000 });',
+          '}',
+        ].join('\n'),
+      ),
+    );
+  });
+
+  it('still flags the value sitting on the SAME LINE as a literal type', () => {
+    // Guard 4. The scope of the type-declaration check is the INNERMOST enclosing
+    // brace, not the line. A rule that blanked whole lines — or that resolved
+    // the statement head from the first token on the line — would see
+    // `export type …` and silently swallow this real 300ms too. One line, one
+    // type, one value: the value must still be reported.
+    const { code, out } = runLint([
+      fixture(
+        'wrapper-literal-type-sibling.ts',
+        `import { useStagger } from '${useStaggerSpecifier()}';\nexport type Paint = { paintDelay: 50 }; export function go() { useStagger({ paintDelay: 300 }); }\n`,
+      ),
+    ]);
+    expect(code).toBe(1);
+    expect(out).toContain('raw anime.js paintDelay 300');
+    expect(out).not.toContain('raw anime.js paintDelay 50');
+  });
+
+  it('passes token-derived values for all three names', () => {
+    // The positive half: widening the key set must not turn
+    // `durations.* * 1000` into a violation for the renamed keys either.
+    expectClean(
+      fixture(
+        'wrapper-token-names.ts',
+        [
+          `import { useStagger } from '${useStaggerSpecifier()}';`,
+          `import { useFlashCurtain } from '${flashCurtainSpecifier()}';`,
+          `import { createSafeAnimatable } from '${animatableSpecifier()}';`,
+          `import { durations } from '${animationsSpecifier()}';`,
+          'export function go() {',
+          '  useStagger({ paintDelay: durations.tap * 1000 });',
+          '  useFlashCurtain(root, flash, { durationMs: durations.exit * 1000 });',
+          '  createSafeAnimatable(el, { loopDelay: durations.stagger * 1000 });',
+          '}',
+        ].join('\n'),
+      ),
+    );
+  });
+});
+
+/**
+ * Task A / B regression: the wrapper DEFAULT PARAMETERS.
+ *
+ * Rule 5 matches `key: <bare number>`, so a default parameter —
+ * `delay = 200`, `paintDelay = 50` — is invisible to it: there is no colon.
+ * That is not an argument for leaving them raw; it is the reason they were
+ * missed. These tests pin the four dispositions at the SOURCE level, because
+ * `--all` exiting 0 says nothing about whether a default is token-sourced.
+ *
+ * The rule's scope gate is unchanged by any of this: `src/components` is still
+ * outside the anime boundary, so the `expectClean` calls below are a
+ * no-tampering tripwire, not the point. The point is the token read.
+ */
+describe('token-lint rule 5 — wrapper default parameters', () => {
+  it('Tooltip sources its default from `--dur-200`, byte-identical to the old 200', () => {
+    const p = path.join(REPO_ROOT, 'src/components/ui/Tooltip.tsx');
+    expectClean(p);
+    const src = readFileSync(p, 'utf8');
+    expect(src, 'Tooltip must read the duration token').toContain(
+      'delay = durations[200] * 1000,',
+    );
+    // No raw numeric default survives anywhere in the file.
+    expect(src, 'Tooltip must carry no raw timing default').not.toMatch(
+      /\b(?:duration|delay|durationMs|paintDelay|loopDelay)\s*=\s*[\d.]/,
+    );
+  });
+
+  it('the `--dur-200` token really is 200ms, so the tooltip default is unchanged', () => {
+    // Byte-identity is the whole claim of the substitution, so it is asserted
+    // against the GENERATED map rather than hardcoded: `durations` in
+    // `src/config/animations.ts` IS `generatedDurations`, seconds not ms.
+    expect(generatedDurations[200]).toBe(0.2);
+    expect(generatedDurations[200] * 1000).toBe(200);
+    // And the shipped component still passes its tests with the value it wants,
+    // which is what proves the option is live rather than dead.
+    const test = readFileSync(
+      path.join(REPO_ROOT, 'src/components/ui/__tests__/Tooltip.test.tsx'),
+      'utf8',
+    );
+    expect(test, 'Tooltip.delay must still be exercised by a caller').toContain(
+      'delay={200}',
+    );
+  });
+
+  it('AnimatedCounter drops its dead `delay` prop instead of inventing a token', () => {
+    // `delay = 0` had no caller anywhere in src/, so it is removed — not
+    // tokenised. A 0 has no `--dur-*` token, and `durations.stagger` (60ms) is
+    // NOT 0: sourcing it would have silently changed the timing.
+    const p = path.join(REPO_ROOT, 'src/components/ui/AnimatedCounter.tsx');
+    expectClean(p);
+    const src = readFileSync(p, 'utf8');
+    expect(src, 'the prop must be gone from the type').not.toContain(
+      'delay?: number;',
+    );
+    expect(src, 'the default must be gone from the destructure').not.toMatch(
+      /\bdelay\s*=\s*0/,
+    );
+    expect(src, 'the dep array must no longer list it').not.toMatch(
+      /\[\s*value,\s*duration,\s*delay\s*\]/,
+    );
+  });
+
+  it('useStagger drops its dead `paintDelay` option and keeps 50ms as a named constant', () => {
+    // 50ms has no `--dur-*` token and is not a motion duration — it is the
+    // yield that lets the entrance paint before the scope measures. Inventing
+    // `--dur-50` would put a browser frame in the design vocabulary, so the
+    // number survives as PAINT_WAIT_MS and the public knob is gone.
+    const p = path.join(REPO_ROOT, 'src/hooks/useStagger.ts');
+    expectClean(p);
+    const src = readFileSync(p, 'utf8');
+    expect(src, 'the option must be gone from the type').not.toContain(
+      'paintDelay?: number;',
+    );
+    expect(src, 'the 50ms must be a named constant').toContain(
+      'const PAINT_WAIT_MS = 50;',
+    );
+    expect(src, 'the timeout must use the constant').toContain(
+      '}, PAINT_WAIT_MS);',
+    );
+  });
+
+  it('StatBar no longer offers the `delay` prop it never honoured', () => {
+    // This test used to pin the OPPOSITE: it asserted `delay = 0,` and
+    // `delay?: number;` were present, as a marker for a known bug. StatBar
+    // declared `delay`, defaulted it, and listed it in the dependency array —
+    // but the `animate()` call never passed it on, so the stagger it was
+    // written for never animated, once. `Homepage.tsx` passed `delay={0|200|400}`
+    // from a loading skeleton that has since been deleted; the one remaining
+    // caller, `404.tsx`, omits it. Removing the prop was blocked while those
+    // callers still existed, because it would have been a typecheck break.
+    //
+    // Now pinned in the resolved direction: the prop is gone, and the note
+    // explaining why stays in the type, so nobody re-adds a dead knob.
+    const p = path.join(REPO_ROOT, 'src/components/ui/StatBar.tsx');
+    expectClean(p);
+    const src = readFileSync(p, 'utf8');
+    expect(src, 'the dead `delay` prop must stay removed').not.toContain(
+      'delay?: number;',
+    );
+    expect(src, 'the dead `delay` default must stay removed').not.toContain(
+      'delay = 0,',
+    );
+    // Guard against the prop returning under a different spelling. This has to
+    // target CODE, not the bare word: the type carries a comment explaining
+    // that `delay` was removed and why, and prose is allowed to name it.
+    expect(src, '`delay` must not survive as a live dependency').not.toMatch(
+      /\[[^\]]*\bdelay\b[^\]]*\]/,
+    );
+  });
 });
 
 describe('token-lint rule 5 — the live repo stays clean', () => {

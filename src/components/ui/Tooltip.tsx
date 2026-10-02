@@ -8,6 +8,7 @@ interface TooltipProps {
   children: React.ReactNode;
   content: string;
   position?: 'top' | 'bottom' | 'left' | 'right';
+  /** ms before the tooltip appears */
   delay?: number;
 }
 
@@ -15,7 +16,10 @@ export default function Tooltip({
   children,
   content,
   position = 'top',
-  delay = 200,
+  // `--dur-200` (tokens.css), in ms because setTimeout counts in ms. The `* 1000`
+  // is the same seconds→ms conversion the `durations.*` reads below use;
+  // 0.2 * 1000 is exactly 200.
+  delay = durations[200] * 1000,
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [show, setShow] = useState(false);
