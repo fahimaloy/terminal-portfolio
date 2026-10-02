@@ -76,6 +76,32 @@ fails on stock-Tailwind colour utilities that bypass `tokens.css` (`text-amber-5
 this rule is never downgraded by `--warn-legacy`. Escape a single line with a
 `// token-lint-ignore` comment.
 
+### `no-raw-anime-timing` — what its scope actually means
+
+This rule rejects raw anime.js timing literals. Its scope is **reachability, not a
+list of hook filenames**: a file is in scope if it directly references `animejs`, OR
+imports a module that forwards caller-controlled timings, OR re-exports one. The
+forwarder set is computed at runtime and bounded to the `hooks/utils/lib` layer, so
+`src/config` (the token source) and `src/components` stay out. The measured boundary
+is 6 modules — do not widen it to "anything that imports a hook".
+
+`ease:` is a **positive** test (any quoted string), because a token-backed easing is
+always an identifier; `duration`/`delay` are matched as values.
+
+When you extend a matcher here, cover all three of these or it will miss real bugs:
+
+- **default parameters** — `function T({ delay = 200 } = {})` is a literal a
+  `delay:`-key matcher structurally cannot see;
+- **wrapper key names** — `{ durationMs: 400 }` passed to a helper is still a raw
+  timing even though the key is not `duration`;
+- **type-position vs value** — `durationMs?: number` is a type and must not match;
+  `durationMs: 400` is a value and must.
+
+Harness: `src/__tests__/scripts/token-lint-anime.test.ts`. When adding a case, pin
+the **fix stays**, not the bug exists — the guard flips direction once the bug is
+shipped. Assert against CODE, never prose: an assertion like `not.toMatch(/\bdelay\b/)`
+scanning a whole file will fail on the very comment explaining the fix.
+
 ## Scene contract (Three.js)
 
 `src/components/scene/SceneLayer.tsx` is mounted **once**, from `_app.tsx`. No page or
