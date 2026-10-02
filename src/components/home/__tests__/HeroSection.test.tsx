@@ -27,7 +27,7 @@ vi.mock('animejs', () => {
 });
 
 import HeroSection from '../HeroSection';
-import { createScope } from 'animejs';
+import { createScope, createTimeline } from 'animejs';
 import type { PortfolioProfile } from '../../../utils/api';
 import {
   BOOT_COMPLETE_EVENT,
@@ -36,6 +36,35 @@ import {
 } from '../../ui/BootSequence';
 
 const mockedCreateScope = vi.mocked(createScope);
+const mockedCreateTimeline = vi.mocked(createTimeline);
+
+/**
+ * Targets and position of every `tl.add(...)` the entrance made, keyed for
+ * lookup by the element being animated. anime.js is mocked here, so the
+ * timeline is the only record of what the choreography actually touched and
+ * when — which is exactly what the assertions below need to inspect.
+ *
+ * `querySelectorAll` hands the timeline a NodeList, so the target argument is
+ * a single element *or* an Array *or* a NodeList depending on the beat.
+ */
+function timelineAdds(container: HTMLElement) {
+  const tl = mockedCreateTimeline.mock.results[0]?.value as
+    { add: ReturnType<typeof vi.fn> } | undefined;
+  const calls = tl?.add.mock.calls ?? [];
+  const flatten = (target: unknown): Element[] =>
+    target instanceof Element
+      ? [target]
+      : Array.from((target ?? []) as ArrayLike<Element>);
+  return {
+    calls,
+    positionOf(selector: string): unknown {
+      const el = container.querySelector(selector);
+      const call = calls.find((c) => flatten(c[0]).includes(el as Element));
+      return call?.[2];
+    },
+    revealed: new Set<Element>(calls.flatMap((c) => flatten(c[0]))),
+  };
+}
 
 function mockMatchMedia(reduceMatches: boolean) {
   Object.defineProperty(window, 'matchMedia', {
@@ -183,6 +212,62 @@ describe('HeroSection', () => {
     latchBootDone('timeout');
     render(<HeroSection {...heroProps} />);
     expect(mockedCreateScope).toHaveBeenCalledTimes(1);
+  });
+
+  // The third read path of the gate contract, and the reason it is its own
+  // branch rather than a subset of the two above: reduced motion must not wait
+  // for a signal that would teach the visitor nothing. The hero would sit
+  // invisible until the splash finished, for a page they asked for without
+  // motion at all.
+  it('reveals immediately under reduced motion, without a boot signal', () => {
+    mockMatchMedia(true);
+    render(<HeroSection {...heroProps} />);
+    expect(mockedCreateScope).toHaveBeenCalledTimes(1);
+  });
+
+  // The entrance hides its nodes in JS rather than with an `opacity-*` class so
+  // `scope.revert()` can restore them. That makes "hide without ever revealing"
+  // the one failure this design cannot recover from: the node is simply gone for
+  // the life of the page. Both branches are checked, because the two hide the
+  // same set but are written separately — a node added to the hidden list
+  // without being added to the branch below strands it.
+  //
+  // The sweep is deliberately excluded: opacity 0 IS its resting state, and the
+  // reduced branch never plays it. It is a highlight, not content.
+  it.each([
+    ['animated', false],
+    ['reduced', true],
+  ])('reveals every node it hides on the %s path', (_path, reduce) => {
+    mockMatchMedia(reduce);
+    const { container } = render(<HeroSection {...heroProps} />);
+    if (!reduce) broadcastBootComplete();
+
+    const stranded = Array.from(
+      container.querySelectorAll<HTMLElement>('[data-hero]'),
+    )
+      .filter((el) => el.getAttribute('data-hero') !== 'sweep')
+      .filter((el) => el.style.opacity === '0')
+      .filter((el) => !timelineAdds(container).revealed.has(el));
+
+    expect(stranded).toEqual([]);
+  });
+
+  // The header labels the cards; it used to paint at full opacity from the very
+  // first frame while its contents faded in a second later. Compared to the
+  // cards' own position rather than to a millisecond literal, so a future
+  // retiming of the whole hero does not break it.
+  it('reveals the quick-command header and rail with the cards they label', () => {
+    const { container } = render(<HeroSection {...heroProps} />);
+    broadcastBootComplete();
+
+    const cardsAt = timelineAdds(container).positionOf('[data-hero="card"]');
+    expect(cardsAt).toBeDefined();
+    expect(timelineAdds(container).positionOf('[data-hero="railhead"]')).toBe(
+      cardsAt,
+    );
+    expect(timelineAdds(container).positionOf('[data-hero="rail"]')).toBe(
+      cardsAt,
+    );
   });
 
   it('reverts its scope on unmount', () => {
