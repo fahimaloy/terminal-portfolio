@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { ArrowUpRight } from 'lucide-react';
 import { PortfolioProject, PortfolioSkill } from '../utils/api';
 import { HudPanel } from './ui';
+import type { AccentColor } from '../config/animations';
 
 type InlineProjectCardProps = {
   project: PortfolioProject;
@@ -11,22 +12,28 @@ type InlineProjectCardProps = {
   onClick?: () => void;
 };
 
-const ACCENT_BY_ID = [
+/**
+ * Per-id accent rotation. Typed as the app-wide `AccentColor` rather than a
+ * locally re-spelled union, so adding an accent to `tokens.css` widens this
+ * list without anyone hand-editing a second copy of the six names. Order is
+ * load-bearing: the accent is `ACCENT_BY_ID[project.id % length]`, so it
+ * decides which colour a given project id gets.
+ */
+const ACCENT_BY_ID: readonly AccentColor[] = [
   'cyan',
   'coral',
   'amber',
   'lime',
   'violet',
   'ice',
-] as const;
+];
 
 export default function InlineProjectCard({
   project,
   skills,
   onClick,
 }: InlineProjectCardProps) {
-  const accent = ACCENT_BY_ID[project.id % ACCENT_BY_ID.length] as unknown as
-    'cyan' | 'coral' | 'amber' | 'lime' | 'violet' | 'ice';
+  const accent = ACCENT_BY_ID[project.id % ACCENT_BY_ID.length];
   const projectSkills = skills.filter((s) => project.tags?.includes(s.name));
 
   return (

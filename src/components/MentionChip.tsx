@@ -9,15 +9,23 @@ import React, { useRef } from 'react';
 import { animate, spring } from 'animejs';
 import { ChevronRight } from 'lucide-react';
 import HudPanel from './ui/HudPanel';
-import { springs, isReducedMotion, canAnimate } from '../config/animations';
-
-type WashColor =
-  'amber' | 'coral' | 'cyan' | 'lime' | 'coral' | 'violet' | 'ice';
+import {
+  springs,
+  isReducedMotion,
+  canAnimate,
+  type AccentColor,
+} from '../config/animations';
 
 type MentionChipProps = {
   tag: string;
-  wash?: WashColor;
-  accent?: string;
+  /**
+   * Wash tint, using the app-wide accent vocabulary. This used to be a local
+   * union that re-spelled all six accents and listed `'coral'` twice — a second
+   * name for one vocabulary is how the palette drifted in the first place.
+   */
+  wash?: AccentColor;
+  /** Accent of the underlying `HudPanel`. Defaults to `cyan`. */
+  accent?: AccentColor;
   size?: 'sm' | 'md' | 'lg';
   grid?: boolean;
   leading?: React.ReactNode;
@@ -59,7 +67,13 @@ export const MentionChip = ({
     : {};
 
   const inner = (
-    <HudPanel wash grid accent={accent as 'cyan'} className="px-3 py-2">
+    // `accent` is forwarded as-is. It was previously narrowed to the literal
+    // cyan type, a cast that existed only to bridge an over-wide untyped
+    // `accent` into `HudPanel`'s accent type and silently forced every chip to
+    // cyan. Both ends are typed `AccentColor` now, so the chip honours its own
+    // prop; the default is still `cyan`, so existing call sites — all of which
+    // omit `accent` — render exactly as before.
+    <HudPanel wash grid accent={accent} className="px-3 py-2">
       <span
         className={`flex items-center gap-2 ${
           grid ? 'grid grid-cols-2 gap-1' : ''
