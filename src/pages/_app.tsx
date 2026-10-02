@@ -14,8 +14,14 @@ import { ToastProvider } from '../components/ui/Toast';
 import CursorGlow from '../components/ui/CursorGlow';
 import { durations } from '../config/animations';
 
-/** Route prefixes that must never be indexed by crawlers. */
-const NOINDEX_PREFIXES = ['/sudosuperuser-ostaad'];
+/**
+ * Route prefixes belonging to the admin panel. One list serving two jobs that
+ * happen to be independent today: the crawler `noindex` tag and the scene gate
+ * further down. The name states the intent rather than the mechanism, so the
+ * coupling is visible at the point someone edits it — see the comment on
+ * `isAdmin` below for what adding an entry here actually costs.
+ */
+const ADMIN_PREFIXES = ['/sudosuperuser-ostaad'];
 
 /**
  * Fail-open watchdog, in milliseconds. Not an animation duration — it is the
@@ -30,7 +36,7 @@ const App = ({ Component, pageProps }: AppProps) => {
   const router = useRouter();
   // Emitted regardless of auth state: admin pages render null until the
   // session resolves, so a layout-level tag would never reach the HTML.
-  const noindex = NOINDEX_PREFIXES.some((p) => router.pathname.startsWith(p));
+  const noindex = ADMIN_PREFIXES.some((p) => router.pathname.startsWith(p));
 
   // One scene per route, chosen by path. On the landing page the scene also
   // dims once the chat takes over, which the page signals with a
@@ -46,10 +52,20 @@ const App = ({ Component, pageProps }: AppProps) => {
   // it is invisible: every admin page renders inside an opaque viewport-filling
   // root (`min-h-screen bg-bg-void` in AdminLayout, `--bg-1` on the login
   // page, both fully opaque hex) above this fixed `z-0` layer, so nothing
-  // drawn behind it can reach the reader. Do not "tune" the admin variant
-  // expecting a visible change: if that root ever goes translucent, the art
-  // direction becomes load-bearing again and `blog` is still the right answer.
-  const isAdmin = NOINDEX_PREFIXES.some((p) => router.pathname.startsWith(p));
+  // drawn behind it can reach the reader. Because it cannot be seen, the gate
+  // in the returned tree skips mounting it on these routes at all. Do not
+  // "tune" the admin variant expecting a visible change: if that root ever goes
+  // translucent, the art direction becomes load-bearing again, the gate goes
+  // away, and `blog` is still the right answer.
+  //
+  // `isAdmin` reads the *same* predicate as the crawler tag above, so one edit
+  // to `ADMIN_PREFIXES` moves both. That is the point — a second entry is a
+  // single deliberate act — but it also means a prefix added for a
+  // scene-BEARING route would take the WebGL layer down with it, silently and
+  // with nothing anywhere failing. The predicate is therefore spelled as an
+  // alias rather than recomputed, so the coupling is greppable in both places
+  // instead of hiding inside a second copy of the `.some()`.
+  const isAdmin = noindex;
   const isBlog = router.pathname.startsWith('/blog');
   const [chatOpen, setChatOpen] = React.useState(false);
   const [impulse, setImpulse] = React.useState(0);
@@ -170,8 +186,33 @@ const App = ({ Component, pageProps }: AppProps) => {
       </noscript>
       <ErrorBoundary>
         <ToastProvider>
-          <SceneLayer variant={sceneVariant} impulse={impulse} />
-          <CursorGlow />
+          {/* Scene gate. The admin gets a flat opaque background — the one it
+              already displays — and nothing is mounted to paint behind it. What
+              that saves is a WebGL context, up to 9000 particles, the floor
+              grid, a `useScenePointer` `pointermove` listener and a cursor
+              glow, on the one surface that is dense stacked forms and tables:
+              the surface where responsiveness matters most and a modest
+              machine is most likely.
+
+              The scene becomes load-bearing again the moment any admin root
+              turns translucent or stops being viewport-filling. The invariant
+              that follows: if an admin route ever renders a translucent root,
+              this gate must be removed — and nothing else has to move.
+              `sceneVariant` above already resolves `isAdmin` to `blog`, which
+              is the right art direction for the moment the scene can be seen
+              again. Do not leave this gate in place after that change.
+
+              One honest gap in "opaque": most admin pages `return null` until
+              `useAdminGuard` resolves its session, so that first paint has no
+              admin root at all and falls through to the body background
+              (`--bg-1`, in `global.css`). Same flat dark surface either way;
+              it is simply no longer the canvas. */}
+          {!isAdmin && (
+            <>
+              <SceneLayer variant={sceneVariant} impulse={impulse} />
+              <CursorGlow />
+            </>
+          )}
           <div className="relative z-10">
             <Component {...pageProps} />
           </div>
