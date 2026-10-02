@@ -15,6 +15,7 @@ import { useAdminGuard } from '../../utils/adminPageGuard';
 import { useToast } from '../../components/ui/Toast';
 import { useFormAnimation } from '../../hooks/useFormAnimation';
 import { useStagger } from '../../hooks/useStagger';
+import { durations } from '../../config/animations';
 import {
   NeonButton,
   GlitchText,
@@ -68,7 +69,7 @@ const ProjectsPage = () => {
     rootRef: listRef,
     selector: '.project-item',
     mode: 'list',
-    delay: 60,
+    delay: durations.stagger * 1000,
     respectReduced: true,
   });
 

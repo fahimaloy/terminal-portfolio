@@ -9,6 +9,15 @@
  *   4. off-token Tailwind colour utility — text-gray-400, bg-white/5, …
  *      (never downgraded by --warn-legacy: that flag is for legacy debt,
  *       not for colours that bypass tokens.css)
+ *   5. raw anime.js timing literal in a JS/TS object literal — `duration: 200`,
+ *      `ease: 'outExpo'`, `delay: 30`, `stagger(40)` (never downgraded either:
+ *      the same reasoning — new rule, no legacy debt to excuse)
+ *
+ * Rules 1–4 only ever see Tailwind CLASS STRINGS, so for the whole of anime.js's
+ * history a raw `duration: 200` in an object literal passed CI. Rule 5 closes
+ * that hole: AGENTS.md's animation contract ("durations/easings come from
+ * src/config/animations.ts, generated from tokens.css") was otherwise
+ * documentation-only and the debt regrew silently.
  *
  * Usage:
  *   node scripts/token-lint.mjs [file ...]   — lint given files
@@ -198,6 +207,9 @@ const TW_IMPORTANT_RE = /!$/;
 
 const OFFTOKEN_COLOR_RULE = 'no-offtoken-color-utility';
 
+// Rules that --warn-legacy must never downgrade — see the note in main().
+const NEVER_DOWNGRADED = new Set([OFFTOKEN_COLOR_RULE, 'no-raw-anime-timing']);
+
 // Colour keys this project actually defines (tailwind.tokens.generated.js, which
 // is generated from tokens.css). Used only to *suppress* — a class whose colour
 // part is a defined key is a token-backed class by construction, so it can never
@@ -259,6 +271,456 @@ const EASE_CLASS_RE = /ease-(?:\[?[^\s"'`]*\]?|[a-z0-9-]+)/g;
 
 const IGNORE_MARKER = 'token-lint-ignore';
 const SUPPORTED_EXTS = new Set(['.ts', '.tsx', '.css']);
+
+// ---------------------------------------------------------------------------
+// Rule 5 — raw anime.js timing literals inside JS/TS object literals
+// ---------------------------------------------------------------------------
+// Rules 1–4 only inspect Tailwind class strings. They therefore never saw
+// `duration: 200` written in an object literal, which is the shape anime.js
+// actually consumes. Every such literal in this repo passed CI for as long as
+// the rule set existed.
+//
+// WHY THE KEY SET IS A POSITIVE RULE AND NOT A DENYLIST OF ANIME EASING NAMES
+// (`outExpo`, `inOutQuad`, …):
+// the token-backed spelling is ALWAYS an identifier — `easings.outExpo`,
+// `easings.expoIn` — and never a string literal, because `src/config/animations.ts`
+// maps every easing name to a generated value. So "the value of an `ease:` key is
+// a string literal" is a complete, positive test with no denylist to keep in sync
+// when anime renames an easing or the token map gains one. It also catches the
+// shapes a name denylist would miss — `ease: 'spring(soft)'` shipped a real bug
+// (anime has no `eases.spring`, and its parser silently falls through to `none`),
+// and a typo'd easing string fails just as silently.
+//
+// WHY A FILE-SCOPE GATE ON *REACHING* anime.js, NOT ON IMPORTING IT:
+// `duration`, `ease` and `delay` are common property names in unrelated code
+// (`SkillCard.test.tsx` has `duration: '2 yrs'` — a project tenure, not an
+// animation). So the rule needs to know which files can hand a timing to anime.
+// Gating on "this file imports `animejs`" was the first cut and it was wrong by
+// exactly one hop: the repo wraps anime in hooks and utils that accept raw
+// `delay?: number` / `duration?: number` / `ease?: string` and forward them
+// (`useStagger`, `useMotionScope`, `useFlashCurtain`, `createSafeAnimatable`).
+// Six admin pages call `useStagger({ delay: 60 })` and import no anime at all,
+// so they were invisible — a raw 60ms under the animation contract, ungated.
+// The gate is therefore import-REACHABILITY to anime, derived from the tree
+// itself (see `animeBoundaryModules`) rather than from a hand-written list of
+// wrapper names: a wrapper added tomorrow is covered without editing this file.
+const ANIME_TIMING_RULE = 'no-raw-anime-timing';
+
+// Any module reference to animejs: a real import, a bare `import 'animejs'`, a
+// `require('animejs')`, or a `vi.mock('animejs', …)` / `jest.mock(…)` in a test
+// — a test that mocks animejs is still asserting on anime params, so it is in
+// scope rather than silently exempt.
+const ANIME_MODULE_RE =
+  /(?:\bfrom\s*|\bimport\s*|\brequire\s*\(\s*|\bmock\s*\(\s*)['"]animejs(?:\/[^'"]*)?['"]/;
+
+// Timing keys, each matched ONLY against a bare numeric literal value so that
+// every token-derived form passes untouched: `durations[300] * 1000`,
+// `durations.stagger * (1/5) * 1000`, `stagger(durations.stagger * 1000, …)`,
+// `delay: stagger(…)`, `ease: easings.outExpo`, `ease: softSpring`.
+const ANIME_DURATION_RE = /\bduration\s*:\s*(\d+(?:\.\d+)?)/g;
+const ANIME_DELAY_RE = /\bdelay\s*:\s*(\d+(?:\.\d+)?)/g;
+// `ease:` with a quoted value — see the positive-rule note above.
+const ANIME_EASE_RE = /\bease\s*:\s*(['"`])([^'"`\n]*)\1/g;
+const ANIME_STAGGER_RE = /\bstagger\(\s*(\d+(?:\.\d+)?)/g;
+
+// ---------------------------------------------------------------------------
+// Rule 5 scope, part 2 — reaching anime.js THROUGH the repo's own wrappers
+// ---------------------------------------------------------------------------
+// Gating on "this file imports `animejs`" misses every caller of a wrapper.
+// This repo has four of them, and all four accept caller timings verbatim:
+//   src/hooks/useStagger.ts   StaggerOptions.delay/.duration/.ease/.paintDelay
+//   src/hooks/useMotionScope.ts  MotionScopeOptions.defaults.{duration,ease}
+//   src/hooks/useFlashCurtain.ts FlashCurtainOptions.durationMs
+//   src/utils/animatable.ts    createSafeAnimatable(target, params: AnimatableParams)
+// A wrapper is recognised by SYNTAX, never by name, so a new one is covered
+// without editing this file:
+//
+//   1. it references `animejs`, AND
+//   2. it exposes a caller-controlled timing, in one of two detectable shapes:
+//        (a) a timing key declared in a type — `delay?: number;`
+//        (b) an anime call whose FINAL argument is a bare identifier —
+//            `return raw(target, params)` in animatable.ts. Final argument only,
+//            because in `animate(el, {…})` the final argument is the target-ish
+//            object and the params are inline; treating that as forwarding would
+//            classify every anime call site in the repo as a wrapper.
+//   3. it lives in a reusable layer (`src/hooks`, `src/utils`, `src/lib`) rather
+//      than under `src/components`. Those layers are the repo's documented
+//      no-JSX helper directories (AGENTS.md directory map); a component is a
+//      CONSUMER of a wrapper, and is only in scope itself if it imports animejs
+//      directly. `src/config` is deliberately excluded — `animations.ts` is the
+//      token SOURCE, the opposite end of this pipeline, and treating it as a
+//      boundary would put every file that imports `durations` in scope.
+//
+// Barrel closure: a module that RE-EXPORTS a boundary module is itself a
+// boundary, so `import { useStagger } from '../hooks'` resolves exactly like
+// `from '../hooks/useStagger'`. Closure follows re-export statements ONLY —
+// following ordinary imports would make the whole app one hop from anime.
+const ANIME_BOUNDARY_LAYER_RE = /(?:^|\/)(?:hooks|utils|lib)\//;
+// Identifiers that are token maps, not caller-supplied values: `stagger(durations…)`.
+const ANIME_TOKEN_NAMES = new Set([
+  'durations',
+  'easings',
+  'springs',
+  'accents',
+]);
+// (a) a timing key declared with a numeric/string type in the module's own surface.
+const ANIME_WRAPPER_DECL_RE =
+  /(?:^|[^\w$.])(?:duration|delay|ease|loopDelay|paintDelay|durationMs)\??\s*:\s*(?:number|string)\b/;
+// Every module specifier a file pulls in, import or re-export alike.
+const ANIME_IMPORT_SPEC_RE =
+  /(?:\bfrom\s*|\brequire\s*\(\s*|\bimport\s*\(\s*|\bimport\s+)['"]([^'"\n]+)['"]/g;
+// Re-export edges only — the ones a barrel is allowed to forward.
+const ANIME_REEXPORT_SPEC_RE =
+  /\bexport\s+(?:\*(?:\s+as\s+[A-Za-z_$][\w$]*)?|\{[^}]*\})\s*from\s*['"]([^'"\n]+)['"]/g;
+
+/** Local binding names this module imported from `animejs`, alias-aware. */
+function animeImportedBindings(maskedSrc) {
+  const names = [];
+  const re =
+    /import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['"]animejs(?:\/[^'"]*)?['"]/g;
+  for (const m of maskedSrc.matchAll(re)) {
+    for (const part of m[1].split(',')) {
+      const spec = part.trim().replace(/^type\s+/, '');
+      if (!spec) continue;
+      const as = spec.split(/\s+as\s+/);
+      const local = (as[1] ?? as[0]).trim();
+      if (/^[A-Za-z_$][\w$]*$/.test(local)) names.push(local);
+    }
+  }
+  return names;
+}
+
+/** True when this module hands a caller-controlled timing into anime. */
+function forwardsTimingToAnime(maskedSrc) {
+  if (ANIME_WRAPPER_DECL_RE.test(maskedSrc)) return true;
+  const bindings = animeImportedBindings(maskedSrc);
+  if (bindings.length === 0) return false;
+  const callRe = new RegExp(
+    `\\b(?:${bindings.join('|')})\\s*\\(([^()]*)\\)`,
+    'g',
+  );
+  for (const m of maskedSrc.matchAll(callRe)) {
+    const args = m[1].split(',');
+    const last = (args[args.length - 1] ?? '').trim();
+    if (/^[A-Za-z_$][\w$]*$/.test(last) && !ANIME_TOKEN_NAMES.has(last)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Absolute, extension-less, posix key — the identity used across this section. */
+function animeModuleKey(fileOrDir) {
+  return path
+    .resolve(fileOrDir)
+    .replace(/\\/g, '/')
+    .replace(/\.(tsx|ts|jsx|js)$/, '');
+}
+
+function animeImportSpecs(maskedSrc, re) {
+  return [...maskedSrc.matchAll(re)].map((m) => m[1]);
+}
+
+/** Candidate keys for a specifier: the path itself, or its `index` barrel. */
+function animeResolveSpecifier(importerFile, spec) {
+  if (!spec.startsWith('.')) return [];
+  const base = animeModuleKey(path.resolve(path.dirname(importerFile), spec));
+  return [base, `${base}/index`];
+}
+
+/**
+ * Recursive `src/` walk for the boundary derivation. Deliberately NOT the
+ * script's existing `walkDirSync`: that one reaches `fs` through
+ * `Function('…require…')`, which throws in an ES module, so it is only ever
+ * reachable from the `--all` git-ls-files fallback. This file already imports
+ * `readdirSync` at the top, so use it and keep the rule self-contained.
+ */
+function animeWalkSources(dir) {
+  const out = [];
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return out;
+  }
+  for (const e of entries) {
+    if (e.name === 'node_modules' || e.name.startsWith('.')) continue;
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) out.push(...animeWalkSources(full));
+    else if (/\.(tsx|ts)$/.test(e.name)) out.push(full);
+  }
+  return out;
+}
+
+let animeBoundaryCache = null;
+
+/**
+ * Absolute keys of every module whose timings reach anime.js — the wrappers,
+ * plus the barrels that re-export them. Memoised per process: `--all` calls it
+ * once, and a single-file invocation pays one tree walk.
+ */
+function animeBoundaryModules() {
+  if (animeBoundaryCache) return animeBoundaryCache;
+
+  const sources = new Map();
+  for (const abs of animeWalkSources(path.resolve('src'))) {
+    const repoRel = path.relative(process.cwd(), abs).replace(/\\/g, '/');
+    if (isGeneratedFile(repoRel) || isTokensCss(repoRel)) continue;
+    let raw;
+    try {
+      raw = readFileSync(abs, 'utf8');
+    } catch {
+      continue;
+    }
+    sources.set(abs, maskSource(raw, false));
+  }
+
+  const boundary = new Set();
+  for (const [abs, src] of sources) {
+    if (!ANIME_MODULE_RE.test(src)) continue;
+    if (!ANIME_BOUNDARY_LAYER_RE.test(abs.replace(/\\/g, '/'))) continue;
+    if (forwardsTimingToAnime(src)) boundary.add(animeModuleKey(abs));
+  }
+
+  // Barrel closure, re-export edges only.
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const [abs, src] of sources) {
+      const key = animeModuleKey(abs);
+      if (boundary.has(key)) continue;
+      for (const spec of animeImportSpecs(src, ANIME_REEXPORT_SPEC_RE)) {
+        if (animeResolveSpecifier(abs, spec).some((t) => boundary.has(t))) {
+          boundary.add(key);
+          grew = true;
+          break;
+        }
+      }
+    }
+  }
+
+  animeBoundaryCache = boundary;
+  return boundary;
+}
+
+/**
+ * How (or whether) this file reaches anime.js. Returns a label for the report
+ * — the wrapper that let a raw literal through is more useful to the reader than
+ * a bare "this is an anime file".
+ */
+function animeReachedVia(filePath, content) {
+  const src = maskSource(content, false);
+  if (ANIME_MODULE_RE.test(src)) return 'animejs';
+  const abs = path.resolve(filePath);
+  const boundary = animeBoundaryModules();
+  for (const spec of animeImportSpecs(src, ANIME_IMPORT_SPEC_RE)) {
+    for (const target of animeResolveSpecifier(abs, spec)) {
+      if (boundary.has(target)) {
+        return path.relative(process.cwd(), target).replace(/\\/g, '/');
+      }
+    }
+  }
+  return null;
+}
+
+// Tokens that may legally precede a `/` that opens a regex literal rather than
+// an division. Anything else (identifier, digit, `)`, `]`) means division.
+const REGEX_KEYWORD_BEFORE = new Set([
+  'return',
+  'typeof',
+  'instanceof',
+  'in',
+  'of',
+  'new',
+  'delete',
+  'void',
+  'case',
+  'do',
+  'else',
+  'yield',
+  'await',
+]);
+const REGEX_PUNCT_BEFORE = new Set([
+  '(',
+  '{',
+  '[',
+  ',',
+  ';',
+  ':',
+  '=',
+  '&',
+  '|',
+  '!',
+  '?',
+  '+',
+  '-',
+  '*',
+  '%',
+  '^',
+  '~',
+  '<',
+  '>',
+  '\n',
+]);
+
+const WORD_CHAR_RE = /[A-Za-z0-9_$]/;
+
+/**
+ * Blank the CONTENT of every comment, and — when `blankStrings` is set — the
+ * content of every string and template literal too. Quote characters, offsets
+ * and line breaks are all preserved, so `line:col` stays accurate and every
+ * downstream regex keeps the same indices it had on the original source.
+ *
+ * WHY COMMENTS MUST BE BLANKED: this repo deliberately documents the old
+ * literal form in comments — `SignalTicks.tsx` ("For drawable stagger: delay
+ * stagger(40,…)"), `TypewriterText.tsx` ("used to be a hardcoded `stagger(40)`"),
+ * `sudosuperuser-ostaad/index.tsx` ("Was stagger(70)") — and all three files
+ * import animejs. Matching raw text would fire on the repo's own archaeology.
+ *
+ * WHY STRING BODIES MUST BE BLANKED (for rule 5's matcher): a `duration: 200`
+ * inside a string is DATA — a fixture, a doc blob, a JSON payload — not an
+ * anime call. This repo's own rule-5 test suite contains a few dozen such
+ * strings, and they are exactly the false positives the two-pass design
+ * removes. The `ease:` rule survives this because it keys off the QUOTE
+ * characters, which are preserved: `ease: 'outExpo'` still matches with its body
+ * blanked, and the reported name is recovered from the raw line by offset.
+ *
+ * The two passes are deliberately separate:
+ *   blankStrings:false → the module-reference gate, which needs to SEE
+ *     `from 'animejs'` and `vi.mock('animejs')` — both of which live in strings.
+ *   blankStrings:true  → rule 5's matcher, which must not see string data.
+ *
+ * Known limitation: a comment nested inside a template-literal hole
+ * (a backtick, then `${`, then a block comment, then an expression) is not
+ * blanked, because template literals are scanned as single opaque runs. No such
+ * construct exists in this repo, and a real timing literal inside such a hole is
+ * still worth reporting.
+ */
+function maskSource(src, blankStrings) {
+  const out = src.split('');
+  const n = src.length;
+  let i = 0;
+  // Last significant (non-whitespace, non-comment) character and word seen —
+  // the only signal needed to tell a regex literal from a division.
+  let prevChar = '';
+  let prevWord = '';
+
+  const blankRun = (from, to) => {
+    for (let k = from; k < to; k++) {
+      if (out[k] !== '\n') out[k] = ' ';
+    }
+  };
+
+  while (i < n) {
+    const c = src[i];
+
+    if (c === '/' && src[i + 1] === '/') {
+      const start = i;
+      while (i < n && src[i] !== '\n') i++;
+      blankRun(start, i);
+      continue;
+    }
+
+    if (c === '/' && src[i + 1] === '*') {
+      const start = i;
+      i += 2;
+      while (i < n && !(src[i] === '*' && src[i + 1] === '/')) i++;
+      if (i < n) i += 2;
+      blankRun(start, i);
+      continue;
+    }
+
+    if (c === '"' || c === "'") {
+      const quote = c;
+      const start = i;
+      i++;
+      while (i < n) {
+        if (src[i] === '\\') {
+          i += 2;
+          continue;
+        }
+        if (src[i] === quote) {
+          i++;
+          break;
+        }
+        i++;
+      }
+      if (blankStrings) blankRun(start + 1, i - 1);
+      prevChar = quote;
+      prevWord = '';
+      continue;
+    }
+
+    if (c === '`') {
+      const start = i;
+      i++;
+      while (i < n) {
+        if (src[i] === '\\') {
+          i += 2;
+          continue;
+        }
+        if (src[i] === '`') {
+          i++;
+          break;
+        }
+        i++;
+      }
+      if (blankStrings) blankRun(start + 1, i - 1);
+      prevChar = '`';
+      prevWord = '';
+      continue;
+    }
+
+    if (c === '/') {
+      const regexAllowed =
+        !prevChar ||
+        (prevWord && REGEX_KEYWORD_BEFORE.has(prevWord)) ||
+        REGEX_PUNCT_BEFORE.has(prevChar);
+      if (regexAllowed) {
+        i++;
+        let inClass = false;
+        while (i < n) {
+          const ch = src[i];
+          if (ch === '\\') {
+            i += 2;
+            continue;
+          }
+          if (ch === '\n') break; // not a regex after all — bail out
+          if (ch === '[') inClass = true;
+          else if (ch === ']') inClass = false;
+          else if (ch === '/' && !inClass) {
+            i++;
+            while (i < n && /[a-z]/i.test(src[i])) i++;
+            break;
+          }
+          i++;
+        }
+        prevChar = '/';
+        prevWord = '';
+        continue;
+      }
+      // Division — fall through to the ordinary character path.
+    }
+
+    if (WORD_CHAR_RE.test(c)) {
+      let j = i;
+      while (j < n && WORD_CHAR_RE.test(src[j])) j++;
+      const word = src.slice(i, j);
+      i = j;
+      prevChar = word[word.length - 1];
+      prevWord = word;
+      continue;
+    }
+
+    i++;
+    if (!/\s/.test(c)) {
+      prevChar = c;
+      prevWord = '';
+    }
+  }
+
+  return out.join('');
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -464,6 +926,27 @@ function lintFile(filePath, allowed) {
   // CSS variable definition lines (e.g. --neon-cyan: #00f0ff;) are never violations
   const CSS_VAR_DEF_RE = /^\s*--[a-zA-Z0-9-_]+\s*:/;
 
+  // Rule 5 scope gate: JS/TS only, and only files that can hand a timing to
+  // anime.js — directly, or through one of the repo's own wrappers.
+  // tokens.css and the generated token maps are excluded here as well as by
+  // `isGeneratedFile`/`isTokensCss` — they are the SOURCE of the token values,
+  // so a raw number in one is the definition, not a violation.
+  //
+  // `animeReachedVia` reads the comment-masked source with STRING BODIES
+  // VISIBLE, because the module reference itself lives inside a string
+  // (`from 'animejs'`, `require('animejs')`, `vi.mock('animejs')`), and it
+  // returns the label that put this file in scope (`animejs`, or the wrapper it
+  // imports). `null` means out of scope.
+  const animeVia =
+    inTokensCss || fileIsCss ? null : animeReachedVia(filePath, content);
+  const animeFile = animeVia !== null;
+  // Rule 5's matcher reads the source with string bodies ALSO blanked, so a
+  // `duration: 200` sitting in fixture/doc data is not mistaken for an anime
+  // call. Offsets and quote characters survive, so columns stay correct and the
+  // `ease:` rule still fires (it keys off the quotes) — its reported name is
+  // recovered from the raw line by offset.
+  const codeLines = animeFile ? maskSource(content, true).split('\n') : lines;
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (line.includes(IGNORE_MARKER)) continue;
@@ -478,6 +961,63 @@ function lintFile(filePath, allowed) {
     if (CSS_VAR_DEF_RE.test(line)) continue;
 
     const lineNo = i + 1;
+
+    // 5) raw anime.js timing literal in an object literal — `duration: 200`,
+    //    `ease: 'outExpo'`, `delay: 30`, `stagger(40)`. Matched against the
+    //    masked line (comments AND string bodies blanked), so the repo's own
+    //    archaeology of the old literal form ("used to be a hardcoded
+    //    `stagger(40)`") and any fixture/doc data are never reported, and
+    //    honoured by the same single ignore marker as rules 1–4 — including the
+    //    adjacent-line form JSX needs.
+    if (animeFile && !adjIgnored) {
+      const code = codeLines[i] ?? '';
+      // Name the path into anime once — `via animejs` or the wrapper that let a
+      // raw literal through — so a report line says WHY the rule applies here.
+      const via =
+        animeVia === 'animejs'
+          ? 'via animejs'
+          : `via ${animeVia} (reaches animejs)`;
+      for (const m of code.matchAll(ANIME_DURATION_RE)) {
+        violations.push({
+          file: filePath,
+          line: lineNo,
+          col: line.indexOf(m[0]) + m.index + 1,
+          rule: ANIME_TIMING_RULE,
+          message: `raw anime.js duration ${m[1]} ${via} — use durations.* from src/config/animations.ts (tokens.css --dur-*) instead`,
+        });
+      }
+      for (const m of code.matchAll(ANIME_DELAY_RE)) {
+        violations.push({
+          file: filePath,
+          line: lineNo,
+          col: line.indexOf(m[0]) + m.index + 1,
+          rule: ANIME_TIMING_RULE,
+          message: `raw anime.js delay ${m[1]} ${via} — use durations.* from src/config/animations.ts (tokens.css --dur-*) instead`,
+        });
+      }
+      for (const m of code.matchAll(ANIME_EASE_RE)) {
+        // The body is blanked in `code`; recover the real easing name from the
+        // raw line. `m[0]` ends with the closing quote, so the body starts one
+        // character (the opening quote) before the tail.
+        const at = m.index + m[0].length - 1 - m[2].length;
+        violations.push({
+          file: filePath,
+          line: lineNo,
+          col: line.indexOf(m[0]) + m.index + 1,
+          rule: ANIME_TIMING_RULE,
+          message: `raw anime.js ease "${line.slice(at, at + m[2].length)}" ${via} — use easings.* from src/config/animations.ts instead (easing strings must come from the generated token map)`,
+        });
+      }
+      for (const m of code.matchAll(ANIME_STAGGER_RE)) {
+        violations.push({
+          file: filePath,
+          line: lineNo,
+          col: line.indexOf(m[0]) + m.index + 1,
+          rule: ANIME_TIMING_RULE,
+          message: `raw anime.js stagger(${m[1]}) ${via} — use stagger(durations.stagger * 1000, { from: 'first' }) instead`,
+        });
+      }
+    }
 
     // 1) raw hex — outside tokens.css only; also skip global.css which is a
     // companion to tokens.css (it @imports it and defines utilities that may
@@ -756,11 +1296,17 @@ function main() {
   // no-offtoken-color-utility: that rule reports colours bypassing tokens.css,
   // which is the doctrine violation, not legacy debt. Exit code stays 1
   // whenever a colour violation is present, flag or no flag.
+  //
+  // no-raw-anime-timing is on the same list for a different-but-related reason:
+  // it is a NEW rule with no legacy debt behind it. `--warn-legacy` exists to
+  // forgive what shipped before a gate did; downgrading a rule that never had
+  // any would make the pre-commit hook (the surface developers actually hit)
+  // silently pass the thing this rule was added to enforce.
   const fatalViolations = warnLegacy
-    ? allViolations.filter((v) => v.rule === OFFTOKEN_COLOR_RULE)
+    ? allViolations.filter((v) => NEVER_DOWNGRADED.has(v.rule))
     : allViolations;
   const downgradedViolations = warnLegacy
-    ? allViolations.filter((v) => v.rule !== OFFTOKEN_COLOR_RULE)
+    ? allViolations.filter((v) => !NEVER_DOWNGRADED.has(v.rule))
     : [];
 
   if (fatalViolations.length > 0) {

@@ -453,7 +453,11 @@ export default function RichTextEditor({
         y: [-4, 0],
         duration: durations.hover * 1000,
         ease: easings.expoOut,
-        delay: 30,
+        // 30ms is a deliberate one-off head-start: no --dur-* token equals 30ms
+        // (nearest is --dur-tap at 100ms), and retiming it to a token is a
+        // visual decision, not a mechanical substitution. Flagged by
+        // no-raw-anime-timing; see the token-lint finding.
+        delay: 30, // token-lint-ignore
       });
     }
   }, []);

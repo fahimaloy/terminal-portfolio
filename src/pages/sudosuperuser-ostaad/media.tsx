@@ -13,6 +13,7 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { useAdminGuard } from '../../utils/adminPageGuard';
 import { useToast } from '../../components/ui/Toast';
 import { useStagger } from '../../hooks/useStagger';
+import { durations } from '../../config/animations';
 import { NeonButton, GlitchText, HudPanel } from '../../components/ui';
 import ConfirmDeleteModal from '../../components/admin/ConfirmDeleteModal';
 
@@ -41,7 +42,7 @@ const MediaPage = () => {
     rootRef: gridRef,
     selector: '.media-item',
     mode: 'grid',
-    delay: 60,
+    delay: durations.stagger * 1000,
     respectReduced: true,
   });
 
