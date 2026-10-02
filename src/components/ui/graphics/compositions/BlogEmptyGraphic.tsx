@@ -364,7 +364,7 @@ export default function BlogEmptyGraphic({
               height="32"
               rx="6"
               ry="6"
-              fill="var(--glow-cyan-zone)"
+              fill="var(--glow-accent)"
               stroke="var(--hairline)"
               strokeWidth={1}
               className="grat-fill grat-stroke"

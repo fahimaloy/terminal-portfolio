@@ -168,6 +168,40 @@
   --header-h-sm: 56px;
   --content-max-w: 1280px;
 
+  /* ── BOTTOM-LEFT INSTRUMENT COLUMN ─────────────────────────────────────────
+   * Three things stack in the bottom-left / bottom-centre corner of `/`:
+   * the homepage composer, the shell's accent strip, and `HudChrome`'s
+   * "LAST COMMAND" caption. Only the composer sizes itself; the other two
+   * have to clear a box they do not own. These tokens are the shared source
+   * for that stack so the boxes cannot drift — every value below is consumed
+   * both by the component that produces the box and by the components that
+   * have to clear it, so changing a composer padding moves the strip and the
+   * caption with it instead of silently reintroducing an overlap.
+   *
+   * Read bottom to top on `/`:
+   *   --composer-safe → --composer-inset → --composer-bar-min → --composer-gap
+   *   → --composer-clearance → --hud-strip-h → --hud-stack-gap
+   *   → --hud-stack-clearance
+   *
+   * `env()` inside a custom property resolves at the use site, which is what
+   * we want: `--composer-safe` reads the real safe-area inset of whichever
+   * element consumes it.
+   */
+  --hud-inset: 1rem;
+  --hud-strip-h: 4.75rem;
+  --hud-stack-gap: 1rem;
+  --hud-stack-clearance: calc(
+    var(--composer-clearance) + var(--hud-strip-h) + var(--hud-stack-gap)
+  );
+  --composer-bar-min: 60px;
+  --composer-gap: 2rem;
+  --composer-inset: 1rem;
+  --composer-safe: max(10px, env(safe-area-inset-bottom));
+  --composer-clearance: calc(
+    var(--composer-bar-min) + var(--composer-gap) + var(--composer-inset) +
+      var(--composer-safe)
+  );
+
   /* ── GRADIENTS (surfaces and accents only — never body type) ─────────────── */
   --gradient-cyan-violet: linear-gradient(135deg, #3df2ff 0%, #7c5cff 100%);
   --gradient-violet-coral: linear-gradient(135deg, #7c5cff 0%, #ff4d6d 100%);
@@ -351,6 +385,24 @@
   --shadow-glow-md: 0 0 24px var(--glow-cyan);
   --shadow-glow-lg: 0 0 48px var(--glow-cyan-60);
   --shadow-inner: inset 0 1px 0 var(--overlay-card-shadow-inner);
+
+  /* ── ACCENT — default instance of the switch below ────────────────────────
+     These three role tokens are the *only* thing `[data-accent]` ever
+     repoints, so they have to resolve on a document that has never set the
+     attribute: /blog, /sudosuperuser-ostaad and 404 all render without it.
+     Without these defaults `--accent-color` is invalid-at-computed-value-time
+     there and every consumer falls back to `unset`.
+
+     `:root` and `[data-accent='…']` are both (0,1,0), so this is a tie broken
+     by source order — and the six attribute blocks sit below, in this file,
+     so an explicit `data-accent` always wins over the default.
+
+     Deliberately NOT mirrored from `[data-accent='cyan']`: a plain `var()`
+     indirection would tie the default to the cyan entry and break the day
+     cyan is no longer the default. */
+  --accent-color: var(--neon-cyan);
+  --accent-glow: var(--glow-cyan-sm);
+  --accent-wash: var(--wash-cyan);
 
   /* ── FOCUS ───────────────────────────────────────────────────────────────── */
   --focus-ring: 0 0 0 3px var(--glow-cyan-sm);

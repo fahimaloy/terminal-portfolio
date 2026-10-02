@@ -162,12 +162,19 @@ export default function HudChrome({
       </div>
 
       {/* Bottom-left: latest transmission — only when the reader has asked
-          something. Sits above the input bar's own footprint (bottom-24 used to
-          put it underneath the bar, so the caption was half-hidden by it), and
-          is pointer-events-none because it carries no controls — as a
+          something. Stacked ON TOP of the accent strip rather than beside it:
+          the strip owns the bottom-left corner on every route, and a fixed
+          `bottom-40` here grazed it by ~20px. So this panel offsets by the
+          strip's own height on top of the composer's clearance —
+          `--hud-stack-clearance`, composed in tokens.css out of
+          `--composer-clearance` + `--hud-strip-h` + `--hud-stack-gap` — and
+          shares the `--hud-inset` gutter with it, so neither can drift into
+          the other. (`bottom-24` before that put this panel underneath the
+          input bar, which half-hidden it.)
+          Still pointer-events-none because it carries no controls — as a
           pointer-events-auto block it swallowed clicks aimed at the chat. */}
       {lastUserText && (
-        <div className="absolute bottom-40 left-4 max-w-[260px] pointer-events-none hidden md:block">
+        <div className="absolute bottom-[var(--hud-stack-clearance)] left-[var(--hud-inset)] max-w-[260px] pointer-events-none hidden md:block">
           <div
             className="p-3 rounded-[var(--radius-lg)] border backdrop-blur-sm"
             style={{

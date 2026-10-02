@@ -12,6 +12,7 @@ import React from 'react';
 import SceneCanvas, { type SceneVariant } from './SceneCanvas';
 import { useSceneQuality, type SceneTier } from '../../hooks/useSceneQuality';
 import { makeRng } from '../ui/graphics/seededRandom';
+import { ACCENT_CHANGE_EVENT } from './palette';
 
 type Props = {
   /** Defaults to the landing hero. */
@@ -26,6 +27,30 @@ export default function SceneLayer({ variant = 'hero', impulse = 0 }: Props) {
   const [sceneFailed, setSceneFailed] = React.useState(false);
   const useWebGL =
     ready && !reduced && !unsupported && tier !== 'none' && !sceneFailed;
+
+  /**
+   * The last link in the accent chain.
+   *
+   * `resetPaletteCache()` drops the name-keyed memo and dispatches
+   * `portfolio:accent-change`, but nothing re-reads the palette on its own:
+   * scene colours are captured in `useMemo`ed `THREE.Color` uniforms, not
+   * sampled per frame, so the CSS repaint alone leaves the WebGL field on the
+   * old accent. One render is all it takes — `SCENE_ACCENTS()` builds a fresh
+   * array on every render, so the memo deps change and r3f re-uploads
+   * `uColorA/B/C`.
+   *
+   * Gated on `useWebGL` so the `StaticField` fallback adds no listener: there
+   * are no uniforms to re-upload there, and the fallback tests assert zero
+   * window listeners when the scene is unavailable or reduced.
+   */
+  const [, setAccentEpoch] = React.useState(0);
+  React.useEffect(() => {
+    if (!useWebGL) return;
+    const onAccentChange = () => setAccentEpoch((n) => n + 1);
+    window.addEventListener(ACCENT_CHANGE_EVENT, onAccentChange);
+    return () =>
+      window.removeEventListener(ACCENT_CHANGE_EVENT, onAccentChange);
+  }, [useWebGL]);
 
   return (
     <div

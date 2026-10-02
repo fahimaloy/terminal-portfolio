@@ -12,6 +12,8 @@ import BootSequence, {
 } from '../components/ui/BootSequence';
 import { ToastProvider } from '../components/ui/Toast';
 import CursorGlow from '../components/ui/CursorGlow';
+import AccentSwitcher from '../components/ui/AccentSwitcher';
+import RouteTransition from '../components/ui/RouteTransition';
 import { durations } from '../config/animations';
 
 /**
@@ -31,6 +33,41 @@ const ADMIN_PREFIXES = ['/sudosuperuser-ostaad'];
  * moves the watchdog with it instead of leaving it behind.
  */
 const BOOT_FAIL_OPEN_MS = durations.splashFull * 1000 * 1.75;
+
+/**
+ * Where the accent strip is anchored, per route.
+ *
+ * The shell is the only place that can host a site-wide control (see the note
+ * on the JSX below), and a shell-level control has to be `fixed`: the pages
+ * that own the bottom of the viewport are not ours to reflow, and adding a
+ * row to five different page roots is how a "global" preference ends up
+ * missing on four of them.
+ *
+ * Bottom-left is the only corner with no permanent occupant on any route.
+ * Top-left is the homepage's identity plate, top-right its instrument cluster,
+ * top-centre the scroll rail, bottom-centre the composer, and bottom-right the
+ * toast. `Toast` is also the precedent that a fixed corner instrument is
+ * allowed to overlay page content on this site.
+ *
+ * `/` is the exception. Its composer is flush with the viewport bottom and
+ * full width up to `max-w-4xl`, so the strip lifts clear of it there — and the
+ * lift is a token, not a measurement. `--composer-clearance` is spelled out of
+ * the same primitives the composer itself consumes (`ChatInputBar` reads
+ * `--composer-bar-min`, `--composer-gap` and `--composer-inset`; the homepage
+ * footer reads `--composer-safe`), so changing a composer padding moves this
+ * offset with it instead of silently reintroducing a magic number that used to
+ * agree by hand. Every other route keeps the strip on `--hud-inset`, the same
+ * 16px gutter it uses on its left edge.
+ *
+ * `HudChrome`'s "LAST COMMAND" caption stacks directly on top of this strip in
+ * this same corner, so it offsets by `--hud-stack-clearance` rather than a
+ * fixed `bottom-40`. They cannot overlap again unless the strip itself grows,
+ * and `--hud-strip-h` is what records that.
+ */
+const ACCENT_STRIP_ANCHOR = {
+  home: 'bottom-[var(--composer-clearance)]',
+  rest: 'bottom-[var(--hud-inset)]',
+} as const;
 
 const App = ({ Component, pageProps }: AppProps) => {
   const router = useRouter();
@@ -213,9 +250,64 @@ const App = ({ Component, pageProps }: AppProps) => {
               <CursorGlow />
             </>
           )}
-          <div className="relative z-10">
+          {/* One navigation grammar for the whole site. `enabled={bootDone}`
+              keeps it inert until the splash has cleared, so the first paint
+              of `/` is BootSequence's alone and the two never overlap. It
+              renders the `relative z-10` stage that used to sit here. */}
+          <RouteTransition router={router} enabled={bootDone}>
             <Component {...pageProps} />
-          </div>
+            {/* The site-wide accent control, mounted once, here — and inside
+                the stage rather than beside it, which is a deliberate layering
+                decision. Inside the stage it shares one stacking context with
+                the page, so `z-[var(--z-hud)]` (the same band the scroll rail
+                already uses) lands it above page content — including the
+                admin panel's opaque static root, which is the whole point — but
+                still below the route-transition curtain, the boot splash, the
+                chat sheet and every admin dialog. Mounted beside the stage it
+                would need a z-index above 85 and would float over all of those
+                instead, which reads as an unowned overlay.
+
+                That contract has a page-side half: a page root must NOT open
+                its own stacking context, or its modals become unreachable
+                from here — trapped in a band this strip, sitting outside them,
+                can never out-rank, and it would float over the dialog instead
+                of being covered by it. `Homepage`'s root is `relative` with no
+                z-index and `AdminLayout`'s is static; that is load-bearing, so
+                do not add a `z-index` to either. `/blog`'s two roots were the
+                last holdouts and are now clean too — that change moved the
+                blog lightbox and the slug-to-slug page turn over this strip,
+                deliberately, and the reasoning is recorded in the comment above
+                the archive root in `src/pages/blog/index.tsx`.
+
+                Height: `min-h-[var(--hud-strip-h)]`, `min-h` rather than `h` so
+                the swatch row can grow on a viewport narrower than the panel
+                instead of clipping. It is the same token `HudChrome`'s
+                last-command caption adds to the composer's clearance, so the
+                two are stacked by shared arithmetic, not by eye.
+
+                It replaces the `AdvancedFeaturesBar` mount: that bar only ever
+                rendered inside the chat sheet on `/`, two interactions deep, so
+                `/blog`, the admin panel and the 404 page had no accent control
+                at all. `AccentSwitcher` itself is unchanged and self-contained;
+                this only re-hosts it and dresses the anchor in house chrome
+                (the `HudChrome` idiom: `--surface-overlay` over a hairline
+                border, plus a 2px top edge in the live `--accent-color` role
+                token so the strip reads as a calibration bay that belongs to
+                the current accent rather than as a dropped-in control). */}
+            <div
+              className={`fixed left-[var(--hud-inset)] flex min-h-[var(--hud-strip-h)] flex-col justify-center rounded-[var(--radius-lg)] border backdrop-blur-sm px-2 py-2 sm:px-3 z-[var(--z-hud)] ${
+                ACCENT_STRIP_ANCHOR[isHome ? 'home' : 'rest']
+              }`}
+              style={{
+                background: 'var(--surface-overlay)',
+                borderColor: 'var(--border-subtle)',
+                borderTopWidth: 2,
+                borderTopColor: 'var(--accent-color)',
+              }}
+            >
+              <AccentSwitcher />
+            </div>
+          </RouteTransition>
           {/* Homepage only, and only until it has cleared. Unmounting it from
               state (rather than letting it hide itself) means the splash and
               the page never share a frame where the page has already been

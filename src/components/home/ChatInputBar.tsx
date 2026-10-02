@@ -159,7 +159,7 @@ export default function ChatInputBar({
     : 'ASK ANYTHING — open the message composer';
 
   return (
-    <div className="w-full relative z-30 mt-8 mb-4">
+    <div className="w-full relative z-30 mt-[var(--composer-gap)] mb-[var(--composer-inset)]">
       {/* A plain surface, deliberately NOT a control. It was previously an
           onClick div wrapping the <input> and two real <button>s; the trigger
           below now fills it, so the click handler moved onto the button
@@ -168,7 +168,7 @@ export default function ChatInputBar({
       <div
         ref={wrapRef}
         data-chat-inputbar
-        className="w-full flex items-center gap-2 p-1.5 min-h-[60px] rounded-[var(--radius-lg)] border"
+        className="w-full flex items-center gap-2 p-1.5 min-h-[var(--composer-bar-min)] rounded-[var(--radius-lg)] border"
         style={{
           background: 'var(--bg-2)',
           borderColor: 'var(--border-subtle)',

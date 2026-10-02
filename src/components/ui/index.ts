@@ -1,5 +1,4 @@
 // src/components/ui/index.ts
-export { default as ScanlineOverlay } from './ScanlineOverlay';
 export { default as HudPanel } from './HudPanel';
 export { default as NeonButton } from './NeonButton';
 export { default as NeonChip } from './NeonChip';
