@@ -106,6 +106,55 @@ describe('ProjectMatchGrid', () => {
     expect(screen.getByText(/No projects found/i)).toBeInTheDocument();
   });
 
+  // The empty state used to be a bare `<div className="text-center
+  // text-text-muted py-8">` — the only unstyled container on a site where
+  // roughly a dozen sibling empty states are HudPanels, which is why it read
+  // as a rendering bug rather than as "no matches".
+  //
+  // Asserted structurally: the house panel primitive's own root class, and the
+  // role the state announces itself with. No pixel or colour assertions — a
+  // test that pinned `border-top-color` would fail on a legitimate re-accent
+  // while proving nothing about whether the panel is there.
+  it('wraps the empty state in the house panel pattern and announces it politely', () => {
+    const { container } = render(
+      <ProjectMatchGrid
+        projects={[project(1, ['React'])]}
+        skills={[skillReact]}
+        skillFilter={[999]}
+      />,
+    );
+
+    // `role="status"` lives on the HudPanel root. Reverting to the bare div
+    // removes it, so this is the assertion that actually guards the fix.
+    const panel = screen.getByRole('status');
+    expect(panel.className).toMatch(/rounded-card/);
+    expect(panel).toHaveAttribute('aria-live', 'polite');
+    expect(panel).toContainElement(screen.getByText(/No projects found/i));
+
+    // Exactly one panel, and the copy lives inside it rather than beside it.
+    expect(container.querySelectorAll('.rounded-card')).toHaveLength(1);
+  });
+
+  // A filtered-to-nothing result is an answer, not a fault: the panel must not
+  // steal the disclosure affordance, and the card list must still be able to
+  // come back once the filter is relaxed.
+  it('keeps the panel swap reversible — relaxing the filter renders cards again', () => {
+    const projects = [project(1, ['React']), project(2, ['React'])];
+    const { rerender } = render(
+      <ProjectMatchGrid
+        projects={projects}
+        skills={[skillReact]}
+        skillFilter={[999]}
+      />,
+    );
+    expect(screen.getByRole('status')).toBeInTheDocument();
+
+    rerender(<ProjectMatchGrid projects={projects} skills={[skillReact]} />);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByText('card:Project 1')).toBeInTheDocument();
+    expect(screen.getByText('card:Project 2')).toBeInTheDocument();
+  });
+
   it('expands a project to reveal the spring detail panel', () => {
     render(
       <ProjectMatchGrid

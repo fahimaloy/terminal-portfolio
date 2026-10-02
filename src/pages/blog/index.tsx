@@ -12,6 +12,7 @@ import BlogHeader from '../../components/blog/BlogHeader';
 import BlogGrid from '../../components/blog/BlogGrid';
 import BlogReels from '../../components/blog/BlogReels';
 import { getBlogPosts } from '../../utils/blogApi';
+import { getErrorMessage } from '../../utils/errorMessage';
 import type {
   BlogListItem,
   BlogSort,
@@ -19,6 +20,8 @@ import type {
   BlogView,
 } from '../../types/blog';
 import BlogEmptyGraphic from '../../components/ui/graphics/compositions/BlogEmptyGraphic';
+import { HudPanel, NeonButton } from '../../components/ui';
+import { FiRefreshCw } from 'react-icons/fi';
 import { createScope, createTimeline, stagger } from 'animejs';
 import { splitText, type TextSplitter } from 'animejs';
 import {
@@ -30,6 +33,13 @@ import {
 
 const REELS_PAGE_SIZE = 5;
 const GRID_PAGE_SIZE = 9;
+
+/**
+ * What the fault panel says when the transport hands us nothing readable.
+ * Deliberately not an apology and not a reassurance: the panel's whole job is
+ * to say which of three things happened, and this is the third.
+ */
+const FEED_FAULT_FALLBACK = 'The blog feed could not be reached.';
 
 /** Reads a single query param without tripping Next's array|string union. */
 const q = (v: string | string[] | undefined): string =>
@@ -47,6 +57,23 @@ export default function BlogIndexPage() {
   const [view, setView] = useState<BlogView>('grid');
   const [facets, setFacets] = useState<BlogTagFacet[]>([]);
   const [loading, setLoading] = useState(true);
+  /**
+   * The third state. `null` means "the feed is fine (possibly empty)";
+   * a string means "the feed did not load, and here is what it said".
+   *
+   * Before this existed the page had exactly two states, and a dead Supabase
+   * connection resolved to the same render as a brand-new blog — so an outage
+   * showed visitors a calm, cheerful "Nothing here yet" and quietly destroyed
+   * trust in everything else the site claims.
+   */
+  const [feedError, setFeedError] = useState<string | null>(null);
+  /**
+   * Re-arms the fetch effect. A retry cannot be expressed by nudging `page`:
+   * on a first-load failure `page` is already 1, so `setPage(1)` is a no-op
+   * and the retry button would spin forever against a fetch that never ran.
+   * This counter is the only handle that can re-fire identical inputs.
+   */
+  const [retryNonce, setRetryNonce] = useState(0);
   const emptyRef = useRef<HTMLDivElement>(null);
   const roomRef = useRef<HTMLElement>(null);
 
@@ -97,31 +124,66 @@ export default function BlogIndexPage() {
       tag,
       sort,
       facets: true,
-    }).then((res) => {
-      if (cancelled) return;
-      setTotal(res.total);
-      setHasMore(res.hasMore);
-      if (res.facets) setFacets(res.facets);
-      if (page === 1) setItems(res.items);
-      else {
-        setItems((prev) => {
-          const seen = new Set(prev.map((p) => p.id));
-          return [...prev, ...res.items.filter((p) => !seen.has(p.id))];
-        });
-      }
-      setLoading(false);
-    });
+    })
+      .then((res) => {
+        if (cancelled) return;
+        setFeedError(null);
+        setTotal(res.total);
+        setHasMore(res.hasMore);
+        if (res.facets) setFacets(res.facets);
+        if (page === 1) setItems(res.items);
+        else {
+          setItems((prev) => {
+            const seen = new Set(prev.map((p) => p.id));
+            return [...prev, ...res.items.filter((p) => !seen.has(p.id))];
+          });
+        }
+        setLoading(false);
+      })
+      // `getBlogPosts` deliberately rejects on failure. Without this the
+      // rejection was an unhandled promise and `loading` stayed true forever,
+      // so the page hung on its skeleton; with the old swallow it never got
+      // here at all and an outage looked like an empty blog.
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setFeedError(getErrorMessage(err, FEED_FAULT_FALLBACK));
+        setLoading(false);
+      });
     return () => {
       cancelled = true;
     };
-  }, [ready, page, pageSize, search, tag, sort]);
+  }, [ready, page, pageSize, search, tag, sort, retryNonce]);
+
+  /**
+   * Deliberately does NOT clear `feedError`. The panel stays on screen with its
+   * button in the loading state, so a retry reads as "this attempt is running"
+   * rather than the panel vanishing and being replaced by a skeleton. Success
+   * clears the fault in the `.then` above.
+   */
+  const onRetryFeed = useCallback(() => {
+    setRetryNonce((n) => n + 1);
+  }, []);
+
   const onLoadMore = useCallback(() => {
     if (!hasMore || loading) return;
     setPage((p) => p + 1);
   }, [hasMore, loading]);
 
-  const isEmpty = !loading && items.length === 0;
-  const showList = !isEmpty && (items.length > 0 || loading);
+  /**
+   * The three states, and the reason they cannot be confused.
+   *
+   *   LOADING  loading, nothing in the buffer          → skeleton
+   *   EMPTY    not loading, no fault, no rows           → the empty room
+   *   ERROR    a fault, and nothing in the buffer       → the fault readout
+   *
+   * A fault that arrives AFTER rows are on screen is a fourth case — a failed
+   * "load more" — and it deliberately does not take the page over: the reader
+   * still has posts to read, so it becomes a strip above the list.
+   */
+  const hasFault = feedError !== null;
+  const faultOwnsPage = hasFault && items.length === 0;
+  const isEmpty = !loading && !hasFault && items.length === 0;
+  const showList = !faultOwnsPage && (items.length > 0 || loading);
   const hasFilters = Boolean(search || tag || sort !== 'recent');
   const emptyVariant = hasFilters ? 'no-results' : 'empty';
   const headlineText = hasFilters ? 'No matches' : 'Nothing here yet';
@@ -488,8 +550,105 @@ export default function BlogIndexPage() {
           Build logs, engineering notes and deep dives from the terminal.
         </p>
 
-        {/* Loading skeleton — initial buffer only */}
-        {loading && items.length === 0 ? (
+        {/* ERROR — the feed did not load.
+            Checked BEFORE the skeleton and the empty state on purpose. Both of
+            those mean "the request was fine and there is nothing to show";
+            this is the one case where that reading would be a lie, so it is
+            resolved first and neither of the two may shadow it. */}
+        {faultOwnsPage ? (
+          <HudPanel
+            key="feed-fault"
+            accent="coral"
+            title="// FEED_UNREACHABLE"
+            role="alert"
+            aria-labelledby="blog-feed-fault-headline"
+            grid
+            className="p-6 md:p-8"
+          >
+            <div className="flex flex-col items-center text-center gap-4">
+              <div
+                className="flex items-center gap-2"
+                style={{ color: 'var(--status-error)' }}
+              >
+                <span
+                  aria-hidden="true"
+                  className="w-2 h-2 rounded-full"
+                  style={{
+                    background: 'var(--status-error)',
+                    boxShadow: '0 0 10px var(--glow-coral)',
+                  }}
+                />
+                <span className="font-display text-[10px] tracking-[3px] uppercase">
+                  Signal lost
+                </span>
+              </div>
+              <h2
+                id="blog-feed-fault-headline"
+                className="font-body font-semibold text-lg md:text-xl tracking-[-0.01em]"
+                style={{ color: 'var(--fg-1)' }}
+              >
+                The blog feed did not load
+              </h2>
+              <p
+                className="font-body text-sm max-w-md leading-relaxed"
+                style={{ color: 'var(--fg-2)' }}
+              >
+                A connection fault, not an empty blog — the posts are still
+                published, this room just could not reach them.
+              </p>
+              {/* The readout itself: label/value pairs, so the three facts
+                  are scannable in one pass and the reason is never left to
+                  be guessed at. `feedError` is printed as the transport
+                  reported it, trimmed of nothing and softened nowhere. */}
+              <dl className="w-full max-w-md font-mono text-[11px] mt-1 text-left">
+                {(
+                  [
+                    ['STATUS', 'REQUEST_FAILED', 'var(--status-error)'],
+                    ['SOURCE', 'GET /api/blogs', 'var(--fg-2)'],
+                    ['REPORTED', feedError, 'var(--fg-2)'],
+                  ] as const
+                ).map(([label, value, tone]) => (
+                  <div
+                    key={label}
+                    className="grid grid-cols-[5.5rem_1fr] gap-x-3 py-1.5 border-b last:border-b-0"
+                    style={{ borderColor: 'var(--border-subtle)' }}
+                  >
+                    <dt
+                      className="tracking-[2px]"
+                      style={{ color: 'var(--fg-3)' }}
+                    >
+                      {label}
+                    </dt>
+                    <dd className="break-words" style={{ color: tone }}>
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
+                <NeonButton
+                  accent="coral"
+                  loading={loading}
+                  onClick={onRetryFeed}
+                  iconLeft={<FiRefreshCw />}
+                >
+                  Retry feed
+                </NeonButton>
+                <Link
+                  href="/"
+                  className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-4 py-2 font-body text-sm border rounded-[var(--radius-md)] hover:border-[var(--glow-amber-sm)] hover:text-[var(--neon-amber)]"
+                  style={{
+                    borderColor: 'var(--border-subtle)',
+                    color: 'var(--fg-2)',
+                  }}
+                >
+                  Back home
+                </Link>
+              </div>
+            </div>
+          </HudPanel>
+        ) : /* Loading skeleton — initial buffer only */ loading &&
+          items.length === 0 ? (
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <div
@@ -577,23 +736,54 @@ export default function BlogIndexPage() {
             )}
           </div>
         ) : showList ? (
-          view === 'reels' ? (
-            <BlogReels
-              items={items}
-              total={total}
-              hasMore={hasMore}
-              loading={loading}
-              onLoadMore={onLoadMore}
-              activeTag={tag}
-            />
-          ) : (
-            <BlogGrid
-              items={items}
-              loading={loading}
-              onLoadMore={onLoadMore}
-              hasMore={hasMore}
-            />
-          )
+          <>
+            {/* A fault that arrived AFTER rows landed is a failed "load more",
+                not a dead feed. The reader still has posts to read, so the
+                readout is a strip above the list instead of a page takeover —
+                same panel primitive, same retry, same message. */}
+            {hasFault && (
+              <HudPanel
+                accent="coral"
+                title="// FEED_UNREACHABLE"
+                role="status"
+                className="p-3 mb-3 flex flex-wrap items-center justify-between gap-3"
+              >
+                <span
+                  className="font-mono text-[11px]"
+                  style={{ color: 'var(--fg-2)' }}
+                >
+                  Could not load more posts — {feedError}
+                </span>
+                <NeonButton
+                  accent="coral"
+                  variant="outline"
+                  size="sm"
+                  loading={loading}
+                  onClick={onRetryFeed}
+                  iconLeft={<FiRefreshCw />}
+                >
+                  Retry
+                </NeonButton>
+              </HudPanel>
+            )}
+            {view === 'reels' ? (
+              <BlogReels
+                items={items}
+                total={total}
+                hasMore={hasMore}
+                loading={loading}
+                onLoadMore={onLoadMore}
+                activeTag={tag}
+              />
+            ) : (
+              <BlogGrid
+                items={items}
+                loading={loading}
+                onLoadMore={onLoadMore}
+                hasMore={hasMore}
+              />
+            )}
+          </>
         ) : null}
       </main>
     </>

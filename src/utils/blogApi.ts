@@ -19,6 +19,11 @@ export interface BlogDetailResponse {
   related: BlogListItem[];
 }
 
+/**
+ * A response that succeeded and carried no rows. This is the ONE thing an
+ * empty blog is allowed to look like — which is why the constant exists at all
+ * and why it is never returned from a failure path (see `getBlogPosts`).
+ */
 const EMPTY_LIST: BlogListResponse = {
   items: [],
   total: 0,
@@ -29,15 +34,25 @@ const EMPTY_LIST: BlogListResponse = {
 
 /* ── Public ──────────────────────────────────────────────────────────────── */
 
+/**
+ * Rejects when the request fails. Do not add a `catch` here.
+ *
+ * This used to swallow every error and return `EMPTY_LIST`, which made a
+ * Supabase outage byte-for-byte identical to a blog with zero posts: the page
+ * fell through to its "Nothing here yet" empty state and told every visitor
+ * the site was simply unwritten. A failure and an absence are different facts,
+ * and only the caller knows which one it can render. `EMPTY_LIST` now means
+ * exactly what it says — a successful response with no rows.
+ *
+ * The rejection is the raw transport error, not a message: what to *call* a
+ * given failure is a copy decision, and each surface owns its own. Callers
+ * render it with `getErrorMessage(err, <their fallback>)`.
+ */
 export const getBlogPosts = async (
   query: BlogQuery = {},
 ): Promise<BlogListResponse> => {
-  try {
-    const res = await axios.get('/api/blogs', { params: query });
-    return (res.data?.data as BlogListResponse) ?? EMPTY_LIST;
-  } catch {
-    return EMPTY_LIST;
-  }
+  const res = await axios.get('/api/blogs', { params: query });
+  return (res.data?.data as BlogListResponse) ?? EMPTY_LIST;
 };
 
 export const getBlogPost = async (
@@ -51,6 +66,12 @@ export const getBlogPost = async (
   }
 };
 
+/**
+ * Inherits `getBlogPosts`'s rejection by design: a featured strip that cannot
+ * be filled is a fault, not an empty feature set, and the surface that renders
+ * it needs to say so. No caller yet — this exists for the next one, and the
+ * first caller must handle the rejection rather than assume a list.
+ */
 export const getFeaturedBlogPosts = async (
   limit = 3,
 ): Promise<BlogListItem[]> => {

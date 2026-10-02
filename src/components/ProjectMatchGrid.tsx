@@ -68,10 +68,31 @@ export default function ProjectMatchGrid({
   };
 
   if (!filtered.length) {
+    // House empty-state pattern — the same shape a dozen other surfaces use
+    // (`sudosuperuser-ostaad/projects.tsx`, `skills.tsx`, `experiences.tsx`,
+    // `knowledge.tsx`, …): a coral `HudPanel`, `p-6`, centred, one muted line
+    // of copy. This used to be a bare `<div>`, which is why it read as a
+    // rendering bug next to every styled neighbour.
+    //
+    // `role="status"` (polite) rather than `alert`: a filter that matched
+    // nothing is an answer, not a fault, and it arrives after the filter
+    // interaction that caused it — so it should be announced without
+    // interrupting. `aria-live` is explicit because `role="status"` only
+    // implies it, and the announcement is the entire point of the role.
+    //
+    // No panel props are changed here beyond what this call site passes; the
+    // primitive itself is shared with the admin panel.
     return (
-      <div className="text-center text-text-muted py-8">
-        No projects found matching the selected filters.
-      </div>
+      <HudPanel
+        accent="coral"
+        role="status"
+        aria-live="polite"
+        className="p-6 text-center"
+      >
+        <span className="font-body text-sm text-text-muted">
+          No projects found matching the selected filters.
+        </span>
+      </HudPanel>
     );
   }
   return (
