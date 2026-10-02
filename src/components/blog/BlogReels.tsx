@@ -1,6 +1,6 @@
 // src/components/blog/BlogReels.tsx
 // Reels-style blog: scroll-snap y mandatory, near-fullscreen cards,
-// reuses BlogCard chrome (HudPanel+Tilt3D), LightningTransition per-card,
+// reuses BlogCard chrome (HudPanel+Tilt3D), LightningTransition once on entry,
 // ReadingProgress → pager dots, RichTextRenderer for expanded view.
 // Preserves /blog/[slug] SSR route — expanded is in-place overlay.
 // Respects prefers-reduced-motion: stacked static fallback, mount-gated so
@@ -76,6 +76,35 @@ export default function BlogReels({
   const coverUrls = items.map((p) => p.cover_image_url);
   useCoverPreload(coverUrls, active);
   useBulkCoverPreload(items.slice(0, 5).map((p) => p.cover_image_url));
+
+  // The entry page turn. `LightningTransition` swallows its own first effect
+  // pass (its `firstRun` ref), so the wipe can only ever run from a post-mount
+  // CHANGE of `trigger`: the trigger has to be armed, it cannot be handed over
+  // already raised. `setBolt` had no caller, which is why the flash sat inert
+  // on every visit to this view.
+  //
+  // ONCE per mount, and once per mount only. Not per card, whatever the header
+  // note used to say: the sheet is an opaque `var(--bg-1)` `fixed inset-0` wipe
+  // that holds `pointer-events: auto` on itself for the whole pass (~740ms out
+  // of --dur-enter/--dur-exit), so arming it per snap would black out the
+  // viewport and swallow the scroller between cards. Switching grid⇄reels swaps
+  // the component type, so "once per mount" reads as "each time the reel view
+  // opens" — which is the beat this is for.
+  //
+  // Gated on the hook's `reduced` rather than on `isReducedMotion()`: this view
+  // only mounts client-side, after the archive's own fetch resolves, so the
+  // render-time value is already the live preference (there is no reels view in
+  // the server HTML to hydrate). See useMotionPreference.
+  const boltFiredRef = useRef(false);
+  useEffect(() => {
+    if (boltFiredRef.current) return;
+    // Latched before the motion check, not after: this is one page turn per
+    // opening of the view, decided once. Flipping the OS preference while the
+    // reels are open must not hand the visitor a second one.
+    boltFiredRef.current = true;
+    if (reduced) return;
+    setBolt((n) => n + 1);
+  }, [reduced]);
 
   // Active index via scroll + intersection.
   useEffect(() => {
