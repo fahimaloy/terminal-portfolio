@@ -586,11 +586,23 @@ function ExpandedOverlay({
   if (!slug) return null;
   return (
     <div
-      className="fixed inset-0 z-40 flex items-end md:items-center justify-center p-4 bg-[var(--overlay-black-60)] backdrop-blur-sm"
+      className="fixed inset-0 z-[var(--z-modal)] flex items-end md:items-center justify-center p-4 bg-[var(--overlay-black-60)] backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
     >
+      {/* `z-[var(--z-modal)]` (200) rather than a bare `z-40`. The two are not
+          equivalent, and the old number was a coincidence rather than a layer:
+          the sticky archive header in `BlogHeader` is `--z-header`, which is
+          also 40, so the dialog only covered that header because it happened to
+          come later in the DOM. Name the band instead of tying with it.
+
+          It beats the shell's fixed accent strip (`--z-hud`, 30) outright, which
+          is the point — but only now that the page root in `blog/index.tsx` has
+          no z-index of its own to trap this in. The ceiling is the stage, not
+          this number: `RouteTransition` renders the page inside a `z-10` stage
+          with its `z-[85]` curtain as a SIBLING, so nothing inside the page can
+          reach the curtain no matter how high it is set. */}
       <div
         className="w-full max-w-3xl max-h-[85dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}

@@ -414,10 +414,46 @@ export default function BlogIndexPage() {
       />
 
       {/* `editorial-room` carries the room's display voice — see the rule in
-            global.css. The h1 is rendered by BlogHeader. */}
+            global.css. The h1 is rendered by BlogHeader.
+
+            `relative`, and deliberately NO z-index. This root was `relative
+            z-10`, and that one declaration was the whole defect: a z-index on
+            a positioned element opens a stacking context, so nothing inside
+            it is comparable with anything outside it again. `BlogReels`'
+            lightbox was pinned inside this root's own band while the shell's
+            fixed accent strip sits outside it at `z-[var(--z-hud)]` (30) —
+            so the strip rendered fully lit and clickable on top of a
+            full-screen dialog. `Homepage`'s root and `AdminLayout`'s are the
+            same shape without the z-index; this is the third.
+
+            Why it was kept: "dropping it would release the `z-80` lightning
+            flash over the strip". The decision recorded here is the opposite,
+            taken on purpose — THE FLASH COVERS THE STRIP. A full-viewport page
+            turn is an occluder, not an accent, and it flips
+            `pointer-events: auto` on itself for the duration of the cover, so
+            a strip left glowing through one is a control that looks live,
+            cannot be clicked, and is the only lit thing left on an otherwise
+            covered screen — the "unowned overlay" reading `_app.tsx` rejects
+            when it keeps the strip inside the stage. It is also what the site
+            already ships everywhere else: `RouteTransition`'s curtain
+            (`z-[85]`) is a sibling of this entire stage, so it covers the
+            strip on every navigation on every route.
+
+            The old justification is also narrower than it read. The only
+            `LightningTransition` under this root is `BlogReels`'
+            (`src/components/blog/BlogReels.tsx`), and its trigger never
+            fires: `setBolt` has no caller, so the component sits at its inert
+            first run. On `/blog/[slug]` the flash is mounted OUTSIDE the
+            article root, so it was never trapped by this decision to begin
+            with. Neither page's wipe changes — what changes is that the
+            lightbox, and any dialog added to this root later, now out-ranks
+            the strip instead of hiding under it.
+
+            `relative` itself stays either way: the room veil below is
+            `absolute inset-0` and needs this as its containing block. */}
       <main
         ref={roomRef}
-        className="editorial-room min-h-screen relative z-10 px-4 pt-24 pb-10 max-w-6xl mx-auto"
+        className="editorial-room min-h-screen relative px-4 pt-24 pb-10 max-w-6xl mx-auto"
         data-theme="editorial"
       >
         {/* The mode-change beat. Painted with the reading room's own wash token

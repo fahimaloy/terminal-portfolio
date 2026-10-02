@@ -184,8 +184,18 @@ export default function Homepage() {
   return (
     <div
       ref={homeRootRef}
-      className="h-[100dvh] min-h-[100dvh] flex flex-col overflow-hidden relative z-10"
+      className="h-[100dvh] min-h-[100dvh] flex flex-col overflow-hidden relative"
     >
+      {/* `relative` with no `z-index`, deliberately. A z-index here would make
+          this root a stacking context, and that context would trap the chat
+          sheet (`z-40` backdrop, `z-50` sheet) and the project drawer (`z-50`)
+          inside a band that a fixed HUD instrument mounted by the shell cannot
+          out-rank from outside — the accent strip would float over an open
+          dialog, fully lit, instead of being dimmed by it. `AdminLayout`'s
+          root is static for exactly the same reason, and the two then behave
+          identically. Nothing in this tree blends with what is behind it or
+          relies on the root to contain stacking, so the only thing that
+          changes is which of the two wins: now the dialog does. */}
       {/* Background/scene is owned by the app shell (see _app.tsx SceneLayer) so
           exactly one instance exists per route. Mounting a second one here
           doubled the particle field, grid, scanlines and aurora. */}
@@ -281,11 +291,16 @@ export default function Homepage() {
         </div>
       </div>
 
-      {/* Sticky input — always inside dvh, never offscreen */}
+      {/* Sticky input — always inside dvh, never offscreen. This footer's
+          paddings are the primitives behind `--composer-clearance` (with
+          `ChatInputBar`'s own `--composer-bar-min`/`--composer-gap`/
+          `--composer-inset`), which is what the accent strip and the
+          last-command caption offset themselves by — so change a padding here
+          and all three move together. */}
       <div
         className="shrink-0 w-full max-w-4xl mx-auto px-4"
         style={{
-          paddingBottom: 'max(10px, env(safe-area-inset-bottom))',
+          paddingBottom: 'var(--composer-safe)',
           paddingTop: 8,
           background: 'linear-gradient(to top, var(--bg-1) 78%, transparent)',
         }}

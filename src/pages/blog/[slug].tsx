@@ -380,9 +380,24 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
       <ReadingProgress targetRef={articleRef} />
       <LightningTransition trigger={boltTrigger} onMidpoint={handleMidpoint} />
 
+      {/* `relative`, no z-index — the page-root half of the contract stated in
+          `_app.tsx` and of the identical note on `blog/index.tsx`. A page root
+          must not open a stacking context, or the overlays it renders get
+          trapped in a band the shell's fixed accent strip, mounted OUTSIDE at
+          `z-[var(--z-hud)]`, can never out-rank. Nothing in the reading flow
+          depends on the z-index it used to carry: `--z-hud` already paints the
+          strip above ordinary page content, and the stage it lives in already
+          sits above the scene.
+
+          The lightning flash above is deliberately OUTSIDE this article, which
+          is what lets its `z-80` full-screen page turn cover the strip (and the
+          shell's `z-[85]` curtain above it) with no ancestor z-index in the
+          way. Its `trigger`/`onMidpoint` timing is load-bearing — the
+          midpoint is where `router.push` fires for post-to-post navigation —
+          and is untouched. */}
       <article
         ref={articleRef}
-        className="relative z-10 min-h-screen"
+        className="relative min-h-screen"
         data-theme="editorial"
       >
         {/* Full-screen hero — premium: aurora wash + parallax cover + splitText title + drawable rule */}
