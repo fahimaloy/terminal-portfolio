@@ -5,6 +5,13 @@
    window.scrollY read always returned 0 and the bar never moved. A capture-phase
    scroll listener sees scroll events from any descendant scroller, so one
    implementation covers every route.
+
+   The listener was fixed; the MEASUREMENT was not. It kept reading
+   document.scrollingElement, whose scrollHeight equals the viewport on a
+   h-[100dvh] overflow-hidden page — so max was 0, progress was always 0, and
+   the most HUD-looking element on the site was pinned at zero. The scroller is
+   now resolved from the scroll event itself (resolveScroller) and measured with
+   its own scrollTop / scrollHeight / clientHeight.
 ═══════════════════════════════════════════════════════════════════════════════ */
 
 import { useEffect, useRef, useState } from 'react';
@@ -20,6 +27,32 @@ const DEFAULT_SECTIONS = [
   { id: 'not-found', label: 'SIGNAL LOST' },
 ];
 
+/** The window's own scroller — standards mode always answers, quirks never. */
+function windowScroller(): Element {
+  return document.scrollingElement || document.documentElement;
+}
+
+/**
+ * Which element the visitor is actually scrolling.
+ *
+ * A scroll event's `target` IS the scroller that moved: `document` when the
+ * window scrolls, the element itself when an inner `overflow-y-auto` container
+ * scrolls. Nothing is searched or guessed, so this stays correct on a route
+ * whose layout changes without a remount.
+ */
+function resolveScroller(target: EventTarget | null): Element {
+  if (
+    !target ||
+    target === document ||
+    target === window ||
+    target === document.body
+  ) {
+    return windowScroller();
+  }
+  if (target instanceof Element) return target;
+  return windowScroller();
+}
+
 export default function ScrollIndicator({
   sections = DEFAULT_SECTIONS,
 }: ScrollIndicatorProps) {
@@ -30,22 +63,71 @@ export default function ScrollIndicator({
   // Progress — capture phase catches scroll on nested scrollers.
   useEffect(() => {
     let raf = 0;
-    const onScroll = () => {
+    // Last known scroller. A resize fires with no event to read a target from,
+    // so the remembered one is reused instead of snapping back to the window.
+    let scroller: Element | null = null;
+    // Latest coalesced scroll target, consumed by the next frame.
+    let pending: EventTarget | null = null;
+
+    const compute = (target: EventTarget | null) => {
+      let el: Element;
+      if (target) {
+        el = resolveScroller(target);
+        scroller = el;
+      } else if (
+        scroller &&
+        scroller.isConnected &&
+        scroller.scrollHeight > scroller.clientHeight
+      ) {
+        // Still in the tree and still scrollable — keep reading it.
+        el = scroller;
+      } else {
+        // Nothing scrolled yet (first paint), or the remembered scroller
+        // stopped scrolling (route change, content shrank): fall back.
+        el = windowScroller();
+        scroller = el;
+      }
+
+      // Only scroll geometry: three cheap reads on an element that was just
+      // scrolled, so no rect/offset flush and no interleaved write→read.
+      const max = el.scrollHeight - el.clientHeight;
+      // A container shorter than its viewport has nothing to travel — max <= 0
+      // must not divide, and must not report a negative position.
+      setProgress(max > 0 ? Math.min(1, Math.max(0, el.scrollTop / max)) : 0);
+    };
+
+    const onScroll = (event: Event) => {
+      // Coalescing keeps the LAST target, not the first: if the window and an
+      // inner container both move inside one frame, the frame must be measured
+      // against the scroller that is actually being scrolled now.
+      pending = event.target;
       if (raf) return;
       raf = requestAnimationFrame(() => {
         raf = 0;
-        const el = document.scrollingElement || document.documentElement;
-        const max = el.scrollHeight - window.innerHeight;
-        setProgress(max > 0 ? Math.min(1, Math.max(0, el.scrollTop / max)) : 0);
+        const target = pending;
+        pending = null;
+        compute(target);
       });
     };
-    onScroll();
-    document.addEventListener('scroll', onScroll, true);
-    window.addEventListener('resize', onScroll);
+    const onResize = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        pending = null;
+        compute(null);
+      });
+    };
+
+    compute(null);
+    document.addEventListener('scroll', onScroll, {
+      capture: true,
+      passive: true,
+    });
+    window.addEventListener('resize', onResize);
     return () => {
       if (raf) cancelAnimationFrame(raf);
-      document.removeEventListener('scroll', onScroll, true);
-      window.removeEventListener('resize', onScroll);
+      document.removeEventListener('scroll', onScroll, { capture: true });
+      window.removeEventListener('resize', onResize);
     };
   }, []);
 

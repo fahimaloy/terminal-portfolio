@@ -77,6 +77,10 @@ export default function HeroChat({
   const skillCount = useCounter(skills.length, 1500, 1000);
   const expCount = useCounter(experiences.length, 1500, 1200);
 
+  // The ONLY loading affordance for the hero slot. This predicate used to be
+  // duplicated one level up in Homepage, which stacked a second, differently
+  // styled skeleton above this one; both are now the same single affordance
+  // here, and it is the one carrying aria-busy / aria-label.
   if (isInitial && isDataLoading) {
     return (
       <div

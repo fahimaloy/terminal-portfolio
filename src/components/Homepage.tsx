@@ -21,7 +21,6 @@ import HudChrome from './home/HudChrome';
 import HeroChat from './home/HeroChat';
 import { ProjectStrip, ProjectInlineDetail } from './home/ProjectStrip';
 import ChatModalHost from './home/ChatModalHost';
-import { StatBar } from './ui';
 import { resolveName } from '../config/identity';
 import type { Message } from '../types/chat';
 
@@ -46,8 +45,8 @@ export default function Homepage() {
   //
   // Every branch is bounded. The previous version was a bare
   // `await Promise.all([...])` with no timeout and no catch, so a single
-  // hanging Supabase request left `isDataLoading` true forever and the three
-  // skeleton StatBars sat on screen permanently. Each getter already resolves
+  // hanging Supabase request left `isDataLoading` true forever and the hero
+  // skeleton sat on screen permanently. Each getter already resolves
   // to an empty value on failure, so an individual failure is harmless — the
   // only real risk was a request that never settles, and that is what the
   // deadline covers.
@@ -228,30 +227,15 @@ export default function Homepage() {
         }}
       >
         <div className="w-full max-w-4xl mx-auto px-4 flex flex-col items-center my-auto py-6">
-          {/* Loading skeleton stat bars */}
-          {isInitial && isDataLoading && (
-            <div className="w-full max-w-2xl space-y-3">
-              <StatBar
-                label={siteTexts.compiling_label || 'COMPILING'}
-                value={40}
-                accent="amber"
-                delay={0}
-              />
-              <StatBar
-                label={siteTexts.linking_label || 'LINKING'}
-                value={70}
-                accent="coral"
-                delay={200}
-              />
-              <StatBar
-                label={siteTexts.executing_label || 'EXECUTING'}
-                value={20}
-                accent="cyan"
-                delay={400}
-              />
-            </div>
-          )}
-
+          {/* The loading affordance for this slot is HeroChat's, and only
+              HeroChat's. This block used to render three neon StatBars above
+              it under the same `isInitial && isDataLoading` predicate — two
+              visual languages stacked in one frame, reading as two
+              applications. Worse, those bars animated toward hardcoded values
+              (40/70/20): a progress readout displaying invented numbers. The
+              real counts (projects, skills, experience) are rendered by
+              HeroChat's counters as soon as the data lands, so deleting the
+              block loses nothing and the fabricated readout is gone. */}
           <div ref={heroRef} className="w-full">
             <HeroChat
               profile={profile}
