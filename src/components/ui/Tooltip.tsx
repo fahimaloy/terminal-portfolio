@@ -40,14 +40,14 @@ export default function Tooltip({
             position === 'top'
               ? [4, 0]
               : position === 'bottom'
-              ? [-4, 0]
-              : [0, 0],
+                ? [-4, 0]
+                : [0, 0],
           x:
             position === 'left'
               ? [4, 0]
               : position === 'right'
-              ? [-4, 0]
-              : [0, 0],
+                ? [-4, 0]
+                : [0, 0],
           duration: durations.hover * 1000,
           ease: easings.expoOut,
         });

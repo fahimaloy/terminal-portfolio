@@ -145,7 +145,7 @@ function extractRootBlock(css) {
       }
       if (depth === 0) {
         throw new Error(
-          `unexpected "}" at offset ${i} — unbalanced braces before the :root rule`
+          `unexpected "}" at offset ${i} — unbalanced braces before the :root rule`,
         );
       }
       depth -= 1;
@@ -160,7 +160,7 @@ function extractRootBlock(css) {
   throw new Error(
     bodyStart === -1
       ? 'no top-level `:root { … }` rule found — tokens.css must declare one at brace depth 0'
-      : 'the top-level `:root { … }` rule is never closed (unbalanced "{")'
+      : 'the top-level `:root { … }` rule is never closed (unbalanced "{")',
   );
 }
 
@@ -174,13 +174,15 @@ function parseTokensCss(css) {
   const declared = (rootCss.match(/--[a-zA-Z0-9_-]+\s*:/g) || []).length;
   if (declared === 0) {
     throw new Error(
-      'the top-level :root block declares 0 custom properties — refusing to generate from an empty token set'
+      'the top-level :root block declares 0 custom properties — refusing to generate from an empty token set',
     );
   }
 
   // --neon-yellow: #ffaa00;
   const neon = {};
-  for (const m of rootCss.matchAll(/--neon-([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/g)) {
+  for (const m of rootCss.matchAll(
+    /--neon-([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/g,
+  )) {
     neon[m[1]] = m[2].toLowerCase();
   }
 
@@ -188,7 +190,9 @@ function parseTokensCss(css) {
   // --glow-cyan-sm: rgba(0, 240, 255, 0.15);
   const glow = {};
   const glowSm = {};
-  for (const m of rootCss.matchAll(/--glow-([a-z0-9-]+)\s*:\s*(rgba\([^)]+\))\s*;/g)) {
+  for (const m of rootCss.matchAll(
+    /--glow-([a-z0-9-]+)\s*:\s*(rgba\([^)]+\))\s*;/g,
+  )) {
     const raw = m[0];
     // Distinguish -sm suffix: check if the declaration key ends with -sm
     // The regex captures e.g. "yellow-sm" for --glow-yellow-sm; split it.
@@ -237,7 +241,9 @@ function parseTokensCss(css) {
 
   // --spring-stiff: '{"stiffness":200,"damping":15}';
   const springs = {};
-  for (const m of rootCss.matchAll(/--spring-([a-z0-9-]+)\s*:\s*'([^']+)'\s*;/g)) {
+  for (const m of rootCss.matchAll(
+    /--spring-([a-z0-9-]+)\s*:\s*'([^']+)'\s*;/g,
+  )) {
     try {
       springs[m[1]] = JSON.parse(m[2]);
     } catch {
@@ -251,7 +257,6 @@ function parseTokensCss(css) {
     fonts[m[1]] = m[2].trim();
   }
 
-
   // --wash-*, --grid-*, --surface-*, --ring-*, --status-*, --border-*, --shadow-*
   const wash = {};
   for (const m of rootCss.matchAll(/--wash-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
@@ -262,7 +267,9 @@ function parseTokensCss(css) {
     grid[m[1]] = m[2].trim();
   }
   const surface = {};
-  for (const m of rootCss.matchAll(/--surface-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(
+    /--surface-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g,
+  )) {
     surface[m[1]] = m[2].trim();
   }
   const ring = {};
@@ -270,19 +277,43 @@ function parseTokensCss(css) {
     ring[m[1]] = m[2].trim();
   }
   const status = {};
-  for (const m of rootCss.matchAll(/--status-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(
+    /--status-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g,
+  )) {
     status[m[1]] = m[2].trim();
   }
   const border = {};
-  for (const m of rootCss.matchAll(/--border-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(
+    /--border-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g,
+  )) {
     border[m[1]] = m[2].trim();
   }
   const shadow = {};
-  for (const m of rootCss.matchAll(/--shadow-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(
+    /--shadow-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g,
+  )) {
     shadow[m[1]] = m[2].trim();
   }
 
-  return { neon, glow, glowSm, durations, easings, bg, text, glass, springs, fonts, wash, grid, surface, ring, status, border, shadow };
+  return {
+    neon,
+    glow,
+    glowSm,
+    durations,
+    easings,
+    bg,
+    text,
+    glass,
+    springs,
+    fonts,
+    wash,
+    grid,
+    surface,
+    ring,
+    status,
+    border,
+    shadow,
+  };
 }
 
 function msToSeconds(msStr) {
@@ -297,12 +328,28 @@ function msToSeconds(msStr) {
 // ---------------------------------------------------------------------------
 
 function generateTsContent(tokens) {
-  const { neon, glow, glowSm, durations, easings, springs, wash, grid, surface, ring, status, border, shadow } = tokens;
+  const {
+    neon,
+    glow,
+    glowSm,
+    durations,
+    easings,
+    springs,
+    wash,
+    grid,
+    surface,
+    ring,
+    status,
+    border,
+    shadow,
+  } = tokens;
 
   // Build accentConfig entries — preserve EXPECTED_ACCENTS order for stable output
   const accentNames = EXPECTED_ACCENTS.filter((n) => neon[n]);
   // Append any extra neon accents not in the expected list (sorted, for determinism)
-  const extra = Object.keys(neon).filter((k) => !EXPECTED_ACCENTS.includes(k)).sort();
+  const extra = Object.keys(neon)
+    .filter((k) => !EXPECTED_ACCENTS.includes(k))
+    .sort();
   const allAccents = [...accentNames, ...extra];
 
   const accentEntries = allAccents.map((name) => {
@@ -423,32 +470,60 @@ ${ringEntries.join(',\n')},
 }
 
 function generateTwContent(tokens) {
-  const { neon, glow, glowSm, bg, text, glass, wash, grid, surface, ring, status, border, durations, easings, fonts } = tokens;
+  const {
+    neon,
+    glow,
+    glowSm,
+    bg,
+    text,
+    glass,
+    wash,
+    grid,
+    surface,
+    ring,
+    status,
+    border,
+    durations,
+    easings,
+    fonts,
+  } = tokens;
 
   // Build Tailwind extend.colors map — mirrors current tailwind.config.js extend.colors
   const colorEntries = {};
 
   // bg-* colors
-  for (const [k, v] of Object.entries(bg).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(bg).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     colorEntries[`bg-${k}`] = v;
   }
   // neon-* colors
-  for (const [k, v] of Object.entries(neon).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(neon).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     colorEntries[`neon-${k}`] = v;
   }
   // text-* colors
-  for (const [k, v] of Object.entries(text).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(text).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     colorEntries[`text-${k}`] = v;
   }
   // glow-* colors
-  for (const [k, v] of Object.entries(glow).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(glow).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     colorEntries[`glow-${k}`] = v;
   }
-  for (const [k, v] of Object.entries(glowSm).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(glowSm).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     colorEntries[`glow-${k}-sm`] = v;
   }
   // glass colors
-  for (const [k, v] of Object.entries(glass).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(glass).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     // --glass-blur is not a color — skip it
     if (v.startsWith('blur(')) continue;
     // --glass-backdrop-alpha is numeric — skip
@@ -456,27 +531,39 @@ function generateTwContent(tokens) {
     colorEntries[`glass-${k}`] = v;
   }
   // wash colors
-  for (const [k, v] of Object.entries(wash).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(wash).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     colorEntries[`wash-${k}`] = v;
   }
   // grid colors
-  for (const [k, v] of Object.entries(grid).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(grid).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     colorEntries[`grid-${k}`] = v;
   }
   // surface colors
-  for (const [k, v] of Object.entries(surface).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(surface).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     colorEntries[`surface-${k}`] = v;
   }
   // ring colors
-  for (const [k, v] of Object.entries(ring).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(ring).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     colorEntries[`ring-${k}`] = v;
   }
   // status colors
-  for (const [k, v] of Object.entries(status).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(status).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     colorEntries[`status-${k}`] = v;
   }
   // border colors
-  for (const [k, v] of Object.entries(border).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(border).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     colorEntries[`border-${k}`] = v;
   }
 
@@ -500,7 +587,9 @@ function generateTwContent(tokens) {
   // --font-display (it did: the Tailwind class shipped Space Grotesk while the
   // token said Orbitron).
   const fontFamily = {};
-  for (const [k, v] of Object.entries(fonts).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [k, v] of Object.entries(fonts).sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     fontFamily[k] = v
       .split(',')
       .map((f) => f.trim().replace(/^['"]|['"]$/g, ''))
@@ -537,7 +626,9 @@ ${easingLines},
 
 function toJsKey(cssKey) {
   // "in-out" → "inOut", "expo-in" → "expoIn", "cyan-30" → "cyan30" etc.
-  return cssKey.replace(/-([a-z0-9])/g, (_, c) => (/[0-9]/.test(c) ? c : c.toUpperCase()));
+  return cssKey.replace(/-([a-z0-9])/g, (_, c) =>
+    /[0-9]/.test(c) ? c : c.toUpperCase(),
+  );
 }
 
 function escapeSingle(s) {
@@ -575,7 +666,9 @@ function main() {
   try {
     css = readFileSync(TOKENS_CSS, 'utf8');
   } catch (e) {
-    console.error(`[generate-tokens] Failed to read ${TOKENS_CSS}: ${e.message}`);
+    console.error(
+      `[generate-tokens] Failed to read ${TOKENS_CSS}: ${e.message}`,
+    );
     process.exit(1);
   }
 
@@ -584,15 +677,21 @@ function main() {
     tokens = parseTokensCss(css);
   } catch (e) {
     console.error(`[generate-tokens] Parse failure: ${e.message}`);
-    console.error(`[generate-tokens] Source: ${path.relative(ROOT, TOKENS_CSS)}`);
+    console.error(
+      `[generate-tokens] Source: ${path.relative(ROOT, TOKENS_CSS)}`,
+    );
     process.exit(1);
   }
 
   // Validate — must have at least MIN_ACCENTS neon accents
   const foundNeon = Object.keys(tokens.neon);
   if (foundNeon.length < MIN_ACCENTS) {
-    console.error(`[generate-tokens] Parse failure: need at least ${MIN_ACCENTS} neon accents, found ${foundNeon.length}`);
-    console.error(`[generate-tokens] Found neon keys: ${foundNeon.join(', ') || '(none)'}`);
+    console.error(
+      `[generate-tokens] Parse failure: need at least ${MIN_ACCENTS} neon accents, found ${foundNeon.length}`,
+    );
+    console.error(
+      `[generate-tokens] Found neon keys: ${foundNeon.join(', ') || '(none)'}`,
+    );
     process.exit(1);
   }
   if (Object.keys(tokens.durations).length === 0) {
@@ -620,26 +719,38 @@ function main() {
     const existingTw = readExisting(OUT_TW);
 
     if (existingTs === null) {
-      console.error(`[generate-tokens] --check: missing ${path.relative(ROOT, OUT_TS)} (would be created)`);
+      console.error(
+        `[generate-tokens] --check: missing ${path.relative(ROOT, OUT_TS)} (would be created)`,
+      );
       dirty = true;
     } else if (existingTs !== tsContent) {
-      console.error(`[generate-tokens] --check: ${path.relative(ROOT, OUT_TS)} is out of date`);
+      console.error(
+        `[generate-tokens] --check: ${path.relative(ROOT, OUT_TS)} is out of date`,
+      );
       dirty = true;
     }
 
     if (existingTw === null) {
-      console.error(`[generate-tokens] --check: missing ${path.relative(ROOT, OUT_TW)} (would be created)`);
+      console.error(
+        `[generate-tokens] --check: missing ${path.relative(ROOT, OUT_TW)} (would be created)`,
+      );
       dirty = true;
     } else if (existingTw !== twContent) {
-      console.error(`[generate-tokens] --check: ${path.relative(ROOT, OUT_TW)} is out of date`);
+      console.error(
+        `[generate-tokens] --check: ${path.relative(ROOT, OUT_TW)} is out of date`,
+      );
       dirty = true;
     }
 
     if (dirty) {
-      console.error('[generate-tokens] Run `node scripts/generate-tokens.mjs` to regenerate.');
+      console.error(
+        '[generate-tokens] Run `node scripts/generate-tokens.mjs` to regenerate.',
+      );
       process.exit(1);
     }
-    console.log('[generate-tokens] --check OK — generated files are up to date.');
+    console.log(
+      '[generate-tokens] --check OK — generated files are up to date.',
+    );
     process.exit(0);
   }
 
@@ -649,8 +760,12 @@ function main() {
   writeFileSync(OUT_TS, tsContent, 'utf8');
   writeFileSync(OUT_TW, twContent, 'utf8');
 
-  console.log(`[generate-tokens] Wrote ${path.relative(ROOT, OUT_TS)} (${Object.keys(tokens.neon).length} accents, ${Object.keys(tokens.durations).length} durations, ${Object.keys(tokens.easings).length} easings, ${Object.keys(tokens.wash).length} wash, ${Object.keys(tokens.grid).length} grid, ${Object.keys(tokens.surface).length} surface, ${Object.keys(tokens.ring).length} ring)`);
-  console.log(`[generate-tokens] Wrote ${path.relative(ROOT, OUT_TW)} (${Object.keys(tokens.neon).length} neon + ${Object.keys(tokens.glow).length} glow + ${Object.keys(tokens.glowSm).length} glow-sm + bg/text/glass colors)`);
+  console.log(
+    `[generate-tokens] Wrote ${path.relative(ROOT, OUT_TS)} (${Object.keys(tokens.neon).length} accents, ${Object.keys(tokens.durations).length} durations, ${Object.keys(tokens.easings).length} easings, ${Object.keys(tokens.wash).length} wash, ${Object.keys(tokens.grid).length} grid, ${Object.keys(tokens.surface).length} surface, ${Object.keys(tokens.ring).length} ring)`,
+  );
+  console.log(
+    `[generate-tokens] Wrote ${path.relative(ROOT, OUT_TW)} (${Object.keys(tokens.neon).length} neon + ${Object.keys(tokens.glow).length} glow + ${Object.keys(tokens.glowSm).length} glow-sm + bg/text/glass colors)`,
+  );
 }
 
 main();

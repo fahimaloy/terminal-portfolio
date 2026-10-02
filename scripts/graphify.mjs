@@ -12,7 +12,14 @@
  */
 
 import { execSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+} from 'node:fs';
 import path from 'node:path';
 
 const SRC_DIR = 'src';
@@ -23,16 +30,30 @@ const OUT_SVG = 'docs/architecture-graph.svg';
 // ---------------------------------------------------------------------------
 function hasBin(bin) {
   try {
-    execSync(`node -e "require.resolve('${bin}/package.json')"`, { stdio: 'ignore' });
+    execSync(`node -e "require.resolve('${bin}/package.json')"`, {
+      stdio: 'ignore',
+    });
     return true;
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   // Also try npx --no-install
-  const r = spawnSync('npx', ['--no-install', bin, '--version'], { stdio: 'ignore', timeout: 5000 });
+  const r = spawnSync('npx', ['--no-install', bin, '--version'], {
+    stdio: 'ignore',
+    timeout: 5000,
+  });
   return r.status === 0;
 }
 
 function hasDep(pkg) {
-  try { execSync(`node -e "require.resolve('${pkg}/package.json')"`, { stdio: 'ignore' }); return true; } catch { return false; }
+  try {
+    execSync(`node -e "require.resolve('${pkg}/package.json')"`, {
+      stdio: 'ignore',
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function ensureOutDir() {
@@ -57,19 +78,29 @@ function tryMadge() {
       return true;
     }
   } catch (e) {
-    const msg = e?.stdout?.toString() || e?.stderr?.toString() || e?.message || '';
+    const msg =
+      e?.stdout?.toString() || e?.stderr?.toString() || e?.message || '';
     // If graphviz missing, madge writes a .dot file — convert if possible
     const dotPath = OUT_SVG.replace(/\.svg$/, '.dot');
     if (existsSync(dotPath)) {
       try {
-        execSync(`dot -Tsvg "${dotPath}" -o "${OUT_SVG}"`, { stdio: 'pipe', timeout: 15000 });
+        execSync(`dot -Tsvg "${dotPath}" -o "${OUT_SVG}"`, {
+          stdio: 'pipe',
+          timeout: 15000,
+        });
         console.log(`[graphify] Generated ${OUT_SVG} via madge (.dot → svg).`);
         return true;
-      } catch { /* graphviz not installed */ }
-      console.warn(`[graphify] madge produced ${dotPath} but graphviz 'dot' is not available — falling back to regex graph.`);
+      } catch {
+        /* graphviz not installed */
+      }
+      console.warn(
+        `[graphify] madge produced ${dotPath} but graphviz 'dot' is not available — falling back to regex graph.`,
+      );
       return false;
     }
-    console.warn(`[graphify] madge failed: ${msg.split('\n').slice(0, 3).join(' ') } — trying next strategy.`);
+    console.warn(
+      `[graphify] madge failed: ${msg.split('\n').slice(0, 3).join(' ')} — trying next strategy.`,
+    );
   }
   return false;
 }
@@ -90,16 +121,25 @@ function tryDepCruiser() {
       execSync(cmd, { stdio: 'pipe', timeout: 30000 });
       if (existsSync(dotTmp) && statSync(dotTmp).size > 0) {
         try {
-          execSync(`dot -Tsvg "${dotTmp}" -o "${OUT_SVG}"`, { stdio: 'pipe', timeout: 15000 });
-          console.log(`[graphify] Generated ${OUT_SVG} via ${bin} (.dot → svg).`);
+          execSync(`dot -Tsvg "${dotTmp}" -o "${OUT_SVG}"`, {
+            stdio: 'pipe',
+            timeout: 15000,
+          });
+          console.log(
+            `[graphify] Generated ${OUT_SVG} via ${bin} (.dot → svg).`,
+          );
           return true;
         } catch {
           // No graphviz — keep the .dot as artifact and fall back
-          console.warn(`[graphify] ${bin} produced ${dotTmp} but graphviz 'dot' not available — falling back to regex graph.`);
+          console.warn(
+            `[graphify] ${bin} produced ${dotTmp} but graphviz 'dot' not available — falling back to regex graph.`,
+          );
           return false;
         }
       }
-    } catch { /* try next bin */ }
+    } catch {
+      /* try next bin */
+    }
   }
   return false;
 }
@@ -114,13 +154,22 @@ const DYNAMIC_IMPORT_RE = /import\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
 function walkFiles(dir, exts) {
   const out = [];
   let entries;
-  try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return out; }
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return out;
+  }
   for (const e of entries) {
     const full = path.join(dir, e.name);
     if (e.isDirectory()) {
-      if (['node_modules', '.next', 'dist', 'build', '.git', 'coverage'].includes(e.name)) continue;
+      if (
+        ['node_modules', '.next', 'dist', 'build', '.git', 'coverage'].includes(
+          e.name,
+        )
+      )
+        continue;
       out.push(...walkFiles(full, exts));
-    } else if (exts.some(ext => full.endsWith(ext))) {
+    } else if (exts.some((ext) => full.endsWith(ext))) {
       out.push(full);
     }
   }
@@ -137,7 +186,9 @@ function topoLabel(filePath) {
 function buildFallbackGraph() {
   const files = walkFiles(SRC_DIR, ['.ts', '.tsx', '.js', '.jsx']);
   if (files.length === 0) {
-    console.warn('[graphify] No source files found — writing placeholder graph.');
+    console.warn(
+      '[graphify] No source files found — writing placeholder graph.',
+    );
     return { nodes: new Set(['(empty)']), edges: [] };
   }
 
@@ -149,14 +200,23 @@ function buildFallbackGraph() {
     const rel = file.replace(/\\/g, '/');
     fileNodes.add(rel);
     let content;
-    try { content = readFileSync(file, 'utf8'); } catch { continue; }
+    try {
+      content = readFileSync(file, 'utf8');
+    } catch {
+      continue;
+    }
     const specs = new Set();
     for (const m of content.matchAll(IMPORT_RE)) specs.add(m[1]);
     for (const m of content.matchAll(REQUIRE_RE)) specs.add(m[1]);
     for (const m of content.matchAll(DYNAMIC_IMPORT_RE)) specs.add(m[1]);
 
     for (const spec of specs) {
-      if (!spec.startsWith('.') && !spec.startsWith('@/') && !spec.startsWith('src/')) continue; // external dep — skip
+      if (
+        !spec.startsWith('.') &&
+        !spec.startsWith('@/') &&
+        !spec.startsWith('src/')
+      )
+        continue; // external dep — skip
       // Resolve relative spec to a rel path (best-effort, no FS check)
       let target = spec;
       if (spec.startsWith('.')) {
@@ -176,7 +236,10 @@ function buildFallbackGraph() {
       let tgtGroup = null;
       for (const f of files) {
         const fNoExt = f.replace(/\\/g, '/').replace(/\.(ts|tsx|js|jsx)$/, '');
-        if (fNoExt === target || fNoExt === target + '/index') { tgtGroup = topoLabel(f); break; }
+        if (fNoExt === target || fNoExt === target + '/index') {
+          tgtGroup = topoLabel(f);
+          break;
+        }
       }
       if (!tgtGroup) {
         // Derive group from target path directly if file not found
@@ -196,7 +259,10 @@ function buildFallbackGraph() {
   for (const f of files) nodes.add(topoLabel(f));
   for (const [a, b] of fileEdges) {
     const k = `${a}→${b}`;
-    if (!edgeSet.has(k)) { edgeSet.add(k); edges.push([a, b]); }
+    if (!edgeSet.has(k)) {
+      edgeSet.add(k);
+      edges.push([a, b]);
+    }
   }
   return { nodes, edges, fileCount: files.length };
 }
@@ -224,32 +290,49 @@ function renderSvg({ nodes, edges, fileCount }) {
   });
 
   // Build SVG string
-  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const esc = (s) =>
+    s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
 
-  const edgeLines = edges.map(([a, b]) => {
-    const pa = pos.get(a), pb = pos.get(b);
-    if (!pa || !pb) return '';
-    // Simple straight arrow; color by source hue
-    return `  <line x1="${pa.cx}" y1="${pa.cy}" x2="${pb.cx}" y2="${pb.cy}" stroke="#00f0ff" stroke-opacity="0.35" stroke-width="1.5" marker-end="url(#arrow)" />`;
-  }).filter(Boolean).join('\n');
+  const edgeLines = edges
+    .map(([a, b]) => {
+      const pa = pos.get(a),
+        pb = pos.get(b);
+      if (!pa || !pb) return '';
+      // Simple straight arrow; color by source hue
+      return `  <line x1="${pa.cx}" y1="${pa.cy}" x2="${pb.cx}" y2="${pb.cy}" stroke="#00f0ff" stroke-opacity="0.35" stroke-width="1.5" marker-end="url(#arrow)" />`;
+    })
+    .filter(Boolean)
+    .join('\n');
 
-  const boxes = nodeList.map(n => {
-    const p = pos.get(n);
-    // Color by group
-    const palette = {
-      'src/components': '#00f0ff', 'src/pages': '#ff00aa', 'src/hooks': '#ffaa00',
-      'src/utils': '#39ff14', 'src/styles': '#8a2be2', 'src/config': '#00aaff',
-      'src/types': '#b8b8c0',
-    };
-    const stroke = palette[n] || '#4a4a4a';
-    return `  <g>
+  const boxes = nodeList
+    .map((n) => {
+      const p = pos.get(n);
+      // Color by group
+      const palette = {
+        'src/components': '#00f0ff',
+        'src/pages': '#ff00aa',
+        'src/hooks': '#ffaa00',
+        'src/utils': '#39ff14',
+        'src/styles': '#8a2be2',
+        'src/config': '#00aaff',
+        'src/types': '#b8b8c0',
+      };
+      const stroke = palette[n] || '#4a4a4a';
+      return `  <g>
     <rect x="${p.x}" y="${p.y}" width="${BOX_W}" height="${BOX_H}" rx="6" fill="#1a1a1a" stroke="${stroke}" stroke-width="1.2" />
     <text x="${p.cx}" y="${p.cy + 5}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#ffffff">${esc(n)}</text>
   </g>`;
-  }).join('\n');
+    })
+    .join('\n');
 
   const timestamp = new Date().toISOString();
-  const subtitle = fileCount ? `${fileCount} files · ${edges.length} group edges · regex fallback` : `${edges.length} edges · regex fallback`;
+  const subtitle = fileCount
+    ? `${fileCount} files · ${edges.length} group edges · regex fallback`
+    : `${edges.length} edges · regex fallback`;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="title desc">
@@ -275,8 +358,12 @@ function runFallback() {
   const graph = buildFallbackGraph();
   const svg = renderSvg(graph);
   writeFileSync(OUT_SVG, svg, 'utf8');
-  console.log(`[graphify] Generated ${OUT_SVG} via regex fallback (${graph.nodes.size} groups, ${graph.edges.length} edges).`);
-  console.warn('[graphify] For a richer graph, install one of: npm i -D madge  OR  npm i -D dependency-cruiser  (and graphviz `dot` for SVG).');
+  console.log(
+    `[graphify] Generated ${OUT_SVG} via regex fallback (${graph.nodes.size} groups, ${graph.edges.length} edges).`,
+  );
+  console.warn(
+    '[graphify] For a richer graph, install one of: npm i -D madge  OR  npm i -D dependency-cruiser  (and graphviz `dot` for SVG).',
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -285,7 +372,9 @@ function runFallback() {
 function main() {
   const args = process.argv.slice(2);
   if (args.includes('--help') || args.includes('-h')) {
-    console.log('Usage: node scripts/graphify.mjs [--help]\n\nGenerates docs/architecture-graph.svg from the import graph.\nTries madge → dependency-cruiser → regex fallback. Never fails (exit 0).');
+    console.log(
+      'Usage: node scripts/graphify.mjs [--help]\n\nGenerates docs/architecture-graph.svg from the import graph.\nTries madge → dependency-cruiser → regex fallback. Never fails (exit 0).',
+    );
     process.exit(0);
   }
 
@@ -304,7 +393,14 @@ function main() {
 try {
   main();
 } catch (err) {
-  console.warn('[graphify] Unexpected error — writing fallback graph. ' + (err?.message || err));
-  try { runFallback(); } catch { /* ignore */ }
+  console.warn(
+    '[graphify] Unexpected error — writing fallback graph. ' +
+      (err?.message || err),
+  );
+  try {
+    runFallback();
+  } catch {
+    /* ignore */
+  }
   process.exit(0);
 }

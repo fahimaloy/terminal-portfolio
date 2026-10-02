@@ -15,6 +15,7 @@
     "tokens:generate": "node scripts/generate-tokens.mjs",
     "tokens:check": "node scripts/generate-tokens.mjs --check && node scripts/token-lint.mjs --all --warn-legacy",
     "tokens:check:strict": "node scripts/generate-tokens.mjs --check && node scripts/token-lint.mjs --all",
+    "graph": "node scripts/graphify.mjs",
     "verify": "npm run typecheck && npm run lint && npm run tokens:check:strict && npm test",
     "test": "vitest run",
     "test:watch": "vitest",

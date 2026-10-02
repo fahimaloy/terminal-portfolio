@@ -133,11 +133,7 @@ export default function GlitchText({
     if (shift) {
       // Physical release: a single short jitter as the split opens.
       animate(root, {
-        x: [
-          { to: -JITTER_PEAK_PX },
-          { to: JITTER_PEAK_PX },
-          { to: 0 },
-        ],
+        x: [{ to: -JITTER_PEAK_PX }, { to: JITTER_PEAK_PX }, { to: 0 }],
         duration: JITTER_DURATION_MS,
         ease: easings.outQuad,
         composition: 'blend',

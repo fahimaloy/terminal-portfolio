@@ -32,13 +32,34 @@ const TOKENS_CSS = 'src/styles/tokens.css';
 // Allowed duration/ease token suffixes derived from tokens.css ` --dur-*` / `--ease-*`
 // Parsed dynamically if tokens.css exists, otherwise fall back to a hard-coded list.
 const FALLBACK_DURATIONS = [
-  'tap', 'hover', 'enter', 'exit', 'stagger', 'slide', 'pulse',
-  'typing', 'scramble', 'draw', 'morph', 'transition', 'spring', 'scroll', 'counter',
+  'tap',
+  'hover',
+  'enter',
+  'exit',
+  'stagger',
+  'slide',
+  'pulse',
+  'typing',
+  'scramble',
+  'draw',
+  'morph',
+  'transition',
+  'spring',
+  'scroll',
+  'counter',
 ];
 const FALLBACK_EASINGS = [
-  'smooth', 'in', 'out', 'in-out', 'expo-in',
-  'elastic-in', 'elastic-out', 'elastic-in-out',
-  'back-in', 'back-out', 'back-in-out',
+  'smooth',
+  'in',
+  'out',
+  'in-out',
+  'expo-in',
+  'elastic-in',
+  'elastic-out',
+  'elastic-in-out',
+  'back-in',
+  'back-out',
+  'back-in-out',
 ];
 
 function loadAllowedTokens() {
@@ -49,7 +70,9 @@ function loadAllowedTokens() {
       const css = readFileSync(TOKENS_CSS, 'utf8');
       for (const m of css.matchAll(/--dur-([a-z0-9-]+)\s*:/g)) durs.add(m[1]);
       for (const m of css.matchAll(/--ease-([a-z0-9-]+)\s*:/g)) eases.add(m[1]);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   return { durs, eases };
 }
@@ -76,10 +99,29 @@ function loadAllowedTokens() {
 
 // The 22 default Tailwind colour families (v3 and v4 name the same set).
 const TW_PALETTE_FAMILIES = new Set([
-  'slate', 'gray', 'grey', 'zinc', 'neutral', 'stone',
-  'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald',
-  'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia',
-  'pink', 'rose',
+  'slate',
+  'gray',
+  'grey',
+  'zinc',
+  'neutral',
+  'stone',
+  'red',
+  'orange',
+  'amber',
+  'yellow',
+  'lime',
+  'green',
+  'emerald',
+  'teal',
+  'cyan',
+  'sky',
+  'blue',
+  'indigo',
+  'violet',
+  'purple',
+  'fuchsia',
+  'pink',
+  'rose',
 ]);
 
 // Shade-less stock palette entries that ARE doctrine violations — `bg-white/5`
@@ -89,7 +131,11 @@ const TW_PALETTE_BARE = new Set(['white', 'black']);
 // Colour-less keywords Tailwind accepts on these utilities. They carry no hue
 // of their own, so they are always acceptable and are never reported.
 const TW_NEUTRAL_KEYWORDS = new Set([
-  'transparent', 'current', 'currentcolor', 'inherit', 'none',
+  'transparent',
+  'current',
+  'currentcolor',
+  'inherit',
+  'none',
 ]);
 
 // Colour-bearing utility prefixes. Sorted longest-first at build time so that
@@ -98,11 +144,31 @@ const TW_NEUTRAL_KEYWORDS = new Set([
 // part would never be seen (silent false negative, not a false positive).
 // Every entry here can genuinely carry a colour; none were trimmed.
 const COLOUR_PREFIXES = [
-  'placeholder-', 'ring-offset-', 'decoration-', 'accent-', 'border-',
-  'divide-', 'outline-', 'shadow-', 'from-', 'via-', 'to-',
-  'border-t-', 'border-r-', 'border-b-', 'border-l-', 'border-x-', 'border-y-',
-  'divide-x-', 'divide-y-',
-  'text-', 'bg-', 'fill-', 'stroke-', 'caret-', 'ring-',
+  'placeholder-',
+  'ring-offset-',
+  'decoration-',
+  'accent-',
+  'border-',
+  'divide-',
+  'outline-',
+  'shadow-',
+  'from-',
+  'via-',
+  'to-',
+  'border-t-',
+  'border-r-',
+  'border-b-',
+  'border-l-',
+  'border-x-',
+  'border-y-',
+  'divide-x-',
+  'divide-y-',
+  'text-',
+  'bg-',
+  'fill-',
+  'stroke-',
+  'caret-',
+  'ring-',
 ].sort((a, b) => b.length - a.length);
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -112,7 +178,7 @@ const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // which is harmless — the result still starts with `[` and is skipped.
 const COLOUR_UTIL_RE = new RegExp(
   `\\b(?:!)?(${COLOUR_PREFIXES.map(escapeRe).join('|')})([^\\s"'\\x60,;{}()<>]+)`,
-  'g'
+  'g',
 );
 
 // `<family>-<shade>`, shade being 50…950 in practice — matched loosely as
@@ -149,7 +215,9 @@ function loadConfiguredColours() {
         if (typeof v === 'string') names.add(k.toLowerCase());
       }
     }
-  } catch { /* generated file absent or unparseable — allowlist still stands */ }
+  } catch {
+    /* generated file absent or unparseable — allowlist still stands */
+  }
   return names;
 }
 
@@ -158,12 +226,15 @@ function loadConfiguredColours() {
  * still attached) is a stock-Tailwind colour rather than a project token.
  */
 function isOffTokenColour(prefix, rest, configured) {
-  if (!rest) return false;                       // `placeholder-` with no suffix
+  if (!rest) return false; // `placeholder-` with no suffix
   // Arbitrary values are never this rule's business: token-backed
   // (`text-[var(--fg-1)]`, `border-[var(--glass-border)]`) by contract, and any
   // raw colour hiding in one (`text-[#fff]`) is already caught by rules 1/2.
   if (rest.startsWith('[') || rest.startsWith('-[')) return false;
-  const base = rest.toLowerCase().replace(TW_IMPORTANT_RE, '').replace(TW_OPACITY_RE, '');
+  const base = rest
+    .toLowerCase()
+    .replace(TW_IMPORTANT_RE, '')
+    .replace(TW_OPACITY_RE, '');
   if (!base) return false;
   if (TW_NEUTRAL_KEYWORDS.has(base)) return false;
   if (configured.has(base) || configured.has(prefix + base)) return false;
@@ -180,11 +251,11 @@ function isOffTokenColour(prefix, rest, configured) {
 }
 
 // Regexes
-const HEX_RE   = /#[0-9a-fA-F]{3,8}\b/g;
-const RGBA_RE  = /rgba\s*\(/g;
+const HEX_RE = /#[0-9a-fA-F]{3,8}\b/g;
+const RGBA_RE = /rgba\s*\(/g;
 // Matches Tailwind arbitrary class tokens like duration-300, duration-[320ms], ease-in-out etc. inside quotes
 const DURATION_CLASS_RE = /duration-(?:\[?[^\s"'`]*\]?|[a-z0-9-]+)/g;
-const EASE_CLASS_RE     = /ease-(?:\[?[^\s"'`]*\]?|[a-z0-9-]+)/g;
+const EASE_CLASS_RE = /ease-(?:\[?[^\s"'`]*\]?|[a-z0-9-]+)/g;
 
 const IGNORE_MARKER = 'token-lint-ignore';
 const SUPPORTED_EXTS = new Set(['.ts', '.tsx', '.css']);
@@ -200,7 +271,12 @@ const GENERATED_FILES = new Set([
 function isGeneratedFile(file) {
   const normalised = file.replace(/\\/g, '/');
   for (const g of GENERATED_FILES) {
-    if (normalised === g || normalised.endsWith('/' + g) || normalised.endsWith(g)) return true;
+    if (
+      normalised === g ||
+      normalised.endsWith('/' + g) ||
+      normalised.endsWith(g)
+    )
+      return true;
   }
   return false;
 }
@@ -208,11 +284,15 @@ function isGeneratedFile(file) {
 function isTokensCss(file) {
   // Allow both posix and win paths — normalise to posix for comparison
   const normalised = file.replace(/\\/g, '/');
-  return normalised === TOKENS_CSS || normalised.endsWith('/' + TOKENS_CSS) || normalised.endsWith(TOKENS_CSS);
+  return (
+    normalised === TOKENS_CSS ||
+    normalised.endsWith('/' + TOKENS_CSS) ||
+    normalised.endsWith(TOKENS_CSS)
+  );
 }
 
 function collectFiles() {
-  const args = process.argv.slice(2).filter(a => a !== '--all');
+  const args = process.argv.slice(2).filter((a) => a !== '--all');
 
   // --all flag → walk repo
   if (process.argv.includes('--all')) {
@@ -221,7 +301,7 @@ function collectFiles() {
 
   // Explicit file list via args
   if (args.length > 0) {
-    return args.filter(f => {
+    return args.filter((f) => {
       const ext = path.extname(f);
       return SUPPORTED_EXTS.has(ext) && existsSync(f);
     });
@@ -229,11 +309,14 @@ function collectFiles() {
 
   // Default: staged files from git
   try {
-    const out = execSync('git diff --cached --name-only --diff-filter=ACMR', { encoding: 'utf8' });
-    return out.split('\n')
-      .map(s => s.trim())
+    const out = execSync('git diff --cached --name-only --diff-filter=ACMR', {
+      encoding: 'utf8',
+    });
+    return out
+      .split('\n')
+      .map((s) => s.trim())
       .filter(Boolean)
-      .filter(f => SUPPORTED_EXTS.has(path.extname(f)) && existsSync(f));
+      .filter((f) => SUPPORTED_EXTS.has(path.extname(f)) && existsSync(f));
   } catch {
     return [];
   }
@@ -282,12 +365,12 @@ function await_import_sync() {
 }
 function await_createRequire() {
   // Use node:fs synchronously — avoid async at top-level
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+
   const fs = await_require_fs();
   return fs;
 }
 function await_require_fs() {
-  return { readdirSync: (awaitFs()).readdirSync };
+  return { readdirSync: awaitFs().readdirSync };
 }
 function awaitFs() {
   // lazy import of fs
@@ -302,7 +385,7 @@ function awaitImport(spec) {
 }
 function awaitCreateRequire2() {
   // inline to avoid circular
-  return { createRequire: (awaitModule()).createRequire };
+  return { createRequire: awaitModule().createRequire };
 }
 function awaitModule() {
   // Use global require available in Node ESM via createRequire bridge
@@ -313,9 +396,15 @@ function awaitModule() {
       ? globalThis.process.getBuiltinModule('node:module')
       : null;
     if (mod) return mod;
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   // Last resort: return a shim that throws
-  return { createRequire: () => { throw new Error('createRequire unavailable'); } };
+  return {
+    createRequire: () => {
+      throw new Error('createRequire unavailable');
+    },
+  };
 }
 
 // Simple synchronous walk without the ceremony above — override walkDir
@@ -323,7 +412,11 @@ function walkDirSync(dir) {
   const { readdirSync } = await_simpleFs();
   const out = [];
   let entries;
-  try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return out; }
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return out;
+  }
   for (const e of entries) {
     const full = path.join(dir, e.name);
     if (e.isDirectory()) out.push(...walkDirSync(full));
@@ -333,11 +426,15 @@ function walkDirSync(dir) {
 }
 function await_simpleFs() {
   // Direct require via Function to avoid ESM static analysis issues without extra deps
-  const req = Function('return typeof require!=="undefined"?require:undefined')();
+  const req = Function(
+    'return typeof require!=="undefined"?require:undefined',
+  )();
   if (req) return req('fs');
   // ESM fallback — use createRequire
-  // eslint-disable-next-line no-eval
-  const cr = eval("(() => { try { const m=require('module'); return m.createRequire(import.meta.url); } catch(e){ return null; } })()");
+
+  const cr = eval(
+    "(() => { try { const m=require('module'); return m.createRequire(import.meta.url); } catch(e){ return null; } })()",
+  );
   if (cr) return cr('fs');
   throw new Error('Cannot load fs');
 }
@@ -355,7 +452,11 @@ function lintFile(filePath, allowed) {
   if (isGeneratedFile(filePath)) return [];
   const violations = [];
   let content;
-  try { content = readFileSync(filePath, 'utf8'); } catch { return violations; }
+  try {
+    content = readFileSync(filePath, 'utf8');
+  } catch {
+    return violations;
+  }
 
   const lines = content.split('\n');
   const inTokensCss = isTokensCss(filePath);
@@ -381,7 +482,9 @@ function lintFile(filePath, allowed) {
     // 1) raw hex — outside tokens.css only; also skip global.css which is a
     // companion to tokens.css (it @imports it and defines utilities that may
     // legitimately inline rgba hex for glass/overlay variants).
-    const isTokensCompanion = filePath.replace(/\\/g, '/').endsWith('src/styles/global.css');
+    const isTokensCompanion = filePath
+      .replace(/\\/g, '/')
+      .endsWith('src/styles/global.css');
     if (!inTokensCss && !isTokensCompanion && !adjIgnored) {
       for (const m of line.matchAll(HEX_RE)) {
         violations.push({
@@ -429,18 +532,30 @@ function lintFile(filePath, allowed) {
       // We scan quoted strings + @apply tail if present. Simpler: collect all
       // double/single/backtick-quoted spans on this line and scan inside them.
       const quotedSpans = [];
-      for (const m of line.matchAll(/(["'`])[^"'`]*?\1/g)) quotedSpans.push(m[0]);
+      for (const m of line.matchAll(/(["'`])[^"'`]*?\1/g))
+        quotedSpans.push(m[0]);
       // Also include @apply tail (unquoted) — e.g. @apply duration-200
       const atApplyTail = line.match(/@apply\s+[^;]+/)?.[0] || '';
-      const scanTargets = quotedSpans.length ? quotedSpans : (atApplyTail ? [atApplyTail] : []);
+      const scanTargets = quotedSpans.length
+        ? quotedSpans
+        : atApplyTail
+          ? [atApplyTail]
+          : [];
       // If there are no quoted spans and no @apply, but className/class was present,
       // fall back to scanning the whole line (covers template literal splits).
-      const targets = scanTargets.length ? scanTargets : (line.includes('className') || line.includes('class=') ? [line] : []);
+      const targets = scanTargets.length
+        ? scanTargets
+        : line.includes('className') || line.includes('class=')
+          ? [line]
+          : [];
 
       for (const target of targets) {
         for (const m of target.matchAll(DURATION_CLASS_RE)) {
           const token = m[0];
-          let suffix = token.slice('duration-'.length).replace(/[",'`}\];]+$/, '').replace(/;$/, '');
+          const suffix = token
+            .slice('duration-'.length)
+            .replace(/[",'`}\];]+$/, '')
+            .replace(/;$/, '');
           if (suffix.startsWith('[')) {
             violations.push({
               file: filePath,
@@ -465,7 +580,10 @@ function lintFile(filePath, allowed) {
 
         for (const m of target.matchAll(EASE_CLASS_RE)) {
           const token = m[0];
-          let suffix = token.slice('ease-'.length).replace(/[",'`}\];]+$/, '').replace(/;$/, '');
+          const suffix = token
+            .slice('ease-'.length)
+            .replace(/[",'`}\];]+$/, '')
+            .replace(/;$/, '');
           if (suffix.startsWith('[')) {
             violations.push({
               file: filePath,
@@ -544,15 +662,40 @@ function main() {
 
   // If collectFiles returned [] due to git error but --all was requested, try sync walk as fallback
   if (process.argv.includes('--all') && files.length === 0) {
-    const { readdirSync } = (() => { try { return Function('return require')()('fs'); } catch { return { readdirSync: () => { throw new Error(); } }; } })();
+    const { readdirSync } = (() => {
+      try {
+        return Function('return require')()('fs');
+      } catch {
+        return {
+          readdirSync: () => {
+            throw new Error();
+          },
+        };
+      }
+    })();
     const walkSync = (dir) => {
-      let out = [];
+      const out = [];
       let entries;
-      try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return out; }
+      try {
+        entries = readdirSync(dir, { withFileTypes: true });
+      } catch {
+        return out;
+      }
       for (const e of entries) {
         const full = path.join(dir, e.name);
         if (e.isDirectory()) {
-          if (['node_modules', '.next', '.git', 'dist', 'build', 'coverage', 'e2e'].includes(e.name)) continue;
+          if (
+            [
+              'node_modules',
+              '.next',
+              '.git',
+              'dist',
+              'build',
+              'coverage',
+              'e2e',
+            ].includes(e.name)
+          )
+            continue;
           out.push(...walkSync(full));
         } else if (SUPPORTED_EXTS.has(path.extname(full))) {
           const n = full.replace(/\\/g, '/');
@@ -578,7 +721,11 @@ function main() {
   // We keep tokens.css in enumeration so lintFile can decide per-rule.
 
   // For --all we include tokens.css explicitly so its exempt path is exercised
-  if (process.argv.includes('--all') && existsSync(TOKENS_CSS) && !files.includes(TOKENS_CSS)) {
+  if (
+    process.argv.includes('--all') &&
+    existsSync(TOKENS_CSS) &&
+    !files.includes(TOKENS_CSS)
+  ) {
     files.push(TOKENS_CSS);
   }
 
@@ -594,7 +741,7 @@ function main() {
 
   // De-duplicate identical violations (can happen if both duration regex and arbitrary check fire)
   const seen = new Set();
-  allViolations = allViolations.filter(v => {
+  allViolations = allViolations.filter((v) => {
     const k = `${v.file}:${v.line}:${v.col}:${v.rule}:${v.message}`;
     if (seen.has(k)) return false;
     seen.add(k);
@@ -619,18 +766,26 @@ function main() {
   if (fatalViolations.length > 0) {
     console.error('\n[token-lint] Design-token violations found:\n');
     for (const v of fatalViolations) {
-      console.error(`  ${v.file}:${v.line}:${v.col}  [${v.rule}]  ${v.message}`);
+      console.error(
+        `  ${v.file}:${v.line}:${v.col}  [${v.rule}]  ${v.message}`,
+      );
     }
     if (downgradedViolations.length > 0) {
-      console.warn(`\n[token-lint] ${downgradedViolations.length} further legacy violation(s) downgraded by --warn-legacy:`);
+      console.warn(
+        `\n[token-lint] ${downgradedViolations.length} further legacy violation(s) downgraded by --warn-legacy:`,
+      );
       for (const v of downgradedViolations) {
-        console.warn(`  ${v.file}:${v.line}:${v.col}  [${v.rule}]  ${v.message}`);
+        console.warn(
+          `  ${v.file}:${v.line}:${v.col}  [${v.rule}]  ${v.message}`,
+        );
       }
     }
     const suffix = downgradedViolations.length
       ? ` (${downgradedViolations.length} legacy violation(s) downgraded by --warn-legacy)`
       : '';
-    console.error(`\n[token-lint] ${fatalViolations.length} violation(s) — fix them or add "// token-lint-ignore" to the offending line.${suffix}\n`);
+    console.error(
+      `\n[token-lint] ${fatalViolations.length} violation(s) — fix them or add "// token-lint-ignore" to the offending line.${suffix}\n`,
+    );
     process.exit(1);
   }
 
@@ -639,12 +794,18 @@ function main() {
     for (const v of downgradedViolations) {
       console.warn(`  ${v.file}:${v.line}:${v.col}  [${v.rule}]  ${v.message}`);
     }
-    console.warn(`\n[token-lint] ${downgradedViolations.length} legacy violation(s) — fix them or add "// token-lint-ignore" to the offending line. (--warn-legacy: not failing)\n`);
-    console.log(`[token-lint] WARN — ${files.length} file(s) checked, ${downgradedViolations.length} legacy violation(s) (allowed via --warn-legacy).`);
+    console.warn(
+      `\n[token-lint] ${downgradedViolations.length} legacy violation(s) — fix them or add "// token-lint-ignore" to the offending line. (--warn-legacy: not failing)\n`,
+    );
+    console.log(
+      `[token-lint] WARN — ${files.length} file(s) checked, ${downgradedViolations.length} legacy violation(s) (allowed via --warn-legacy).`,
+    );
     process.exit(0);
   }
 
-  console.log(`[token-lint] OK — ${files.length} file(s) checked, no violations.`);
+  console.log(
+    `[token-lint] OK — ${files.length} file(s) checked, no violations.`,
+  );
 }
 
 main();

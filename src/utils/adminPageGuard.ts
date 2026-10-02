@@ -159,9 +159,12 @@ export const useAdminGuard = (
           }
 
           // Exponential backoff
-          setTimeout(() => {
-            checkSession(true);
-          }, Math.pow(2, retryCount.current) * 500);
+          setTimeout(
+            () => {
+              checkSession(true);
+            },
+            Math.pow(2, retryCount.current) * 500,
+          );
           return;
         }
 

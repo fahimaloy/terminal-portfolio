@@ -9,12 +9,7 @@ import { animate, createScope, stagger } from 'animejs';
 import { isReducedMotion, durations, easings } from '../config/animations';
 
 export type StaggerMode =
-  | 'list'
-  | 'grid'
-  | 'center'
-  | 'first'
-  | 'last'
-  | 'random';
+  'list' | 'grid' | 'center' | 'first' | 'last' | 'random';
 
 export interface StaggerOptions {
   /** CSS selector to target children */
