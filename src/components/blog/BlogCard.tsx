@@ -1,12 +1,15 @@
 // src/components/blog/BlogCard.tsx
 /* ════════════════════════════════════════════════════════════════════════════════
-   Blog listing card — premium editorial with retro surface.
-   - Cover h-[44dvh] min 240px + tag shelf + reading time + excerpt clamp-3
-   - Tilt3D off on mobile/reduced-motion (conditional render)
-   - Token-only accent via ACCENT_CYCLE per index
-   - No raw hex — all colors read var(--wash-*) / var(--overlay-*)
+   Blog listing card — warm editorial, matte surface.
+   Rendered only inside the [data-theme='editorial'] scope that /blog sets, so
+   amber is already the page signal and the type comes from the body face.
+
+   - Cover aspect-[4/3] min 240px + tag shelf + reading time + excerpt clamp-3
+   - No glass and no neon ring: a matte plate with one warm key wash, so the
+     grid reads as a shelf of printed cards rather than a wall of HUD tiles
+   - Accent comes from the shared AccentColor union, weighted warm-first
+   - No raw hex — all colors read var(--wash-*) / var(--glow-*) / var(--bg-*)
    - Amber flash VFX handled by FlashCurtain in BlogReels on snap change
-   - Premium hover states with glow, scale, and border transitions
    - Reading progress indicator on hover
 ═════════════════════════════════════════════════════════════════════════════════ */
 
@@ -16,6 +19,8 @@ import Image from 'next/image';
 import { Clock, Eye, Star, BookOpen } from 'lucide-react';
 import { useMotionPreference } from '../../hooks/useMotionPreference';
 import { animate, stagger, createScope } from 'animejs';
+import { durations, easings } from '../../config/animations';
+import type { AccentColor } from '../../config/animations';
 import { BlogListItem } from '../../types/blog';
 import { formatDate } from '../../utils/dateFormat';
 import HairlineDivider from '../ui/graphics/primitives/HairlineDivider';
@@ -25,18 +30,19 @@ interface Props {
   index?: number;
 }
 
+// Warm-first, so a grid that starts at index 0 leads with amber and lime and
+// only meets the cool accents further in. Still exactly the six site accents.
 const ACCENT_CYCLE = [
   'amber',
-  'coral',
-  'cyan',
   'lime',
-  'violet',
   'ice',
+  'coral',
+  'violet',
+  'cyan',
 ] as const;
-type CardAccent = (typeof ACCENT_CYCLE)[number];
 
 export default function BlogCard({ post, index = 0 }: Props) {
-  const accent: CardAccent = ACCENT_CYCLE[index % ACCENT_CYCLE.length];
+  const accent: AccentColor = ACCENT_CYCLE[index % ACCENT_CYCLE.length];
   // Render-time motion state must be mount-gated: isReducedMotion() is false
   // on the server and the user's real preference in the browser, so reading it
   // during render made this card's cover opacity and its two conditional
@@ -74,9 +80,9 @@ export default function BlogCard({ post, index = 0 }: Props) {
       animate(cardRef.current!, {
         y: [20, 0],
         opacity: [0, 1],
-        duration: 600,
-        ease: 'outExpo',
-        delay: index * 80,
+        duration: durations.enter * 1000 * 0.95,
+        ease: easings.expoOut,
+        delay: index * (durations.stagger * 1000 * 1.3),
       });
     });
     return () => scope.revert();
@@ -97,31 +103,39 @@ export default function BlogCard({ post, index = 0 }: Props) {
       ref={cardRef}
       className="rounded-[var(--radius-lg)] overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_60px_var(--overlay-black-strong)]"
       style={{
-        background: 'var(--overlay-card-bg-hover)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid var(--overlay-card-border)',
-        boxShadow:
-          'inset 0 1px 0 var(--overlay-card-shadow-inner), 0 8px 32px var(--overlay-card-shadow-outer)',
+        // Matte plate, not glass. A warm key wash in the corner reads as lamp
+        // light on paper; the inset hairline is the only "edge light" a card
+        // needs now that the frame no longer carries a neon ring.
+        background:
+          'radial-gradient(120% 90% at 14% 0%, var(--wash-amber), transparent 46%), var(--bg-2)',
+        border: '1px solid var(--border-subtle)',
+        boxShadow: 'inset 0 1px 0 var(--wash-amber-strong)',
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <Link href={`/blog/${post.slug}`} legacyBehavior>
-        <a className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2">
+        {/* Ring colour is explicit, not Tailwind's stock default. An unstated
+            `focus-visible:ring-2` resolves --tw-ring-color to blue-500 and
+            --tw-ring-offset-color to white, which is a blue ring with a white
+            halo on a matte amber plate. token-lint cannot see this (it only
+            knows about raw hex/rgba and stock colour utilities), and
+            tailwind.config.js never sets `ringColor`, so the two colours have
+            to be named here. The offset sits on the --bg-2 page shell, which is
+            what actually paints behind the card's edge. */}
+        <a className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-amber)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-2)]">
           <div
-            className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-subtle)]"
+            className="relative overflow-hidden rounded-[var(--radius-lg)]"
             style={{
               background:
-                'radial-gradient(circle at 20% 10%, var(--field-glow-cyan), transparent 35%), radial-gradient(circle at 90% 100%, var(--field-glow-coral), transparent 45%), var(--bg-2)',
-              boxShadow:
-                '0 0 0 1px var(--field-glow-cyan), 0 16px 40px var(--overlay-black-soft)',
+                'radial-gradient(120% 100% at 10% 0%, var(--wash-amber), transparent 52%), var(--bg-2)',
             }}
           >
             {/* Cover */}
             <div
               className="relative aspect-[4/3] min-h-[240px] overflow-hidden"
               style={{
-                background: `radial-gradient(circle at 30% 20%, var(--field-glow-cyan), transparent 55%), var(--bg-3)`,
+                background: `radial-gradient(circle at 30% 20%, var(--wash-amber), transparent 58%), var(--bg-3)`,
               }}
             >
               {post.cover_image_url ? (
@@ -149,14 +163,14 @@ export default function BlogCard({ post, index = 0 }: Props) {
               {post.featured && (
                 <div className="absolute top-2 left-2">
                   <span
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-[var(--radius-sm)] font-mono text-[9px] tracking-[0.14em] border"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-[var(--radius-sm)] font-mono text-[11px] tracking-[0.1em] border"
                     style={{
-                      background: 'var(--wash-cyan)',
-                      borderColor: 'var(--neon-cyan)',
-                      color: 'var(--fg-1)',
+                      background: 'var(--wash-amber)',
+                      borderColor: 'var(--glow-amber-sm)',
+                      color: 'var(--neon-amber)',
                     }}
                   >
-                    <Star size={9} /> FEATURED
+                    <Star size={10} /> Featured
                   </span>
                 </div>
               )}
@@ -167,8 +181,9 @@ export default function BlogCard({ post, index = 0 }: Props) {
                   className="absolute bottom-0 left-0 h-[3px] transition-all duration-200"
                   style={{
                     width: `${isHovered ? readingProgress : 0}%`,
-                    background: 'var(--gradient-cyan-violet)',
-                    boxShadow: '0 0 8px var(--glow-cyan-sm)',
+                    background:
+                      'linear-gradient(90deg, var(--neon-amber), var(--neon-lime))',
+                    boxShadow: '0 0 8px var(--glow-amber-sm)',
                     transformOrigin: 'left center',
                   }}
                 />
@@ -178,15 +193,15 @@ export default function BlogCard({ post, index = 0 }: Props) {
               {!reduced && animateEnabled && isHovered && (
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <span
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-[var(--radius-sm)] font-mono text-[9px] tracking-[0.14em] border"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-[var(--radius-sm)] font-mono text-[11px] tracking-[0.1em] border"
                     style={{
-                      background: 'var(--overlay-card-bg)',
-                      borderColor: 'var(--glow-cyan-30)',
-                      color: 'var(--fg-1)',
-                      boxShadow: '0 4px 16px var(--glow-cyan-sm)',
+                      background: 'var(--bg-2)',
+                      borderColor: 'var(--border-subtle)',
+                      color: 'var(--fg-2)',
+                      boxShadow: '0 4px 16px var(--overlay-black-medium)',
                     }}
                   >
-                    <BookOpen size={9} /> READ
+                    <BookOpen size={10} /> Read
                   </span>
                 </div>
               )}
@@ -196,23 +211,26 @@ export default function BlogCard({ post, index = 0 }: Props) {
 
             {/* Body */}
             <div className="p-4 space-y-2">
+              {/* Meta line: 11px, not 9px. At the old size this row sat under
+                  4.5:1 against a live animated background no matter which
+                  foreground step it used (P2.2). */}
               <div
-                className="flex items-center gap-3 text-[9px] font-mono"
+                className="flex items-center gap-3 text-[11px] font-mono"
                 style={{ color: 'var(--fg-3)' }}
               >
                 <span>{formatDate(post.published_at)}</span>
                 {post.reading_minutes ? (
                   <span className="inline-flex items-center gap-1">
-                    <Clock size={9} /> {post.reading_minutes} MIN
+                    <Clock size={10} /> {post.reading_minutes} MIN
                   </span>
                 ) : null}
                 <span className="inline-flex items-center gap-1">
-                  <Eye size={9} /> {post.view_count ?? 0}
+                  <Eye size={10} /> {post.view_count ?? 0}
                 </span>
               </div>
 
               <h3
-                className="font-display text-sm tracking-wide leading-snug line-clamp-3 group-hover:text-[var(--neon-cyan)] transition-colors duration-200"
+                className="font-body text-base font-semibold tracking-[-0.01em] leading-snug line-clamp-3 group-hover:text-[var(--neon-amber)] transition-colors duration-200"
                 style={{ color: 'var(--fg-1)' }}
               >
                 {post.title}
@@ -220,8 +238,8 @@ export default function BlogCard({ post, index = 0 }: Props) {
 
               {(post.teaser ?? post.excerpt) && (
                 <p
-                  className="text-[11px] font-body line-clamp-3"
-                  style={{ color: 'var(--fg-3)' }}
+                  className="text-[13px] font-body leading-relaxed line-clamp-3"
+                  style={{ color: 'var(--fg-2)' }}
                 >
                   {post.teaser ?? post.excerpt}
                 </p>
@@ -232,7 +250,7 @@ export default function BlogCard({ post, index = 0 }: Props) {
                   {post.tags.slice(0, 3).map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex px-2 py-0.5 rounded-full font-mono text-[9px] tracking-[0.14em] border group-hover:border-[var(--glow-cyan-30)] group-hover:text-[var(--neon-cyan)] transition-all duration-200"
+                      className="inline-flex px-2 py-0.5 rounded-full font-mono text-[11px] tracking-[0.08em] border group-hover:border-[var(--glow-amber-sm)] group-hover:text-[var(--neon-amber)] transition-all duration-200"
                       style={{
                         background: 'var(--bg-3)',
                         borderColor: 'var(--border-subtle)',
@@ -244,7 +262,7 @@ export default function BlogCard({ post, index = 0 }: Props) {
                   ))}
                   {post.tags.length > 3 && (
                     <span
-                      className="inline-flex px-2 py-0.5 rounded-full font-mono text-[9px] tracking-[0.14em] border"
+                      className="inline-flex px-2 py-0.5 rounded-full font-mono text-[11px] tracking-[0.08em] border"
                       style={{
                         background: 'var(--bg-3)',
                         borderColor: 'var(--border-subtle)',

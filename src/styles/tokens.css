@@ -81,6 +81,11 @@
   --glow-focus: rgba(61, 242, 255, 0.3);
   --glow-focus-strong: rgba(61, 242, 255, 0.5);
 
+  /* The halo a short accent RULE throws. It is an alias, not a colour of its
+     own, so any scope that repoints the accent gradient repoints the bloom with
+     it — a rule can never glow in a hue it is not painted in. */
+  --glow-accent: var(--glow-cyan);
+
   /* ── WASH SURFACES — translucent accent fills ────────────────────────────── */
   --wash-cyan: rgba(61, 242, 255, 0.08);
   --wash-cyan-strong: rgba(61, 242, 255, 0.15);
@@ -431,4 +436,63 @@
   --accent-color: var(--neon-ice);
   --accent-glow: var(--glow-ice-sm);
   --accent-wash: var(--wash-ice);
+}
+
+/* ── EDITORIAL SCOPE — the blog's warm room ───────────────────────────────────
+   /blog is a place to READ. The rest of the site is a HUD. Both are built from
+   the SAME six accents and the SAME surface rungs — the blog does not have its
+   own palette, it re-SELECTS the site palette:
+
+     amber  → the reading signal (active state, rules, progress, focus)
+     lime   → the second voice (cool-warm relief, the "lime" edge of the rule)
+     cyan   → stays the link/annotation voice inside prose, because
+              .rich-prose is not blog-owned and hard-wires --neon-cyan
+
+   Warmth here is ATMOSPHERE, not a new hue: warm key light and amber hairlines
+   on the same deep ramp, so the reading surface sits in the same room as the
+   HUD instead of inverting to a light "paper" theme that the shared scene
+   layer, the shared dark overlays and the admin shell would all fight.
+
+   Every value below re-points an existing token at another existing token — no
+   new hex, no new accent. The one name this scope adds, --glow-accent, is
+   declared in :root and exists so the bloom on an accent rule travels with the
+   rule; nothing else may read it.
+
+   --font-display is repointed at the body face on purpose: article headings
+   are styled by .rich-prose in src/styles/global.css (not blog-owned) and
+   resolve var(--font-display). This is the only lever that keeps Orbitron off
+   the reading path without editing a file this scope does not own. The room
+   still gets ONE display voice — JetBrains Mono at display size, on the two
+   page titles, exactly as the hero wordmark does it (HeroSection NAME_TYPE:
+   medium weight, +0.01em tracking, 1.14 leading; mono sidebearings are already
+   even, so it never takes negative tracking).
+   ─────────────────────────────────────────────────────────────────────────── */
+[data-theme='editorial'] {
+  /* Type: one reading voice, no display cut. */
+  --font-display: var(--font-body);
+
+  /* Text selection follows the editorial signal, not the system cyan. */
+  --selection-bg: var(--neon-amber);
+
+  /* Rules are the warm spine of the page: amber into lime, never cyan→violet.
+     The bloom travels with the paint. */
+  --border-gradient-accent: linear-gradient(
+    90deg,
+    var(--neon-amber),
+    var(--neon-lime)
+  );
+  --hairline-accent: linear-gradient(
+    90deg,
+    transparent,
+    var(--glow-amber-sm),
+    transparent
+  );
+  --glow-accent: var(--glow-amber);
+
+  /* The room's key light is warm, not merely its ink: the hero aurora and any
+     mesh inside the reading room fade in amber and lime. Cyan and violet are the
+     HUD's weather — they belong to the page you just left. Coral is already
+     warm and stays. */
+  --aurora-1: var(--aurora-4);
+  --aurora-2: var(--wash-lime);
 }

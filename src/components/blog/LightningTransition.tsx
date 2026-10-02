@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { createTimeline } from 'animejs';
-import { isReducedMotion } from '../../config/animations';
+import { isReducedMotion, durations, easings } from '../../config/animations';
 
 interface Props {
   /** Increment/change this to fire the transition. */
@@ -39,21 +39,33 @@ export default function LightningTransition({
     const sheet = root.querySelector<HTMLElement>('.lt-sheet');
 
     const tl = createTimeline({
-      defaults: { ease: 'outExpo' },
+      defaults: { ease: easings.expoOut },
       onComplete: () => {
         if (root) root.style.pointerEvents = 'none';
         onComplete?.();
       },
     });
 
+    // The sheet is a page turn, not a strobe: it covers, hands off at the
+    // midpoint, then lifts. Every beat is derived from the shared duration
+    // tokens so the wipe keeps pace with the rest of the reading surface.
+    const coverMs = durations.enter * 1000 * 0.5;
+    const handOffMs = durations.enter * 1000 * 0.6;
+    const liftAtMs = durations.enter * 1000 * 0.66;
+    const liftMs = durations.exit * 1000 * 0.8;
+
     if (sheet) {
-      tl.add(sheet, { scaleY: [0, 1], opacity: [0, 1], duration: 300 }, 0);
+      tl.add(sheet, { scaleY: [0, 1], opacity: [0, 1], duration: coverMs }, 0);
     }
 
-    tl.call(() => onMidpoint?.(), 360);
+    tl.call(() => onMidpoint?.(), handOffMs);
 
     if (sheet) {
-      tl.add(sheet, { scaleY: [1, 0], opacity: [1, 0], duration: 320 }, 420);
+      tl.add(
+        sheet,
+        { scaleY: [1, 0], opacity: [1, 0], duration: liftMs },
+        liftAtMs,
+      );
     }
 
     return () => {

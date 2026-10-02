@@ -83,49 +83,78 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
         if (backLink.length)
           tl.add(
             backLink as unknown as HTMLElement[],
-            { y: [12, 0], opacity: [0, 1], duration: 420 } as any,
+            {
+              y: [12, 0],
+              opacity: [0, 1],
+              duration: durations.enter * 1000 * 0.65,
+            } as any,
             0,
           );
         if (meta.length)
           tl.add(
             meta as unknown as HTMLElement[],
-            { y: [12, 0], opacity: [0, 1], duration: 460 } as any,
-            stagger(70),
+            {
+              y: [12, 0],
+              opacity: [0, 1],
+              duration: durations.enter * 1000 * 0.72,
+            } as any,
+            stagger(durations.stagger * 1000 * 1.17),
           );
         if (hairlineWraps.length)
           tl.add(
             hairlineWraps as unknown as HTMLElement[],
-            { opacity: [0, 1], duration: 260 } as any,
-            stagger(40),
+            {
+              opacity: [0, 1],
+              duration: durations.enter * 1000 * 0.4,
+            } as any,
+            stagger(durations.stagger * 1000 * 0.67),
           );
         if (titleEl)
           tl.add(
             titleEl as unknown as HTMLElement,
-            { y: [14, 0], opacity: [0, 1], duration: 520 } as any,
-            stagger(70),
+            {
+              y: [14, 0],
+              opacity: [0, 1],
+              duration: durations.enter * 1000 * 0.81,
+            } as any,
+            stagger(durations.stagger * 1000 * 1.17),
           );
         if (excerptEl.length)
           tl.add(
             excerptEl as unknown as HTMLElement[],
-            { y: [12, 0], opacity: [0, 1], duration: 440 } as any,
-            stagger(70),
+            {
+              y: [12, 0],
+              opacity: [0, 1],
+              duration: durations.enter * 1000 * 0.69,
+            } as any,
+            stagger(durations.stagger * 1000 * 1.17),
           );
         if (tagsWrap.length)
           tl.add(
             tagsWrap as unknown as HTMLElement[],
-            { opacity: [0, 1], duration: 320 } as any,
-            stagger(40),
+            {
+              opacity: [0, 1],
+              duration: durations.enter * 1000 * 0.5,
+            } as any,
+            stagger(durations.stagger * 1000 * 0.67),
           );
         if (tagChips.length)
           tl.add(
             tagChips as unknown as HTMLElement[],
-            { y: [8, 0], opacity: [0, 1], duration: 400 } as any,
-            stagger(30, { from: 'first' }),
+            {
+              y: [8, 0],
+              opacity: [0, 1],
+              duration: durations.enter * 1000 * 0.63,
+            } as any,
+            stagger(durations.stagger * 1000 * 0.5, { from: 'first' }),
           );
         if (auroraWash.length)
           tl.add(
             auroraWash as unknown as HTMLElement[],
-            { opacity: [0, 1], duration: 340 } as any,
+            {
+              opacity: [0, 1],
+              duration: durations.enter * 1000 * 0.53,
+            } as any,
             0,
           );
         return;
@@ -160,7 +189,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             duration: (durations.enter ?? 0.48) * 1000 * 0.5,
             ease: (easings.smooth ?? 'outExpo') as string,
           } as any,
-          stagger(70),
+          stagger(durations.stagger * 1000 * 1.17),
         );
       }
 
@@ -187,7 +216,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             duration: (durations.draw ?? 1.2) * 1000,
             ease: (easings.smooth ?? 'linear') as string,
           } as any,
-          stagger(40, { from: 'first' }),
+          stagger(durations.stagger * 1000 * 0.67, { from: 'first' }),
         );
         if (hairlineWraps.length) {
           tl.add(
@@ -209,7 +238,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             duration: (durations.hover ?? 0.24) * 1000,
             ease: (easings.smooth ?? 'outExpo') as string,
           } as any,
-          stagger(40),
+          stagger(durations.stagger * 1000 * 0.67),
         );
       }
 
@@ -233,9 +262,9 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             opacity: [0, 1],
             duration: (durations.enter ?? 0.48) * 1000 * 0.56,
             ease: (easings.expoOut ?? easings.outExpo ?? 'outExpo') as string,
-            delay: stagger(20, { from: 'first' }),
+            delay: stagger(durations.stagger * 1000 * 0.33, { from: 'first' }),
           } as any,
-          stagger(70),
+          stagger(durations.stagger * 1000 * 1.17),
         );
       } else if (titleEl) {
         tl.add(
@@ -246,7 +275,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             duration: (durations.enter ?? 0.48) * 1000 * 0.55,
             ease: softSpring ?? (easings.smooth as string),
           } as any,
-          stagger(70),
+          stagger(durations.stagger * 1000 * 1.17),
         );
       }
 
@@ -256,10 +285,10 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           {
             y: [12, 0],
             opacity: [0, 1],
-            duration: 520,
+            duration: (durations.enter ?? 0.48) * 1000 * 0.81,
             ease: softSpring ?? (easings.smooth as string),
           } as any,
-          stagger(70),
+          stagger(durations.stagger * 1000 * 1.17),
         );
       }
 
@@ -270,11 +299,11 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             y: [10, 0],
             opacity: [0, 1],
             scale: [0.98, 1],
-            duration: 440,
+            duration: (durations.enter ?? 0.48) * 1000 * 0.69,
             ease: softSpring ?? (easings.smooth as string),
-            delay: stagger(22, { from: 'first' }),
+            delay: stagger(durations.stagger * 1000 * 0.37, { from: 'first' }),
           } as any,
-          stagger(60, { from: 'first' }),
+          stagger(durations.stagger * 1000, { from: 'first' }),
         );
       } else if (tagsWrap.length) {
         tl.add(
@@ -282,10 +311,10 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           {
             y: [10, 0],
             opacity: [0, 1],
-            duration: 460,
+            duration: (durations.enter ?? 0.48) * 1000 * 0.72,
             ease: softSpring ?? (easings.smooth as string),
           } as any,
-          stagger(70),
+          stagger(durations.stagger * 1000 * 1.17),
         );
       }
 
@@ -354,7 +383,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
       <article
         ref={articleRef}
         className="relative z-10 min-h-screen"
-        data-theme=""
+        data-theme="editorial"
       >
         {/* Full-screen hero — premium: aurora wash + parallax cover + splitText title + drawable rule */}
         <div
@@ -432,19 +461,19 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           <div className="relative max-w-3xl mx-auto w-full">
             <Link href="/blog" legacyBehavior>
               <a
-                className="reader-back inline-flex items-center gap-2 min-h-[44px] min-w-[44px] font-mono text-[10px] tracking-[0.18em] mb-6 reveal transition-colors hover:opacity-80"
+                className="reader-back inline-flex items-center gap-2 min-h-[44px] min-w-[44px] font-mono text-[11px] tracking-[0.1em] mb-6 reveal transition-colors hover:opacity-80"
                 style={{ color: 'var(--fg-3)' }}
               >
-                <ArrowLeft size={12} /> BACK TO LOG
+                <ArrowLeft size={13} /> Back to the archive
               </a>
             </Link>
 
             <div
-              className="reader-meta flex flex-wrap items-center gap-3 text-[10px] font-mono mb-4 reveal"
+              className="reader-meta flex flex-wrap items-center gap-3 text-[11px] font-mono mb-4 reveal"
               style={{ color: 'var(--fg-3)' }}
             >
               <span className="inline-flex items-center gap-1">
-                <Calendar size={10} />{' '}
+                <Calendar size={11} />{' '}
                 {/* Article page deliberately departs from formatDate's DRAFT/
                     short-month defaults: a missing date renders nothing, and
                     the wider measure takes the long month name. */}
@@ -452,19 +481,23 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
               </span>
               {post.reading_minutes ? (
                 <span className="inline-flex items-center gap-1">
-                  <Clock size={10} /> {post.reading_minutes} MIN READ
+                  <Clock size={11} /> {post.reading_minutes} min read
                 </span>
               ) : null}
               <span className="inline-flex items-center gap-1">
-                <Eye size={10} /> {post.view_count ?? 0} VIEWS
+                <Eye size={11} /> {post.view_count ?? 0} views
               </span>
             </div>
 
             {/* Drawable hairline rule under meta — animated via createDrawable draw ['0 0','0 1'] */}
             <HairlineDivider className="reader-hairline w-full max-w-xl mb-5 reveal" />
 
+            {/* The blog's one display voice — the hero wordmark's recipe
+                (NAME_TYPE in HeroSection): mono at display size, medium weight,
+                +0.01em tracking, 1.14 leading. Sentence case, never upper-cased;
+                mono never takes negative tracking. */}
             <h1
-              className="reader-title text-3xl md:text-5xl font-display font-semibold tracking-[-0.02em] leading-tight reveal"
+              className="reader-title font-mono font-medium tracking-[0.01em] leading-[1.14] text-[clamp(1.875rem,6vw,3.25rem)] reveal"
               style={{ color: 'var(--fg-1)' }}
             >
               {post.title}
@@ -484,7 +517,7 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
                 {post.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="reader-tag inline-flex px-2.5 py-1 rounded-full font-mono text-[9px] tracking-[0.14em] border reveal"
+                    className="reader-tag inline-flex px-2.5 py-1 rounded-full font-mono text-[11px] tracking-[0.1em] border reveal"
                     style={{
                       background: 'var(--bg-2)',
                       borderColor: 'var(--border-subtle)',
@@ -521,13 +554,13 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
                   }}
                 >
                   <div
-                    className="text-[9px] font-mono tracking-[0.2em] mb-1"
+                    className="text-[11px] font-mono tracking-[0.1em] mb-1"
                     style={{ color: 'var(--fg-3)' }}
                   >
-                    {'\u25C0 PREVIOUS'}
+                    {'\u25C0 Previous'}
                   </div>
                   <div
-                    className="font-body text-xs line-clamp-2"
+                    className="font-body font-semibold text-sm line-clamp-2"
                     style={{ color: 'var(--fg-1)' }}
                   >
                     {prev.title}
@@ -550,13 +583,13 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
                   }}
                 >
                   <div
-                    className="text-[9px] font-mono tracking-[0.2em] mb-1"
+                    className="text-[11px] font-mono tracking-[0.1em] mb-1"
                     style={{ color: 'var(--fg-3)' }}
                   >
-                    {'NEXT \u25B6'}
+                    {'Next \u25B6'}
                   </div>
                   <div
-                    className="font-body text-xs line-clamp-2"
+                    className="font-body font-semibold text-sm line-clamp-2"
                     style={{ color: 'var(--fg-1)' }}
                   >
                     {next.title}
@@ -572,10 +605,10 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           {related.length > 0 && (
             <section className="mt-16">
               <div
-                className="text-[10px] font-mono tracking-[0.24em] mb-4"
+                className="text-[12px] font-mono tracking-[0.1em] mb-4"
                 style={{ color: 'var(--fg-3)' }}
               >
-                {'// RELATED_TRANSMISSIONS'}
+                {'// Related reading'}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {related.map((r, i) => (
@@ -588,14 +621,14 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           <div className="flex justify-center mt-14">
             <button
               onClick={() => router.push('/blog')}
-              className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-5 py-2.5 font-mono text-[11px] tracking-[0.14em] border rounded-[var(--radius-md)] transition-colors duration-200"
+              className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-5 py-2.5 font-body text-sm border rounded-[var(--radius-md)] transition-colors duration-200 hover:border-[var(--glow-amber-sm)] hover:text-[var(--neon-amber)]"
               style={{
                 background: 'transparent',
                 borderColor: 'var(--border-subtle)',
                 color: 'var(--fg-2)',
               }}
             >
-              ALL POSTS
+              All posts
             </button>
           </div>
         </div>

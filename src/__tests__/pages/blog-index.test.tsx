@@ -258,15 +258,21 @@ describe('BlogIndexPage', () => {
       fireEvent.click(tagButton());
     });
     // 'foo' is present on a post that is NOT on the current page, which is the
-    // whole point of facets.
-    expect(screen.getByRole('button', { name: /FOO/ })).toBeInTheDocument();
+    // whole point of facets. The tag renders as given by the API (BlogHeader
+    // does not upper-case it), so match case-insensitively.
+    const fooFacet = screen.getByRole('button', { name: /foo/i });
+    // The count is the API's, not derivable from the page buffer.
+    expect(fooFacet).toHaveTextContent('3');
   });
 
   it('empty state shows the empty copy, not the filtered copy', async () => {
     render(<BlogIndexPage />);
     await waitFor(() =>
-      expect(screen.getByText('NO TRANSMISSIONS YET')).toBeInTheDocument(),
+      expect(screen.getByText('Nothing here yet')).toBeInTheDocument(),
     );
+    // The two headlines are the discriminator between `empty` and
+    // `no-results`; neither may satisfy the other's assertion.
+    expect(screen.queryByText('No matches')).not.toBeInTheDocument();
 
     const headline = document.querySelector<HTMLElement>(
       '.blog-empty-headline',
@@ -293,7 +299,7 @@ describe('BlogIndexPage', () => {
   it('searching switches the empty state to the filtered variant and offers a reset', async () => {
     render(<BlogIndexPage />);
     await waitFor(() =>
-      expect(screen.getByText('NO TRANSMISSIONS YET')).toBeInTheDocument(),
+      expect(screen.getByText('Nothing here yet')).toBeInTheDocument(),
     );
 
     await act(async () => {
@@ -301,31 +307,31 @@ describe('BlogIndexPage', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByText('NO MATCHES')).toBeInTheDocument(),
+      expect(screen.getByText('No matches')).toBeInTheDocument(),
     );
     expect(
       screen
         .getByTestId('blog-empty-graphic-mock')
         .getAttribute('data-variant'),
     ).toBe('no-results');
-    expect(screen.getByText('CLEAR FILTERS')).toBeInTheDocument();
+    expect(screen.getByText('Clear filters')).toBeInTheDocument();
   });
 
   it('sorting alone counts as an active filter', async () => {
     render(<BlogIndexPage />);
     await waitFor(() =>
-      expect(screen.getByText('NO TRANSMISSIONS YET')).toBeInTheDocument(),
+      expect(screen.getByText('Nothing here yet')).toBeInTheDocument(),
     );
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Sort order/ }));
     });
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'MOST READ' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Most read' }));
     });
 
     await waitFor(() =>
-      expect(screen.getByText('NO MATCHES')).toBeInTheDocument(),
+      expect(screen.getByText('No matches')).toBeInTheDocument(),
     );
   });
 
@@ -398,7 +404,7 @@ describe('BlogIndexPage', () => {
 
     const { unmount } = render(<BlogIndexPage />);
     await waitFor(() =>
-      expect(screen.getByText('NO TRANSMISSIONS YET')).toBeInTheDocument(),
+      expect(screen.getByText('Nothing here yet')).toBeInTheDocument(),
     );
     expect(() => unmount()).not.toThrow();
     expect(mockScopeRevertBlog).toHaveBeenCalled();

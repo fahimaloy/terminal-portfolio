@@ -57,12 +57,17 @@ export default function ReadingProgress({ targetRef }: Props) {
       aria-valuemin={0}
       aria-valuemax={100}
     >
+      {/* The fill smooths at 80ms, not at a --dur-* token: its width is recomputed
+          every rAF, so the shortest token (150ms) would trail the scroll instead
+          of riding it. The arbitrary value is deliberate and suppressed here. */}
       <div
-        className="h-full"
+        className="h-full transition-[width] duration-[80ms] ease-linear" // token-lint-ignore — rAF-driven width; 80ms rides the scroll, 150ms lags it
         style={{
           width: `${progress * 100}%`,
-          background: 'var(--fg-1)',
-          transition: 'width 80ms linear',
+          // Amber rule rather than a white HUD bar: the reading position is a
+          // quiet mark on the page, not an instrument readout.
+          background:
+            'linear-gradient(90deg, var(--neon-amber), var(--neon-lime))',
         }}
       />
     </div>

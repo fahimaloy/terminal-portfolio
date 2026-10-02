@@ -37,8 +37,9 @@ export default function Document() {
         />
         <link rel="manifest" href="/manifest.json" />
         {/* Every family named in src/styles/tokens.css must be requested here.
-            --font-display is Orbitron; it was never loaded, so every
-            `font-display` element silently fell back to Space Grotesk. */}
+            Weights must cover every weight used in the stylesheets: JetBrains
+            Mono ships 400/500 only, so `font-semibold` on it would render
+            faux-bold. */}
         <link
           href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
           rel="stylesheet"

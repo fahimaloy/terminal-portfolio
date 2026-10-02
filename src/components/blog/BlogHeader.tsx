@@ -36,8 +36,8 @@ type Props = {
 };
 
 const SORTS: { value: BlogSort; label: string }[] = [
-  { value: 'recent', label: 'RECENT' },
-  { value: 'popular', label: 'MOST READ' },
+  { value: 'recent', label: 'Recent' },
+  { value: 'popular', label: 'Most read' },
 ];
 
 export default function BlogHeader({
@@ -110,7 +110,8 @@ export default function BlogHeader({
     setLocal('');
     onSearch('');
     onTag('');
-  }, [onSearch, onTag]);
+    onSort('recent');
+  }, [onSearch, onTag, onSort]);
 
   const activeCount =
     (tag ? 1 : 0) + (search ? 1 : 0) + (sort !== 'recent' ? 1 : 0);
@@ -131,25 +132,25 @@ export default function BlogHeader({
         <div className="flex items-center justify-between gap-4 mb-3">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 min-h-[44px] min-w-[44px] font-mono text-[11px] tracking-[0.18em] shrink-0"
+            className="inline-flex items-center gap-2 min-h-[44px] min-w-[44px] font-mono text-[12px] tracking-[0.1em] shrink-0"
             style={{ color: 'var(--fg-3)' }}
           >
             <ArrowLeft size={14} aria-hidden="true" />
-            BACK
+            Back
           </Link>
 
           <div className="text-center">
             <div
-              className="font-mono text-[10px] tracking-[0.32em]"
+              className="font-mono text-[12px] tracking-[0.12em]"
               style={{ color: 'var(--fg-3)' }}
             >
-              {'// TRANSMISSION_LOG'}
+              {'// The archive'}
             </div>
             <h1
-              className="font-display font-semibold tracking-[-0.02em] leading-none text-3xl md:text-4xl"
+              className="font-body font-semibold tracking-[-0.02em] leading-none text-3xl md:text-4xl"
               style={{ color: 'var(--fg-1)' }}
             >
-              BLOG
+              Writing
             </h1>
           </div>
 
@@ -178,7 +179,7 @@ export default function BlogHeader({
 
         {/* Row 2 — search + filter buttons. Wraps below 640px: three 40px
             buttons plus gaps left the field about 90px of text and truncated
-            "Search transmissions" to "Search tra". */}
+            the placeholder to "Search wri". */}
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative flex-1 basis-full sm:basis-auto min-w-0">
             <Search
@@ -192,9 +193,9 @@ export default function BlogHeader({
               type="search"
               value={local}
               onChange={(e) => setLocal(e.target.value)}
-              placeholder="Search transmissions…"
+              placeholder="Search writing…"
               aria-label="Search blog posts"
-              className="w-full rounded-[var(--radius-md)] border py-2.5 pl-10 pr-9 sm:pr-20 font-mono text-xs tracking-wide focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border py-2.5 pl-10 pr-9 sm:pr-20 font-body text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-amber)]"
               style={{
                 background: 'var(--bg-2)',
                 borderColor: 'var(--border-subtle)',
@@ -217,7 +218,7 @@ export default function BlogHeader({
             ) : (
               <kbd
                 aria-hidden="true"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:block font-mono text-[9px] px-1.5 py-0.5 rounded border"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:block font-mono text-[11px] px-1.5 py-0.5 rounded border"
                 style={{
                   color: 'var(--fg-3)',
                   borderColor: 'var(--border-subtle)',
@@ -271,17 +272,17 @@ export default function BlogHeader({
             {tag && <FilterChip label={tag} onClear={() => onTag('')} />}
             {sort !== 'recent' && (
               <FilterChip
-                label={sort === 'popular' ? 'MOST READ' : 'RECENT'}
+                label={sort === 'popular' ? 'Most read' : 'Recent'}
                 onClear={() => onSort('recent')}
               />
             )}
             <button
               type="button"
               onClick={clearAll}
-              className="min-h-[44px] min-w-[44px] px-2 font-mono text-[10px] tracking-[0.16em]"
-              style={{ color: 'var(--neon-cyan)' }}
+              className="min-h-[44px] min-w-[44px] px-2 font-mono text-[12px] tracking-[0.1em]"
+              style={{ color: 'var(--neon-amber)' }}
             >
-              CLEAR ALL
+              Clear all
             </button>
           </div>
         )}
@@ -291,10 +292,10 @@ export default function BlogHeader({
           <Panel label="TAGS">
             {facets.length === 0 ? (
               <p
-                className="font-mono text-[10px]"
+                className="font-mono text-[12px]"
                 style={{ color: 'var(--fg-3)' }}
               >
-                NO TAGS YET
+                No tags yet
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
@@ -306,16 +307,18 @@ export default function BlogHeader({
                       type="button"
                       onClick={() => onTag(active ? '' : f.tag)}
                       aria-pressed={active}
-                      className="inline-flex items-center gap-1.5 rounded-full border min-h-[44px] min-w-[44px] px-3 py-2 font-mono text-[10px] tracking-[0.14em] transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-full border min-h-[44px] min-w-[44px] px-3 py-2 font-body text-[13px] transition-colors"
                       style={{
-                        background: active ? 'var(--neon-cyan)' : 'var(--bg-3)',
-                        color: active ? 'var(--bg-void)' : 'var(--fg-2)',
+                        background: active
+                          ? 'var(--wash-amber)'
+                          : 'var(--bg-3)',
+                        color: active ? 'var(--neon-amber)' : 'var(--fg-2)',
                         borderColor: active
-                          ? 'var(--neon-cyan)'
+                          ? 'var(--glow-amber-sm)'
                           : 'var(--border-subtle)',
                       }}
                     >
-                      {f.tag.toUpperCase()}
+                      {f.tag}
                       <span style={{ opacity: 0.6 }}>{f.count}</span>
                     </button>
                   );
@@ -336,12 +339,12 @@ export default function BlogHeader({
                     type="button"
                     onClick={() => onSort(s.value)}
                     aria-pressed={active}
-                    className="rounded-[var(--radius-sm)] border min-h-[44px] min-w-[44px] px-3 py-2 font-mono text-[10px] tracking-[0.16em] transition-colors"
+                    className="rounded-[var(--radius-sm)] border min-h-[44px] min-w-[44px] px-3 py-2 font-body text-[13px] transition-colors"
                     style={{
-                      background: active ? 'var(--neon-cyan)' : 'var(--bg-3)',
-                      color: active ? 'var(--bg-void)' : 'var(--fg-2)',
+                      background: active ? 'var(--wash-amber)' : 'var(--bg-3)',
+                      color: active ? 'var(--neon-amber)' : 'var(--fg-2)',
                       borderColor: active
-                        ? 'var(--neon-cyan)'
+                        ? 'var(--glow-amber-sm)'
                         : 'var(--border-subtle)',
                     }}
                   >
@@ -358,7 +361,7 @@ export default function BlogHeader({
             <div className="space-y-4">
               <div>
                 <p
-                  className="font-mono text-[10px] tracking-[0.2em] mb-2"
+                  className="font-mono text-[12px] tracking-[0.1em] mb-2"
                   style={{ color: 'var(--fg-3)' }}
                 >
                   SORT
@@ -370,14 +373,16 @@ export default function BlogHeader({
                       type="button"
                       onClick={() => onSort(s.value)}
                       aria-pressed={sort === s.value}
-                      className="rounded-[var(--radius-sm)] border min-h-[44px] min-w-[44px] px-3 py-2 font-mono text-[10px] tracking-[0.16em]"
+                      className="rounded-[var(--radius-sm)] border min-h-[44px] min-w-[44px] px-3 py-2 font-body text-[13px]"
                       style={{
                         borderColor:
                           sort === s.value
-                            ? 'var(--neon-cyan)'
+                            ? 'var(--glow-amber-sm)'
                             : 'var(--border-subtle)',
                         color:
-                          sort === s.value ? 'var(--neon-cyan)' : 'var(--fg-2)',
+                          sort === s.value
+                            ? 'var(--neon-amber)'
+                            : 'var(--fg-2)',
                       }}
                     >
                       {s.label}
@@ -385,11 +390,17 @@ export default function BlogHeader({
                   ))}
                 </div>
               </div>
+              {/* `polite`, not `assertive`: this is a count the visitor
+                  deliberately caused by filtering, and nothing on the page
+                  interrupts them to read it. Without a live region every
+                  filter change is a silent restyle — the whole blog tree had
+                  zero `aria-live`/`role="alert"`. */}
               <p
-                className="font-mono text-[10px]"
+                className="font-mono text-[12px]"
                 style={{ color: 'var(--fg-3)' }}
+                aria-live="polite"
               >
-                {String(total).padStart(2, '0')} ENTRIES MATCH
+                {String(total).padStart(2, '0')} entries match
               </p>
             </div>
           </Panel>
@@ -415,7 +426,7 @@ function Panel({
       }}
     >
       <div
-        className="font-mono text-[10px] tracking-[0.24em] mb-3"
+        className="font-mono text-[12px] tracking-[0.1em] mb-3"
         style={{ color: 'var(--fg-3)' }}
       >
         {'// ' + label}
@@ -434,11 +445,11 @@ function FilterChip({
 }) {
   return (
     <span
-      className="relative inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[10px] tracking-[0.12em]"
+      className="relative inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-body text-[13px]"
       style={{
-        background: 'var(--wash-cyan)',
-        color: 'var(--neon-cyan)',
-        borderColor: 'var(--glow-cyan-30)',
+        background: 'var(--wash-amber)',
+        color: 'var(--neon-amber)',
+        borderColor: 'var(--glow-amber-sm)',
       }}
     >
       {label}
@@ -476,17 +487,17 @@ function IconToggle({
       title={label}
       className="relative grid place-items-center w-11 h-11 rounded-[var(--radius-md)] border transition-colors"
       style={{
-        background: active ? 'var(--wash-cyan)' : 'var(--bg-2)',
-        color: active ? 'var(--neon-cyan)' : 'var(--fg-2)',
-        borderColor: active ? 'var(--glow-cyan-30)' : 'var(--border-subtle)',
+        background: active ? 'var(--wash-amber)' : 'var(--bg-2)',
+        color: active ? 'var(--neon-amber)' : 'var(--fg-2)',
+        borderColor: active ? 'var(--glow-amber-sm)' : 'var(--border-subtle)',
       }}
     >
       {children}
       {badge ? (
         <span
           aria-hidden="true"
-          className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 grid place-items-center rounded-full font-mono text-[9px]"
-          style={{ background: 'var(--neon-cyan)', color: 'var(--bg-void)' }}
+          className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 grid place-items-center rounded-full font-mono text-[10px]"
+          style={{ background: 'var(--neon-amber)', color: 'var(--bg-void)' }}
         >
           {badge}
         </span>

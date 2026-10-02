@@ -313,11 +313,14 @@ body {
     letter-spacing: -0.02em;
   }
   /* The one gradient in the whole surface, and it is on a heading, never on
-     body type. Guarded by @supports so the text can never fall back to
-     transparent. */
+     body type. Painted in --border-gradient-accent so the reading room's
+     editorial scope repoints it to amber→lime on its own; outside that scope
+     the root value is still cyan→violet, which is what the AI chat replies and
+     the project drawer get. Guarded by @supports so the text can never fall
+     back to transparent. */
   @supports (background-clip: text) or (-webkit-background-clip: text) {
     .rich-prose :where(h1) {
-      background: var(--gradient-cyan-violet);
+      background: var(--border-gradient-accent);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
@@ -331,8 +334,10 @@ body {
     padding-top: 0.9em;
     position: relative;
   }
-  /* Aurora kicker: a short cyan→violet rule above every h2, so the section
-     breaks read as deliberate rather than as a gap in the type. */
+  /* Aurora kicker: a short accent rule above every h2, so the section
+     breaks read as deliberate rather than as a gap in the type. Both its paint
+     and its bloom come from the accent tokens, so a scope that warms the rule
+     warms the glow — the reading room gets amber, everything else cyan. */
   .rich-prose :where(h2)::before {
     content: '';
     position: absolute;
@@ -341,7 +346,7 @@ body {
     width: 3.25rem;
     height: 2px;
     background: var(--border-gradient-accent);
-    box-shadow: 0 0 12px var(--glow-cyan);
+    box-shadow: 0 0 12px var(--glow-accent);
   }
   .rich-prose :where(h3) {
     font-size: 1.25em;
@@ -725,6 +730,31 @@ body {
   .rich-prose :where(:last-child) {
     margin-bottom: 0;
   }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   EDITORIAL DISPLAY VOICE
+   The reading room is one body face, with exactly ONE display moment: JetBrains
+   Mono at display size, on the two page titles. It is the site wordmark's
+   recipe (HeroSection NAME_TYPE) — medium weight, +0.01em tracking, 1.14
+   leading, never upper-cased and never negative-tracked, because monospaced
+   sidebearings are already even and tightening them collides the glyphs.
+
+   `.editorial-room` is on <main> in src/pages/blog/index.tsx. The h1 itself is
+   rendered by BlogHeader, which another lane owns; the ROOM owns the voice, so
+   the rule is scoped to the room instead of the element. It sits outside every
+   @layer on purpose: unlayered declarations outrank layered ones, which is what
+   lets this beat BlogHeader's own `font-body text-3xl md:text-4xl` utilities
+   without editing that file. Drop the utilities from the h1 and this rule
+   becomes redundant rather than wrong.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+.editorial-room h1 {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  line-height: 1.14;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
 }
 
 /* Ripple-out for button press feedback (NeonButton) */

@@ -45,7 +45,7 @@ export default function BlogGrid({
         opacity: [0, 1],
         duration: durations.enter * 1000 * 0.55,
         ease: easings.expoOut,
-        delay: stagger(45, { from: 'first' }),
+        delay: stagger(durations.stagger * 1000 * 0.75, { from: 'first' }),
       });
     });
     return () => scope.revert();
@@ -67,13 +67,13 @@ export default function BlogGrid({
             type="button"
             onClick={onLoadMore}
             disabled={loading}
-            className="rounded-[var(--radius-md)] border min-h-[44px] min-w-[44px] px-6 py-2.5 font-mono text-[11px] tracking-[0.18em] transition-colors disabled:opacity-40"
+            className="rounded-[var(--radius-md)] border min-h-[44px] min-w-[44px] px-6 py-2.5 font-body text-[13px] tracking-[0.01em] transition-colors hover:border-[var(--glow-amber-sm)] hover:text-[var(--neon-amber)] disabled:opacity-40"
             style={{
               borderColor: 'var(--border-subtle)',
               color: 'var(--fg-2)',
             }}
           >
-            {loading ? 'LOADING…' : 'LOAD MORE'}
+            {loading ? 'Loading…' : 'Load more'}
           </button>
         </div>
       )}

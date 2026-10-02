@@ -48,6 +48,7 @@ export default function BlogIndexPage() {
   const [facets, setFacets] = useState<BlogTagFacet[]>([]);
   const [loading, setLoading] = useState(true);
   const emptyRef = useRef<HTMLDivElement>(null);
+  const roomRef = useRef<HTMLElement>(null);
 
   const ready = router.isReady;
   const pageSize = view === 'reels' ? REELS_PAGE_SIZE : GRID_PAGE_SIZE;
@@ -123,7 +124,78 @@ export default function BlogIndexPage() {
   const showList = !isEmpty && (items.length > 0 || loading);
   const hasFilters = Boolean(search || tag || sort !== 'recent');
   const emptyVariant = hasFilters ? 'no-results' : 'empty';
-  const headlineText = hasFilters ? 'NO MATCHES' : 'NO TRANSMISSIONS YET';
+  const headlineText = hasFilters ? 'No matches' : 'Nothing here yet';
+
+  // One-time beat for the mode change. The homepage is a cyan HUD and the blog
+  // is a warm room; until now the two swapped with nothing between them —
+  // LightningTransition only fires between slugs, so the discontinuity landed
+  // on the route a visitor takes straight out of the hero. One warm breath of
+  // light over the room, and the deck line lifting into place. Atmosphere, not
+  // choreography: no stagger cascade, no transform on the grid, nothing the
+  // reader has to wait for.
+  //
+  // The veil rests at opacity 0 in the markup, so the reduced-motion path and
+  // the no-JS path are the same no-op — an invisible element, never a scrim
+  // stranded over the page. The deck is NOT hidden in markup: content first,
+  // and it only hides if this effect actually runs and can finish.
+  useEffect(() => {
+    const root = roomRef.current;
+    if (!root) return;
+    if (isReducedMotion() || !canAnimate()) return;
+
+    const scope = createScope({
+      root,
+      mediaQueries: { reduceMotion: '(prefers-reduced-motion: reduce)' },
+      defaults: {
+        duration: durations.enter * 1000,
+        ease: (easings.outExpo ?? 'outExpo') as string,
+        composition: 'blend',
+      },
+    } as Parameters<typeof createScope>[0]);
+
+    scope.add(() => {
+      const veil = root.querySelector<HTMLElement>('.room-veil');
+      const deck = root.querySelector<HTMLElement>('.blog-deck');
+      if (!veil || !deck) return;
+
+      deck.style.opacity = '0';
+      deck.style.transform = 'translateY(10px)';
+
+      const tl = createTimeline({
+        defaults: { ease: (easings.outExpo ?? 'outExpo') as string },
+      } as unknown as Parameters<typeof createTimeline>[0]) as unknown as {
+        add: (a: unknown, b: unknown, c?: unknown) => void;
+      };
+
+      tl.add(
+        veil,
+        {
+          opacity: [0.9, 0],
+          duration: durations.enter * 1000 * 1.55,
+          ease: (easings.outExpo ?? 'outExpo') as string,
+        } as unknown as Record<string, unknown>,
+        0,
+      );
+      tl.add(
+        deck,
+        {
+          opacity: [0, 1],
+          y: [10, 0],
+          duration: durations.enter * 1000 * 0.78,
+          ease: (easings.outExpo ?? 'outExpo') as string,
+        } as unknown as Record<string, unknown>,
+        durations.enter * 1000 * 0.18,
+      );
+    });
+
+    return () => {
+      try {
+        scope.revert();
+      } catch {
+        // scope may already be gone on unmount
+      }
+    };
+  }, []);
 
   // Empty-state entrance: headline splitText chars stagger + graphic/CTA via createTimeline
   useEffect(() => {
@@ -193,38 +265,41 @@ export default function BlogIndexPage() {
         if (graphic.length)
           tl.add(
             graphic as unknown as HTMLElement[],
-            { opacity: [0, 1], duration: 320 } as unknown as Record<
-              string,
-              unknown
-            >,
+            {
+              opacity: [0, 1],
+              duration: durations.enter * 1000 * 0.5,
+            } as unknown as Record<string, unknown>,
             0,
           );
         if (headlineEl)
           tl.add(
             headlineEl as unknown as HTMLElement,
-            { opacity: [0, 1], y: [8, 0], duration: 420 } as unknown as Record<
-              string,
-              unknown
-            >,
-            stagger(40),
+            {
+              opacity: [0, 1],
+              y: [8, 0],
+              duration: durations.enter * 1000 * 0.65,
+            } as unknown as Record<string, unknown>,
+            stagger(durations.stagger * 1000 * 0.67),
           );
         if (subcopy.length)
           tl.add(
             subcopy as unknown as HTMLElement[],
-            { opacity: [0, 1], y: [8, 0], duration: 360 } as unknown as Record<
-              string,
-              unknown
-            >,
-            stagger(40),
+            {
+              opacity: [0, 1],
+              y: [8, 0],
+              duration: durations.enter * 1000 * 0.56,
+            } as unknown as Record<string, unknown>,
+            stagger(durations.stagger * 1000 * 0.67),
           );
         if (cta.length)
           tl.add(
             cta as unknown as HTMLElement[],
-            { opacity: [0, 1], y: [8, 0], duration: 360 } as unknown as Record<
-              string,
-              unknown
-            >,
-            stagger(40),
+            {
+              opacity: [0, 1],
+              y: [8, 0],
+              duration: durations.enter * 1000 * 0.56,
+            } as unknown as Record<string, unknown>,
+            stagger(durations.stagger * 1000 * 0.67),
           );
         return;
       }
@@ -269,9 +344,9 @@ export default function BlogIndexPage() {
             opacity: [0, 1],
             duration: (durations.enter ?? 0.48) * 1000 * 0.5,
             ease: (easings.expoOut ?? 'outExpo') as string,
-            delay: stagger(18, { from: 'first' }),
+            delay: stagger(durations.stagger * 1000 * 0.3, { from: 'first' }),
           } as unknown as Record<string, unknown>,
-          stagger(40),
+          stagger(durations.stagger * 1000 * 0.67),
         );
       } else if (headlineEl) {
         tl.add(
@@ -282,7 +357,7 @@ export default function BlogIndexPage() {
             duration: (durations.enter ?? 0.48) * 1000 * 0.52,
             ease: (easings.smooth ?? 'outExpo') as string,
           } as unknown as Record<string, unknown>,
-          stagger(40),
+          stagger(durations.stagger * 1000 * 0.67),
         );
       }
 
@@ -292,10 +367,10 @@ export default function BlogIndexPage() {
           {
             y: [10, 0],
             opacity: [0, 1],
-            duration: 420,
+            duration: (durations.enter ?? 0.48) * 1000 * 0.65,
             ease: (easings.smooth ?? 'outExpo') as string,
           } as unknown as Record<string, unknown>,
-          stagger(50),
+          stagger(durations.stagger * 1000 * 0.83),
         );
       }
 
@@ -305,10 +380,10 @@ export default function BlogIndexPage() {
           {
             y: [10, 0],
             opacity: [0, 1],
-            duration: 420,
+            duration: (durations.enter ?? 0.48) * 1000 * 0.65,
             ease: (easings.smooth ?? 'outExpo') as string,
           } as unknown as Record<string, unknown>,
-          stagger(50),
+          stagger(durations.stagger * 1000 * 0.83),
         );
       }
     });
@@ -338,10 +413,25 @@ export default function BlogIndexPage() {
         path="/blog"
       />
 
+      {/* `editorial-room` carries the room's display voice — see the rule in
+            global.css. The h1 is rendered by BlogHeader. */}
       <main
-        className="min-h-screen relative z-10 px-4 pt-24 pb-10 max-w-6xl mx-auto"
-        data-theme=""
+        ref={roomRef}
+        className="editorial-room min-h-screen relative z-10 px-4 pt-24 pb-10 max-w-6xl mx-auto"
+        data-theme="editorial"
       >
+        {/* The mode-change beat. Painted with the reading room's own wash token
+            and decorative only; it fades in and clears once on mount. */}
+        <div
+          aria-hidden="true"
+          className="room-veil pointer-events-none absolute inset-0"
+          style={{
+            opacity: 0,
+            background:
+              'radial-gradient(120% 78% at 50% 0%, var(--wash-amber), transparent 62%)',
+          }}
+        />
+
         <BlogHeader
           search={search}
           onSearch={setSearch}
@@ -356,8 +446,8 @@ export default function BlogIndexPage() {
         />
 
         <p
-          className="font-body text-xs md:text-sm mt-8 mb-8 max-w-lg mx-auto text-center"
-          style={{ color: 'var(--fg-3)' }}
+          className="blog-deck font-body text-sm md:text-base mt-8 mb-8 max-w-xl mx-auto text-center leading-relaxed"
+          style={{ color: 'var(--fg-2)' }}
         >
           Build logs, engineering notes and deep dives from the terminal.
         </p>
@@ -382,7 +472,8 @@ export default function BlogIndexPage() {
             ref={emptyRef}
             className="p-8 text-center rounded-[var(--radius-lg)] border"
             style={{
-              background: 'var(--bg-2)',
+              background:
+                'radial-gradient(120% 90% at 50% 0%, var(--wash-amber), transparent 55%), var(--bg-2)',
               borderColor: 'var(--border-subtle)',
             }}
           >
@@ -392,7 +483,7 @@ export default function BlogIndexPage() {
               />
             </div>
             <h2
-              className="blog-empty-headline font-display text-sm tracking-[0.16em] mt-6 reveal"
+              className="blog-empty-headline font-body font-semibold text-lg md:text-xl tracking-[-0.01em] mt-6 reveal"
               style={{ color: 'var(--fg-1)' }}
             >
               {headlineText}
@@ -400,46 +491,50 @@ export default function BlogIndexPage() {
             {hasFilters ? (
               <>
                 <p
-                  className="blog-empty-subcopy font-mono text-[11px] mt-2 reveal"
-                  style={{ color: 'var(--fg-3)' }}
+                  className="blog-empty-subcopy font-body text-sm mt-2 reveal"
+                  style={{ color: 'var(--fg-2)' }}
                 >
-                  {'>'} Adjust your search parameters and retry.
+                  Adjust your filters and try again.
                 </p>
                 <div className="blog-empty-cta mt-4 flex justify-center gap-2 reveal">
                   <button
                     onClick={() => {
+                      // Must reset sort too: hasFilters folds sort into the
+                      // empty-state test, so clearing search+tag alone leaves
+                      // a sort-only filter behind and the CTA dead-ends.
                       setSearch('');
                       setTag('');
+                      setSort('recent');
                     }}
-                    className="inline-flex items-center justify-center px-4 py-2 font-mono text-[11px] tracking-[0.14em] border rounded-[var(--radius-md)] transition-colors"
+                    className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-4 py-2 font-body text-sm border rounded-[var(--radius-md)] transition-colors hover:border-[var(--glow-amber-sm)] hover:text-[var(--neon-amber)]"
                     style={{
                       background: 'transparent',
                       borderColor: 'var(--border-subtle)',
                       color: 'var(--fg-2)',
                     }}
                   >
-                    CLEAR FILTERS
+                    Clear filters
                   </button>
                 </div>
               </>
             ) : (
               <>
                 <p
-                  className="blog-empty-subcopy font-mono text-[11px] mt-2 reveal"
-                  style={{ color: 'var(--fg-3)' }}
+                  className="blog-empty-subcopy font-body text-sm mt-2 reveal"
+                  style={{ color: 'var(--fg-2)' }}
                 >
                   Nothing published yet — check back soon.
                 </p>
                 <div className="blog-empty-cta mt-4 flex justify-center gap-2 reveal">
                   <Link
                     href="/"
-                    className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-4 py-2 font-mono text-[11px] tracking-[0.14em] border rounded-[var(--radius-md)]"
+                    className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-4 py-2 font-body text-sm border rounded-[var(--radius-md)] hover:border-[var(--glow-amber-sm)] hover:text-[var(--neon-amber)]"
                     style={{
                       borderColor: 'var(--border-subtle)',
                       color: 'var(--fg-2)',
                     }}
                   >
-                    BACK HOME
+                    Back home
                   </Link>
                 </div>
               </>

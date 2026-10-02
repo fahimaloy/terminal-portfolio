@@ -19,12 +19,25 @@ import { getBlogPost } from '../../utils/blogApi';
 import { formatDate } from '../../utils/dateFormat';
 import type { BlogListItem, BlogPost } from '../../types/blog';
 import { HudPanel, NeonChip, NeonButton, GlitchText } from '../ui';
-import { durations } from '../../config/animations';
+import { durations, easings } from '../../config/animations';
+import type { AccentColor } from '../../config/animations';
 import { useFlashCurtain } from '../../hooks/useFlashCurtain';
 import FlashCurtain from './FlashCurtain';
 import LightningTransition from './LightningTransition';
 import RichTextRenderer from '../RichTextRenderer';
 import { animate, onScroll, createScope } from 'animejs';
+
+// One accent cycle for the whole reels view. Warm-first, drawn from the same
+// six site accents the grid uses — declared once here instead of repeating an
+// inline tuple at every call site.
+const REEL_ACCENTS: readonly AccentColor[] = [
+  'amber',
+  'lime',
+  'ice',
+  'coral',
+  'violet',
+  'cyan',
+];
 
 type Props = {
   items: BlogListItem[];
@@ -134,8 +147,8 @@ export default function BlogReels({
       covers.forEach((cover) => {
         animate(cover, {
           translateY: [30, -20],
-          ease: 'outExpo',
-          duration: 1000,
+          ease: easings.expoOut,
+          duration: durations.sceneIntro * 1000 * 0.55,
           autoplay: onScroll({
             container: el,
             sync: true,
@@ -176,7 +189,7 @@ export default function BlogReels({
         {items.map((post, i) => (
           <HudPanel
             key={post.id}
-            accent={(['cyan', 'violet', 'coral', 'ice'] as const)[i % 4]}
+            accent={REEL_ACCENTS[i % REEL_ACCENTS.length]}
             className="overflow-hidden"
           >
             <ReelsCardInner
@@ -193,12 +206,12 @@ export default function BlogReels({
         {hasMore && (
           <div className="flex justify-center pt-4">
             <NeonButton
-              accent="cyan"
+              accent="amber"
               variant="outline"
               onClick={onLoadMore}
               disabled={loading}
             >
-              {loading ? 'LOADING…' : 'LOAD MORE'}
+              {loading ? 'Loading…' : 'Load more'}
             </NeonButton>
           </div>
         )}
@@ -234,13 +247,13 @@ export default function BlogReels({
             aria-label={`Go to card ${i + 1}`}
             className={`w-1.5 rounded-full transition-all ${
               i === active
-                ? 'h-6 bg-neon-cyan shadow-[0_0_8px_var(--glow-cyan)]'
+                ? 'h-6 bg-[var(--neon-amber)] shadow-[0_0_8px_var(--glow-amber)]'
                 : 'h-1.5 bg-[var(--overlay-white-20)] hover:bg-[var(--overlay-white-40)]'
             }`}
           />
         ))}
         <div className="w-px h-6 bg-[var(--overlay-white-10)]" />
-        <span className="font-mono text-[9px] text-text-muted mt-1">
+        <span className="font-mono text-[11px] text-[var(--fg-3)] mt-1">
           {String(active + 1).padStart(2, '0')}/
           {String(Math.max(items.length, total || items.length)).padStart(
             2,
@@ -256,8 +269,8 @@ export default function BlogReels({
           style={{
             width: `${items.length ? ((active + 1) / items.length) * 100 : 0}%`,
             background:
-              'linear-gradient(90deg, var(--neon-cyan), var(--neon-amber), var(--neon-coral))',
-            boxShadow: '0 0 8px var(--glow-cyan-sm)',
+              'linear-gradient(90deg, var(--neon-amber), var(--neon-lime), var(--neon-ice))',
+            boxShadow: '0 0 8px var(--glow-amber-sm)',
           }}
         />
       </div>
@@ -298,7 +311,7 @@ export default function BlogReels({
                 }`}
               >
                 <HudPanel
-                  accent={(['cyan', 'violet', 'coral', 'ice'] as const)[i % 4]}
+                  accent={REEL_ACCENTS[i % REEL_ACCENTS.length]}
                   className="overflow-hidden flex flex-col max-h-[min(78dvh,720px)]"
                 >
                   {/* Cover — next/image + preload; bottleneck solved as data fetch */}
@@ -317,31 +330,32 @@ export default function BlogReels({
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <span className="font-display text-4xl text-text-muted">
+                        <span className="font-body font-semibold text-4xl text-[var(--fg-3)]">
                           {post.title.charAt(0).toUpperCase()}
                         </span>
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--overlay-black-70)] via-[var(--overlay-black-10)] to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--fg-2)]">
+                      <div
+                        className="flex items-center gap-2 text-[11px] font-mono"
+                        style={{ color: 'var(--fg-2)' }}
+                      >
                         <span className="inline-flex items-center gap-1">
-                          <Calendar size={10} /> {formatDate(post.published_at)}
+                          <Calendar size={11} /> {formatDate(post.published_at)}
                         </span>
                         {post.reading_minutes ? (
                           <span className="inline-flex items-center gap-1">
-                            <Clock size={10} /> {post.reading_minutes} MIN
+                            <Clock size={11} /> {post.reading_minutes} min
                           </span>
                         ) : null}
                         <span className="inline-flex items-center gap-1">
-                          <Eye size={10} /> {post.view_count ?? 0}
+                          <Eye size={11} /> {post.view_count ?? 0}
                         </span>
                       </div>
                       <GlitchText
                         as="h2"
-                        accent={
-                          (['cyan', 'violet', 'coral', 'ice'] as const)[i % 4]
-                        }
+                        accent={REEL_ACCENTS[i % REEL_ACCENTS.length]}
                         className="text-xl md:text-2xl mt-1 line-clamp-2"
                       >
                         {post.title}
@@ -349,41 +363,54 @@ export default function BlogReels({
                     </div>
                     {post.featured ? (
                       <div className="absolute top-3 left-3">
-                        <NeonChip accent="amber">FEATURED</NeonChip>
+                        <NeonChip accent="amber">Featured</NeonChip>
                       </div>
                     ) : null}
                   </div>
 
                   <div className="p-4 space-y-3 overflow-y-auto">
                     {(post.teaser ?? post.excerpt) ? (
-                      <p className="text-sm text-text-secondary line-clamp-3">
+                      <p className="text-sm text-[var(--fg-2)] line-clamp-3 leading-relaxed">
                         {post.teaser ?? post.excerpt}
                       </p>
                     ) : null}
                     {post.tags?.length ? (
                       <div className="flex flex-wrap gap-1.5">
                         {post.tags.slice(0, 4).map((tag) => (
-                          <NeonChip key={tag} accent="cyan">
-                            {tag.toUpperCase()}
+                          <NeonChip key={tag} accent="amber">
+                            {tag}
                           </NeonChip>
                         ))}
                       </div>
                     ) : null}
                     <div className="flex flex-wrap gap-2 pt-1">
                       <NeonButton
-                        accent="cyan"
+                        accent="amber"
                         onClick={() => openExpanded(post.slug)}
                         disabled={detailLoading === post.slug}
                       >
                         {detailLoading === post.slug
-                          ? 'LOADING…'
+                          ? 'Loading…'
                           : expandedSlug === post.slug
-                            ? 'CLOSE'
-                            : 'READ'}
+                            ? 'Close'
+                            : 'Read'}
                       </NeonButton>
                       <Link href={`/blog/${post.slug}`} legacyBehavior>
-                        <a className="inline-flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-3 py-2 border border-neon-amber/30 text-neon-amber font-display text-[11px] tracking-[1.5px] hover:bg-neon-amber/10 transition-colors clip-notch-sm">
-                          PERMALINK
+                        {/* Translucent amber, expressed as tokens rather than as
+                            `neon-amber/30`. A stock-Tailwind accent compiles to
+                            a literal hex and therefore cannot respond to the
+                            [data-theme='editorial'] scope; a raw `var()` opacity
+                            modifier is worse — `border-[var(--x)]/30` and even
+                            `border-[color:var(--x)]/30` emit *no* declaration at
+                            all in Tailwind 3.4 (parseColor() rejects a bare
+                            var(), so withAlphaValue() falls through to its
+                            default). `--glow-amber` (0.35) is the nearest token
+                            to 0.30 and `--wash-amber` (0.08) the nearest to the
+                            0.10 hover wash, matching how the rest of the blog
+                            tree already carries amber translucency. `clip-notch-sm`
+                            was a backwards-compat alias for this same radius. */}
+                        <a className="inline-flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-3 py-2 border border-[var(--glow-amber)] text-[var(--neon-amber)] font-body text-[13px] hover:bg-[var(--wash-amber)] transition-colors rounded-[var(--radius-sm)]">
+                          Permalink
                         </a>
                       </Link>
                     </div>
@@ -400,9 +427,13 @@ export default function BlogReels({
 
                 {/* Swipe hint on first card */}
                 {i === 0 && items.length > 1 ? (
-                  <div className="flex justify-center mt-3 text-text-muted">
-                    <span className="inline-flex items-center gap-1 font-mono text-[10px] tracking-[2px] opacity-60">
-                      SWIPE <ChevronDown size={12} className="animate-bounce" />
+                  <div className="flex justify-center mt-3">
+                    <span
+                      className="inline-flex items-center gap-1 font-mono text-[11px] tracking-[0.1em]"
+                      style={{ color: 'var(--fg-3)' }}
+                    >
+                      Scroll{' '}
+                      <ChevronDown size={12} className="animate-bounce" />
                     </span>
                   </div>
                 ) : null}
@@ -417,16 +448,22 @@ export default function BlogReels({
           style={{ scrollSnapAlign: 'start' }}
         >
           {loading ? (
-            <span className="font-mono text-[11px] text-text-muted">
-              LOADING NEXT TRANSMISSIONS…
+            <span
+              className="font-body text-[13px]"
+              style={{ color: 'var(--fg-3)' }}
+            >
+              Loading more…
             </span>
           ) : hasMore ? (
-            <NeonButton accent="cyan" variant="outline" onClick={onLoadMore}>
-              LOAD MORE
+            <NeonButton accent="amber" variant="outline" onClick={onLoadMore}>
+              Load more
             </NeonButton>
           ) : (
-            <span className="font-mono text-[11px] text-text-muted">
-              END OF TRANSMISSIONS — {String(total).padStart(2, '0')} ENTRIES
+            <span
+              className="font-body text-[13px]"
+              style={{ color: 'var(--fg-3)' }}
+            >
+              End of the archive — {String(total).padStart(2, '0')} entries
             </span>
           )}
         </div>
@@ -462,37 +499,44 @@ function ReelsCardInner({
 }) {
   return (
     <div className="p-4 space-y-3">
-      <div className="flex items-center gap-2 text-[10px] font-mono text-text-muted">
-        <Calendar size={10} /> {formatDate(post.published_at)}
+      <div
+        className="flex items-center gap-2 text-[11px] font-mono"
+        style={{ color: 'var(--fg-3)' }}
+      >
+        <Calendar size={11} /> {formatDate(post.published_at)}
         {post.reading_minutes ? (
           <span className="inline-flex items-center gap-1">
-            <Clock size={10} /> {post.reading_minutes} MIN
+            <Clock size={11} /> {post.reading_minutes} min
           </span>
         ) : null}
-        <Eye size={10} /> {post.view_count ?? 0}
+        <Eye size={11} /> {post.view_count ?? 0}
       </div>
-      <div className="font-display text-lg text-text-primary">{post.title}</div>
+      <div className="font-body font-semibold text-lg text-[var(--fg-1)]">
+        {post.title}
+      </div>
       {(post.teaser ?? post.excerpt) ? (
-        <p className="text-sm text-text-secondary line-clamp-3">
+        <p className="text-sm text-[var(--fg-2)] line-clamp-3 leading-relaxed">
           {post.teaser ?? post.excerpt}
         </p>
       ) : null}
       <div className="flex gap-2">
         <NeonButton
-          accent="cyan"
+          accent="amber"
           onClick={expanded ? onClose : onExpand}
           disabled={detailLoading}
         >
-          {detailLoading ? 'LOADING…' : expanded ? 'CLOSE' : 'READ'}
+          {detailLoading ? 'Loading…' : expanded ? 'Close' : 'Read'}
         </NeonButton>
         <Link href={`/blog/${post.slug}`} legacyBehavior>
-          <a className="inline-flex items-center min-h-[44px] min-w-[44px] px-3 py-2 border border-neon-amber/30 text-neon-amber font-display text-[11px] clip-notch-sm">
-            PERMALINK
+          <a className="inline-flex items-center min-h-[44px] min-w-[44px] px-3 py-2 border border-[var(--glow-amber)] text-[var(--neon-amber)] font-body text-[13px] rounded-[var(--radius-sm)]">
+            Permalink
           </a>
         </Link>
       </div>
       {expanded ? <ExpandedDetail post={post} detail={detail} /> : null}
-      <div className="text-[10px] text-text-muted">
+      {/* --fg-3, not --fg-4: at 11px this needs the full AA text ratio and
+          --fg-4 (4.66:1 on --bg-3) is only barely there. */}
+      <div className="text-[11px]" style={{ color: 'var(--fg-3)' }}>
         #{String(i + 1).padStart(2, '0')}
       </div>
     </div>
@@ -508,7 +552,12 @@ function ExpandedDetail({
 }) {
   const html = detail?.content_html || post.excerpt || '';
   const isHtml = !!detail?.content_html;
-  if (!html) return <p className="text-sm text-text-muted">No content.</p>;
+  if (!html)
+    return (
+      <p className="text-sm" style={{ color: 'var(--fg-3)' }}>
+        No content yet.
+      </p>
+    );
   if (isHtml)
     return (
       <RichTextRenderer
@@ -516,7 +565,11 @@ function ExpandedDetail({
         className="max-h-[50dvh] overflow-y-auto pr-2"
       />
     );
-  return <p className="text-sm text-text-secondary">{html}</p>;
+  return (
+    <p className="text-sm leading-relaxed" style={{ color: 'var(--fg-2)' }}>
+      {html}
+    </p>
+  );
 }
 
 function ExpandedOverlay({
@@ -545,14 +598,14 @@ function ExpandedOverlay({
         <HudPanel accent="amber" className="p-4 md:p-6 relative">
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center border border-[var(--overlay-white-10)] hover:border-neon-cyan/40 text-text-muted hover:text-text-primary transition-colors clip-notch-sm after:absolute after:inset-[-6px] after:content-['']"
+            className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center border border-[var(--overlay-white-10)] hover:border-[var(--glow-amber)] text-[var(--fg-3)] hover:text-[var(--fg-1)] transition-colors rounded-[var(--radius-sm)] after:absolute after:inset-[-6px] after:content-['']"
             aria-label="Close"
           >
             <X size={14} />
           </button>
           {detailLoading ? (
-            <p className="font-mono text-sm text-text-muted">
-              LOADING TRANSMISSION…
+            <p className="font-body text-sm" style={{ color: 'var(--fg-3)' }}>
+              Loading the full post…
             </p>
           ) : detail ? (
             <div className="space-y-4">
@@ -565,7 +618,7 @@ function ExpandedOverlay({
                   {detail.title}
                 </GlitchText>
                 {detail.excerpt ? (
-                  <p className="text-sm text-text-secondary mt-2">
+                  <p className="text-sm text-[var(--fg-2)] mt-2 leading-relaxed">
                     {detail.excerpt}
                   </p>
                 ) : null}
@@ -573,23 +626,23 @@ function ExpandedOverlay({
               <RichTextRenderer html={detail.content_html} />
               <div className="flex gap-2 pt-2">
                 <Link href={`/blog/${detail.slug}`} legacyBehavior>
-                  <a className="inline-flex items-center gap-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan font-display text-[11px] clip-notch-sm">
-                    OPEN PAGE
+                  <a className="inline-flex items-center gap-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-[var(--wash-amber)] border border-[var(--glow-amber)] text-[var(--neon-amber)] font-body text-[13px] rounded-[var(--radius-sm)]">
+                    Open page
                   </a>
                 </Link>
                 <NeonButton accent="coral" variant="outline" onClick={onClose}>
-                  CLOSE
+                  Close
                 </NeonButton>
               </div>
             </div>
           ) : (
             <div className="space-y-4 pr-8">
-              <p className="font-display text-sm text-text-primary">
-                Could not load full transmission. Use permalink.
+              <p className="font-body font-semibold text-sm text-[var(--fg-1)]">
+                Could not load the full post. Open the permalink instead.
               </p>
               <Link href={`/blog/${slug}`} legacyBehavior>
-                <a className="inline-flex items-center min-h-[44px] min-w-[44px] px-3 py-2 border border-neon-cyan/30 text-neon-cyan font-display text-[11px] clip-notch-sm">
-                  OPEN /blog/{slug}
+                <a className="inline-flex items-center min-h-[44px] min-w-[44px] px-3 py-2 border border-[var(--glow-amber)] text-[var(--neon-amber)] font-body text-[13px] rounded-[var(--radius-sm)]">
+                  Open /blog/{slug}
                 </a>
               </Link>
             </div>
