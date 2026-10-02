@@ -174,11 +174,18 @@ const App = ({ Component, pageProps }: AppProps) => {
   return (
     <>
       <Head>
+        {/* No `maximum-scale`, and never add one: the viewport parser only
+            reads `content`, so the attribute belongs there or nowhere. Pinch
+            zoom is an accessibility requirement (WCAG 1.4.4), and this site
+            already leans on it — the 44px touch targets and the `--dur-*`
+            tokens sized against real device viewports assume a reader can
+            zoom in. A `maximum-scale="1"` JSX prop on this element is inert
+            (browsers ignore unknown `<meta>` attributes), so it used to sit
+            here looking like a decision while doing nothing at all. */}
         <meta
           name="viewport"
           content="initial-scale=1.0, width=device-width"
           key="viewport"
-          maximum-scale="1"
         />
         {/* prettier-ignore */}
         <meta name="theme-color" content="#0a0a0a" key="theme-color" />{' '}

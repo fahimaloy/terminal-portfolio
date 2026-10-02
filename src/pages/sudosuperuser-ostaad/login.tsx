@@ -267,10 +267,12 @@ const LoginPage = () => {
     <>
       <Head>
         <title>Admin Login | Portfolio CMS</title>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1"
-        />
+        {/* No `maximum-scale`: the viewport parser reads `content`, so that
+            directive is actually honoured here — which is exactly why it must
+            not be present. Blocking pinch zoom fails WCAG 1.4.4 and is a
+            needless barrier on the one form a keyboard-only or low-vision
+            admin may be using at a small window size. Matches `_app.tsx`. */}
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="noindex, nofollow" />
         <meta
           name="description"
