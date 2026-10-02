@@ -3,14 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import { ArrowLeft, Clock, Eye, Calendar } from 'lucide-react';
-import {
-  createScope,
-  animate,
-  stagger,
-  createTimeline,
-  createDrawable,
-  spring,
-} from 'animejs';
+import { createScope, createTimeline, createDrawable, spring } from 'animejs';
 import { splitText } from 'animejs';
 import SEOMeta from '../../components/SEOMeta';
 import RichTextRenderer from '../../components/RichTextRenderer';
@@ -35,16 +28,122 @@ interface Props {
   related: BlogListItem[];
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   HERO BEAT ORDER
+   ═══════════════════════════════════════════════════════════════════════════
+   This hero used to start seven groups at timeline position 0 and let their
+   durations be the only thing that told them apart. Seven simultaneous
+   entrances is the same picture as one: a reader cannot perceive a hierarchy
+   when nothing is allowed to arrive first, and the longest group (a 1.4s
+   hairline draw) was the loudest thing on screen while doing nothing a reader
+   can read.
+
+   So the order below IS the hierarchy, and it is stated here rather than left
+   to be re-derived from seven zeroes:
+
+     0ms    title     the only thing on screen that opens alone — a per-char
+                      rise whose cascade is normalised so a four-word headline
+                      and a forty-character one cost the same 240ms
+     ~122   aurora    decoration, and the reason it starts early and finishes
+                      last: slow, blurred, no translation, and washed in over
+                      ~840ms, so it is felt as the room getting warmer rather
+                      than watched. It never moves, so it cannot lead the eye
+     ~192   shelf     the rule's container fades up, empty
+     ~218   rule      the line draws itself across that shelf, finishing at
+                      ~500 — just as the meta lands on it
+     ~499   meta      date / read time / views, onto a shelf now fully drawn
+     ~640   excerpt   the standfirst, once title and metadata are legible
+     ~768   tags      last of the reading group
+     ~896   back      utility chrome, a full 1.4 enters in, because it is the
+                      one element on this screen the reader will never be
+                      looking for and it must not pull the eye off the title
+
+   Every number is a fraction of a shared duration token — no raw millisecond
+   literals — so retiming `--dur-enter` in tokens.css retimes the whole
+   sequence and the ORDER survives it. `token-lint` cannot see inside a plain
+   object literal, so the discipline that keeps these honest is the comment
+   above, not the linter.
+   ─────────────────────────────────────────────────────────────────────────── */
+const ENTER_MS = (durations.enter ?? 0.64) * 1000;
+const STEP_MS = durations.stagger * 1000;
+
+/** When each group starts, as a fraction of `--dur-enter`. */
+const BEAT = {
+  title: 0,
+  aurora: ENTER_MS * 0.19,
+  shelf: ENTER_MS * 0.3,
+  rule: ENTER_MS * 0.34,
+  meta: ENTER_MS * 0.78,
+  excerpt: ENTER_MS,
+  tags: ENTER_MS * 1.2,
+  back: ENTER_MS * 1.4,
+} as const;
+
+/** How long each group takes. */
+const HOLD = {
+  titleChar: ENTER_MS * 0.56,
+  /** Only reached when `splitText` yields no characters. */
+  titleBlock: ENTER_MS * 0.52,
+  ruleDraw: ENTER_MS * 0.44,
+  shelf: ENTER_MS * 0.3,
+  meta: ENTER_MS * 0.44,
+  excerpt: ENTER_MS * 0.62,
+  tags: ENTER_MS * 0.46,
+  back: ENTER_MS * 0.36,
+  aurora: (durations.draw ?? 1.4) * 1000 * 0.6,
+} as const;
+
+/**
+ * Reduced motion keeps the order and loses the travel: same sequence, same
+ * legible hierarchy, shorter and with nothing to read past. Timing is scaled
+ * rather than swapped for a different set, so the two branches cannot drift
+ * into two different compositions.
+ */
+const CALM = 0.55;
+const calm = (ms: number): number => ms * CALM;
+
+/**
+ * How long the page-turn sheet may stay shut waiting for `routeChangeComplete`
+ * before it retires anyway. This is a fail-open, not a budget: the cover beats
+ * are ~320ms and the site-wide sweep it hides behind is ~880ms, so anything past
+ * ~1s means the router has gone quiet and leaving a full-screen sheet up is the
+ * worse failure.
+ */
+const RELEASE_DEADLINE_MS = durations.transition * 1000 * 3;
+
+/**
+ * Steps a cascade spreads its delay over, however many targets it has. A
+ * headline split into 40 characters used to cost 3.5 seconds to finish
+ * arriving, which is not a cascade a reader waits out.
+ */
+const CASCADE_STEPS = 8;
+
+/**
+ * Per-target delay for a cascade, normalised across the whole group: the
+ * FIRST target always starts at 0 and the cascade always spans
+ * `min(n - 1, CASCADE_STEPS)` steps, so adding characters to a headline
+ * changes its texture and not its duration.
+ */
+const cascade = (index: number, length: number): number =>
+  length <= 1
+    ? 0
+    : (index / (length - 1)) *
+      Math.min(length - 1, CASCADE_STEPS) *
+      STEP_MS *
+      0.5;
+
 export default function BlogReaderPage({ post, prev, next, related }: Props) {
   const router = useRouter();
   const articleRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const coverRef = useRef<HTMLDivElement>(null);
 
   const [boltTrigger, setBoltTrigger] = useState(0);
+  const [boltRelease, setBoltRelease] = useState(0);
   const pendingHref = useRef<string | null>(null);
 
   // Hero entrance — premium: splitText title cascade + meta drawable rule + aurora wash
+  // The ORDER is the point, and it lives in BEAT/HOLD above rather than in the
+  // timeline body, so the composition can be read without reading 250 lines.
   useEffect(() => {
     const root = heroRef.current;
     if (!root) return;
@@ -77,18 +176,40 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
       const auroraWash = root.querySelectorAll<HTMLElement>('.reader-aurora');
 
       if (reduced) {
+        // Same sequence, same order, less travel. Deliberately not a second
+        // set of numbers: two parallel timetables drift, and then the
+        // reduced-motion reader gets a different composition to the one the
+        // timing table above describes.
         const tl = createTimeline({
           defaults: { ease: (easings.outExpo ?? 'outExpo') as string },
         } as any);
-        if (backLink.length)
+        if (titleEl)
           tl.add(
-            backLink as unknown as HTMLElement[],
+            titleEl as unknown as HTMLElement,
             {
-              y: [12, 0],
+              y: [14, 0],
               opacity: [0, 1],
-              duration: durations.enter * 1000 * 0.65,
+              duration: calm(HOLD.titleBlock),
             } as any,
-            0,
+            BEAT.title,
+          );
+        if (auroraWash.length)
+          tl.add(
+            auroraWash as unknown as HTMLElement[],
+            {
+              opacity: [0, 1],
+              duration: calm(HOLD.aurora),
+            } as any,
+            BEAT.aurora,
+          );
+        if (hairlineWraps.length)
+          tl.add(
+            hairlineWraps as unknown as HTMLElement[],
+            {
+              opacity: [0, 1],
+              duration: calm(HOLD.shelf),
+            } as any,
+            BEAT.shelf,
           );
         if (meta.length)
           tl.add(
@@ -96,28 +217,9 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             {
               y: [12, 0],
               opacity: [0, 1],
-              duration: durations.enter * 1000 * 0.72,
+              duration: calm(HOLD.meta),
             } as any,
-            stagger(durations.stagger * 1000 * 1.17),
-          );
-        if (hairlineWraps.length)
-          tl.add(
-            hairlineWraps as unknown as HTMLElement[],
-            {
-              opacity: [0, 1],
-              duration: durations.enter * 1000 * 0.4,
-            } as any,
-            stagger(durations.stagger * 1000 * 0.67),
-          );
-        if (titleEl)
-          tl.add(
-            titleEl as unknown as HTMLElement,
-            {
-              y: [14, 0],
-              opacity: [0, 1],
-              duration: durations.enter * 1000 * 0.81,
-            } as any,
-            stagger(durations.stagger * 1000 * 1.17),
+            BEAT.meta,
           );
         if (excerptEl.length)
           tl.add(
@@ -125,18 +227,18 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             {
               y: [12, 0],
               opacity: [0, 1],
-              duration: durations.enter * 1000 * 0.69,
+              duration: calm(HOLD.excerpt),
             } as any,
-            stagger(durations.stagger * 1000 * 1.17),
+            BEAT.excerpt,
           );
         if (tagsWrap.length)
           tl.add(
             tagsWrap as unknown as HTMLElement[],
             {
               opacity: [0, 1],
-              duration: durations.enter * 1000 * 0.5,
+              duration: calm(HOLD.tags),
             } as any,
-            stagger(durations.stagger * 1000 * 0.67),
+            BEAT.tags,
           );
         if (tagChips.length)
           tl.add(
@@ -144,18 +246,19 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             {
               y: [8, 0],
               opacity: [0, 1],
-              duration: durations.enter * 1000 * 0.63,
+              duration: calm(HOLD.tags),
             } as any,
-            stagger(durations.stagger * 1000 * 0.5, { from: 'first' }),
+            BEAT.tags,
           );
-        if (auroraWash.length)
+        if (backLink.length)
           tl.add(
-            auroraWash as unknown as HTMLElement[],
+            backLink as unknown as HTMLElement[],
             {
+              y: [12, 0],
               opacity: [0, 1],
-              duration: durations.enter * 1000 * 0.53,
+              duration: calm(HOLD.back),
             } as any,
-            0,
+            BEAT.back,
           );
         return;
       }
@@ -168,80 +271,9 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
         springs.soft as unknown as Record<string, number>,
       ) as unknown as string;
 
-      if (backLink.length) {
-        tl.add(
-          backLink as unknown as HTMLElement[],
-          {
-            y: [14, 0],
-            opacity: [0, 1],
-            duration: (durations.enter ?? 0.48) * 1000 * 0.55,
-            ease: (easings.smooth ?? 'outExpo') as string,
-          } as any,
-          0,
-        );
-      }
-      if (meta.length) {
-        tl.add(
-          meta as unknown as HTMLElement[],
-          {
-            y: [12, 0],
-            opacity: [0, 1],
-            duration: (durations.enter ?? 0.48) * 1000 * 0.5,
-            ease: (easings.smooth ?? 'outExpo') as string,
-          } as any,
-          stagger(durations.stagger * 1000 * 1.17),
-        );
-      }
-
-      if (auroraWash.length) {
-        tl.add(
-          auroraWash as unknown as HTMLElement[],
-          {
-            opacity: [0, 1],
-            duration: (durations.enter ?? 0.48) * 1000 * 0.6,
-            ease: (easings.smooth ?? 'outExpo') as string,
-          } as any,
-          0,
-        );
-      }
-
-      const hairlineDrawable = hairlineLines.length
-        ? (createDrawable('.reader-hairline line') as unknown as HTMLElement[])
-        : ([] as unknown as HTMLElement[]);
-      if ((hairlineDrawable as unknown as unknown[]).length) {
-        tl.add(
-          hairlineDrawable as unknown as HTMLElement[],
-          {
-            draw: ['0 0', '0 1'],
-            duration: (durations.draw ?? 1.2) * 1000,
-            ease: (easings.smooth ?? 'linear') as string,
-          } as any,
-          stagger(durations.stagger * 1000 * 0.67, { from: 'first' }),
-        );
-        if (hairlineWraps.length) {
-          tl.add(
-            hairlineWraps as unknown as HTMLElement[],
-            {
-              opacity: [0, 1],
-              duration: (durations.enter ?? 0.48) * 1000 * 0.32,
-              ease: (easings.smooth ?? 'outExpo') as string,
-            } as any,
-            '-220',
-          );
-        }
-      } else if (hairlineWraps.length) {
-        tl.add(
-          hairlineWraps as unknown as HTMLElement[],
-          {
-            opacity: [0, 1],
-            scaleX: [0, 1],
-            duration: (durations.hover ?? 0.24) * 1000,
-            ease: (easings.smooth ?? 'outExpo') as string,
-          } as any,
-          stagger(durations.stagger * 1000 * 0.67),
-        );
-      }
-
+      // The split runs BEFORE the timeline is built, not on the beat. The title
+      // owns position 0, and an entrance cannot be placed on targets that do
+      // not exist yet.
       try {
         if (titleEl) {
           titleSplitter = splitText(titleEl, {
@@ -254,44 +286,129 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
       }
       const titleChars =
         (titleSplitter?.chars as unknown as HTMLElement[]) ?? [];
+
+      // 1 ── The title. Alone, on beat zero.
+      //
+      // One cascade, not two. The old timeline put `stagger(...)` in the
+      // timeline POSITION *and* a second `stagger(...)` in `delay`, so the two
+      // compounded: a forty-character headline took 3.5s to finish arriving.
+      // `cascade` normalises the span across the group instead, so the texture
+      // changes with the headline and the duration does not.
       if (titleChars.length) {
         tl.add(
           titleChars as unknown as HTMLElement[],
           {
             y: ['112%', '0%'],
             opacity: [0, 1],
-            duration: (durations.enter ?? 0.48) * 1000 * 0.56,
+            duration: HOLD.titleChar,
             ease: (easings.expoOut ?? easings.outExpo ?? 'outExpo') as string,
-            delay: stagger(durations.stagger * 1000 * 0.33, { from: 'first' }),
+            delay: cascade,
           } as any,
-          stagger(durations.stagger * 1000 * 1.17),
+          BEAT.title,
         );
       } else if (titleEl) {
+        // No split available (fonts late, splitText unsupported): the block
+        // still gets its own beat and its own spring.
         tl.add(
           titleEl as unknown as HTMLElement,
           {
             y: [16, 0],
             opacity: [0, 1],
-            duration: (durations.enter ?? 0.48) * 1000 * 0.55,
+            duration: HOLD.titleBlock,
             ease: softSpring ?? (easings.smooth as string),
           } as any,
-          stagger(durations.stagger * 1000 * 1.17),
+          BEAT.title,
         );
       }
 
+      // 2 ── Decoration. Under the title, and still rising after the reader has
+      // finished it — slow, blurred, and never translated, so it reads as the
+      // room getting warmer rather than as something arriving. Starting it
+      // first (as the old timeline did, at position 0) is what made it
+      // compete: a full-screen wash arriving alongside the title is the loudest
+      // thing in the composition.
+      if (auroraWash.length) {
+        tl.add(
+          auroraWash as unknown as HTMLElement[],
+          {
+            opacity: [0, 1],
+            duration: HOLD.aurora,
+            ease: (easings.smooth ?? 'outExpo') as string,
+          } as any,
+          BEAT.aurora,
+        );
+      }
+
+      // 3 ── The shelf: an empty rule first, then the line drawing itself
+      // across it. Previously the container only faded up 220ms before the draw
+      // ENDED, so the first 60% of a 1400ms draw was rendered into opacity 0.
+      if (hairlineWraps.length) {
+        tl.add(
+          hairlineWraps as unknown as HTMLElement[],
+          {
+            opacity: [0, 1],
+            duration: HOLD.shelf,
+            ease: (easings.smooth ?? 'outExpo') as string,
+          } as any,
+          BEAT.shelf,
+        );
+      }
+
+      const hairlineDrawable = hairlineLines.length
+        ? (createDrawable('.reader-hairline line') as unknown as HTMLElement[])
+        : ([] as unknown as HTMLElement[]);
+      if ((hairlineDrawable as unknown as unknown[]).length) {
+        tl.add(
+          hairlineDrawable as unknown as HTMLElement[],
+          {
+            draw: ['0 0', '0 1'],
+            duration: HOLD.ruleDraw,
+            ease: (easings.smooth ?? 'linear') as string,
+          } as any,
+          BEAT.rule,
+        );
+      } else if (hairlineWraps.length) {
+        tl.add(
+          hairlineWraps as unknown as HTMLElement[],
+          {
+            opacity: [0, 1],
+            scaleX: [0, 1],
+            duration: calm(HOLD.ruleDraw),
+            ease: (easings.smooth ?? 'outExpo') as string,
+          } as any,
+          BEAT.rule,
+        );
+      }
+
+      // 4 ── The metadata lands on a shelf that is now fully drawn.
+      if (meta.length) {
+        tl.add(
+          meta as unknown as HTMLElement[],
+          {
+            y: [12, 0],
+            opacity: [0, 1],
+            duration: HOLD.meta,
+            ease: (easings.smooth ?? 'outExpo') as string,
+          } as any,
+          BEAT.meta,
+        );
+      }
+
+      // 5 ── The standfirst, once the title and the metadata are legible.
       if (excerptEl.length) {
         tl.add(
           excerptEl as unknown as HTMLElement[],
           {
             y: [12, 0],
             opacity: [0, 1],
-            duration: (durations.enter ?? 0.48) * 1000 * 0.81,
+            duration: HOLD.excerpt,
             ease: softSpring ?? (easings.smooth as string),
           } as any,
-          stagger(durations.stagger * 1000 * 1.17),
+          BEAT.excerpt,
         );
       }
 
+      // 6 ── Tags.
       if (tagChips.length) {
         tl.add(
           tagChips as unknown as HTMLElement[],
@@ -299,11 +416,11 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
             y: [10, 0],
             opacity: [0, 1],
             scale: [0.98, 1],
-            duration: (durations.enter ?? 0.48) * 1000 * 0.69,
+            duration: HOLD.tags,
             ease: softSpring ?? (easings.smooth as string),
-            delay: stagger(durations.stagger * 1000 * 0.37, { from: 'first' }),
+            delay: cascade,
           } as any,
-          stagger(durations.stagger * 1000, { from: 'first' }),
+          BEAT.tags,
         );
       } else if (tagsWrap.length) {
         tl.add(
@@ -311,14 +428,29 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           {
             y: [10, 0],
             opacity: [0, 1],
-            duration: (durations.enter ?? 0.48) * 1000 * 0.72,
+            duration: HOLD.tags,
             ease: softSpring ?? (easings.smooth as string),
           } as any,
-          stagger(durations.stagger * 1000 * 1.17),
+          BEAT.tags,
         );
       }
 
-      void canAnimate;
+      // 7 ── Utility chrome last, a full 1.4 enters in. The back link is the one
+      // element on this screen the reader will never be looking for, and it is
+      // the only group that was previously competing with the title for the
+      // opening beat.
+      if (backLink.length) {
+        tl.add(
+          backLink as unknown as HTMLElement[],
+          {
+            y: [14, 0],
+            opacity: [0, 1],
+            duration: HOLD.back,
+            ease: (easings.smooth ?? 'outExpo') as string,
+          } as any,
+          BEAT.back,
+        );
+      }
     });
 
     return () => {
@@ -329,43 +461,67 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
     };
   }, [post.id]);
 
-  // Parallax cover — subtle, muted
-  useEffect(() => {
-    if (!coverRef.current || isReducedMotion()) return;
-    let raf = 0;
-
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        const el = coverRef.current;
-        if (el) {
-          el.style.transform = `translate3d(0, ${
-            window.scrollY * 0.18
-          }px, 0) scale(1.04)`;
-        }
-        raf = 0;
-      });
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [post.id]);
-
-  // Lightning-wrapped navigation between posts (muted wipe)
+  // Lightning-wrapped navigation between posts (muted wipe).
+  //
+  // Two files animate this route and neither one owns the other, so the handoff
+  // is stated here instead of being re-derived in both:
+  //
+  //   LightningTransition  cover  →  `onCovered`  →  RETIRE WHEN TOLD
+  //   RouteTransition      push   →  covers → holds → retreats
+  //
+  // The sheet's `onCovered` is the swap point and it now fires when the sheet is
+  // FULLY shut, not at 60% of it. `router.push` therefore runs behind an opaque
+  // sheet, and the new tree has committed before the sheet is allowed to lift.
   const swapTo = useCallback((slug: string) => {
     pendingHref.current = `/blog/${slug}`;
     setBoltTrigger((t) => t + 1);
   }, []);
 
-  const handleMidpoint = useCallback(() => {
-    if (pendingHref.current) {
-      router.push(pendingHref.current);
-      pendingHref.current = null;
-    }
+  const handleCovered = useCallback(() => {
+    const href = pendingHref.current;
+    pendingHref.current = null;
+    if (href) router.push(href);
   }, [router]);
+
+  // Retire the sheet once the swap has landed.
+  //
+  // `RouteTransition` keeps its own curtain shut until `routeChangeComplete` and
+  // only then starts to retreat, so a lift at this moment happens entirely
+  // behind that curtain — the reader sees one transition, not two. Lifting on
+  // our own clock instead (the previous behaviour, 66% of a 640ms sheet) put a
+  // vertical wipe and a horizontal sweep on screen together for ~320ms, with
+  // each file cleaning up only its own three layers.
+  //
+  // The deadline is the half of the rule that keeps a visitor from being
+  // stranded behind an occluder if the router goes quiet: whichever fires first
+  // retires the sheet, and `LightningTransition` restores pointer events in its
+  // own `onComplete`, so a dropped event cannot leave the reader locked out of
+  // the page.
+  useEffect(() => {
+    if (boltTrigger === 0) return;
+    let settled = false;
+    let deadline = 0;
+
+    const retire = () => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(deadline);
+      router.events.off('routeChangeComplete', retire);
+      router.events.off('routeChangeError', retire);
+      setBoltRelease((r) => r + 1);
+    };
+
+    router.events.on('routeChangeComplete', retire);
+    router.events.on('routeChangeError', retire);
+    deadline = window.setTimeout(retire, RELEASE_DEADLINE_MS);
+
+    return () => {
+      settled = true;
+      window.clearTimeout(deadline);
+      router.events.off('routeChangeComplete', retire);
+      router.events.off('routeChangeError', retire);
+    };
+  }, [boltTrigger, router]);
 
   return (
     <>
@@ -378,7 +534,11 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
       />
 
       <ReadingProgress targetRef={articleRef} />
-      <LightningTransition trigger={boltTrigger} onMidpoint={handleMidpoint} />
+      <LightningTransition
+        trigger={boltTrigger}
+        onCovered={handleCovered}
+        release={boltRelease}
+      />
 
       {/* `relative`, no z-index — the page-root half of the contract stated in
           `_app.tsx` and of the identical note on `blog/index.tsx`. A page root
@@ -389,18 +549,33 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
           strip above ordinary page content, and the stage it lives in already
           sits above the scene.
 
-          The lightning flash above is deliberately OUTSIDE this article, which
-          is what lets its `z-80` full-screen page turn cover the strip (and the
-          shell's `z-[85]` curtain above it) with no ancestor z-index in the
-          way. Its `trigger`/`onMidpoint` timing is load-bearing — the
-          midpoint is where `router.push` fires for post-to-post navigation —
-          and is untouched. */}
+          The sheet above is deliberately OUTSIDE this article, which is what lets
+          its `z-80` full-screen page turn cover the strip with no ancestor
+          z-index in the way.
+
+          It is NOT above the shell's `z-[85]` curtain, and no z-index here can
+          make it so: `RouteTransition` mounts the curtain as a SIBLING of the
+          `rt-stage` that holds this whole page, so the curtain paints over
+          whatever the page renders, and `rt-stage` takes a `transform` during
+          the sweep, which re-parents the sheet's `fixed inset-0` into that stage
+          and hands it the stage's x-shift and opacity too. Two occluders that
+          cross cannot be fixed with stacking order — one of them has to be
+          scheduled out of the other's way. The page-turn sheet is the one that
+          waits: it covers, swaps the tree the instant it is fully shut, and
+          holds until `routeChangeComplete`, so its lift is spent behind the
+          still-closed curtain and the reader only ever sees the horizontal
+          sweep. See the note above `swapTo` for the sequence and
+          `RELEASE_DEADLINE_MS` for the fail-open. */}
       <article
         ref={articleRef}
         className="relative min-h-screen"
         data-theme="editorial"
       >
-        {/* Full-screen hero — premium: aurora wash + parallax cover + splitText title + drawable rule */}
+        {/* Full-screen hero — aurora wash + cover + splitText title + drawable rule.
+            Arrival order is BEAT/HOLD at the top of this file; the cover no longer
+            parallaxes (that was a second scroll listener on a route that already
+            has one, and the scene's rule is that scroll is sampled in the frame
+            loop, never in a listener of its own). */}
         <div
           ref={heroRef}
           className="relative min-h-screen flex flex-col justify-end overflow-hidden px-4 pb-16 pt-28"
@@ -450,12 +625,11 @@ export default function BlogReaderPage({ post, prev, next, related }: Props) {
               }}
             />
           </div>
-          {/* Parallax cover */}
+          {/* Cover. Static: it sits under the void gradient above it anyway, so
+              the 4% overscale that parallax depended on was only ever visible
+              as a moving edge behind a 75–97% wash. */}
           {post.cover_image_url && (
-            <div
-              ref={coverRef}
-              className="absolute inset-0 will-change-transform"
-            >
+            <div className="absolute inset-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={post.cover_image_url}
