@@ -12,6 +12,8 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useContext } from 'react';
 import { ScenePointerContext } from '../../hooks/useScenePointer';
+import { aliveGain } from './ambient';
+import { useSceneAmbient } from './useSceneAmbient';
 
 import { SCENE_ACCENTS } from './palette';
 
@@ -83,6 +85,7 @@ const FRAG = /* glsl */ `
   uniform vec3 uColorB;
   uniform vec3 uColorC;
   uniform float uOpacity;
+  uniform float uAlive;
   varying float vAccent;
   varying float vFade;
 
@@ -98,7 +101,12 @@ const FRAG = /* glsl */ `
       ? mix(uColorA, uColorB, vAccent * 2.0)
       : mix(uColorB, uColorC, (vAccent - 0.5) * 2.0);
 
-    gl_FragColor = vec4(col, alpha * uOpacity * vFade);
+    // uAlive is ALWAYS >= 1.0 (see aliveGain) and multiplies in ADDITION to the
+    // shockwave's vFade rather than being folded into it. That is what keeps the
+    // chat pulse sharp against an ambient baseline: the resting field can make a
+    // send BRIGHTER, never dimmer. Peak is 2.6x engaged, 3.12x at full rest —
+    // the quieter the room before you send, the bigger the pulse.
+    gl_FragColor = vec4(col, alpha * uOpacity * uAlive * vFade);
   }
 `;
 
@@ -113,6 +121,7 @@ export default function ParticleField({
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const { viewport } = useThree();
   const pointer = useContext(ScenePointerContext);
+  const ambient = useSceneAmbient();
   const ring = useRef(0);
 
   useEffect(() => {
@@ -160,6 +169,9 @@ export default function ParticleField({
       uImpulse: { value: 0 },
       uSize: { value: size },
       uOpacity: { value: opacity },
+      // Written every frame below, never read from props. 1.0 is the exact
+      // behaviour this shader had before idle existed — see aliveGain.
+      uAlive: { value: 1 },
       uColorA: { value: new THREE.Color(palette[0]) },
       uColorB: { value: new THREE.Color(palette[1]) },
       uColorC: { value: new THREE.Color(palette[2]) },
@@ -170,6 +182,10 @@ export default function ParticleField({
     const mat = materialRef.current;
     if (!mat) return;
     mat.uniforms.uTime.value = state.clock.elapsedTime;
+    // Ambient "aliveness": lifts the field as the visitor goes quiet, and again
+    // while they scroll fast. Additive only — this can never reduce the field
+    // below its tuned opacity, so it cannot flatten the chat shockwave.
+    mat.uniforms.uAlive.value = aliveGain(ambient.presence, ambient.rush);
 
     // Scratch vector, not a fresh one per frame: this runs 60–120x/s and the
     // previous `new THREE.Vector2(...)` was pure heap churn in the hot path.

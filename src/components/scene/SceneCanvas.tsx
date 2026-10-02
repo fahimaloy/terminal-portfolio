@@ -18,6 +18,12 @@ import {
 
 import { SCENE_ACCENTS, SCENE_ACCENT_RUNS } from './palette';
 import NeonTubes from './NeonTubes';
+import type { DepthLayer } from './ambient';
+import {
+  SceneAmbientProvider,
+  SceneAmbientDriver,
+  SceneDepth,
+} from './useSceneAmbient';
 
 export type SceneVariant = 'hero' | 'chat' | 'blog';
 
@@ -67,6 +73,36 @@ export const VARIANTS: Record<
     coreOpacity: number;
     cameraZ: number;
     /**
+     * Scroll parallax, as a RATE per layer: the fraction of content scroll
+     * speed that layer answers with.
+     *
+     * These are art direction and therefore live in this table (AGENTS.md scene
+     * contract) rather than in `ambient.ts`, which holds only the per-layer
+     * world-unit scale that comes from where each layer sits in the scene.
+     *
+     * The ordering is the design. `core` is the farthest element and lags
+     * least; `grid` is the closest and lags most; the particle volume and the
+     * tubes sit between. What matters is that they are DIFFERENT — depth is
+     * read from the spread between layers, so a single shared factor would
+     * translate the whole scene as one flat cut-out and read as broken rather
+     * than deep. Every rate is below 1.0 for the same reason: a backdrop that
+     * outruns the content does not read as distant, it reads as a transition
+     * that is stuck halfway.
+     *
+     * Per variant, because the routes have genuinely different jobs:
+     *   - `hero` is the baseline. One screenful of content, so the response is
+     *     tuned to feel right within the first viewport of scroll.
+     *   - `chat` roughly halves every rate. The conversation IS the content
+     *     here and the scroll happens inside a panel; the backdrop has the
+     *     least to add on that route and the most to take away.
+     *   - `blog` raises them. It is the only variant with a long, real,
+     *     document-length scroll, and it is the only route where differential
+     *     parallax is the entire point rather than a garnish. It also serves
+     *     the admin panel, where the scroll is shorter and the rates simply
+     *     have less room to express themselves.
+     */
+    depth: Record<DepthLayer, number>;
+    /**
      * Tube layer. `null` disables it for a variant — the blog is a reading
      * surface, and a cursor-chasing foreground behind body text costs
      * legibility for no gain. The numbers live here rather than in NeonTubes
@@ -100,6 +136,7 @@ export const VARIANTS: Record<
     core: true,
     coreOpacity: 0.5,
     cameraZ: 9,
+    depth: { grid: 0.48, tubes: 0.42, particles: 0.3, core: 0.22 },
     // Tuned against a measured histogram, not by eye. At opacity 0.2 the
     // tubes were invisible; at 0.9 they cut across the display name and the
     // stat row. This sits between: clearly present in the empty middle of
@@ -129,6 +166,7 @@ export const VARIANTS: Record<
     core: true,
     coreOpacity: 0.22,
     cameraZ: 12,
+    depth: { grid: 0.26, tubes: 0.22, particles: 0.16, core: 0.12 },
     // Dimmer and lazier: the chat stream is the content now, and the tubes
     // must not compete with reading text.
     tubes: {
@@ -155,6 +193,7 @@ export const VARIANTS: Record<
     core: false,
     coreOpacity: 0,
     cameraZ: 10,
+    depth: { grid: 0.56, tubes: 0.48, particles: 0.34, core: 0.26 },
     tubes: null,
   },
 };
@@ -221,51 +260,77 @@ export default function SceneCanvas({
 
   return (
     <ScenePointerProvider value={pointer}>
-      <Canvas
-        // The real fix for a hidden tab: r3f's loop keeps running at full
-        // rate regardless of tier, so `tier: 'paused'` alone never stopped
-        // anything (measured 60 rAF ticks visible vs 61 hidden).
-        frameloop={tier === 'paused' ? 'never' : 'always'}
-        dpr={[1, 1.75]}
-        gl={{
-          antialias: false,
-          alpha: true,
-          powerPreference: 'high-performance',
-          failIfMajorPerformanceCaveat: false,
-        }}
-        camera={{ position: [0, 0, art.cameraZ], fov: 55, near: 0.1, far: 120 }}
-        style={{ position: 'absolute', inset: 0 }}
-        aria-hidden="true"
-      >
-        <Suspense fallback={null}>
-          <ParallaxRig>
-            <ParticleField
-              count={count}
-              opacity={art.opacity}
-              size={art.size}
-              impulse={impulse}
-              palette={palette}
-            />
-            <FloorGrid opacity={art.grid} y={art.gridY} impulse={impulse} />
-            {tubes && (
-              <NeonTubes
-                count={tubes.count}
-                segments={tubes.segments}
-                radius={tubes.radius}
-                opacity={tubes.opacity}
-                follow={tubes.follow}
-                z={tubes.z}
-                glowSamples={tubes.glowSamples}
-                glowSize={tubes.glowSize}
-                glowIntensity={tubes.glowIntensity}
-                paletteOffset={paletteStep}
-                impulse={impulse}
-              />
-            )}
-            {art.core && <CoreObject opacity={art.coreOpacity} />}
-          </ParallaxRig>
-        </Suspense>
-      </Canvas>
+      <SceneAmbientProvider>
+        <Canvas
+          // The real fix for a hidden tab: r3f's loop keeps running at full
+          // rate regardless of tier, so `tier: 'paused'` alone never stopped
+          // anything (measured 60 rAF ticks visible vs 61 hidden).
+          frameloop={tier === 'paused' ? 'never' : 'always'}
+          dpr={[1, 1.75]}
+          gl={{
+            antialias: false,
+            alpha: true,
+            powerPreference: 'high-performance',
+            failIfMajorPerformanceCaveat: false,
+          }}
+          camera={{
+            position: [0, 0, art.cameraZ],
+            fov: 55,
+            near: 0.1,
+            far: 120,
+          }}
+          style={{ position: 'absolute', inset: 0 }}
+          aria-hidden="true"
+        >
+          <Suspense fallback={null}>
+            {/* First child on purpose: it fills the shared ambient state that
+                every layer below reads. Ordering is not load-bearing — each
+                consumer writes only its own object — but running the integrator
+                first means a layer never sees a value one frame stale. */}
+            <SceneAmbientDriver />
+            <ParallaxRig>
+              {/* Each layer answers scroll at its own rate. See the `depth`
+                  table above; the whole point of four groups rather than one
+                  transform is that the DIFFERENCE between them is the depth
+                  cue. */}
+              <SceneDepth layer="particles" rate={art.depth.particles}>
+                <ParticleField
+                  count={count}
+                  opacity={art.opacity}
+                  size={art.size}
+                  impulse={impulse}
+                  palette={palette}
+                />
+              </SceneDepth>
+              <SceneDepth layer="grid" rate={art.depth.grid}>
+                <FloorGrid opacity={art.grid} y={art.gridY} impulse={impulse} />
+              </SceneDepth>
+              {tubes && (
+                <SceneDepth layer="tubes" rate={art.depth.tubes}>
+                  <NeonTubes
+                    count={tubes.count}
+                    segments={tubes.segments}
+                    radius={tubes.radius}
+                    opacity={tubes.opacity}
+                    follow={tubes.follow}
+                    z={tubes.z}
+                    glowSamples={tubes.glowSamples}
+                    glowSize={tubes.glowSize}
+                    glowIntensity={tubes.glowIntensity}
+                    paletteOffset={paletteStep}
+                    impulse={impulse}
+                  />
+                </SceneDepth>
+              )}
+              {art.core && (
+                <SceneDepth layer="core" rate={art.depth.core}>
+                  <CoreObject opacity={art.coreOpacity} />
+                </SceneDepth>
+              )}
+            </ParallaxRig>
+          </Suspense>
+        </Canvas>
+      </SceneAmbientProvider>
     </ScenePointerProvider>
   );
 }

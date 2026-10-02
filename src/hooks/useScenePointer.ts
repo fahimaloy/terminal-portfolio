@@ -38,7 +38,20 @@ export type ScenePointer = {
    * need liveness (idle animation) compare `movedAt` against the clock.
    */
   active: boolean;
-  /** `performance.now()` of the last movement. */
+  /**
+   * `performance.now()` of the last movement.
+   *
+   * READ THIS BEFORE USING IT AGAINST A CLOCK. This is a wall-clock value and
+   * keeps advancing while the tab is hidden; r3f's `state.clock.elapsedTime`
+   * freezes the moment `frameloop` stops advancing. Subtracting the two
+   * directly yields a nonsense quiet time after a backgrounded tab.
+   *
+   * The scene's only consumer therefore treats it as a change-detector rather
+   * than a timestamp to subtract: it remembers the value it last saw and the
+   * scene time at which the value changed, and the quiet time falls out of the
+   * scene clock alone. See `SceneAmbientDriver` in
+   * `src/components/scene/useSceneAmbient.tsx`.
+   */
   movedAt: number;
 };
 

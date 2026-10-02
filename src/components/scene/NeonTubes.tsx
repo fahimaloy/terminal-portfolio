@@ -45,6 +45,7 @@ import * as THREE from 'three';
 import { TubeStrip } from './TubeStrip';
 import { sceneAccentRun, SCENE_ACCENT_RUNS } from './palette';
 import { ScenePointerContext } from '../../hooks/useScenePointer';
+import { useSceneAmbient } from './useSceneAmbient';
 
 type Props = {
   /** How many tubes to draw. */
@@ -314,6 +315,7 @@ export default function NeonTubes({
 }: Props) {
   const pulse = useRef(0);
   const pointer = useContext(ScenePointerContext);
+  const ambient = useSceneAmbient();
 
   // ONE material instance shared by every tube, so the frame loop writes the
   // uniforms once rather than per mesh. Built imperatively instead of as a
@@ -550,9 +552,18 @@ export default function NeonTubes({
 
       // A slow idle orbit, so the tubes are alive before the pointer has ever
       // moved and on touch devices where there is no hover at all.
+      //
+      // The orbit WIDENS as the visitor goes quiet. The bundle is the layer
+      // people notice most, and a fixed-amplitude orbit parked under a reading
+      // cursor is the least interesting thing it can do; opening it up while
+      // nobody is driving it gives the resting scene something to watch without
+      // touching the engaged behaviour at all (at presence 1 the multiplier is
+      // exactly 1.0, i.e. the orbit this had before). Bounded well short of the
+      // frustum edges so it still reads as tubes rather than as spill.
       const t = state.clock.elapsedTime;
-      const ox = Math.cos(t * 0.21 + drift) * 1.1;
-      const oy = Math.sin(t * 0.17 + drift) * 0.8;
+      const orbit = 1 + (1 - ambient.presence) * 0.5;
+      const ox = Math.cos(t * 0.21 + drift) * 1.1 * orbit;
+      const oy = Math.sin(t * 0.17 + drift) * 0.8 * orbit;
 
       // Head point chases the pointer directly.
       spine[0] += (_target.x + offset.x + ox - spine[0]) * k;
