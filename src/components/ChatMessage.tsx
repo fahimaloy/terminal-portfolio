@@ -219,6 +219,13 @@ export default React.memo(function ChatMessage({
         <HudPanel
           accent="amber"
           className="max-w-[85%] md:max-w-[75%] px-4 py-3 accent-hairline"
+          // `enter={false}` — every bubble here sits inside a `[data-chat-msg]`
+          // wrapper, and `ChatStream` animates those wrappers with its own
+          // `y:[12,0], opacity:[0,1]` (ChatStream.tsx:132-165). ChatStream is
+          // the only place `ChatMessage` is rendered (ChatStream.tsx:198), so
+          // this panel's fade would always compound with a cascade that is
+          // already animating it.
+          enter={false}
         >
           <RoleRail accent="amber" label="You" ts={ts} />
           <div className="font-body text-sm text-text-primary whitespace-pre-wrap break-words">
@@ -296,7 +303,13 @@ export default React.memo(function ChatMessage({
     return (
       <div className="flex w-full justify-start">
         <div className="w-full max-w-[95%] md:max-w-[85%]">
-          <HudPanel accent="cyan" className="px-4 py-3 accent-hairline">
+          <HudPanel
+            accent="cyan"
+            className="px-4 py-3 accent-hairline"
+            // Same reason as the user bubble at :219 — inside a `[data-chat-msg]`
+            // wrapper that `ChatStream` is already animating (ChatStream.tsx:132-165).
+            enter={false}
+          >
             <RoleRail accent="cyan" label="Assistant" ts={ts} />
             <ProjectMatchGrid
               projects={responseData.projects}
@@ -313,7 +326,13 @@ export default React.memo(function ChatMessage({
     return (
       <div className="flex w-full justify-start">
         <div className="w-full max-w-[95%] md:max-w-[85%]">
-          <HudPanel accent="cyan" className="px-4 py-3 accent-hairline">
+          <HudPanel
+            accent="cyan"
+            className="px-4 py-3 accent-hairline"
+            // Same reason as the user bubble at :219 — inside a `[data-chat-msg]`
+            // wrapper that `ChatStream` is already animating (ChatStream.tsx:132-165).
+            enter={false}
+          >
             <RoleRail accent="cyan" label="Assistant" ts={ts} />
             <SkillGrid skills={responseData.skills} />
           </HudPanel>
@@ -326,7 +345,13 @@ export default React.memo(function ChatMessage({
     return (
       <div className="flex w-full justify-start">
         <div className="w-full max-w-[95%] md:max-w-[85%]">
-          <HudPanel accent="cyan" className="px-4 py-3 accent-hairline">
+          <HudPanel
+            accent="cyan"
+            className="px-4 py-3 accent-hairline"
+            // Same reason as the user bubble at :219 — inside a `[data-chat-msg]`
+            // wrapper that `ChatStream` is already animating (ChatStream.tsx:132-165).
+            enter={false}
+          >
             <RoleRail accent="cyan" label="Assistant" ts={ts} />
             <ExperienceTimeline experiences={responseData.experiences} />
           </HudPanel>
@@ -342,6 +367,9 @@ export default React.memo(function ChatMessage({
         <HudPanel
           accent="cyan"
           className="max-w-[85%] md:max-w-[75%] px-4 py-3 accent-hairline"
+          // Same reason as the user bubble at :219 — inside a `[data-chat-msg]`
+          // wrapper that `ChatStream` is already animating (ChatStream.tsx:132-165).
+          enter={false}
         >
           <RoleRail accent="cyan" label="Assistant" ts={ts} />
           <div className="font-body text-sm text-text-primary whitespace-pre-wrap">
@@ -359,7 +387,13 @@ export default React.memo(function ChatMessage({
   return (
     <div className="flex w-full justify-start">
       <div className="max-w-[90%] md:max-w-[82%] space-y-3">
-        <HudPanel accent="cyan" className="px-4 py-3 accent-hairline">
+        <HudPanel
+          accent="cyan"
+          className="px-4 py-3 accent-hairline"
+          // Same reason as the user bubble at :219 — inside a `[data-chat-msg]`
+          // wrapper that `ChatStream` is already animating (ChatStream.tsx:132-165).
+          enter={false}
+        >
           <RoleRail accent="cyan" label="Assistant" ts={ts} />
           <div className="font-body text-sm text-text-primary space-y-3">
             {segments.map((segment, idx) => {

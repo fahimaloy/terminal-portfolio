@@ -220,6 +220,12 @@ export default function ChatStream({
             <HudPanel
               accent="cyan"
               className="px-4 py-3 flex items-center gap-3 accent-hairline"
+              // `enter={false}` — this panel is mounted INSIDE the
+              // `[data-chat-msg]` wrapper at :219, so it is already inside the
+              // `y:[12,0], opacity:[0,1]` animation this component drives over
+              // `[data-chat-msg]` (see :132-165). Its own fade would compound
+              // with the one the wrapper is already running.
+              enter={false}
             >
               <ScopeRings accent="cyan" size={20} />
               <div className="flex items-baseline gap-2 min-w-0">

@@ -137,6 +137,15 @@ export default function ProjectPreview({
                       : 'opacity-60 hover:opacity-100 hover:hud-glow-' +
                         c.accent.replace('neon-', '')
                   }`}
+                  // `enter={false}` — this tab owns its resting state and it is
+                  // deliberate: an inactive tab is `opacity-60` until hover, the
+                  // active one is `scale-105`, and `transition-all duration-200`
+                  // is what makes that dim-to-full crossfade read as a state
+                  // change rather than a glitch. The entrance writes inline
+                  // `opacity` and `transform` on this same node, which would
+                  // override both of those for 300ms and then hand back a
+                  // different value than it started from.
+                  enter={false}
                 >
                   <div className="w-full h-16 overflow-hidden bg-[var(--overlay-black-medium)] mb-2 relative">
                     {project.thumbnail_url ? (

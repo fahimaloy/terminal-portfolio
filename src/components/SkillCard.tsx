@@ -62,6 +62,15 @@ export default function SkillCard({ skill, inline = false }: SkillCardProps) {
         wash
         grid
         innerClassName="p-4 flex flex-col items-center text-center"
+        // `enter={false}` — this card's entrance is owned by the parent.
+        // `SkillGrid` wraps each card in `.skill-grid-item` (SkillGrid.tsx:57)
+        // and staggers those wrappers with `opacity:[0,1], y:[20,0],
+        // scale:[0.9,1]` (SkillGrid.tsx:31-40). This panel is inside that
+        // wrapper (via `Tilt3D` at :59), so its own fade would multiply with
+        // the stagger's and the two compound into a mush. The file header
+        // already states the rule: "entrance motion owned by parent
+        // (SkillGrid stagger), so no per-card scope/timers here".
+        enter={false}
       >
         {Icon && hit && <Icon size={20} color={hit.hex} aria-hidden="true" />}
         <div
