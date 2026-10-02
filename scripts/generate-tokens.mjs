@@ -13,9 +13,14 @@
  * Behaviour:
  *   - Parses --neon-*, --glow-*, --glow-*-sm, --dur-*, --ease-*, --bg-*, --text-*,
  *     --glass-*, --spring-* vars via regex (no extra deps).
+ *   - Reads ONLY the top-level `:root { … }` block. Theme scopes
+ *     ([data-accent='…'], [data-theme='editorial']), the reduced-motion @media
+ *     overrides and any other selector are excluded by construction, never by
+ *     position — see extractRootBlock() for why that distinction matters.
  *   - Idempotent: re-running with unchanged tokens.css produces byte-identical outputs.
  *   - --check: exits 1 (non-zero) if either generated file would change; prints a diff hint.
- *   - On parse failure (no tokens found / unreadable file) exits non-zero.
+ *   - On parse failure (missing/empty :root block, no tokens found, unreadable
+ *     file) exits non-zero with a message naming the cause.
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
@@ -38,14 +43,144 @@ const MIN_ACCENTS = 4; // Require at least 4 neon accents for validation
 // Parse helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Skip a CSS string literal starting at `start` (which points at the quote).
+ * Returns the index just past the closing quote, or at the terminating newline
+ * for an unterminated literal (a CSS string cannot span a raw newline).
+ */
+function skipCssString(css, start) {
+  const quote = css[start];
+  let i = start + 1;
+  while (i < css.length) {
+    const ch = css[i];
+    if (ch === '\\') {
+      i += 2; // escape — also swallows a backslash-newline continuation
+      continue;
+    }
+    if (ch === quote) return i + 1;
+    if (ch === '\n') return i;
+    i += 1;
+  }
+  return i;
+}
+
+/** Blank out CSS comments so commented-out text can never read as a selector. */
+function stripCssComments(css) {
+  let out = '';
+  let i = 0;
+  while (i < css.length) {
+    if (css[i] === '/' && css[i + 1] === '*') {
+      const end = css.indexOf('*/', i + 2);
+      i = end === -1 ? css.length : end + 2;
+      out += ' '; // keep tokens on either side from fusing into one word
+      continue;
+    }
+    out += css[i];
+    i += 1;
+  }
+  return out;
+}
+
+/**
+ * Return the body of the top-level `:root { … }` rule, comments removed.
+ *
+ * This replaced `css.split('@media')[0]`, which only ever worked by accident:
+ * it reads "everything before the first @media", not "the :root block". Those
+ * coincide only while no non-`:root` rule sits above that @media. The
+ * `[data-theme='editorial']` scope sat below it and stayed invisible to codegen
+ * purely by luck — insert any @media above that scope, or move the scope up,
+ * and the parser starts seeing it. That scope re-points --font-display at
+ * --font-body, so the leak silently rewrites generated `fontFamily.display`
+ * from Orbitron to `var(--font-body)`, stripping the display face from every
+ * `font-display` utility in the app while `--check` still reports clean.
+ *
+ * The walk is comment- and string-aware because tokens.css is heavily commented
+ * and `--spring-*` values embed braces inside quotes
+ * ('{"stiffness":200,"damping":15}') — a naive depth counter stops early there.
+ * Depth is tracked so the reduced-motion `@media { :root { … } }` (its :root
+ * sits at depth 2) and any future nested scope are skipped; only a depth-1
+ * `:root` whose selector is exactly `:root` counts. The first such rule wins.
+ *
+ * Throws instead of returning a partial block: a silently empty or truncated
+ * parse is precisely what let this bug class reach a green CI.
+ */
+function extractRootBlock(css) {
+  let depth = 0;
+  let selectorStart = 0;
+  let bodyStart = -1;
+  let i = 0;
+
+  while (i < css.length) {
+    const ch = css[i];
+
+    // Braces inside comments must not move the depth counter.
+    if (ch === '/' && css[i + 1] === '*') {
+      const end = css.indexOf('*/', i + 2);
+      i = end === -1 ? css.length : end + 2;
+      continue;
+    }
+
+    // Braces inside string literals must not move the depth counter.
+    if (ch === '"' || ch === "'") {
+      i = skipCssString(css, i);
+      continue;
+    }
+
+    if (ch === '{') {
+      depth += 1;
+      if (
+        depth === 1 &&
+        bodyStart === -1 &&
+        stripCssComments(css.slice(selectorStart, i)).trim() === ':root'
+      ) {
+        bodyStart = i + 1;
+      }
+      i += 1;
+      continue;
+    }
+
+    if (ch === '}') {
+      if (depth === 1 && bodyStart !== -1) {
+        return stripCssComments(css.slice(bodyStart, i));
+      }
+      if (depth === 0) {
+        throw new Error(
+          `unexpected "}" at offset ${i} — unbalanced braces before the :root rule`
+        );
+      }
+      depth -= 1;
+      selectorStart = i + 1;
+      i += 1;
+      continue;
+    }
+
+    i += 1;
+  }
+
+  throw new Error(
+    bodyStart === -1
+      ? 'no top-level `:root { … }` rule found — tokens.css must declare one at brace depth 0'
+      : 'the top-level `:root { … }` rule is never closed (unbalanced "{")'
+  );
+}
+
 function parseTokensCss(css) {
-  // Strip @media (prefers-reduced-motion: reduce) block so --dur-* 0ms overrides
-  // don't overwrite the real token values (first definition wins).
-  const primaryCss = css.split('@media')[0];
+  // Generated tokens come from the top-level `:root` block and nowhere else.
+  // Every other block is either an override (reduced-motion @media, [data-theme],
+  // [data-accent]) or a scope that re-points a token at another token; feeding
+  // either into codegen replaces an authored value with a reference.
+  const rootCss = extractRootBlock(css);
+
+  const declared = (rootCss.match(/--[a-zA-Z0-9_-]+\s*:/g) || []).length;
+  if (declared === 0) {
+    throw new Error(
+      'the top-level :root block declares 0 custom properties — refusing to generate from an empty token set'
+    );
+  }
 
   // --neon-yellow: #ffaa00;
   const neon = {};
-  for (const m of primaryCss.matchAll(/--neon-([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/g)) {
+  for (const m of rootCss.matchAll(/--neon-([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/g)) {
     neon[m[1]] = m[2].toLowerCase();
   }
 
@@ -53,7 +188,7 @@ function parseTokensCss(css) {
   // --glow-cyan-sm: rgba(0, 240, 255, 0.15);
   const glow = {};
   const glowSm = {};
-  for (const m of primaryCss.matchAll(/--glow-([a-z0-9-]+)\s*:\s*(rgba\([^)]+\))\s*;/g)) {
+  for (const m of rootCss.matchAll(/--glow-([a-z0-9-]+)\s*:\s*(rgba\([^)]+\))\s*;/g)) {
     const raw = m[0];
     // Distinguish -sm suffix: check if the declaration key ends with -sm
     // The regex captures e.g. "yellow-sm" for --glow-yellow-sm; split it.
@@ -68,41 +203,41 @@ function parseTokensCss(css) {
   }
 
   // --dur-enter: 480ms;  → { enter: "480ms" }
-  // Use primaryCss so reduced-motion overrides don't clobber real values
+  // :root only — reduced-motion overrides must not clobber real values
   const durations = {};
-  for (const m of primaryCss.matchAll(/--dur-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--dur-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     durations[m[1]] = m[2].trim();
   }
 
   // --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
   const easings = {};
-  for (const m of primaryCss.matchAll(/--ease-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--ease-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     easings[m[1]] = m[2].trim();
   }
 
   // --bg-void: #0a0a0a;  --bg-panel: rgba(...)
   const bg = {};
-  for (const m of primaryCss.matchAll(/--bg-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--bg-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     bg[m[1]] = m[2].trim();
   }
 
   // --text-primary: #ffffff;
-  // Use primaryCss and filter to only color-like values (hex, rgba, hsl) — skip typography tokens like --text-xs: 0.75rem
+  // :root only, filtered to color-like values (hex, rgba, hsl) — skip typography tokens like --text-xs: 0.75rem
   const text = {};
-  for (const m of primaryCss.matchAll(/--text-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--text-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     const val = m[2].trim();
     if (/^(#|rgba?\(|hsla?\()/i.test(val)) text[m[1]] = val;
   }
 
   // --glass-bg / --glass-border
   const glass = {};
-  for (const m of primaryCss.matchAll(/--glass-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--glass-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     glass[m[1]] = m[2].trim();
   }
 
   // --spring-stiff: '{"stiffness":200,"damping":15}';
   const springs = {};
-  for (const m of primaryCss.matchAll(/--spring-([a-z0-9-]+)\s*:\s*'([^']+)'\s*;/g)) {
+  for (const m of rootCss.matchAll(/--spring-([a-z0-9-]+)\s*:\s*'([^']+)'\s*;/g)) {
     try {
       springs[m[1]] = JSON.parse(m[2]);
     } catch {
@@ -112,38 +247,38 @@ function parseTokensCss(css) {
 
   // --font-display / --font-body / --font-mono
   const fonts = {};
-  for (const m of primaryCss.matchAll(/--font-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--font-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     fonts[m[1]] = m[2].trim();
   }
 
 
   // --wash-*, --grid-*, --surface-*, --ring-*, --status-*, --border-*, --shadow-*
   const wash = {};
-  for (const m of primaryCss.matchAll(/--wash-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--wash-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     wash[m[1]] = m[2].trim();
   }
   const grid = {};
-  for (const m of primaryCss.matchAll(/--grid-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--grid-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     grid[m[1]] = m[2].trim();
   }
   const surface = {};
-  for (const m of primaryCss.matchAll(/--surface-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--surface-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     surface[m[1]] = m[2].trim();
   }
   const ring = {};
-  for (const m of primaryCss.matchAll(/--ring-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--ring-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     ring[m[1]] = m[2].trim();
   }
   const status = {};
-  for (const m of primaryCss.matchAll(/--status-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--status-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     status[m[1]] = m[2].trim();
   }
   const border = {};
-  for (const m of primaryCss.matchAll(/--border-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--border-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     border[m[1]] = m[2].trim();
   }
   const shadow = {};
-  for (const m of primaryCss.matchAll(/--shadow-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
+  for (const m of rootCss.matchAll(/--shadow-([a-z0-9-]+)\s*:\s*([^;]+)\s*;/g)) {
     shadow[m[1]] = m[2].trim();
   }
 
@@ -444,7 +579,14 @@ function main() {
     process.exit(1);
   }
 
-  const tokens = parseTokensCss(css);
+  let tokens;
+  try {
+    tokens = parseTokensCss(css);
+  } catch (e) {
+    console.error(`[generate-tokens] Parse failure: ${e.message}`);
+    console.error(`[generate-tokens] Source: ${path.relative(ROOT, TOKENS_CSS)}`);
+    process.exit(1);
+  }
 
   // Validate — must have at least MIN_ACCENTS neon accents
   const foundNeon = Object.keys(tokens.neon);
