@@ -10,7 +10,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { animate } from 'animejs';
-import { isReducedMotion } from '../../config/animations';
+import { easings, isReducedMotion } from '../../config/animations';
 import type {
   PortfolioProfile,
   PortfolioProject,
@@ -49,7 +49,7 @@ function useCounter(target: number, duration = 2000, delay = 0) {
       animate(obj, {
         val: [0, target],
         duration,
-        ease: 'outExpo',
+        ease: easings.outExpo,
         onUpdate: () => setValue(Math.round(obj.val)),
       });
     }, delay);

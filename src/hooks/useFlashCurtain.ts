@@ -95,7 +95,14 @@ export function useFlashCurtain(
               opacity: [0, 1],
               duration: durationMs * 0.95,
               ease: spring(springs.snappy) as unknown as string,
-              delay: stagger(12, { from: 'first' }),
+              // Was a bare 12ms — a fifth of the --dur-stagger token, kept as a
+              // ratio so it tracks the token. The full 60ms would visibly stall
+              // this curtain's cascade, so this is deliberately NOT the plain
+              // `durations.stagger * 1000`. Same shape as HeroSection's
+              // STEP_TIGHT/STEP_NAME.
+              delay: stagger(durations.stagger * (1 / 5) * 1000, {
+                from: 'first',
+              }),
             },
             40,
           );

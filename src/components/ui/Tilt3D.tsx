@@ -1,7 +1,7 @@
 // src/components/ui/Tilt3D.tsx
 import React, { useRef, useEffect, useCallback } from 'react';
 import { animate } from 'animejs';
-import { isReducedMotion } from '../../config/animations';
+import { durations, easings, isReducedMotion } from '../../config/animations';
 
 type Props = {
   children: React.ReactNode;
@@ -35,8 +35,11 @@ export default function Tilt3D({
       currentAnim.current = animate(ref.current, {
         rotateX: `${rotateX}deg`,
         rotateY: `${rotateY}deg`,
-        duration: 240,
-        ease: 'outQuad',
+        // Was 240ms. There is no --dur-240, so this takes the next token down
+        // (durations[200]), the same call ExperienceTimeline/AdminLayout make
+        // for their unmatched literals.
+        duration: durations[200] * 1000,
+        ease: easings.outQuad,
       });
     },
     [intensity, cancelPrev],
@@ -48,8 +51,8 @@ export default function Tilt3D({
     currentAnim.current = animate(ref.current, {
       rotateX: '0deg',
       rotateY: '0deg',
-      duration: 500,
-      ease: 'outExpo',
+      duration: durations[500] * 1000,
+      ease: easings.outExpo,
     });
   }, [cancelPrev]);
 

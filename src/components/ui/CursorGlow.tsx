@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { createSafeAnimatable } from '../../utils/animatable';
-import { isReducedMotion } from '../../config/animations';
+import { durations, easings, isReducedMotion } from '../../config/animations';
 
 interface CursorGlowProps {
   color?: string;
@@ -32,8 +32,10 @@ export default function CursorGlow({
     animatableRef.current = createSafeAnimatable(glowEl, {
       x: 0,
       y: 0,
-      duration: 400,
-      ease: 'outExpo',
+      // Was 400ms — no --dur-400 exists, so this takes the next token down
+      // (durations[300]), matching ExperienceTimeline/AdminLayout.
+      duration: durations[300] * 1000,
+      ease: easings.outExpo,
     });
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -59,8 +61,8 @@ export default function CursorGlow({
           animatableRef.current = createSafeAnimatable(glowRef.current, {
             x: 0,
             y: 0,
-            duration: 400,
-            ease: 'outExpo',
+            duration: durations[300] * 1000,
+            ease: easings.outExpo,
           });
           window.addEventListener('mousemove', handleMouseMove);
         }

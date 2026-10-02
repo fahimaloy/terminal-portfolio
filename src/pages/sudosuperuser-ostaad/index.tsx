@@ -17,7 +17,7 @@ import {
   AnimatedCounter,
   Tilt3D,
 } from '../../components/ui';
-import { canAnimate } from '../../config/animations';
+import { canAnimate, durations, easings } from '../../config/animations';
 
 const QUICK_ACTIONS = [
   { label: 'Update Personal Details', href: '/sudosuperuser-ostaad/profile' },
@@ -66,9 +66,14 @@ const DashboardPage = () => {
         opacity: [0, 1],
         y: [18, 0],
         scale: [0.96, 1],
-        duration: 420,
-        ease: 'outExpo',
-        delay: stagger(70),
+        // Was 420ms — no --dur-420 exists, so this takes the next token down
+        // (durations[300]), matching ExperienceTimeline/AdminLayout.
+        duration: durations[300] * 1000,
+        ease: easings.outExpo,
+        // Was stagger(70) — now the --dur-stagger token (60ms). anime's
+        // default `from` is already 'first', so the cascade order is
+        // unchanged; only the step is 10ms tighter.
+        delay: stagger(durations.stagger * 1000, { from: 'first' }),
       });
     });
 

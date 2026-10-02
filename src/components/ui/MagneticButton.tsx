@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useRef, useCallback } from 'react';
+import { spring } from 'animejs';
 import { createSafeAnimatable } from '../../utils/animatable';
-import { isReducedMotion } from '../../config/animations';
+import { durations, isReducedMotion, springs } from '../../config/animations';
 
 type MagneticButtonOwnProps = {
   children: React.ReactNode;
@@ -40,8 +41,19 @@ export default function MagneticButton({
       animatableRef.current = createSafeAnimatable(ref.current, {
         x: 0,
         y: 0,
-        duration: 250,
-        ease: 'spring(soft)',
+        // Was 250ms — no --dur-250 exists, so this takes the next token down
+        // (durations[200]), matching AdminLayout's MOBILE_EXIT_MS. NOTE this
+        // is inert while a Spring ease is set: anime swaps `duration` for the
+        // Spring's `settlingDuration` (1760ms for springs.soft). Kept for the
+        // same reason NeonButton passes both — a token, not a bare literal.
+        duration: durations[200] * 1000,
+        // Was the string 'spring(soft)', which this anime build does not parse:
+        // `eases['spring']` is undefined, so parseEaseString falls through to
+        // `none` — the follow was running LINEAR at 250ms, never springy.
+        // `spring(springs.soft)` is the real Spring that token names.
+        // See the note in the handoff: this is a deliberate behaviour change
+        // from 250ms-linear to a 1760ms spring, not a like-for-like swap.
+        ease: spring(springs.soft),
       });
     }
     return () => {

@@ -8,7 +8,7 @@ import React, { useEffect, useRef } from 'react';
 import { PortfolioSkill } from '../utils/api';
 import SkillCard from './SkillCard';
 import { createScope, animate, stagger } from 'animejs';
-import { isReducedMotion } from '../config/animations';
+import { durations, easings, isReducedMotion } from '../config/animations';
 
 type SkillGridProps = {
   skills: PortfolioSkill[];
@@ -32,9 +32,11 @@ export default function SkillGrid({ skills }: SkillGridProps) {
         opacity: [0, 1],
         y: [20, 0],
         scale: [0.9, 1],
-        duration: 400,
-        ease: 'outExpo',
-        delay: stagger(60, { from: 'first' }),
+        // Was 400ms — no --dur-400 exists, so this takes the next token down
+        // (durations[300]), matching ExperienceTimeline's card tween.
+        duration: durations[300] * 1000,
+        ease: easings.outExpo,
+        delay: stagger(durations.stagger * 1000, { from: 'first' }),
       });
     });
 
