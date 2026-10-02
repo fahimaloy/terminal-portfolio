@@ -41,7 +41,18 @@ const NewBlogPage = () => {
       <AdminLayout user={user}>
         <div className="space-y-5">
           <div>
-            <h1 className="font-display text-lg text-neon-cyan text-shadow-neon-cyan tracking-wider">
+            <h1
+              className="font-display text-lg text-neon-cyan tracking-wider"
+              // Replaces the retired `text-shadow-neon-cyan`, which was
+              // `0 0 8px var(--neon-cyan), 0 0 16px var(--glow-cyan)` — an
+              // opaque core plus a wide halo. The admin panel is matte and
+              // mono-chrome since the editorial restyle, so this page title
+              // takes only the faintest token-backed lift: 0.1 alpha, no core.
+              // It reads as a lit edge rather than a lamp, and it stops the
+              // cyan title looking unfinished against the `--glow-cyan-faint`
+              // hairline the admin chrome already draws beneath it.
+              style={{ textShadow: '0 0 14px var(--glow-cyan-faint)' }}
+            >
               NEW POST
             </h1>
             <p className="text-[10px] font-mono text-text-muted mt-1">

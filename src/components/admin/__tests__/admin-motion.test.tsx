@@ -310,3 +310,168 @@ describe('admin modals — animation contract', () => {
     expect(() => unmount()).not.toThrow();
   });
 });
+
+/* ── AdminLayout mobile-menu exit ───────────────────────────────────────────
+ *
+ * The mobile menu's exit is driven by a timer: `renderMobileMenu` only clears
+ * once that timer fires. So the reduced-motion guard cannot be an early
+ * `return` — it would skip the tween AND the unmount, leaving a permanently
+ * rendered panel that stays invisible (its node carries Tailwind `opacity-0`)
+ * behind the toggle, plus a stale ref for the next open. The contract these
+ * tests pin is therefore: the guard is on the animation alone, and every exit
+ * still ends in an unmount.
+ *
+ * The distinguishing observable for "skipped the tween" is an `animate()` whose
+ * `x` keyframes start at `0%` — the entrance animates `-100% → 0%`, so it can
+ * never be mistaken for the exit.
+ */
+describe('AdminLayout — mobile menu exit', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    scopes.length = 0;
+    mockAnimate.mockClear();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    clearMatchMedia();
+  });
+
+  function mobileMenu() {
+    return screen.queryByRole('navigation', { name: 'Mobile navigation' });
+  }
+
+  function clickToggle(label: 'Open menu' | 'Close menu') {
+    const button = screen.getByRole('button', { name: label });
+    act(() => {
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+  }
+
+  /** `animate()` calls that are the mobile-menu exit. */
+  function mobileExitAnimations() {
+    return mockAnimate.mock.calls.filter(([, params]) => {
+      const from = (params as { x?: unknown[] } | undefined)?.x;
+      return Array.isArray(from) && from[0] === '0%';
+    });
+  }
+
+  it('unmounts the mobile menu on the same tick under reduced motion, with no exit tween', () => {
+    mockMatchMedia(true);
+    renderAdminLayout();
+
+    clickToggle('Open menu');
+    expect(mobileMenu()).not.toBeNull();
+
+    clickToggle('Close menu');
+
+    // The whole point. Not after advancing a timer — on this tick. A guard that
+    // returned before `setRenderMobileMenu(false)` would leave the panel here.
+    expect(mobileMenu()).toBeNull();
+    expect(mobileExitAnimations()).toHaveLength(0);
+
+    // And it stays gone, with no pending callback to resurrect or re-hide it.
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(mobileMenu()).toBeNull();
+    expect(
+      screen.getByRole('button', { name: 'Open menu' }),
+    ).toBeInTheDocument();
+  });
+
+  it('survives repeated open/close cycles under reduced motion', () => {
+    mockMatchMedia(true);
+    renderAdminLayout();
+
+    for (let i = 0; i < 3; i++) {
+      clickToggle('Open menu');
+      expect(mobileMenu()).not.toBeNull();
+      clickToggle('Close menu');
+      expect(mobileMenu()).toBeNull();
+    }
+
+    // Still functional afterwards, and still silent.
+    clickToggle('Open menu');
+    expect(mobileMenu()).not.toBeNull();
+    expect(mobileExitAnimations()).toHaveLength(0);
+
+    // Close and immediately re-open, without letting any timer run: no unmount
+    // callback may be left pending from the close, or it fires against the menu
+    // the visitor has just opened again.
+    clickToggle('Close menu');
+    clickToggle('Open menu');
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(mobileMenu()).not.toBeNull();
+  });
+
+  it('unmounts without a tween when matchMedia is unavailable (SSR/jsdom)', () => {
+    clearMatchMedia();
+    renderAdminLayout();
+
+    clickToggle('Open menu');
+    expect(mobileMenu()).not.toBeNull();
+    clickToggle('Close menu');
+
+    // `canAnimate()` is false without matchMedia, and the menu still unmounts.
+    expect(mobileMenu()).toBeNull();
+    expect(mobileExitAnimations()).toHaveLength(0);
+  });
+
+  it('animates the exit from tokens and unmounts on the deadline when motion is allowed', () => {
+    mockMatchMedia(false);
+    renderAdminLayout();
+
+    clickToggle('Open menu');
+    expect(mobileMenu()).not.toBeNull();
+    // The entrance tween must not be counted as an exit.
+    expect(mobileExitAnimations()).toHaveLength(0);
+
+    clickToggle('Close menu');
+
+    const exitCalls = mobileExitAnimations();
+    expect(exitCalls.length).toBe(1);
+    const [, params] = exitCalls[0];
+    expect(params.x).toEqual(['0%', '-100%']);
+    expect(params.opacity).toEqual([1, 0]);
+    expect(params.duration).toBe(durations[200] * 1000);
+    expect(params.duration).toBe(200);
+    expect(params.ease).toBe(easings.expoIn);
+
+    // Mid-flight the panel is still mounted — holding it mounted IS the exit.
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(mobileMenu()).not.toBeNull();
+
+    // Past the deadline it is gone.
+    act(() => {
+      vi.advanceTimersByTime(durations[200] * 1000 + 50);
+    });
+    expect(mobileMenu()).toBeNull();
+  });
+
+  it('cancels the pending unmount when the menu is re-opened mid-exit', () => {
+    mockMatchMedia(false);
+    renderAdminLayout();
+
+    clickToggle('Open menu');
+    clickToggle('Close menu');
+
+    // Half way through the 200ms exit, the visitor changes their mind. The
+    // armed deadline must be cleared, or it unmounts a menu that is open.
+    act(() => {
+      vi.advanceTimersByTime(50);
+    });
+    expect(mobileMenu()).not.toBeNull();
+
+    clickToggle('Open menu');
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(mobileMenu()).not.toBeNull();
+  });
+});

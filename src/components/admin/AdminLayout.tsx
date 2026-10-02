@@ -101,7 +101,12 @@ const LogoutConfirmation: React.FC<{
             <div className="text-5xl">🚪</div>
             <h2
               id="logout-title"
-              className="font-display tracking-[2px] text-xl text-neon-coral text-shadow-neon-coral"
+              className="font-display tracking-[2px] text-xl text-neon-coral"
+              /* Replaces the retired `text-shadow-neon-coral`. There is no
+                 `--glow-coral-faint`, so this is the `-sm` token (0.15 alpha).
+                 A modal dialog is a focused, transient surface, so the extra
+                 lift over the page's 0.1 alpha is the right direction here. */
+              style={{ textShadow: '0 0 14px var(--glow-coral-sm)' }}
             >
               CONFIRM LOGOUT
             </h2>
@@ -173,26 +178,54 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     };
   }, []);
 
-  // Mobile menu mount/unmount with exit animation before unmount
+  // Mobile menu mount/unmount with exit animation before unmount.
+  //
+  // The timer below is the exit's ONLY completion path, so the reduced-motion
+  // branch cannot be an early `return`. Skipping the tween and the timer
+  // together leaves `renderMobileMenu` stuck true: a permanently rendered,
+  // permanently invisible panel behind the toggle, and a stale node for the
+  // next open. The guard is therefore on the ANIMATION alone — every branch
+  // here ends with `setRenderMobileMenu(false)`, and the branch that cannot
+  // animate reaches it on this tick instead of scheduling one. Same shape as
+  // `MessageOverlay`'s exit and `404`'s `navigateWithExit`.
   useEffect(() => {
     if (mobileMenuOpen) {
       setRenderMobileMenu(true);
-    } else if (renderMobileMenu && mobileNavRef.current) {
-      const el = mobileNavRef.current;
+      return;
+    }
+    if (!renderMobileMenu) return;
+
+    // Nothing left to animate into, or a visitor who asked for less motion.
+    // Identical outcome, no tween and no deadline to wait on.
+    if (!mobileNavRef.current || isReducedMotion() || !canAnimate()) {
+      setRenderMobileMenu(false);
+      return;
+    }
+
+    const el = mobileNavRef.current;
+    // Scoped so a reopen mid-exit tears the outgoing tween down instead of
+    // leaving it to fight the entrance animation for `x`/`opacity`.
+    const scope = createScope({ root: el });
+    scope.add(() => {
       animate(el, {
         x: ['0%', '-100%'],
         opacity: [1, 0],
         duration: MOBILE_EXIT_MS,
         ease: easings.expoIn,
       });
-      const timer = setTimeout(
-        () => setRenderMobileMenu(false),
-        MOBILE_EXIT_MS + 10,
-      );
-      return () => clearTimeout(timer);
-    } else if (!mobileMenuOpen && renderMobileMenu && !mobileNavRef.current) {
-      setRenderMobileMenu(false);
-    }
+    });
+    const timer = setTimeout(
+      () => setRenderMobileMenu(false),
+      MOBILE_EXIT_MS + 10,
+    );
+    return () => {
+      clearTimeout(timer);
+      try {
+        scope.revert();
+      } catch {
+        // A node mid-detach; never let cleanup throw.
+      }
+    };
   }, [mobileMenuOpen, renderMobileMenu]);
 
   // Mobile menu entrance animation
@@ -330,7 +363,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   onClick={handleNavClick}
                   className={`admin-nav-item px-3 py-2 font-display tracking-[1.5px] uppercase text-[10px] transition-all duration-200 flex items-center gap-2 ${
                     isActive(item.path)
-                      ? 'bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/40 hud-glow-cyan'
+                      ? /* Replaces the retired `hud-glow-cyan`. That class existed
+                         only as a commented-out rule in global.css, so the active
+                         nav item has carried no halo since it was deleted —
+                         Tailwind silently emitted nothing for it. `--glow-cyan` is
+                         the same 0.35 alpha the retired rule used. `transition-all
+                         duration-200` on this element fades it in. */
+                        'bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/40 shadow-[0_0_8px_var(--glow-cyan)]'
                       : 'bg-transparent text-text-secondary border border-[var(--overlay-white-10)] hover:border-[var(--overlay-white-30)] hover:text-text-primary'
                   }`}
                   style={{
