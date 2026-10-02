@@ -1,22 +1,33 @@
 // src/components/__tests__/ProjectMatchGrid.test.tsx
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { ReactNode } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
-import { animate } from 'animejs';
+import { animate, createScope } from 'animejs';
 
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: (query: string) => ({
-    matches: false,
-    media: query,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    addListener: () => {},
-    removeListener: () => {},
-    dispatchEvent: () => false,
-  }),
-});
+/**
+ * jsdom ships no `window.matchMedia`, so `canAnimate()` is false unless this is
+ * stubbed. The detail panel's motion is routed through `useMotionScope.run`,
+ * which short-circuits to `fn(null)` when `isReducedMotion() || !canAnimate()`
+ * — so the stub, not the animation library, is what decides each branch here.
+ */
+function mockMatchMedia(reduceMatches: boolean) {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    configurable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches:
+        query === '(prefers-reduced-motion: reduce)' ? reduceMatches : false,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
+}
 
 vi.mock('animejs', () => ({
   animate: vi.fn(),
@@ -79,6 +90,11 @@ const skillReact: PortfolioSkill = {
 };
 
 describe('ProjectMatchGrid', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockMatchMedia(false);
+  });
+
   it('shows an empty state when the skill filter matches nothing', () => {
     render(
       <ProjectMatchGrid
@@ -102,5 +118,35 @@ describe('ProjectMatchGrid', () => {
     expect(screen.getByText('Project 1')).toBeInTheDocument();
     expect(screen.getByText('Description 1')).toBeInTheDocument();
     expect(animate).toHaveBeenCalled();
+    expect(createScope).toHaveBeenCalled();
+  });
+
+  // The detail panel is mounted only when `expanded`, and its entrance is owned
+  // by `useMotionScope`. Reduced motion must skip that entrance entirely — not
+  // merely shorten it — and the panel must land at its resting opacity so the
+  // visitor still gets the expanded content.
+  it('reduced-motion: expanding builds no scope and no tween, panel rests visible', () => {
+    mockMatchMedia(true);
+
+    const { container } = render(
+      <ProjectMatchGrid
+        projects={[project(1, ['React']), project(2, ['React'])]}
+        skills={[skillReact]}
+      />,
+    );
+    fireEvent.click(screen.getByLabelText('Expand Project 1'));
+
+    // `useMotionScope.run` calls back with `null` instead of creating a scope,
+    // so neither the scope nor the tween it would own can exist.
+    expect(createScope).not.toHaveBeenCalled();
+    expect(animate).not.toHaveBeenCalled();
+
+    // Resting state is reached without an animation frame: the panel is in the
+    // DOM and carries no inline opacity, so it renders at its natural 1.
+    expect(screen.getByText('Project 1')).toBeInTheDocument();
+    expect(screen.getByText('Description 1')).toBeInTheDocument();
+    const panel = container.querySelector<HTMLElement>('.mt-3');
+    expect(panel).not.toBeNull();
+    expect(panel!.style.opacity).toBe('');
   });
 });

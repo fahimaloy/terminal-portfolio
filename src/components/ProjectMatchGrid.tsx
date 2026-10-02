@@ -4,8 +4,9 @@
    in chat RAG + marker paths. Table rows → InlineProjectCard tiles; expand
    chevron pushes inline detail with spring(card). Respects skillFilter.
    Token-only: washes via HudPanel + InlineProjectCard accents; no raw hex.
-   Motion: useMotionScope create guard + scope.revert() cleanup; reduced →
-   opacity-only, no spring.
+   Motion: useMotionScope create guard + scope.revert() cleanup; under reduced
+   motion no scope is built and no tween runs — the detail panel rests at its
+   natural opacity (its `opacity: [0, 1]` is an anime from-value, not a class).
 ═══════════════════════════════════════════════════════════════════════════════ */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
