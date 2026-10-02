@@ -44,7 +44,7 @@ at `/sudosuperuser-ostaad`. Persistence is entirely Supabase.
 | `install/supabase/`        | Canonical SQL — `schema.sql`, `ai_schema.sql`, `blog_schema.sql`, `experiences_schema.sql`                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `supabase/migrations/`     | `001_mask_ai_keys.sql`, `002_increment_view_count.sql`, `003_reorder_experiences.sql`                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `e2e/`                     | Playwright specs — `homepage.spec.ts`, `chat-api.spec.ts`, `admin.spec.ts`, `blog-admin.spec.ts`, `global-setup.ts`                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `scripts/`                 | `generate-tokens.mjs` (codegen), `token-lint.mjs` (guard), `dev.sh`, `build.sh`                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `scripts/`                 | `generate-tokens.mjs` (codegen), `token-lint.mjs` (guard), `graphify.mjs` (regenerates `docs/architecture-graph.svg`, via `npm run graph`), `dev.sh`, `build.sh`                                                                                                                                                                                                                                                                                                                                                                    |
 
 ## Design-token contract
 
@@ -239,7 +239,7 @@ must be green.
 - **There is no `pre-push` hook.** `docs/architecture-graph.svg` is a tracked _generated_
   artifact — refresh it deliberately with `dependency-cruiser` / `madge`; nothing
   regenerates it for you.
-- **CI** (`.github/workflows/ci.yml`): on push+PR to `main`/`master`, Node 20, five
+- **CI** (`.github/workflows/ci.yml`): on push+PR to `main`/`master`, Node 24, five
   sequential jobs — `typecheck` → `lint` → `tokens:check:strict` → `test` → `test:e2e`.
   e2e needs the `NEXT_PUBLIC_SUPABASE_*` and `SUPABASE_SECRET_KEY` repo secrets.
 - `agent_docs/` and `session-*.md` are gitignored. Agent notes and session transcripts are
