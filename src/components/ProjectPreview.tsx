@@ -1,5 +1,5 @@
 // src/components/ProjectPreview.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId, useRef } from 'react';
 import Image from 'next/image';
 import {
   PortfolioProject,
@@ -41,6 +41,32 @@ const COLOR_SETS = [
 ];
 const getColor = (i: number) => COLOR_SETS[i % COLOR_SETS.length];
 
+type AccentName = (typeof COLOR_SETS)[number]['accent'];
+
+/**
+ * The retired `.hud-glow-*` utility on the tab strip, rebuilt from tokens.
+ *
+ * 8px at the full `--glow-x` matches the selected-media thumbnail lower down in
+ * this same file (`shadow-[0_0_8px_var(--glow-cyan)]`, ProjectPreview.tsx), so
+ * "this thumbnail is selected" and "this tab is selected" are the same signal
+ * at the same strength.
+ *
+ * Two rules and not one interpolated string: Tailwind generates utilities from
+ * literal source text, so `'shadow-[0_0_8px_var(--glow-' + c.accent + ')]'`
+ * compiles to nothing at all and paints nothing — which is how the dead class
+ * survived unnoticed in the first place.
+ */
+const TAB_GLOW_SELECTED: Record<AccentName, string> = {
+  amber: 'shadow-[0_0_8px_var(--glow-amber)]',
+  coral: 'shadow-[0_0_8px_var(--glow-coral)]',
+  cyan: 'shadow-[0_0_8px_var(--glow-cyan)]',
+};
+const TAB_GLOW_REST: Record<AccentName, string> = {
+  amber: 'hover:shadow-[0_0_8px_var(--glow-amber)]',
+  coral: 'hover:shadow-[0_0_8px_var(--glow-coral)]',
+  cyan: 'hover:shadow-[0_0_8px_var(--glow-cyan)]',
+};
+
 type Props = {
   projects: PortfolioProject[];
   selectedIndex?: number;
@@ -64,10 +90,18 @@ export default function ProjectPreview({
   >({});
   const [mediaLoading, setMediaLoading] = useState(true);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
+  /**
+   * One instance id per rendered preview: `ChatMessage` can mount more than one
+   * `ProjectPreview`, and a hardcoded panel id would collide across them.
+   */
+  const tabPanelId = useId();
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const tabListId = useId();
 
   const activeProject = projects[activeIndex];
   const activeMedia = mediaMap[activeProject?.id] || [];
   const colors = getColor(activeIndex);
+  const activeTabId = `${tabListId}-tab-${activeProject?.id}`;
 
   useEffect(() => {
     setActiveIndex(selectedIndex);
@@ -101,6 +135,39 @@ export default function ProjectPreview({
     onSelectProject?.(idx);
   };
 
+  /**
+   * Roving tabindex with automatic activation: the arrow keys move focus AND
+   * selection together, so the one tab in the tab order is always the selected
+   * tab and the two can never drift apart.
+   */
+  const handleTabKeyDown = (
+    e: React.KeyboardEvent<HTMLButtonElement>,
+    idx: number,
+  ) => {
+    const total = projects.length;
+    if (total < 2) return;
+    let next: number;
+    switch (e.key) {
+      case 'ArrowRight':
+        next = (idx + 1) % total;
+        break;
+      case 'ArrowLeft':
+        next = (idx - 1 + total) % total;
+        break;
+      case 'Home':
+        next = 0;
+        break;
+      case 'End':
+        next = total - 1;
+        break;
+      default:
+        return;
+    }
+    e.preventDefault();
+    tabRefs.current[next]?.focus();
+    handleSelectProject(next);
+  };
+
   if (!activeProject) return null;
 
   return (
@@ -119,62 +186,109 @@ export default function ProjectPreview({
       )}
 
       {projects.length > 1 && (
-        <div className="flex flex-wrap justify-center gap-3 mb-4">
+        <div
+          role="tablist"
+          aria-label="Projects"
+          className="flex flex-wrap justify-center gap-3 mb-4"
+        >
           {projects.map((project, idx) => {
             const c = getColor(idx);
             const isActive = idx === activeIndex;
+            const label = project.short_title || project.title;
+            // The glow lives on the `Ripple` wrapper, not on the panel inside
+            // it. `Ripple` renders `overflow-hidden`, which clips the ink of its
+            // descendants — a `box-shadow` on the `HudPanel` would be trimmed to
+            // nothing, which is most likely why the retired glow looked
+            // unfixable in place. An element's own box-shadow is never clipped
+            // by its own `overflow`, so the wrapper is the only node here that
+            // can cast a halo.
+            //
+            // `<button>` inside `Ripple` rather than attributes passed through
+            // it: `Ripple`'s props type is `HTMLAttributes<HTMLDivElement>`, so
+            // `role`/`tabIndex` would have been spread onto a div that still
+            // cannot be activated by Enter or Space. A real button gets
+            // keyboard activation, the focus ring and `type="button"` from the
+            // platform. The ripple still fires — `Ripple` binds its own click
+            // handler to its root div unconditionally, so a click on the button
+            // bubbles up to it.
             return (
               <Ripple
                 key={project.id}
-                onClick={() => handleSelectProject(idx)}
-                className="w-[150px] cursor-pointer"
+                className={`w-[150px] transition-all duration-200 ${
+                  isActive
+                    ? TAB_GLOW_SELECTED[c.accent]
+                    : TAB_GLOW_REST[c.accent]
+                }`}
               >
-                <HudPanel
-                  accent={c.accent}
-                  className={`p-2 transition-all duration-200 ${
-                    isActive
-                      ? 'scale-105 hud-glow-' + c.accent.replace('neon-', '')
-                      : 'opacity-60 hover:opacity-100 hover:hud-glow-' +
-                        c.accent.replace('neon-', '')
-                  }`}
-                  // `enter={false}` — this tab owns its resting state and it is
-                  // deliberate: an inactive tab is `opacity-60` until hover, the
-                  // active one is `scale-105`, and `transition-all duration-200`
-                  // is what makes that dim-to-full crossfade read as a state
-                  // change rather than a glitch. The entrance writes inline
-                  // `opacity` and `transform` on this same node, which would
-                  // override both of those for 300ms and then hand back a
-                  // different value than it started from.
-                  enter={false}
+                <button
+                  type="button"
+                  role="tab"
+                  id={`${tabListId}-tab-${project.id}`}
+                  ref={(el) => {
+                    tabRefs.current[idx] = el;
+                  }}
+                  aria-selected={isActive}
+                  aria-controls={tabPanelId}
+                  // Roving tabindex: exactly one tab is in the tab order, so
+                  // Tab leaves the strip instead of walking five stops. That is
+                  // what makes `handleTabKeyDown` load-bearing rather than a
+                  // nicety — without arrows, a roving tabindex would strand
+                  // keyboard users on one tab.
+                  tabIndex={isActive ? 0 : -1}
+                  onClick={() => handleSelectProject(idx)}
+                  onKeyDown={(e) => handleTabKeyDown(e, idx)}
+                  className="block w-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-2)]"
                 >
-                  <div className="w-full h-16 overflow-hidden bg-[var(--overlay-black-medium)] mb-2 relative">
-                    {project.thumbnail_url ? (
-                      <Image
-                        src={project.thumbnail_url}
-                        alt={project.title}
-                        width={150}
-                        height={64}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className={`text-lg font-display ${c.text}`}>
-                          {project.title.charAt(0)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-[10px] font-display tracking-[1.5px] text-center text-text-primary">
-                    {project.short_title || project.title}
-                  </div>
-                </HudPanel>
+                  <HudPanel
+                    accent={c.accent}
+                    className={`p-2 transition-all duration-200 ${
+                      isActive ? 'scale-105' : 'opacity-60 hover:opacity-100'
+                    }`}
+                    // `enter={false}` — this tab owns its resting state and it is
+                    // deliberate: an inactive tab is `opacity-60` until hover, the
+                    // active one is `scale-105`, and `transition-all duration-200`
+                    // is what makes that dim-to-full crossfade read as a state
+                    // change rather than a glitch. The entrance writes inline
+                    // `opacity` and `transform` on this same node, which would
+                    // override both of those for 300ms and then hand back a
+                    // different value than it started from.
+                    enter={false}
+                  >
+                    <div className="w-full h-16 overflow-hidden bg-[var(--overlay-black-medium)] mb-2 relative">
+                      {project.thumbnail_url ? (
+                        <Image
+                          src={project.thumbnail_url}
+                          alt={project.title}
+                          width={150}
+                          height={64}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className={`text-lg font-display ${c.text}`}>
+                            {project.title.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-[10px] font-display tracking-[1.5px] text-center text-text-primary">
+                      {label}
+                    </div>
+                  </HudPanel>
+                </button>
               </Ripple>
             );
           })}
         </div>
       )}
 
-      <HudPanel accent={colors.accent} className="p-0 overflow-hidden">
+      <HudPanel
+        accent={colors.accent}
+        className="p-0 overflow-hidden"
+        role="tabpanel"
+        id={tabPanelId}
+        aria-labelledby={activeTabId}
+      >
         <div className="relative w-full aspect-video bg-[var(--overlay-black-60)]">
           {mediaLoading && (
             <div className="absolute inset-0 flex items-center justify-center text-text-muted font-body text-sm">
@@ -344,8 +458,15 @@ export default function ProjectPreview({
                 href={activeProject.project_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-3 py-2 bg-neon-amber/10 border border-neon-amber/40 text-neon-amber text-shadow-neon-amber font-display text-[10px] tracking-[2px] hover:bg-neon-amber/20 transition-all"
+                className="inline-flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-3 py-2 bg-neon-amber/10 border border-neon-amber/40 text-neon-amber font-display text-[10px] tracking-[2px] hover:bg-neon-amber/20 transition-all"
+                // Replaces the retired `text-shadow-neon-amber`, which was
+                // `0 0 8px var(--neon-amber), 0 0 16px var(--glow-amber)` — an
+                // opaque core. This is the same soft halo without the core, and
+                // the LIVE link is the one accent-coloured outbound action on
+                // the card, next to a neutral SOURCE link, so it is the one that
+                // should be lit.
                 style={{
+                  textShadow: '0 0 12px var(--glow-amber-sm)',
                   clipPath:
                     'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',
                 }}

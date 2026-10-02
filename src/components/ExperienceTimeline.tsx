@@ -146,7 +146,17 @@ export default function ExperienceTimeline({
                 )}
 
                 <div className="flex-1 min-w-0">
-                  <div className="font-display text-sm text-neon-cyan text-shadow-neon-cyan">
+                  <div
+                    className="font-display text-sm text-neon-cyan"
+                    // Replaces the retired `text-shadow-neon-cyan`. The node dot
+                    // beside this title kept a live cyan halo while the title's
+                    // went dead, which left the accent half-applied and read as
+                    // an oversight; this is the other half. 0.15 alpha at 10px
+                    // to sit under a `text-sm` title without smearing it, and it
+                    // pairs with the dot rather than matching it — the dot is a
+                    // light source, the title is lit by it.
+                    style={{ textShadow: '0 0 10px var(--glow-cyan-sm)' }}
+                  >
                     {exp.title}
                   </div>
                   <div className="text-xs text-[var(--fg-1)] mt-0.5">

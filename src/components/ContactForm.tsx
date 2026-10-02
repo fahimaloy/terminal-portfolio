@@ -139,7 +139,17 @@ export default function ContactForm({ onBackToChat }: Props) {
             <FiCheck className="w-5 h-5 text-neon-lime" />
           </div>
           <div>
-            <div className="font-display tracking-[2px] text-neon-lime text-shadow-neon-lime">
+            <div
+              className="font-display tracking-[2px] text-neon-lime"
+              // Replaces the retired `text-shadow-neon-lime`
+              // (`0 0 8px var(--neon-lime), 0 0 16px var(--glow-lime)`), and
+              // this one keeps a real glow. This is the confirmation the
+              // visitor came for — the form is gone and this line is all that
+              // is left — so a soft lime bloom is the payoff, not decoration.
+              // Soft-only: the retired opaque core turned a 14px word into a
+              // solid green smear at that size.
+              style={{ textShadow: '0 0 14px var(--glow-lime-sm)' }}
+            >
               MESSAGE SENT
             </div>
             <div className="font-body text-sm text-text-muted">

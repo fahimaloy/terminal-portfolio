@@ -147,8 +147,7 @@ const NAME_TYPE =
 // Every absolute offset and one-off length in the entrance below used to be a
 // hand-typed millisecond literal, which is how a retimed token silently left
 // the choreography behind. They are expressed on a 10ms grid sized from
-// `--dur-tap` instead. The conversion is exact, so nothing here re-times the
-// reveal: beat(12) is the old 120ms, beat(201) the old 2010ms.
+// `--dur-tap` instead: beat(20) is 200ms, beat(200) is 2000ms.
 const beat = (steps: number) => (durations.tap * 1000 * steps) / 10;
 
 /** Cascade step — `--dur-stagger` is the step the whole system staggers by. */
@@ -156,26 +155,82 @@ const STEP = durations.stagger * 1000;
 const STEP_TIGHT = STEP * (2 / 3); // 40 — reduced-motion list reveal
 const STEP_NAME = STEP * (7 / 6); //  70 — per-word name cascade
 
-/** Absolute positions in the entrance timeline. */
+// ── Entrance order — read this before touching AT ───────────────────────────
+// The shape is deliberately not "everything arrives, then it is finished". It
+// is: ONE focal point, a real pause, then a sequence.
+//
+//   0ms    the hairline draws itself (the field is empty but for a rule)
+//   20ms   the eyebrow whispers up and is done by 240 — it is a whisper, and
+//          it must be finished *before* the name lands so the name arrives
+//          onto a settled field rather than into a drift
+//   140ms  the name wrapper fades; 160ms the words rise; 200ms the chars fade
+//          → the name is fully formed by ~690ms
+//   220ms  the specular sweep crosses the name, arriving 220ms AFTER the words
+//          started rising, so the light travels across a name that is nearly
+//          in place. It finishes at 820ms, just after the last word locks, so
+//          the name completes lit and then the light leaves it.
+//   822ms  ── THE STILL BEAT: ~600ms of nothing at all ──────────────────────
+//          Nothing in the hero moves for 822ms → 1419ms. The name is alone on
+//          screen, fully lit and completely static. ~600ms is roughly two
+//          reading fixations on a 7rem two-word lockup: long enough that the
+//          eye resolves "Fahim Ahmed" as a word rather than as movement, short
+//          enough that nobody starts to think the page failed to load. This is
+//          the whole point of the retiming. Before it the hero ran 0 → 2040ms
+//          with two tweens straddling the whole thing — a 1000ms eyebrow and a
+//          1100ms sweep — so there was no instant at which the eye could find
+//          a resting place, and nothing ever read as the subject.
+//   1420ms title → 1560ms bio → 1760ms stats → 2000ms the quick-command group
+//          (its header and its rail arrive on the SAME frame as its cards, so
+//          the label can no longer paint a second before what it labels).
+//          At most two of these overlap at once, so it reads as a sequence
+//          rather than a pile. Last motion lands at ~2860ms.
+//
+// The visitor can read the name at 690ms — under a second, the promise the
+// hero is actually making — while everything else is still assembling behind
+// it. Total runtime is longer than before on purpose: the pause is bought with
+// patience, and it is the pause that makes the name the subject.
 const AT = {
   start: 0, // the hairline is already in place when the hero unmasks
-  label: beat(12), //  120
-  nameIn: beat(20), //  200
-  words: beat(22), //  220
-  chars: beat(26), //  260
-  title: beat(62), //  620
-  bio: beat(82), //  820
-  sweep: beat(90), //  900
-  stats: beat(92), //  920
-  cards: beat(118), // 1180
-  sweepOut: beat(201), // 2010 — the gradient has crossed the name by now
+  label: beat(2), //   20
+  nameIn: beat(14), // 140
+  words: beat(16), // 160
+  chars: beat(20), // 200
+  sweep: beat(22), // 220
+  title: beat(142), // 1420 — the still beat ends here
+  bio: beat(156), // 1560
+  stats: beat(176), // 1760
+  cards: beat(200), // 2000
 } as const;
 
 /** One-off tween lengths that have no duration token of their own. */
 const LEN = {
-  sweep: beat(110), // 1100 — one pass of the specular gradient
-  stats: beat(60), //   600
-  cards: beat(56), //   560
+  /**
+   * The eyebrow used to declare no duration at all, which meant it inherited
+   * anime's 1000ms default and ran 120 → 1120ms — a full second of a 10px
+   * line drifting upward, outliving the entire name cascade. It was the single
+   * reason the hero had no still moment: nothing else was running long enough
+   * to matter next to it. Stated explicitly so it can never silently return.
+   */
+  label: beat(22), //  220
+  /** The quick-command header and rail clear well ahead of the cards they
+   *  label, so the children own the visible fade and the group reads as one
+   *  beat rather than two stacked opacity tweens fighting each other. */
+  head: beat(28), //  280
+  /**
+   * One pass of the specular gradient, 220 → 820ms. Was 1100ms, which ran so
+   * far past the name it stopped reading as a glint and started reading as a
+   * second entrance. At 600ms the highlight is a sheen on a name that has
+   * essentially arrived.
+   */
+  sweep: beat(60), //  600
+  stats: beat(60), //  600
+  cards: beat(56), //  560
+  /**
+   * `--dur-draw` is 1400ms, which finished 20ms before the title — i.e. it
+   * ran straight through the still beat and destroyed it. Halved so the field
+   * is genuinely empty when the name holds.
+   */
+  hairline: beat(60), //  600
   /**
    * Near-zero for the reduced-motion branch. Anime's default tween is ~1000ms,
    * so omitting a duration there made "no animation" play a full second.
@@ -269,6 +324,15 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
           );
           const cards =
             root.querySelectorAll<HTMLElement>('[data-hero="card"]');
+          // The rail is a layout container with no appearance of its own, but
+          // it is what the cards are laid out in, so it was never in the
+          // timeline: the grid sat there through the entire entrance. It is
+          // faded with its header on the same frame the cards start, purely so
+          // the group arrives as a unit.
+          const rail = root.querySelector<HTMLElement>('[data-hero="rail"]');
+          const railHead = root.querySelector<HTMLElement>(
+            '[data-hero="railhead"]',
+          );
           const hairlineWrap =
             root.querySelector<HTMLElement>('.hero-hairline');
 
@@ -277,6 +341,8 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
           const hidden: HTMLElement[] = [
             nameWrap,
             titleEl,
+            railHead,
+            rail,
             ...label,
             ...bio,
             ...stats,
@@ -320,6 +386,16 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
                 { y: [10, 0], opacity: [0, 1], ...instant },
                 stagger(STEP_TIGHT, { from: 'first' }),
               );
+            // railHead and rail are in the hidden set, so the reduced branch
+            // must reveal them too or they stay at opacity 0 forever.
+            if (railHead)
+              tl.add(
+                railHead,
+                { y: [8, 0], opacity: [0, 1], ...instant },
+                stagger(STEP),
+              );
+            if (rail)
+              tl.add(rail, { opacity: [0, 1], ...instant }, stagger(STEP));
             if (cards.length)
               tl.add(
                 cards,
@@ -346,7 +422,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
                 draw as unknown as HTMLElement[],
                 {
                   draw: ['0 0', '0 1'],
-                  duration: ms(durations.draw),
+                  duration: LEN.hairline,
                   ease: easings.smooth,
                 },
                 AT.start,
@@ -360,7 +436,11 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
           }
 
           if (label.length)
-            tl.add(label, { y: [12, 0], opacity: [0, 1] }, AT.label);
+            tl.add(
+              label,
+              { y: [12, 0], opacity: [0, 1], duration: LEN.label },
+              AT.label,
+            );
 
           // Name — word-level clip cascade. Chars only fade: a per-char clip box
           // sized to the line box is what cropped the glyphs.
@@ -421,7 +501,11 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
           }
 
           // Specular sweep — one shot, then never again. The name stays a solid
-          // colour; only this overlay is a gradient, and it is transient.
+          // colour; only this overlay is a gradient, and it is transient. The
+          // exit is derived from where the sweep starts rather than being its
+          // own hand-placed offset: the two used to be independent literals
+          // (900 + 1100 vs 2010) that only agreed by arithmetic someone else
+          // had done in their head.
           if (sweep) {
             tl.add(
               sweep,
@@ -433,7 +517,11 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               },
               AT.sweep,
             );
-            tl.add(sweep, { opacity: 0, duration: LEN.instant }, AT.sweepOut);
+            tl.add(
+              sweep,
+              { opacity: 0, duration: LEN.instant },
+              AT.sweep + LEN.sweep,
+            );
           }
 
           if (titleEl)
@@ -468,6 +556,18 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
               },
               AT.stats,
             );
+          // Header and rail arrive on the same frame as the cards they hold. The
+          // header used to paint at opacity 1 from the first frame while its
+          // contents faded in over a second later — a label introducing a
+          // group that did not exist yet.
+          if (railHead)
+            tl.add(
+              railHead,
+              { y: [8, 0], opacity: [0, 1], duration: LEN.head },
+              AT.cards,
+            );
+          if (rail)
+            tl.add(rail, { opacity: [0, 1], duration: LEN.head }, AT.cards);
           if (cards.length)
             tl.add(
               cards,
@@ -662,6 +762,7 @@ const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(
         {/* Quick access cards */}
         <div className="mt-8 w-full" id="quick-commands">
           <div
+            data-hero="railhead"
             className="text-[10px] font-mono tracking-[0.28em] text-center mb-3"
             style={{ color: 'var(--fg-3)' }}
           >
